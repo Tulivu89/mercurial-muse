@@ -1,0 +1,42 @@
+{
+  "name": "Mercurial Muse",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "vitest.explorer"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      }
+    }
+  },
+  "remoteUser": "node",
+  "postCreateCommand": "cd praxis && npm ci",
+  "forwardPorts": [
+    8791,
+    5176
+  ],
+  "portsAttributes": {
+    "8791": {
+      "label": "Praxis",
+      "onAutoForward": "openBrowser"
+    },
+    "5176": {
+      "label": "Dev server (npm run dev:all)",
+      "onAutoForward": "silent"
+    }
+  },
+  "hostRequirements": {
+    "cpus": 2
+  },
+  "postAttachCommand": {
+    "praxis": "bash praxis/scripts/codespace-start.sh"
+  }
+}

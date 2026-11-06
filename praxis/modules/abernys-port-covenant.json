@@ -1,0 +1,1536 @@
+{
+  "format": "praxis-module/1",
+  "id": "abernys-port-covenant",
+  "name": "Abernys: Port Covenant",
+  "version": "0.11.0",
+  "notes": "Built from the Abernys docs in the Howling Whispers dev project (region seed, Port Covenant, Fenmire, Cairn Maw). Anything marked canonStatus \"draft\" was invented to make the slice playable: every route distance, the district and building names, the gate staff and their Four Approaches tiers (the Arbiter a rival, the guard a minion), and the player character. Proposed names from the docs (the Governor, the High Arbiter, the garrison captain, Brond) are draft too. The calendar is the default real one until Abernys has its own. From 0.4.0, also draft: every dossier field (appearance, personality, speech), every schedule, the four bond kinds and their tiers, and the three relationships between the Governor, the High Arbiter, the garrison captain and the gate staff. The leverage between the Governor and the captain (she knows the last ship carried no orders) is from the societies doc. From 0.5.0 the ruleset extends the standard Four Approaches ruleset (four-approaches/1) for Leverage, Prepared, Integrity, Security, the person deed and the tiers; the tiers given to each character and the registry strongroom door are draft. From 0.6.0 the module takes the approach ratings, Health, Strain, Alert, the dice and rest from the standard ruleset instead of repeating them, and its opening and outcomes follow the house format: you, present tense, speech without quotation marks. From 0.7.0 each person carries pronouns, read from their own descriptions, so conditions read as she, he or they. Tiers alone now set Health and Strain, so a minion such as the gate guard falls to one success. From 0.8.0, to test schedules, followers and contracts, all draft: the Tarred Rope, an alehouse in the outer lanes, with its keeper Pell and Garrick Hale, a sellsword who can be hired; the Reddles, a fisherman and his harefolk wife with a home, a workplace and a family record; and the contract hall on the harbour, where Odile Fenn brokers indenture and Wren's contract can be bought. Coin, Bound by contract and In your pay are new states, with follow rules for the last two.",
+  "source": {
+    "kind": "local"
+  },
+  "world": {
+    "id": "world-abernys",
+    "name": "Abernys",
+    "summary": "A dark-fantasy island in the Bitterroot universe, a month or two's sail from Bitterroot, settled in layers of migration and conquest.",
+    "identity": {
+      "name": "Abernys",
+      "description": "An island of layered migrations: first peoples with no memory of arriving, later waves that migrated, conquered and mixed, and humans as the latest.",
+      "genre": "dark fantasy",
+      "tone": "grim, political and uncanny"
+    },
+    "lore": {
+      "importantFacts": [
+        "The first peoples are prey peoples; both conquests that followed were by predators. Humans are neither predator nor prey, so nobody on Abernys knows how to read them.",
+        "A plague called the Wailing struck every species, beginning at Nospier Point. Humans were immune and settled the half-empty city while everyone else kept away. Whether it came before the humans or with them is a deliberate mystery.",
+        "No one enters Port Covenant without signing the Covenant, and nothing binds a party until they sign."
+      ]
+    },
+    "rules": {
+      "constraints": "Fen witchcraft is ritual and alchemical; nothing about it is confirmed supernatural."
+    },
+    "places": [
+      {
+        "id": "abernys",
+        "name": "Abernys",
+        "kind": "major region",
+        "parentLocationId": null,
+        "description": "The island. Its coast faces the open sea to the west, and every power on it is within a few days of Caerwyn."
+      },
+      {
+        "id": "nospier-point",
+        "name": "Nospier Point",
+        "kind": "subregion",
+        "parentLocationId": "abernys",
+        "description": "The southern headland. Its port city was the first and worst hit by the Wailing, and the immune humans settled it while the rest of Abernys kept away."
+      },
+      {
+        "id": "port-covenant",
+        "name": "Port Covenant",
+        "kind": "town",
+        "parentLocationId": "nospier-point",
+        "description": "The human colony inside its walls, where the Pact lives by the Covenant: everything is contracts and leverage, and nothing exists unless it is on paper. Most of the poor are indentured, which the Pact does not count as slavery because every party agreed."
+      },
+      {
+        "id": "pc-harbour",
+        "name": "The harbour",
+        "kind": "district",
+        "parentLocationId": "port-covenant",
+        "canonStatus": "draft",
+        "description": "Smaller and harder to work than Caerwyn's, with temperamental weather, but richer fishing and fewer pirates. Shipwrights work the slips."
+      },
+      {
+        "id": "pc-registry",
+        "name": "The Arbiters' registry",
+        "kind": "building",
+        "parentLocationId": "port-covenant",
+        "canonStatus": "draft",
+        "description": "Where the Arbiters, a monastic order of notaries, make and keep the colony's paper. In a society this litigious, the people who keep the contracts hold real influence."
+      },
+      {
+        "id": "pc-garrison",
+        "name": "The garrison",
+        "kind": "building",
+        "parentLocationId": "port-covenant",
+        "canonStatus": "draft",
+        "description": "Barracks of the colony's soldiers. Patrols go out from here to survey land, hunt runaways and guard diggers."
+      },
+      {
+        "id": "pc-governors-court",
+        "name": "The Governor's court",
+        "kind": "building",
+        "parentLocationId": "port-covenant",
+        "canonStatus": "draft",
+        "description": "Seat of the Governor, whose commission is the colony's claim to the land."
+      },
+      {
+        "id": "pc-landward-gate",
+        "name": "The landward gate",
+        "kind": "landmark",
+        "parentLocationId": "nospier-point",
+        "canonStatus": "draft",
+        "description": "Where the headland road meets the colony wall. An Arbiter takes signatures at the gate, because no one enters the port without signing."
+      },
+      {
+        "id": "pc-outside-walls",
+        "name": "The outer lanes",
+        "kind": "district",
+        "parentLocationId": "nospier-point",
+        "canonStatus": "draft",
+        "description": "Where most of the colony's mixed families live, in the lanes between the wall and the open headland."
+      },
+      {
+        "id": "fenmire",
+        "name": "Fenmire",
+        "kind": "subregion",
+        "parentLocationId": "abernys",
+        "description": "Hard, wet fen and bog between the Woed and the south coast. Proud, independent first peoples (harefolk, badgerfolk and salamanders) live in private family clusters, where killing a trespasser is no crime."
+      },
+      {
+        "id": "bogwater",
+        "name": "Bogwater",
+        "kind": "village",
+        "parentLocationId": "fenmire",
+        "description": "The nearest thing Fenmire has to a town: the fen's trading post and the seat of the Council of Crones. Outsiders may trade here, under suspicion, and it is as far into the fen as most of them get."
+      },
+      {
+        "id": "cairn-maw",
+        "name": "Cairn Maw",
+        "kind": "subregion",
+        "parentLocationId": "abernys",
+        "description": "Chalk uplands inland, held by three first-peoples clans who share a grievance and no government. High tension, no war."
+      },
+      {
+        "id": "aurochs-downs",
+        "name": "The Aurochs downs",
+        "kind": "wilderness",
+        "parentLocationId": "cairn-maw",
+        "description": "Clan Aurochs' downs, running south toward Port Covenant: thin chalk turf, lime kilns along the scarp and the great barrows. Colony patrols cross them, and the barrow-keepers kill diggers."
+      },
+      {
+        "id": "caerwyn",
+        "name": "Caerwyn",
+        "kind": "settlement",
+        "parentLocationId": "abernys",
+        "description": "The city-state at the mouth of the Afon's estuary, where sea trade and river trade meet. A figurehead ruler sits under the real power of merchants and organised crime."
+      },
+      {
+        "id": "pc-tarred-rope",
+        "name": "The Tarred Rope",
+        "kind": "building",
+        "parentLocationId": "pc-outside-walls",
+        "canonStatus": "draft",
+        "description": "A low alehouse built against the outside of the colony wall, its beams black with pipe smoke and ship's tar. Those who have not signed drink here beside those who have, humans at the long table and beastkin by the fire, and the keeper takes any coin that isn't on paper."
+      },
+      {
+        "id": "pc-reddle-house",
+        "name": "The Reddle house",
+        "kind": "building",
+        "parentLocationId": "pc-outside-walls",
+        "canonStatus": "draft",
+        "description": "A narrow two-room house of salvaged ship's timber in the outer lanes, nets drying on pegs along its wall. A human fisherman and his harefolk wife live here, which is why they live outside the wall."
+      },
+      {
+        "id": "pc-contract-hall",
+        "name": "The contract hall",
+        "kind": "building",
+        "parentLocationId": "pc-harbour",
+        "canonStatus": "draft",
+        "description": "A long, tide-stained hall on the harbour where indenture contracts change hands. The contracts hang on a board by the door with their prices chalked beside them, and the people they bind wait on benches along the back wall. The Pact does not call it a slave market, because every party signed."
+      }
+    ],
+    "routes": [
+      {
+        "id": "gate-to-town",
+        "from": "pc-landward-gate",
+        "to": "port-covenant",
+        "distanceKm": 0.2,
+        "terrain": "the gate passage",
+        "routeClass": "gate",
+        "canonStatus": "draft",
+        "requires": [
+          {
+            "stateId": "signed-covenant",
+            "atLeast": 1,
+            "toward": "port-covenant",
+            "reason": "No one enters the port without signing the Covenant."
+          }
+        ]
+      },
+      {
+        "id": "gate-to-outside-walls",
+        "from": "pc-landward-gate",
+        "to": "pc-outside-walls",
+        "distanceKm": 0.5,
+        "terrain": "lanes along the outside of the wall",
+        "routeClass": "local",
+        "canonStatus": "draft"
+      },
+      {
+        "id": "gate-to-bogwater",
+        "from": "pc-landward-gate",
+        "to": "bogwater",
+        "distanceKm": 22,
+        "terrain": "headland road, then fen causeways known to locals and easy for strangers to lose",
+        "routeClass": "trail",
+        "canonStatus": "draft"
+      },
+      {
+        "id": "gate-to-aurochs-downs",
+        "from": "pc-landward-gate",
+        "to": "aurochs-downs",
+        "distanceKm": 26,
+        "terrain": "chalk track up the scarp onto the downs",
+        "routeClass": "upland-road",
+        "canonStatus": "draft"
+      },
+      {
+        "id": "gate-to-caerwyn",
+        "from": "pc-landward-gate",
+        "to": "caerwyn",
+        "distanceKm": 64,
+        "terrain": "the coast road north",
+        "routeClass": "road",
+        "canonStatus": "draft"
+      },
+      {
+        "id": "bogwater-to-caerwyn",
+        "from": "bogwater",
+        "to": "caerwyn",
+        "distanceKm": 48,
+        "terrain": "punt channels out of the fen, then the coast road; the fen traders' regular trek",
+        "routeClass": "trail",
+        "canonStatus": "draft"
+      }
+    ],
+    "species": [
+      {
+        "id": "humans",
+        "name": "Humans",
+        "description": "The latest arrivals: colonizers at Port Covenant, thralls on the wreck coast, mudflat dwellers in Caerwyn."
+      },
+      {
+        "id": "harefolk",
+        "name": "Harefolk",
+        "description": "First peoples."
+      },
+      {
+        "id": "badgerfolk",
+        "name": "Badgerfolk",
+        "description": "First peoples."
+      },
+      {
+        "id": "salamanders",
+        "name": "Salamanders",
+        "description": "First peoples of the fens. None appear among Bitterroot's peoples."
+      },
+      {
+        "id": "cervidfolk",
+        "name": "Cervidfolk",
+        "description": "First peoples; Clan Hart of Cairn Maw."
+      },
+      {
+        "id": "caprinefolk",
+        "name": "Caprinefolk",
+        "description": "First peoples; Clan Crag of Cairn Maw."
+      },
+      {
+        "id": "bovinefolk",
+        "name": "Bovinefolk",
+        "description": "First peoples; Clan Aurochs of Cairn Maw."
+      },
+      {
+        "id": "foxfolk",
+        "name": "Foxfolk",
+        "description": "Earlier migration from Bitterroot, by a route nobody remembers."
+      },
+      {
+        "id": "boarfolk",
+        "name": "Boarfolk",
+        "description": "Earlier migration from Bitterroot."
+      },
+      {
+        "id": "bearfolk",
+        "name": "Bearfolk",
+        "description": "Earlier migration from Bitterroot."
+      },
+      {
+        "id": "wolves",
+        "name": "Wolves",
+        "description": "Sea raiders turned rulers of the fjord jarldoms, and muscle among the pirates."
+      },
+      {
+        "id": "ferrets",
+        "name": "Ferrets",
+        "description": "Pirates, island-born, escaped or outcast."
+      },
+      {
+        "id": "rats",
+        "name": "Rats",
+        "description": "Pirates, island-born, escaped or outcast."
+      },
+      {
+        "id": "otters",
+        "name": "Otters",
+        "description": "Pirates, island-born, escaped or outcast."
+      },
+      {
+        "id": "stoats",
+        "name": "Stoats",
+        "description": "Pirates, island-born, escaped or outcast."
+      },
+      {
+        "id": "weasels",
+        "name": "Weasels",
+        "description": "Pirates, island-born, escaped or outcast."
+      }
+    ],
+    "factions": [
+      {
+        "id": "the-arbiters",
+        "name": "The Arbiters",
+        "description": "A monastic order of notaries headed by the High Arbiter. They make and keep the Pact's paper and enforce the law alongside the Governor's court and the garrison."
+      }
+    ],
+    "societies": [
+      {
+        "id": "the-pact",
+        "name": "The Pact",
+        "description": "The humans of Port Covenant and the beastkin who have signed into it. A law applies only to those who sign it, no contract is unfair, and the most important contracts are tattooed on the body.",
+        "settlementLocationIds": [
+          "port-covenant"
+        ],
+        "factionIds": [
+          "the-arbiters"
+        ]
+      }
+    ],
+    "memories": [
+      {
+        "id": "the-arrival",
+        "title": "The arrival",
+        "kind": "event",
+        "locationIds": [
+          "port-covenant"
+        ],
+        "description": "Humans driven from the homeland by a disaster that stays unwritten settled the city the Wailing had emptied. How many generations ago is never stated."
+      }
+    ],
+    "families": [
+      {
+        "id": "the-reddles",
+        "name": "The Reddles",
+        "canonStatus": "draft",
+        "description": "A mixed marriage under a tattooed contract: a human fisherman and a harefolk net-mender, living outside the wall because the Pact admits them both and the lanes inside would not.",
+        "people": [
+          {
+            "characterId": "tomas-reddle",
+            "name": "Tomas Reddle"
+          },
+          {
+            "characterId": "hanne-reddle",
+            "name": "Hanne Reddle"
+          }
+        ],
+        "relationships": [
+          {
+            "fromPersonId": "tomas-reddle",
+            "toPersonId": "hanne-reddle",
+            "kind": "partner",
+            "notes": "Married by contract, tattooed on both their wrists."
+          }
+        ]
+      }
+    ]
+  },
+  "characters": [
+    {
+      "id": "traveller",
+      "name": "The traveller",
+      "canonStatus": "draft",
+      "description": "A traveller come up the headland road to Port Covenant, with no paper and no signature to their name.",
+      "draftNote": "Placeholder player character until an Orbis persona is chosen.",
+      "states": {
+        "force": 2,
+        "finesse": 2,
+        "focus": 1,
+        "flair": 3,
+        "coin": 40
+      },
+      "charges": {
+        "flair": "trained",
+        "force": "practiced",
+        "finesse": "practiced",
+        "focus": "raw"
+      },
+      "carries": [
+        "knife"
+      ]
+    },
+    {
+      "id": "gate-arbiter",
+      "name": "The gate Arbiter",
+      "pronouns": "she/her",
+      "speciesId": "humans",
+      "factionIds": [
+        "the-arbiters"
+      ],
+      "homeLocationId": "pc-landward-gate",
+      "canonStatus": "draft",
+      "description": "An Arbiter on duty at the landward gate, with the Covenant's terms, ink, and a ledger of everyone who has signed.",
+      "appearance": "A woman in the Arbiters' grey, ink to the second knuckle, hood pushed back despite the fog, a writing board strapped to her left forearm.",
+      "personality": "Patient, exact and unhurried. She treats every arrival as a contract not yet signed, and is not unkind, only uninterested in anything that is not on paper.",
+      "speech": "Short, complete sentences. Repeats terms back word for word, and says 'the Covenant' the way others say 'the weather'.",
+      "workplaceLocationIds": [
+        "pc-landward-gate",
+        "pc-registry"
+      ],
+      "schedule": {
+        "plans": [
+          {
+            "id": "day",
+            "name": "A working day",
+            "rows": [
+              {
+                "fromHour": 6,
+                "locationId": "pc-landward-gate",
+                "doing": "keeping the ledger at the landward gate"
+              },
+              {
+                "fromHour": 19,
+                "locationId": "pc-registry",
+                "doing": "filing the day's signatures at the registry"
+              },
+              {
+                "fromHour": 22,
+                "locationId": "pc-registry",
+                "doing": "asleep in the Arbiters' cells"
+              }
+            ]
+          }
+        ]
+      },
+      "draftNote": "Appearance, personality, speech and schedule are drafts.",
+      "tier": "rival",
+      "forSale": false
+    },
+    {
+      "id": "gate-guard",
+      "name": "A garrison guard",
+      "pronouns": "he/him",
+      "speciesId": "humans",
+      "homeLocationId": "pc-landward-gate",
+      "canonStatus": "draft",
+      "description": "One of the garrison's soldiers, posted at the gate.",
+      "appearance": "Helmet strapped tight, cloak dark with fog-wet, leaning on a pike more than he should.",
+      "personality": "Cold, bored and loyal to whoever pays the garrison. Watches the road, not the people on it.",
+      "speech": "As few words as he can manage, most of them to the Arbiter.",
+      "workplaceLocationIds": [
+        "pc-landward-gate"
+      ],
+      "schedule": {
+        "plans": [
+          {
+            "id": "day",
+            "name": "Gate watch",
+            "rows": [
+              {
+                "fromHour": 6,
+                "locationId": "pc-landward-gate",
+                "doing": "standing the gate watch"
+              },
+              {
+                "fromHour": 18,
+                "locationId": "pc-garrison",
+                "doing": "off watch in the barracks"
+              }
+            ]
+          }
+        ]
+      },
+      "draftNote": "Appearance, personality, speech and schedule are drafts.",
+      "tier": "minion",
+      "carries": [
+        "spear"
+      ]
+    },
+    {
+      "id": "ottavio-marrane",
+      "name": "Ottavio Marrane",
+      "pronouns": "he/him",
+      "speciesId": "humans",
+      "homeLocationId": "pc-governors-court",
+      "canonStatus": "draft",
+      "role": "The Governor",
+      "description": "Leads the colony. Wants the homeland's silence kept from the colonists. His commission is the colony's claim to the land, and every document it rests on sits in the Arbiters' keeping.",
+      "appearance": "A heavy man in a homeland coat gone thin at the cuffs, the Governor's chain worn outside it where it can be seen.",
+      "personality": "Gracious in public and careful in private. He listens for what people know rather than what they say, and never lets a silence go unfilled.",
+      "speech": "Formal homeland courtesy in long sentences that end before they commit to anything.",
+      "workplaceLocationIds": [
+        "pc-governors-court"
+      ],
+      "schedule": {
+        "plans": [
+          {
+            "id": "day",
+            "name": "At court",
+            "rows": [
+              {
+                "fromHour": 8,
+                "locationId": "pc-governors-court",
+                "doing": "holding court and hearing petitions"
+              },
+              {
+                "fromHour": 18,
+                "locationId": "pc-governors-court",
+                "doing": "at supper in his own rooms, not to be disturbed"
+              }
+            ]
+          }
+        ]
+      },
+      "draftNote": "Appearance, personality, speech and schedule are drafts.",
+      "tier": "rival"
+    },
+    {
+      "id": "lucan-abreu",
+      "name": "Lucan Abreu",
+      "pronouns": "he/him",
+      "speciesId": "humans",
+      "factionIds": [
+        "the-arbiters"
+      ],
+      "homeLocationId": "pc-registry",
+      "canonStatus": "draft",
+      "role": "The High Arbiter",
+      "description": "Heads the Arbiters. Wants every bargain on the coast written in the Pact's hand, and knows the Covenant only binds those who sign it.",
+      "appearance": "Tall, lean and grey, his forearms tattooed with the contracts he witnessed as a young Arbiter.",
+      "personality": "He believes in the Pact the way others believe in gods. Never raises his voice and never forgets a clause.",
+      "speech": "Quotes terms by number, and asks questions he already knows the answers to.",
+      "workplaceLocationIds": [
+        "pc-registry",
+        "pc-governors-court"
+      ],
+      "schedule": {
+        "plans": [
+          {
+            "id": "day",
+            "name": "A working day",
+            "rows": [
+              {
+                "fromHour": 7,
+                "locationId": "pc-registry",
+                "doing": "at his desk among the colony's contracts"
+              },
+              {
+                "fromHour": 12,
+                "locationId": "pc-governors-court",
+                "doing": "attending the Governor's court"
+              },
+              {
+                "fromHour": 15,
+                "locationId": "pc-registry",
+                "doing": "reviewing the day's contracts"
+              },
+              {
+                "fromHour": 21,
+                "locationId": "pc-registry",
+                "doing": "at prayer and rest in the Arbiters' cells"
+              }
+            ]
+          }
+        ]
+      },
+      "draftNote": "Appearance, personality, speech and schedule are drafts.",
+      "tier": "rival",
+      "forSale": false
+    },
+    {
+      "id": "ines-corvo",
+      "name": "Ines Corvo",
+      "pronouns": "she/her",
+      "speciesId": "humans",
+      "homeLocationId": "pc-garrison",
+      "canonStatus": "draft",
+      "role": "The garrison captain",
+      "description": "Holds the colony's soldiers and best weapons. Wants the borders held, and keeps losing patrols in the clashes on the downs and in the fen.",
+      "appearance": "Short, broad and weathered, in a mended buff coat, the knuckles of her sword hand scarred white.",
+      "personality": "Blunt and tired. She counts her soldiers before she counts anything else, and has stopped pretending the patrol losses are bad luck.",
+      "speech": "Plain soldier's talk, clipped, with homeland saints for oaths.",
+      "workplaceLocationIds": [
+        "pc-garrison",
+        "pc-landward-gate"
+      ],
+      "schedule": {
+        "plans": [
+          {
+            "id": "day",
+            "name": "A garrison day",
+            "rows": [
+              {
+                "fromHour": 5,
+                "locationId": "pc-garrison",
+                "doing": "drilling the morning watch"
+              },
+              {
+                "fromHour": 10,
+                "locationId": "pc-landward-gate",
+                "doing": "inspecting the gate and the road beyond it"
+              },
+              {
+                "fromHour": 11,
+                "locationId": "pc-governors-court",
+                "doing": "reporting to the Governor"
+              },
+              {
+                "fromHour": 13,
+                "locationId": "pc-garrison",
+                "doing": "planning the patrols"
+              },
+              {
+                "fromHour": 22,
+                "locationId": "pc-garrison",
+                "doing": "asleep in her quarters"
+              }
+            ]
+          }
+        ]
+      },
+      "draftNote": "Appearance, personality, speech and schedule are drafts.",
+      "tier": "rival"
+    },
+    {
+      "id": "cadfan",
+      "name": "Cadfan",
+      "pronouns": "he/him",
+      "speciesId": "badgerfolk",
+      "homeLocationId": "bogwater",
+      "role": "A fen trader",
+      "description": "A weathered badger with a punt and a Caerwyn buyer's mark on his barrels, on the regular trek between Bogwater and Caerwyn. Easier with outsiders than most fen folk, which is why he's useful and why the clusters don't fully trust him.",
+      "appearance": "A grey-muzzled badger in an oilskin, fen mud to the knees, smelling of peat smoke and barrel tar.",
+      "personality": "Easygoing and shrewd about prices, and careful about what he says of the fen clusters.",
+      "speech": "A slow fen drawl. Answers most questions with a price.",
+      "workplaceLocationIds": [
+        "bogwater",
+        "caerwyn"
+      ],
+      "schedule": {
+        "plans": [
+          {
+            "id": "day",
+            "name": "At home in the fen",
+            "rows": [
+              {
+                "fromHour": 6,
+                "locationId": "bogwater",
+                "doing": "loading his punt"
+              },
+              {
+                "fromHour": 20,
+                "locationId": "bogwater",
+                "doing": "at home with the stove lit"
+              }
+            ]
+          },
+          {
+            "id": "market",
+            "name": "Market day in Caerwyn",
+            "rows": [
+              {
+                "fromHour": 6,
+                "locationId": "caerwyn",
+                "doing": "selling fen goods at the Caerwyn market"
+              },
+              {
+                "fromHour": 20,
+                "locationId": "caerwyn",
+                "doing": "drinking his takings in a Caerwyn alehouse"
+              }
+            ]
+          }
+        ],
+        "rules": [
+          {
+            "planId": "market",
+            "when": {
+              "weekday": 4
+            }
+          }
+        ]
+      },
+      "draftNote": "Appearance, personality, speech and schedule are drafts.",
+      "tier": "minion",
+      "sells": [
+        "knife",
+        "jerkin",
+        "lockpicks"
+      ]
+    },
+    {
+      "id": "brond",
+      "name": "Brond",
+      "pronouns": "he/him",
+      "speciesId": "bovinefolk",
+      "homeLocationId": "aurochs-downs",
+      "canonStatus": "draft",
+      "role": "Head of Clan Aurochs",
+      "description": "Wants war on Port Covenant. Has the most men and the great barrows; his barrow-keepers keep killing colony diggers, and every body brings a patrol.",
+      "appearance": "A huge aurochs-folk bull, one horn capped in bronze, a barrow-keeper's ochre handprints on his hide.",
+      "personality": "Proud and grieving, and certain that war is the only answer the colony has left him.",
+      "speech": "Few words, slow and heavy, in the first peoples' tongue when he can.",
+      "draftNote": "Appearance, personality, speech are drafts.",
+      "tier": "nemesis",
+      "rank": 1
+    },
+    {
+      "id": "tomas-reddle",
+      "name": "Tomas Reddle",
+      "pronouns": "he/him",
+      "speciesId": "humans",
+      "homeLocationId": "pc-reddle-house",
+      "canonStatus": "draft",
+      "role": "A fisherman",
+      "description": "Fishes out of the harbour on a share of another man's boat, and drinks at the Tarred Rope most evenings. He signed the Covenant to work inside the wall, and lives outside it because his wife is harefolk.",
+      "appearance": "Big, salt-cracked hands, a fisherman's jersey out at the elbows, and a marriage contract tattooed around his left wrist.",
+      "personality": "Easy and talkative over a drink, close-mouthed about his catch. He owes the boat's owner more than he lets on, and does the arithmetic in his head while he laughs.",
+      "speech": "Harbour slang and long stories, and he calls everyone friend until they aren't.",
+      "workplaceLocationIds": [
+        "pc-harbour"
+      ],
+      "schedule": {
+        "plans": [
+          {
+            "id": "day",
+            "name": "A fishing day",
+            "rows": [
+              {
+                "fromHour": 5,
+                "locationId": "pc-harbour",
+                "doing": "working the boats"
+              },
+              {
+                "fromHour": 15,
+                "locationId": "pc-harbour",
+                "doing": "mending nets on the quay"
+              },
+              {
+                "fromHour": 18,
+                "locationId": "pc-tarred-rope",
+                "doing": "drinking at the long table"
+              },
+              {
+                "fromHour": 23,
+                "locationId": "pc-reddle-house",
+                "doing": "asleep"
+              }
+            ]
+          }
+        ]
+      },
+      "draftNote": "Everything about this person is a draft, added to test schedules, followers and contracts.",
+      "tier": "minion"
+    },
+    {
+      "id": "hanne-reddle",
+      "name": "Hanne Reddle",
+      "pronouns": "she/her",
+      "speciesId": "harefolk",
+      "homeLocationId": "pc-reddle-house",
+      "canonStatus": "draft",
+      "role": "A net-mender",
+      "description": "Mends nets and sells Tomas's share of the catch on the harbour, where traders who would not sit at a table with her still buy her fish.",
+      "appearance": "A grey-brown harefolk woman with long ears notched by old frostbite, net twine wound around her fingers, and the same contract tattooed around her wrist as her husband's.",
+      "personality": "Watchful and dry. She keeps the household's accounts, knows exactly what Tomas owes, and has not decided what to do about it.",
+      "speech": "Short, wry sentences. She lets silences do her arguing.",
+      "workplaceLocationIds": [
+        "pc-reddle-house",
+        "pc-harbour"
+      ],
+      "schedule": {
+        "plans": [
+          {
+            "id": "day",
+            "name": "A mending day",
+            "rows": [
+              {
+                "fromHour": 6,
+                "locationId": "pc-reddle-house",
+                "doing": "mending nets"
+              },
+              {
+                "fromHour": 9,
+                "locationId": "pc-harbour",
+                "doing": "selling the morning catch"
+              },
+              {
+                "fromHour": 12,
+                "locationId": "pc-reddle-house",
+                "doing": "mending nets by the door"
+              },
+              {
+                "fromHour": 21,
+                "locationId": "pc-reddle-house",
+                "doing": "asleep"
+              }
+            ]
+          }
+        ]
+      },
+      "draftNote": "Everything about this person is a draft, added to test schedules, followers and contracts.",
+      "tier": "minion"
+    },
+    {
+      "id": "garrick-hale",
+      "name": "Garrick Hale",
+      "pronouns": "he/him",
+      "speciesId": "humans",
+      "homeLocationId": "pc-tarred-rope",
+      "canonStatus": "draft",
+      "role": "A sellsword between contracts",
+      "description": "Came over on a Caerwyn ship and never signed the Covenant, so he sells his sword outside the wall to anyone with coin and no questions.",
+      "appearance": "Lean and weathered, with a broken nose set crooked, a long knife at each hip and a leather coat scarred by other people's blades.",
+      "personality": "Cheerfully mercenary. He stays loyal exactly as long as the pay lasts, and is honest about it, which he counts as a virtue.",
+      "speech": "Dry and unhurried, and he prices everything: that's extra.",
+      "workplaceLocationIds": [
+        "pc-tarred-rope"
+      ],
+      "schedule": {
+        "plans": [
+          {
+            "id": "day",
+            "name": "Between contracts",
+            "rows": [
+              {
+                "fromHour": 2,
+                "locationId": "pc-tarred-rope",
+                "doing": "asleep in a room upstairs"
+              },
+              {
+                "fromHour": 10,
+                "locationId": "pc-tarred-rope",
+                "doing": "nursing a drink by the door, watching who comes in"
+              }
+            ]
+          }
+        ]
+      },
+      "draftNote": "Everything about this person is a draft, added to test schedules, followers and contracts.",
+      "tier": "rival",
+      "carries": [
+        "sword",
+        "mail"
+      ]
+    },
+    {
+      "id": "pell",
+      "name": "Pell",
+      "pronouns": "he/him",
+      "speciesId": "otters",
+      "homeLocationId": "pc-tarred-rope",
+      "canonStatus": "draft",
+      "role": "The keeper of the Tarred Rope",
+      "description": "Keeps the Tarred Rope and keeps out of the Pact's paper. He takes coin, barter or favours, and remembers which.",
+      "appearance": "A grizzled otter in a stained apron, his whiskers singed short on one side from the fire.",
+      "personality": "Genial, nosy and neutral by trade. He hears everything and sells only some of it.",
+      "speech": "Warm and rambling, and every second sentence is a question.",
+      "workplaceLocationIds": [
+        "pc-tarred-rope"
+      ],
+      "schedule": {
+        "plans": [
+          {
+            "id": "day",
+            "name": "Keeping the bar",
+            "rows": [
+              {
+                "fromHour": 1,
+                "locationId": "pc-tarred-rope",
+                "doing": "asleep behind the bar"
+              },
+              {
+                "fromHour": 8,
+                "locationId": "pc-tarred-rope",
+                "doing": "serving drink and stew"
+              }
+            ]
+          }
+        ]
+      },
+      "draftNote": "Everything about this person is a draft, added to test schedules, followers and contracts.",
+      "tier": "minion",
+      "sells": [
+        "poultice",
+        "tonic",
+        "smoke-pot"
+      ]
+    },
+    {
+      "id": "dock-toughs",
+      "name": "The dock toughs",
+      "pronouns": "they/them",
+      "homeLocationId": "pc-harbour",
+      "canonStatus": "draft",
+      "role": "Three hired fists who work the harbour for whoever pays",
+      "description": "Three dockhands who found rougher work than hauling. They lean on the bollards by the contract hall, collect what is owed to people who do not ask how, and move as one.",
+      "appearance": "A heavy human with a docker's hook on his belt, a scarred otter-folk woman with a cudgel, and a lean youth who keeps his hands in his coat.",
+      "personality": "Bored until they are paid, then quick and mean. None of them fights fair, and none of them fights alone.",
+      "speech": "The big one talks for all three, in short harbour cant. The others laugh at his jokes.",
+      "draftNote": "Everything about this group is a draft, added to test gangs: three minions who act as one.",
+      "tier": "minion",
+      "gang": 3,
+      "carries": [
+        "club",
+        "knife"
+      ]
+    },
+    {
+      "id": "odile-fenn",
+      "name": "Odile Fenn",
+      "pronouns": "she/her",
+      "speciesId": "humans",
+      "homeLocationId": "pc-contract-hall",
+      "canonStatus": "draft",
+      "role": "A contract broker",
+      "description": "Brokers indenture contracts at the contract hall and takes a tenth of every sale, witnessed and signed.",
+      "appearance": "A narrow woman in good grey wool with an Arbiter-trained hand, chalk dust on her cuffs from the price board.",
+      "personality": "Courteous, exact and entirely unsentimental. She believes the contracts are the only honest thing in the colony.",
+      "speech": "Polite and precise. She quotes prices and terms, never feelings.",
+      "workplaceLocationIds": [
+        "pc-contract-hall"
+      ],
+      "schedule": {
+        "plans": [
+          {
+            "id": "day",
+            "name": "Brokering",
+            "rows": [
+              {
+                "fromHour": 7,
+                "locationId": "pc-contract-hall",
+                "doing": "brokering contracts"
+              },
+              {
+                "fromHour": 21,
+                "locationId": "pc-contract-hall",
+                "doing": "asleep in her rooms above the hall"
+              }
+            ]
+          }
+        ]
+      },
+      "draftNote": "Everything about this person is a draft, added to test schedules, followers and contracts.",
+      "tier": "rival"
+    },
+    {
+      "id": "wren",
+      "name": "Wren",
+      "pronouns": "she/her",
+      "speciesId": "humans",
+      "homeLocationId": "pc-contract-hall",
+      "canonStatus": "draft",
+      "role": "An indentured woman",
+      "description": "A woman of about twenty-five, bound by a punitive indenture for a contract her father broke. Her contract hangs on the hall's board, priced to sell, and she has outlasted two buyers who returned it.",
+      "appearance": "Tall and rawboned, with dark hair cropped short and her indenture tattooed in black lines from her right wrist to the elbow.",
+      "personality": "Proud, watchful and patient, like someone who has decided to outlast everything. She gives exactly what a contract demands and not a word more, and notices every lie told in front of her.",
+      "speech": "Clipped and formal with buyers. Dry and quick with anyone who treats her as a person.",
+      "workplaceLocationIds": [
+        "pc-contract-hall"
+      ],
+      "schedule": {
+        "plans": [
+          {
+            "id": "day",
+            "name": "Waiting to be sold",
+            "rows": [
+              {
+                "fromHour": 7,
+                "locationId": "pc-contract-hall",
+                "doing": "waiting on the benches along the back wall"
+              },
+              {
+                "fromHour": 21,
+                "locationId": "pc-contract-hall",
+                "doing": "asleep in the hall’s back room"
+              }
+            ]
+          }
+        ]
+      },
+      "draftNote": "Everything about this person is a draft, added to test schedules, followers and contracts.",
+      "tier": "rival"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "governor-and-high-arbiter",
+      "personIds": [
+        "ottavio-marrane",
+        "lucan-abreu"
+      ],
+      "bondStateId": "bond-rivals",
+      "canonStatus": "draft",
+      "shape": "The Governor leads the colony and the High Arbiter keeps its paper, and the Governor's commission is only as good as the documents in the Arbiters' keeping. Neither can rule without the other, and each knows which of them could ruin the other first.",
+      "together": "Courteous to the letter in front of witnesses. Each lets the other speak first.",
+      "wants": {
+        "ottavio-marrane": "the commission's papers kept sealed and unread",
+        "lucan-abreu": "the colony's future signed into the Pact's hand, the Governor's included"
+      },
+      "states": {
+        "bond-rivals": 2
+      }
+    },
+    {
+      "id": "governor-and-captain",
+      "personIds": [
+        "ottavio-marrane",
+        "ines-corvo"
+      ],
+      "bondStateId": "bond-uneasy-allies",
+      "canonStatus": "draft",
+      "shape": "She holds the colony's soldiers and he holds its claim to the land. She knows the last ship from the homeland carried no orders, and he knows she knows.",
+      "together": "She reports standing. He does not ask her to sit.",
+      "wants": {
+        "ines-corvo": "men and powder for the borders, and the truth told before someone else finds it out",
+        "ottavio-marrane": "her silence about the last ship"
+      }
+    },
+    {
+      "id": "gate-staff",
+      "personIds": [
+        "gate-arbiter",
+        "gate-guard"
+      ],
+      "bondStateId": "bond-acquaintance",
+      "canonStatus": "draft",
+      "shape": "They keep the landward gate together every day: she writes, he watches the road.",
+      "together": "They talk over a traveller's head as if the traveller were weather.",
+      "states": {
+        "bond-acquaintance": 3
+      }
+    },
+    {
+      "id": "tomas-and-hanne",
+      "personIds": [
+        "tomas-reddle",
+        "hanne-reddle"
+      ],
+      "bondStateId": "bond-friends",
+      "canonStatus": "draft",
+      "shape": "Married six years by a contract tattooed on both their wrists. Hanne keeps the accounts and Tomas keeps the peace, and neither tells the other everything.",
+      "together": "He talks, she corrects his numbers, and both of them watch the door when a garrison patrol goes by.",
+      "wants": {
+        "tomas-reddle": "her to stop counting what he owes",
+        "hanne-reddle": "the boat's debt paid before it passes to her"
+      },
+      "states": {
+        "bond-friends": 2
+      }
+    },
+    {
+      "id": "odile-and-wren",
+      "personIds": [
+        "odile-fenn",
+        "wren"
+      ],
+      "bondStateId": "bond-uneasy-allies",
+      "canonStatus": "draft",
+      "shape": "Odile holds Wren's contract until it sells, and has sold it twice before. Each buyer returned it, and Odile kept the fee both times.",
+      "together": "Odile speaks about Wren in the third person while Wren stands beside her, and Wren lets her.",
+      "wants": {
+        "odile-fenn": "Wren's contract sold and kept sold",
+        "wren": "a buyer she can outlast"
+      },
+      "states": {
+        "bond-uneasy-allies": 0
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "registry-strongroom",
+      "name": "The registry strongroom door",
+      "canonStatus": "draft",
+      "description": "Iron-strapped oak at the back of the registry, where the colony's contracts are kept. Two locks, and an Arbiter's seal across the jamb.",
+      "locationId": "pc-registry",
+      "difficulty": {
+        "force": 4,
+        "finesse": 3
+      }
+    }
+  ],
+  "ruleset": {
+    "extends": "four-approaches/1",
+    "travel": {
+      "walkKph": 4,
+      "tiers": [
+        {
+          "tier": 3,
+          "minutes": 10
+        }
+      ]
+    },
+    "states": [
+      {
+        "id": "signed-covenant",
+        "name": "Signed the Covenant",
+        "scope": "protagonist",
+        "min": 0,
+        "max": 1,
+        "start": 0,
+        "category": "Standing",
+        "display": "band",
+        "bands": [
+          {
+            "at": 0,
+            "label": "has not signed the Covenant"
+          },
+          {
+            "at": 1,
+            "label": "has signed the Covenant"
+          }
+        ],
+        "restBand": 0
+      },
+      {
+        "id": "bond-acquaintance",
+        "name": "Acquaintance",
+        "scope": "relationship",
+        "min": 0,
+        "max": 4,
+        "start": 2,
+        "category": "Bonds",
+        "display": "band",
+        "bands": [
+          {
+            "at": 0,
+            "label": "Each would cross the street to avoid the other."
+          },
+          {
+            "at": 1,
+            "label": "They are wary of each other, and their manners say so."
+          },
+          {
+            "at": 2,
+            "label": "They know each other's names and not much else."
+          },
+          {
+            "at": 3,
+            "label": "Each has done the other a good turn, and both remember it."
+          },
+          {
+            "at": 4,
+            "label": "Each would vouch for the other to someone who mattered."
+          }
+        ],
+        "restBand": 2,
+        "line": "[|name|: |bandLabel|]",
+        "approach": {
+          "owner": "flair",
+          "secondary": []
+        }
+      },
+      {
+        "id": "bond-rivals",
+        "name": "Rivals",
+        "scope": "relationship",
+        "min": 0,
+        "max": 4,
+        "start": 1,
+        "category": "Bonds",
+        "display": "band",
+        "bands": [
+          {
+            "at": 0,
+            "label": "Each will take a loss if it costs the other more."
+          },
+          {
+            "at": 1,
+            "label": "Every exchange is being scored. Courtesy, when it appears, is a move."
+          },
+          {
+            "at": 2,
+            "label": "They measure themselves against each other, and both know the other is doing it."
+          },
+          {
+            "at": 3,
+            "label": "Neither would say it aloud, but each has stopped hoping the other fails."
+          },
+          {
+            "at": 4,
+            "label": "The contest is still running. It has stopped being the point of them."
+          }
+        ],
+        "restBand": 1,
+        "line": "[|name|: |bandLabel|]",
+        "approach": {
+          "owner": "flair",
+          "secondary": []
+        }
+      },
+      {
+        "id": "bond-friends",
+        "name": "Friends",
+        "scope": "relationship",
+        "min": 0,
+        "max": 3,
+        "start": 1,
+        "category": "Bonds",
+        "display": "band",
+        "bands": [
+          {
+            "at": 0,
+            "label": "They are glad to see each other and would not go out of their way for it."
+          },
+          {
+            "at": 1,
+            "label": "The warmth is real and out of practice."
+          },
+          {
+            "at": 2,
+            "label": "They tell each other things first."
+          },
+          {
+            "at": 3,
+            "label": "Their plans assume each other. Neither has checked whether that was ever agreed."
+          }
+        ],
+        "restBand": 1,
+        "line": "[|name|: |bandLabel|]",
+        "approach": {
+          "owner": "flair",
+          "secondary": []
+        }
+      },
+      {
+        "id": "bond-uneasy-allies",
+        "name": "Uneasy allies",
+        "scope": "relationship",
+        "min": 0,
+        "max": 3,
+        "start": 1,
+        "category": "Bonds",
+        "display": "band",
+        "bands": [
+          {
+            "at": 0,
+            "label": "Each is looking for the way out of the arrangement."
+          },
+          {
+            "at": 1,
+            "label": "They work together and watch each other while they do."
+          },
+          {
+            "at": 2,
+            "label": "They have stopped testing each other and started relying on it."
+          },
+          {
+            "at": 3,
+            "label": "Neither could say when it stopped being an arrangement."
+          }
+        ],
+        "restBand": 1,
+        "line": "[|name|: |bandLabel|]",
+        "approach": {
+          "owner": "flair",
+          "secondary": []
+        }
+      },
+      {
+        "id": "bound",
+        "name": "Bound by contract",
+        "scope": "npc",
+        "min": 0,
+        "max": 1,
+        "start": 0,
+        "category": "Ownership",
+        "display": "band",
+        "bands": [
+          {
+            "at": 0,
+            "label": "is free"
+          },
+          {
+            "at": 1,
+            "label": "is bound to you by contract. |They| must go where you go and do the work you set, whether |they| will it or not"
+          }
+        ],
+        "restBand": 0,
+        "canonStatus": "draft"
+      },
+      {
+        "id": "hired",
+        "name": "In your pay",
+        "scope": "npc",
+        "min": 0,
+        "max": 90,
+        "start": 0,
+        "category": "Ownership",
+        "display": "band",
+        "bands": [
+          {
+            "at": 0,
+            "label": "is free"
+          },
+          {
+            "at": 1,
+            "label": "is in your pay for a day or two more. |They| will do the work you hired |them| for until then, and expect more coin after"
+          },
+          {
+            "at": 3,
+            "label": "is in your pay. |They| will travel with you and do the work you hired |them| for, while the pay lasts"
+          }
+        ],
+        "restBand": 0,
+        "canonStatus": "draft",
+        "countdown": "day"
+      }
+    ],
+    "actions": [
+      {
+        "id": "sign-the-covenant",
+        "name": "Sign the Covenant",
+        "summary": "Put your name in the Arbiter’s ledger. From then on the Covenant binds you, and the gate is open to you.",
+        "placeIds": [
+          "pc-landward-gate"
+        ],
+        "when": [
+          {
+            "stateId": "signed-covenant",
+            "atMost": 0
+          }
+        ],
+        "effects": [
+          {
+            "stateId": "signed-covenant",
+            "set": 1
+          },
+          {
+            "stateId": "experience",
+            "add": 5
+          }
+        ],
+        "input": "I sign the Covenant.",
+        "outcome": "You sign the Covenant in the Arbiter’s ledger. It binds you from this moment, and the landward gate is open to you.",
+        "canonStatus": "draft"
+      },
+      {
+        "id": "hire-garrick",
+        "name": "Hire Garrick",
+        "summary": "Ten coin buys his sword for a month.",
+        "placeIds": [
+          "pc-tarred-rope"
+        ],
+        "present": [
+          "garrick-hale"
+        ],
+        "when": [
+          {
+            "stateId": "coin",
+            "atLeast": 10
+          },
+          {
+            "stateId": "hired",
+            "characterId": "garrick-hale",
+            "atMost": 0
+          }
+        ],
+        "effects": [
+          {
+            "stateId": "coin",
+            "add": -10
+          },
+          {
+            "stateId": "hired",
+            "characterId": "garrick-hale",
+            "set": 30
+          }
+        ],
+        "input": "I hire Garrick Hale.",
+        "outcome": "You pay Garrick Hale ten coin, and he pockets it without counting.",
+        "canonStatus": "draft"
+      },
+      {
+        "id": "buy-wrens-contract",
+        "name": "Buy Wren's contract",
+        "summary": "Pay twenty-five coin for Wren's indenture. Her contract becomes yours, and so does she.",
+        "placeIds": [
+          "pc-contract-hall"
+        ],
+        "present": [
+          "wren",
+          "odile-fenn"
+        ],
+        "when": [
+          {
+            "stateId": "coin",
+            "atLeast": 25
+          },
+          {
+            "stateId": "bound",
+            "characterId": "wren",
+            "atMost": 0
+          }
+        ],
+        "effects": [
+          {
+            "stateId": "coin",
+            "add": -25
+          },
+          {
+            "stateId": "bound",
+            "characterId": "wren",
+            "set": 1
+          }
+        ],
+        "input": "I buy Wren's contract.",
+        "outcome": "You pay Odile Fenn twenty-five coin, and Wren's contract is signed over to you before a witness.",
+        "canonStatus": "draft"
+      },
+      {
+        "id": "buy-forged-writ",
+        "name": "Buy a forged writ from Pell's back room",
+        "summary": "Once you have something on Pell, he knows a forger. Ten coin for a writ that helps with the Arbiters.",
+        "placeIds": [
+          "pc-tarred-rope"
+        ],
+        "present": [
+          "pell"
+        ],
+        "when": [
+          {
+            "stateId": "leverage",
+            "characterId": "pell",
+            "atLeast": 1
+          },
+          {
+            "stateId": "coin",
+            "atLeast": 10
+          }
+        ],
+        "effects": [
+          {
+            "stateId": "coin",
+            "add": -10
+          },
+          {
+            "goodId": "forged-writ",
+            "add": 1
+          }
+        ],
+        "input": "I lean on the bar and tell Pell I need papers the Arbiters will like.",
+        "outcome": "Pell takes your ten coin into the back room and comes out with a forged Covenant writ.",
+        "canonStatus": "draft"
+      },
+      {
+        "id": "buy-dead-mans-mail",
+        "name": "Buy a dead man's mail shirt",
+        "summary": "On market day Cadfan has a mail shirt off a drowned soldier, at half its worth.",
+        "placeIds": [
+          "caerwyn"
+        ],
+        "present": [
+          "cadfan"
+        ],
+        "open": {
+          "weekdays": [
+            4
+          ],
+          "fromHour": 6,
+          "toHour": 20
+        },
+        "when": [
+          {
+            "stateId": "coin",
+            "atLeast": 5
+          }
+        ],
+        "effects": [
+          {
+            "stateId": "coin",
+            "add": -5
+          },
+          {
+            "goodId": "mail",
+            "add": 1
+          }
+        ],
+        "input": "I ask Cadfan what the mail shirt under his stall is doing there.",
+        "outcome": "Cadfan wants five coin for the dead man's mail shirt, and you pay it. It is yours.",
+        "canonStatus": "draft"
+      }
+    ],
+    "follow": [
+      {
+        "id": "bound",
+        "label": "Take them with you",
+        "as": "bound to you by contract",
+        "anyOf": [
+          {
+            "stateId": "bound",
+            "atLeast": 1
+          }
+        ]
+      },
+      {
+        "id": "hired",
+        "label": "Have them come with you",
+        "as": "in your pay",
+        "anyOf": [
+          {
+            "stateId": "hired",
+            "atLeast": 1
+          }
+        ]
+      }
+    ],
+    "goods": [
+      {
+        "id": "forged-writ",
+        "name": "a forged Covenant writ",
+        "worth": 10,
+        "kind": "help",
+        "description": "A writ of passage in a good Arbiter's hand, with a seal that will pass a tired eye. It helps Flair with the Arbiters.",
+        "helps": {
+          "approaches": [
+            "flair"
+          ],
+          "ids": [
+            "gate-arbiter",
+            "lucan-abreu"
+          ]
+        },
+        "canonStatus": "draft",
+        "fine": true
+      }
+    ]
+  },
+  "scenario": {
+    "title": "At the landward gate",
+    "startPlaceId": "pc-landward-gate",
+    "startAt": 460,
+    "playerCharacterId": "traveller",
+    "presentCharacterIds": [
+      "gate-arbiter",
+      "gate-guard"
+    ],
+    "opening": "*Fog lies over Nospier Point. The headland road ends at a wall of dressed stone and a gate standing half open, a garrison guard leaning in its shadow. Under the arch an Arbiter has laid out ink, a pen and a ledger on a narrow table, and doesn't look up.*\n\nName, and whether you can write it. *Her pen waits above the page.* No one goes through without signing."
+  }
+}

@@ -1,0 +1,314 @@
+// You: condition, the journal, approaches, momentum, standing, bonds and what you carry.
+import { useState } from 'react';
+import { DIFFICULTY_NAMES, LADDER_NAMES, activeEntries, capital, coinOf, durationWords, makeables, worksOf, band, carried as carriedGoods, chargesOf, discardPending, forYou, goodsPhrase, growthFor, keepPending, playerOf, read, thingsHeldBy, toYou, type StateDef } from '../engine';
+import type { PlayApi } from './Play';
+import { ChevronRight, PenIcon } from './icons';
+import { DraftTag, Pips, StateBar, bandForYou, characterStates, goodWords, initials, newId } from './shared';
+import { ValueEditor } from './ValueEditor';
+import { BondsSummary } from './Bonds';
+
+export function YouSection({ api }: { api: PlayApi }) {
+  const { world, save, prefs } = api;
+  const playerId = playerOf(world);
+  const player = world.characters.find((character) => character.id === playerId);
+  if (!player) return null;
+  const defs = characterStates(world, player, true);
+  const byCategory = (name: string) => defs.filter((def) => (def.category ?? '') === name);
+  const approaches = byCategory('Approaches');
+  const momentum = byCategory('Momentum');
+  const standing = byCategory('Standing');
+  const growth = growthFor(world, save);
+  const xpDef = defs.find((def) => def.id === world.ruleset.growth?.stateId);
+  const coinDef = defs.find((def) => def.id === world.ruleset.trade?.coin);
+  const known = new Set([...approaches, ...momentum, ...standing, ...(xpDef ? [xpDef] : []), ...(coinDef ? [coinDef] : [])].map((def) => def.id));
+  const goods = carriedGoods(world, save);
+  const condition = defs.filter((def) => !known.has(def.id));
+  const value = (def: StateDef) => read(save.values, def, playerId);
+  const carried = thingsHeldBy(world, save, playerId);
+  const charges = chargesOf(world, save, playerId);
+
+  return (
+    <>
+      <div className="card pad" style={{ display: 'flex', gap: 14 }}>
+        <span className="av big yours" aria-hidden="true">{initials(player.name)}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <h3 style={{ flex: 1, font: '600 22px/1.2 var(--read)' }}>{player.name}</h3>
+            <DraftTag record={player} show={prefs.showDrafts} />
+          </div>
+          {player.description && <p className="prose" style={{ marginTop: 6 }}>{player.description}</p>}
+        </div>
+      </div>
+
+      {condition.length > 0 && (
+        <>
+          <div className="sub"><p className="label">Condition</p><span className="meta">tap to set by hand</span></div>
+          <div className="card clip rows">
+            {condition.map((def) => (
+              <details key={def.id}>
+                <summary className="row" style={{ minHeight: 56 }}>
+                  <span style={{ width: 64, flex: 'none', fontSize: 15, fontWeight: 600 }}>{def.name}</span>
+                  <StateBar def={def} value={value(def)} />
+                  <span style={{ width: 96, flex: 'none', fontSize: 14 }}>{band(def, value(def)).banded ? band(def, value(def)).short.replace(/^is /, '') : value(def)}</span>
+                  <ChevronRight />
+                </summary>
+                <div className="row-body">
+                  <ValueEditor def={def} value={value(def)} onSet={(next) => api.setValue(def.id, playerId, next)} />
+                  {def.terminals.length > 0 && <p className="meta" style={{ lineHeight: 1.45 }}>{def.terminals.map((terminal) => terminal.playerNote ?? toYou(terminal.note)).join(' ')}</p>}
+                  <p className="meta" style={{ lineHeight: 1.45, color: 'var(--text-2)' }}>A change you make here is recorded in the ledger as yours, not the rules’.</p>
+                </div>
+              </details>
+            ))}
+          </div>
+        </>
+      )}
+
+      <JournalSummary api={api} />
+
+      {approaches.length > 0 && (
+        <>
+          <div className="sub"><p className="label">Approaches</p><button type="button" className="link" onClick={() => api.open('guide')}>How approaches work</button></div>
+          <div className="card clip rows">
+            {approaches.map((def) => (
+              <details key={def.id}>
+                <summary className="row" style={{ minHeight: 60 }}>
+                  <span className="appr-name" style={{ color: `var(--${def.id}, var(--text))` }}>{def.name}</span>
+                  <Pips def={def} value={value(def)} />
+                  <span style={{ marginLeft: 'auto', display: 'flex', gap: 5 }}>
+                    {(charges.find((entry) => entry.approach === def.id)?.slots ?? []).map((slot) => (
+                      <span key={slot.value} className={`charge${slot.spent ? ' spent' : ''}`} aria-label={`+${slot.value} charge${slot.spent ? ', spent' : ''}`}>+{slot.value}</span>
+                    ))}
+                  </span>
+                  <ChevronRight />
+                </summary>
+                <div className="row-body">
+                  <ValueEditor def={def} value={value(def)} onSet={(next) => api.setValue(def.id, playerId, next)} />
+                </div>
+              </details>
+            ))}
+            <p className="meta" style={{ padding: '12px 14px 14px', lineHeight: 1.5, color: 'var(--text-2)' }}>
+              Force pays in Health and noise, Finesse in Alert, Focus in time, Flair in Strain. A spent charge comes back when every charge on that approach is used, or after a full rest.
+            </p>
+          </div>
+        </>
+      )}
+
+      {growth && xpDef && (
+        <>
+          <div className="sub"><p className="label">Growth</p><button type="button" className="link" onClick={() => api.open('guide')}>How growth works</button></div>
+          <div className="card clip rows">
+            <details>
+              <summary className="row" style={{ minHeight: 56 }}>
+                <span className="name" style={{ flex: 1 }}>Experience</span>
+                <span className="mono" style={{ fontSize: 17 }}>{growth.experience}</span>
+                <ChevronRight />
+              </summary>
+              <div className="row-body"><ValueEditor def={xpDef} value={growth.experience} onSet={(next) => api.setValue(xpDef.id, playerId, next)} /></div>
+            </details>
+            {growth.steps.map((step) => (
+              <div key={step.approach} className="lr stack" style={{ gap: 8 }}>
+                <span className="name">
+                  <span style={{ color: `var(--${step.approach}, var(--text))` }}>{step.name} {step.rating}</span>
+                  <span className="meta" style={{ marginLeft: 8 }}>{step.training ? LADDER_NAMES[step.training] : 'no charges'}</span>
+                </span>
+                <span style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {step.raise
+                    ? <button type="button" className="btn small" disabled={growth.experience < step.raise.cost} onClick={() => api.grow(step.approach, 'rating')}>Raise to {step.raise.to} · {step.raise.cost}</button>
+                    : <span className="meta">Rating at its top</span>}
+                  {step.train
+                    ? <button type="button" className="btn small" disabled={growth.experience < step.train.cost} onClick={() => api.grow(step.approach, 'ladder')}>Train to {LADDER_NAMES[step.train.to]} · {step.train.cost}</button>
+                    : <span className="meta">Master</span>}
+                </span>
+              </div>
+            ))}
+            <p className="meta" style={{ padding: '12px 14px 14px', lineHeight: 1.5, color: 'var(--text-2)' }}>
+              Earned by overcoming someone or something the first time, by failing against a rival or nemesis (once a scene), and at milestones. A rating costs ten times the new rating; each step up a ladder adds the next charge and costs five times it.
+            </p>
+          </div>
+        </>
+      )}
+
+      <Making api={api} />
+
+      {momentum.length > 0 && (
+        <>
+          <div className="sub"><p className="label">Momentum</p></div>
+          <div className="card clip rows">
+            {momentum.map((def) => <MomentumRow key={def.id} def={def} value={value(def)} onSet={(next) => api.setValue(def.id, playerId, next)} />)}
+          </div>
+        </>
+      )}
+
+      {standing.length > 0 && (
+        <>
+          <div className="sub"><p className="label">Standing</p></div>
+          <div className="card clip rows">
+            {standing.map((def) => (
+              <details key={def.id}>
+                <summary className="row" style={{ minHeight: 56 }}>
+                  <span className="prose-strong" style={{ flex: 1 }}>{band(def, value(def)).banded ? `You ${bandForYou(band(def, value(def)).short)}.` : `${def.name}: ${value(def)}`}</span>
+                  <ChevronRight />
+                </summary>
+                <div className="row-body"><ValueEditor def={def} value={value(def)} onSet={(next) => api.setValue(def.id, playerId, next)} /></div>
+              </details>
+            ))}
+          </div>
+        </>
+      )}
+
+      <BondsSummary api={api} />
+
+      <div className="sub"><p className="label">On hand</p><span className="meta">{coinDef ? `${value(coinDef)} coin` : carried.length || 'none recorded'}</span></div>
+      <div className="card clip rows">
+        {coinDef && (
+          <details>
+            <summary className="row" style={{ minHeight: 56 }}>
+              <span className="name" style={{ flex: 1 }}>Coin</span>
+              <span className="meta" style={{ flex: 2, textAlign: 'right' }}>{band(coinDef, value(coinDef)).banded ? `you ${forYou(band(coinDef, value(coinDef)).short)}` : ''}</span>
+              <span className="mono" style={{ fontSize: 17, minWidth: 36, textAlign: 'right' }}>{value(coinDef)}</span>
+              <ChevronRight />
+            </summary>
+            <div className="row-body">
+              <ValueEditor def={coinDef} value={value(coinDef)} onSet={(next) => api.setValue(coinDef.id, playerId, next)} />
+              <p className="meta" style={{ lineHeight: 1.45, color: 'var(--text-2)' }}>Prices go up in steps of ten: a knife 1, a sword 10, a horse 100, a house 1,000, a castle 10,000. Drinks, meals and a bed are never counted. The narrator hears only what you could afford, never the number.</p>
+            </div>
+          </details>
+        )}
+        {goods.map(({ good, count }) => (
+          <div key={good.id} className="lr">
+            <span className="grow">
+              <span className="name" style={{ display: 'block' }}>{goodsPhrase(good, count).replace(/^(a|an) /, '').replace(/^./, (first) => first.toUpperCase())}</span>
+              <span className="meta" style={{ display: 'block' }}>{goodWords(good)} · worth {good.worth}</span>
+            </span>
+            {good.kind === 'use' && <button type="button" className="btn small" disabled={api.busy} onClick={() => api.perform({ type: 'use', goodId: good.id })}>Use</button>}
+          </div>
+        ))}
+        {carried.map((thing) => (
+          <button key={thing.id} type="button" className="lr" onClick={() => api.editRecord({ mode: 'edit', id: thing.id })}>
+            <span className="grow"><span className="name" style={{ display: 'block' }}>{thing.name}</span>{thing.description && <span className="meta" style={{ display: 'block' }}>{thing.description}</span>}</span>
+            <ChevronRight />
+          </button>
+        ))}
+        <div className="lr">
+          <p className="grow meta" style={{ color: 'var(--text-2)' }}>{carried.length || goods.length ? 'Something else you carry?' : 'Nothing you carry is a record yet.'}</p>
+          <button type="button" className="btn" onClick={() => api.editRecord({ mode: 'new', type: 'thing', heldBy: playerId })}>Add</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// What you are making with Focus, and what you could begin.
+function Making({ api }: { api: PlayApi }) {
+  const { world, save, busy } = api;
+  const [pick, setPick] = useState('');
+  if (!world.ruleset.craft) return null;
+  const works = worksOf(world, save);
+  const options = makeables(world).filter((entry) => !save.works.includes(entry.good.id));
+  const chosen = options.find((entry) => entry.good.id === pick);
+  const coin = coinOf(world, save);
+  return (
+    <>
+      <div className="sub"><p className="label">Making</p><button type="button" className="link" onClick={() => api.open('guide')}>How making works</button></div>
+      <div className="card clip rows">
+        {works.map((work) => (
+          <div key={work.id} className="lr stack" style={{ gap: 8 }}>
+            <span className="name">{capital(work.good.name)}<span className="meta"> · {work.progress} of {work.track} done</span></span>
+            <span className="meta">{DIFFICULTY_NAMES[work.difficulty]} · {durationWords(work.minutes)} a check</span>
+            <span style={{ display: 'flex', gap: 8 }}>
+              <button type="button" className="btn small" disabled={busy} onClick={() => api.openCheck(work.id)}>Work on it</button>
+              <button type="button" className="btn small quiet" disabled={busy} onClick={() => api.abandonWork(work.good.id)}>Give up</button>
+            </span>
+          </div>
+        ))}
+        <div className="lr stack" style={{ gap: 8 }}>
+          <label htmlFor="make-pick" className="sr">Something to make</label>
+          <select id="make-pick" className="select" value={pick} onChange={(event) => setPick(event.target.value)}>
+            <option value="">Make something…</option>
+            {options.map((entry) => <option key={entry.good.id} value={entry.good.id}>{capital(entry.good.name)} · materials {entry.materials}</option>)}
+          </select>
+          {chosen && (
+            <p className="meta" style={{ lineHeight: 1.45 }}>
+              Materials {chosen.materials} coin; you have {coin}. {DIFFICULTY_NAMES[chosen.difficulty]}, {chosen.track === 1 ? 'one success' : `${chosen.track} successes`} to finish, {durationWords(chosen.minutes)} a check. A failure takes as long again; a despair spoils the materials.
+            </p>
+          )}
+          <button type="button" className="btn" disabled={busy || !chosen || chosen.materials > coin} onClick={() => { api.startWork(pick); setPick(''); }}>Begin</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function MomentumRow({ def, value, onSet }: { def: StateDef; value: number; onSet: (value: number) => void }) {
+  const hi = Math.max(def.min, def.max);
+  if (def.id === 'story-points') {
+    return (
+      <details>
+        <summary className="row" style={{ alignItems: 'flex-start' }}>
+          <span style={{ flex: 1 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span className="name" style={{ flex: 1 }}>{def.name}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-3)' }}>
+                <span>yours</span>
+                {Array.from({ length: value }, (_, index) => <span key={`y${index}`} aria-hidden="true" style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--you)' }} />)}
+                <span aria-hidden="true" style={{ width: 1, height: 20, background: 'var(--line-2)' }} />
+                {Array.from({ length: Math.max(0, hi - value) }, (_, index) => <span key={`r${index}`} aria-hidden="true" style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--faint)' }} />)}
+                <span>the rules’</span>
+              </span>
+            </span>
+            <span className="meta" style={{ display: 'block', marginTop: 6, lineHeight: 1.45, color: 'var(--text-2)' }}>Spend yours to upgrade a die and it crosses over. When the rules hold both, they spend one against you.</span>
+          </span>
+        </summary>
+        <div className="row-body"><ValueEditor def={def} value={value} onSet={onSet} /></div>
+      </details>
+    );
+  }
+  return (
+    <details>
+      <summary className="row" style={{ minHeight: 56 }}>
+        <span className="name" style={{ flex: 1 }}>{def.name}</span>
+        <span className="meta">{def.id === 'edge' ? (value > 0 ? 'a boost die on your next roll' : 'none yet') : `${value} of ${hi}`}</span>
+        <ChevronRight />
+      </summary>
+      <div className="row-body"><ValueEditor def={def} value={value} onSet={onSet} /></div>
+    </details>
+  );
+}
+
+function JournalSummary({ api }: { api: PlayApi }) {
+  const { save, journalBusy } = api;
+  const pending = save.journal.pending;
+  const recent = activeEntries(save.journal).slice(-2).reverse();
+  return (
+    <>
+      <div className="sub"><p className="label">Journal</p><button type="button" className="link" onClick={() => api.open('journal')}>Open the journal</button></div>
+      <div className="card clip">
+        {pending && (
+          <div style={{ padding: '14px 16px', background: 'var(--surface-2)', borderBottom: '1px solid var(--line)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="tag sugg">Suggested</span>
+              <span className="meta">{pending.kind === 'entry' ? `${pending.to - pending.from} ${pending.to - pending.from === 1 ? 'turn' : 'turns'} about to leave the story window` : `combines ${pending.entryIds.length} older entries`}</span>
+            </div>
+            <p className="prose-strong" style={{ margin: '8px 0 12px', fontSize: 15, lineHeight: 1.55 }}>{pending.text}</p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="button" className="btn primary" style={{ flex: 1 }} onClick={() => { const result = keepPending(save, newId('j')); if (result.ok) api.commit(result.save, 'Kept in the journal.'); else api.notify(result.reason); }}>Keep</button>
+              <button type="button" className="btn" style={{ flex: 1 }} onClick={() => api.open('journal')}>Edit</button>
+              <button type="button" className="btn quiet" onClick={() => { const result = discardPending(save); if (result.ok) api.commit(result.save, 'Suggestion discarded.'); }}>Discard</button>
+            </div>
+          </div>
+        )}
+        {journalBusy && !pending && <p className="writing" style={{ padding: '12px 16px', fontSize: 14 }}>Writing a journal suggestion…</p>}
+        {recent.map((entry) => (
+          <div key={entry.id} style={{ padding: '12px 16px 14px', borderBottom: '1px solid var(--line)' }}>
+            <div className="entry-head">
+              <span className="tag yours">{entry.source === 'player' ? 'Yours' : entry.source === 'compressed' ? 'Combined' : 'Kept'}</span>
+            </div>
+            <p className="entry-text" style={{ color: 'var(--text-2)' }}>{entry.text}</p>
+          </div>
+        ))}
+        {!pending && !recent.length && !journalBusy && <p className="meta" style={{ padding: '14px 16px', lineHeight: 1.45 }}>Nothing yet. Write anything you want the story to remember, or wait for a suggestion as the story grows.</p>}
+        <button type="button" className="lr" onClick={() => api.open('journal')}><PenIcon /><span className="name grow">Write an entry</span></button>
+      </div>
+    </>
+  );
+}
