@@ -1,0 +1,132 @@
+#cloud-config
+# Sets up Praxis on a new server with no terminal, from a phone if need be.
+#
+# On Hetzner's Create Server page, paste this whole file into "Cloud config" (Ubuntu 24.04,
+# public IPv4 on). Once the server is running, wait two minutes and open http://<its IPv4>
+# in a browser. That page shows a deploy key to add on GitHub, with a link to the page where it
+# goes, then shows the install's progress, then sends you on to https://<ip>.sslip.io.
+#
+# It installs nginx for that page, makes the praxis account and its deploy key, waits until
+# the key works, clones the repository and runs deploy/setup-server.sh from it without
+# questions. The log is /var/log/muse-setup.log. If setup stops, the page shows the end of the
+# log. Updates afterwards still need a terminal: bash /srv/muse/deploy/deploy.sh
+
+write_files:
+  - path: /root/muse-setup.sh
+    permissions: '0700'
+    content: |
+      #!/usr/bin/env bash
+      set -uo pipefail
+
+      REPO=git@github.com:Tulivu89/mercurial-muse.git
+      KEYS_PAGE=https://github.com/Tulivu89/mercurial-muse/settings/keys/new
+      APP_USER=praxis
+      REPO_DIR=/srv/muse
+      LOG=/var/log/muse-setup.log
+      WEB=/var/www/html
+      KEY=/home/$APP_USER/.ssh/id_ed25519
+
+      exec >>"$LOG" 2>&1
+      say() { printf '\n== %s  %s\n' "$(date +%T)" "$*"; }
+      esc() { sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'; }
+
+      ip=$(hostname -I | awk '{print $1}')
+      address="${ip//./-}.sslip.io"
+
+      # The page at http://<ip>: $1 heading, $2 body, $3 seconds between reloads (0 for none).
+      page() {
+        local refresh=""
+        [ "${3:-0}" -gt 0 ] && refresh="<meta http-equiv=\"refresh\" content=\"$3\">"
+        mkdir -p "$WEB"
+        cat > "$WEB/index.html.new" <<HTML
+      <!doctype html>
+      <html lang="en"><head><meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      $refresh
+      <title>Praxis setup</title>
+      <style>
+      :root{--bg:#fff;--fg:#111;--box:#f3f3f3;--line:#ccc;--accent:#1f6feb}
+      @media (prefers-color-scheme:dark){:root{--bg:#111;--fg:#eee;--box:#222;--line:#444;--accent:#4c8dff}}
+      body{font:17px/1.5 system-ui,sans-serif;max-width:40rem;margin:0 auto;padding:16px;background:var(--bg);color:var(--fg)}
+      textarea{width:100%;box-sizing:border-box;font:13px/1.4 ui-monospace,monospace;background:var(--box);color:var(--fg);border:1px solid var(--line);padding:8px;word-break:break-all}
+      a.button,button{display:inline-block;font:inherit;padding:10px 14px;margin:4px 0;background:var(--accent);color:#fff;border:0;border-radius:6px;text-decoration:none}
+      h1{font-size:1.5em;line-height:1.25}
+      li{margin:.4em 0}
+      </style></head><body>
+      <h1>$1</h1>
+      $2
+      </body></html>
+      HTML
+        mv "$WEB/index.html.new" "$WEB/index.html"
+      }
+
+      fail() {
+        say "Setup stopped: $*"
+        local tail
+        tail=$(tail -n 80 "$LOG" | esc)
+        page "Setup stopped" "<p>$*</p><p>Copy the text below and send it to Claude.</p>
+      <textarea rows=\"20\" readonly>$tail</textarea>"
+        if [ -d /etc/nginx/sites-available ]; then
+          rm -f /etc/nginx/sites-enabled/praxis
+          ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+          systemctl restart nginx || true
+        fi
+        systemctl is-active --quiet nginx || (cd "$WEB" && nohup python3 -m http.server 80 >/dev/null 2>&1 &)
+        exit 1
+      }
+
+      say "Installing nginx and git for the setup page"
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get -o DPkg::Lock::Timeout=600 update -q || fail "Could not update the package lists."
+      apt-get -o DPkg::Lock::Timeout=600 install -y -q nginx git || fail "Could not install nginx."
+      page "Praxis setup" "<p>Starting. This page reloads by itself.</p>" 10
+
+      say "The $APP_USER account and its deploy key"
+      id "$APP_USER" >/dev/null 2>&1 || useradd --system --create-home --home-dir "/home/$APP_USER" --shell /bin/bash "$APP_USER"
+      sudo -u "$APP_USER" mkdir -p "/home/$APP_USER/.ssh"
+      [ -f "$KEY" ] || sudo -u "$APP_USER" ssh-keygen -q -t ed25519 -N "" -C "praxis@$address" -f "$KEY"
+      pub=$(esc < "$KEY.pub")
+      page "Step 1 of 2: let this server read the code" "
+      <ol>
+      <li><button onclick=\"var k=document.getElementById('k');k.focus();k.select();k.setSelectionRange(0,9999);document.execCommand('copy');this.textContent='Copied'\">Copy key</button> (or select all the text in the box and copy it)
+      <textarea id=\"k\" rows=\"4\" readonly>$pub</textarea></li>
+      <li><a class=\"button\" href=\"$KEYS_PAGE\" target=\"_blank\" rel=\"noopener\">Open GitHub's Add deploy key page</a></li>
+      <li>Title: anything, such as <b>praxis server</b>. Key: paste. Leave <b>Allow write access</b> unticked. Tap <b>Add key</b>.</li>
+      <li>Come back and reload this page in a minute.</li>
+      </ol>"
+
+      say "Waiting for the deploy key to work"
+      until sudo -u "$APP_USER" git ls-remote "$REPO" HEAD >/dev/null 2>&1; do
+        if [ ! -s "/home/$APP_USER/.ssh/known_hosts" ]; then
+          ssh-keyscan -t ed25519 github.com 2>/dev/null | sudo -u "$APP_USER" tee "/home/$APP_USER/.ssh/known_hosts" >/dev/null
+        fi
+        sleep 15
+      done
+
+      say "The key works; cloning"
+      page "Step 2 of 2: installing Praxis" "<p>The key works. Installing now: about ten minutes. This page reloads by itself.</p>
+      <p>When it is done, this page sends you to Praxis at <b>https://$address</b>. Bookmark that address; it is the one to share.</p>" 20
+      mkdir -p "$REPO_DIR"
+      chown "$APP_USER:$APP_USER" "$REPO_DIR"
+      [ -d "$REPO_DIR/.git" ] || sudo -u "$APP_USER" git clone -q "$REPO" "$REPO_DIR" || fail "Could not clone the repository."
+
+      say "Running deploy/setup-server.sh"
+      MUSE_REPO="$REPO" MUSE_ADDRESS="$address" bash "$REPO_DIR/deploy/setup-server.sh" </dev/null \
+        || fail "deploy/setup-server.sh stopped before Praxis was live."
+
+      say "Sending visits to the bare IP on to https://$address"
+      cat > /etc/nginx/sites-available/muse-ip <<SITE
+      server {
+          listen 80 default_server;
+          listen [::]:80 default_server;
+          server_name _;
+          return 302 https://$address;
+      }
+      SITE
+      ln -sf /etc/nginx/sites-available/muse-ip /etc/nginx/sites-enabled/muse-ip
+      nginx -t && systemctl reload nginx
+      say "Done: Praxis is live at https://$address"
+
+runcmd:
+  # Its own service, so the long wait for the deploy key holds up nothing else on first boot.
+  - [systemd-run, --unit=muse-setup, --description=Praxis first-boot setup, bash, /root/muse-setup.sh]

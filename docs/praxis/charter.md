@@ -28,7 +28,7 @@ Praxis is a single-player chat RPG: text-adventure roleplay with optional dice-d
 | Relationship to Speculus | Settled: Praxis is free to become what it needs to be. |
 | Test module | *Abernys: Bogwater*, from 0.20.0: a fen town in the autumn eel run, played by a runaway from a Port Covenant indenture. Its design is the Claude Doc *Praxis — Bogwater Module Plan*. *Abernys: Port Covenant*, whose content was shaped by its tests, stays loaded until Bogwater's tests cover what its tests do, then retires. |
 | Images | After everything else is established. |
-| Deployment | A server of Leon's own: `deploy/setup-server.sh` once on a fresh Ubuntu 24.04 box, then `bash /srv/muse/deploy/deploy.sh` for updates. Praxis runs as the `praxis` service on 127.0.0.1:8791 behind nginx with HTTPS. Not set up yet. |
+| Deployment | A server of Leon's own: `deploy/setup-server.sh` once on a fresh Ubuntu 24.04 box (or `deploy/cloud-config.yaml` pasted into Hetzner's Cloud config box, which runs it with no terminal), then `bash /srv/muse/deploy/deploy.sh` for updates. Praxis runs as the `praxis` service on 127.0.0.1:8791 behind nginx with HTTPS. Not set up yet. |
 
 ## How work lands
 

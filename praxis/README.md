@@ -61,7 +61,9 @@ This relay stays until Orbis's generation gateway can carry Praxis.
 
 ## Deploy
 
-**A new server** (Ubuntu 24.04 on Hetzner, DigitalOcean or similar): copy the repository's `deploy/setup-server.sh` to it and run `bash setup-server.sh` as root. It asks for the repository, the address (until there is a domain, `<your-ip>.sslip.io` gets real HTTPS) and an optional email, then installs Node 22, nginx and certbot, makes a `praxis` account that owns the repository in `/srv/muse` (Praxis in `/srv/muse/praxis`), clones with a deploy key it shows you to add on GitHub, builds, runs the `praxis` service on 127.0.0.1:8791 behind nginx with HTTPS, and turns on the firewall. Optional settings such as `PRAXIS_PROVIDERS` go in `/etc/praxis.env`.
+**A new server from a phone, no terminal** (Hetzner, or any host with a cloud-config or "user data" box): create an Ubuntu 24.04 server with public IPv4 and paste all of `deploy/cloud-config.yaml` into its Cloud config box. Two minutes after it starts, open `http://<its IPv4>`: the page there gives the deploy key to add on GitHub, with a link to the right page, then shows the install's progress, then sends you on to `https://<ip>.sslip.io`. If setup stops, the page shows the end of the log (`/var/log/muse-setup.log`). It runs `deploy/setup-server.sh` from `main`, without questions.
+
+**A new server from a terminal** (Ubuntu 24.04 on Hetzner, DigitalOcean or similar): copy the repository's `deploy/setup-server.sh` to it and run `bash setup-server.sh` as root. It asks for the repository, the address (until there is a domain, `<your-ip>.sslip.io` gets real HTTPS) and an optional email, then installs Node 22, nginx and certbot, makes a `praxis` account that owns the repository in `/srv/muse` (Praxis in `/srv/muse/praxis`), clones with a deploy key it shows you to add on GitHub, builds, runs the `praxis` service on 127.0.0.1:8791 behind nginx with HTTPS, and turns on the firewall. Optional settings such as `PRAXIS_PROVIDERS` go in `/etc/praxis.env`.
 
 **Updates:** as root on the server,
 
