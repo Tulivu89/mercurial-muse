@@ -26,4 +26,4 @@ The hub this project needs may keep only Orbis's record shapes, editor and impor
 
 ## Deploying
 
-See [`praxis/README.md`](praxis/README.md#deploy): `deploy/setup-server.sh` sets up a fresh Ubuntu server once, and `bash /srv/muse/deploy/deploy.sh` updates it.
+See [`praxis/README.md`](praxis/README.md#deploy): `deploy/setup-server.sh` sets up a fresh Ubuntu server once (or paste `deploy/cloud-config.yaml` into the host's Cloud config box to do it from a phone), and `bash /srv/muse/deploy/deploy.sh` updates it.
