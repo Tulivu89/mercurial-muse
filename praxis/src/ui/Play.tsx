@@ -1,0 +1,604 @@
+// Playing a save. One scroll, top to bottom: the story, the prompt at its end, and the menu
+// below the prompt. A check opens in the prompt's place; the journal, the rules guide and
+// the record form open in the menu's. Every change goes through the engine: this file
+// decides what to show and when to ask the narrator.
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import {
+  act, cleanReply, cleanSuggestion, continuing, replyFrom, compressRequest, compressionDue, contextPlan, durationWords, entryRequest, inSentence,
+  abandonWork, grow, journalDue, lastTurn, moveQuietly, startWork, placeCharacter, playable, playerOf, promptChars, recordPromptSize, say, sceneActionsFor, sceneOf,
+  read, setPending, setReply, setState, stateDefFor, timeOfDay, uncoveredTurns, undoLastTurn,
+  type Action, type ContextPlan, type Move, type PraxisModule, type Save, type Turn,
+} from '../engine';
+import { helperModelOf, type Connection } from './Connect';
+import { RichText } from './RichText';
+import { Menu, sectionAnchor, type Section } from './Menu';
+import { JournalPanel } from './JournalPanel';
+import { GuidePanel } from './GuidePanel';
+import { RecordPanel, type RecordTarget } from './RecordPanel';
+import { CheckPanel } from './CheckPanel';
+import { CheckCard } from './CheckCard';
+import { GenerationTestPanel } from './GenerationTestPanel';
+import { DiamondIcon, PenIcon, RerollIcon, SendIcon, StopIcon, UndoIcon } from './icons';
+import { SourceTag, describeEntry, newId } from './shared';
+import { NarrationError, narrate, promptTokensOf, type Diagnostics } from './narration';
+import type { Prefs } from './prefs';
+
+// Where the player can be taken: the prompt, or the menu space and what it is showing.
+export type View = 'story' | 'menu' | 'journal' | 'guide' | 'record' | 'test';
+type Page = Exclude<View, 'story'>;
+
+export interface Call {
+  at: string;
+  purpose: 'narration' | 'journal';
+  ok: boolean;
+  ms: number;
+  message: string;
+  diagnostics: Diagnostics | null;
+}
+
+// What the menu and its screens may do. One object, so every screen acts the same way.
+export interface PlayApi {
+  module: PraxisModule;
+  world: PraxisModule;
+  save: Save;
+  name: string;
+  prefs: Prefs;
+  setPrefs: (changes: Partial<Prefs>) => void;
+  connection: Connection;
+  setConnection: (next: Connection) => void;
+  busy: boolean;
+  journalBusy: boolean;
+  calls: Call[];
+  lastPlan: ContextPlan | null;
+  // The replies that came back for the latest turn this session, rerolls included.
+  tries: string[];
+  sampleTurn: (times: number) => void;
+  // Replaces the save, with an optional message for the player.
+  commit: (next: Save, message?: string) => void;
+  notify: (message: string) => void;
+  perform: (action: Action) => void;
+  // Travel or wait by the rules without a turn or narration.
+  performQuietly: (move: Move) => void;
+  // Spend experience on a rating or the next rung of a charge ladder.
+  grow: (approach: string, what: 'rating' | 'ladder') => void;
+  // Begin making something, paying for the materials, or give it up.
+  startWork: (goodId: string) => void;
+  abandonWork: (goodId: string) => void;
+  setValue: (defId: string, owner: string, value: number) => void;
+  putSelf: (placeId: string) => void;
+  talkTo: (name: string) => void;
+  lookUp: (query: string) => void;
+  open: (view: View, section?: Section) => void;
+  editRecord: (target: RecordTarget) => void;
+  // Opens the check screen, aimed at someone or something here if given.
+  openCheck: (owner?: string) => void;
+  // The player's unsent words, which a check can use as its line.
+  draft: string;
+  clearDraft: () => void;
+  suggestEntry: () => void;
+  suggestCompression: () => void;
+  leave: () => void;
+}
+
+export function Play({ module, initial, name, connection, setConnection, prefs, setPrefs, onChange, onClose }: {
+  module: PraxisModule;
+  initial: Save;
+  name: string;
+  connection: Connection;
+  setConnection: (next: Connection) => void;
+  prefs: Prefs;
+  setPrefs: (changes: Partial<Prefs>) => void;
+  onChange: (save: Save) => void;
+  onClose: () => void;
+}) {
+  const [save, setSave] = useState<Save>(initial);
+  const [draft, setDraft] = useState('');
+  const [notice, setNotice] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [journalBusy, setJournalBusy] = useState(false);
+  const [lastPlan, setLastPlan] = useState<ContextPlan | null>(null);
+  const [tries, setTries] = useState<{ turnId: string; texts: string[] }>({ turnId: '', texts: [] });
+  // A reply being edited: saved as it stands, or handed back for the narrator to carry on.
+  const [editing, setEditing] = useState<{ turnId: string; text: string } | null>(null);
+  const [calls, setCalls] = useState<Call[]>([]);
+  const [page, setPage] = useState<Page>('menu');
+  const [section, setSection] = useState<Section>('none');
+  const [worldQuery, setWorldQuery] = useState('');
+  const [recordTarget, setRecordTarget] = useState<RecordTarget>({ mode: 'new' });
+  // The check form, which takes the prompt's place while it is open.
+  const [check, setCheck] = useState<{ owner?: string; fromMenu: boolean } | null>(null);
+  const pending = useRef<AbortController | null>(null);
+  const suggesting = useRef(false);
+  // The turn count when a suggestion last failed, so a failure is not retried every render.
+  const failedAt = useRef(-1);
+  const composer = useRef<HTMLTextAreaElement | null>(null);
+  const pageHead = useRef<HTMLDivElement>(null);
+  const checkHead = useRef<HTMLDivElement>(null);
+
+  const world = playable(module, save.local);
+  const playerId = playerOf(world);
+  const scene = sceneOf(world, save);
+  const latest = lastTurn(save);
+
+  useEffect(() => { onChange(save); }, [save, onChange]);
+  useEffect(() => () => pending.current?.abort(), []);
+  // A new turn, an undo, or opening the save: show the end of the story with the prompt.
+  useEffect(() => { showLatest(); }, [save.turns.length]);
+  // A reply landing or the narrator starting: the same, unless the player has gone down
+  // into the menu to read something while they wait.
+  useEffect(() => { if (!readingMenu()) showLatest(); }, [latest?.reply, busy]);
+  useEffect(() => {
+    if (page === 'menu') return;
+    pageHead.current?.focus({ preventScroll: true });
+    bringToTop('menu-space');
+  }, [page]);
+  useEffect(() => {
+    if (!check) return;
+    checkHead.current?.focus({ preventScroll: true });
+    bringToTop('prompt');
+  }, [check]);
+
+  const logCall = useCallback((call: Call) => setCalls((list) => [call, ...list].slice(0, 10)), []);
+
+  // Narrates the latest turn; with `from`, carries on from a reply the player edited.
+  async function runNarration(target: Save, from?: string) {
+    const turn = lastTurn(target);
+    if (!turn) return;
+    if (!connection.connected) { setNotice('Recorded. Connect a narrator in Settings to have it narrated.'); return; }
+    let plan: ContextPlan;
+    try {
+      plan = contextPlan(module, target);
+      if (from) plan = continuing(plan, from);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'The narrator\'s notes could not be built.');
+      return;
+    }
+    setLastPlan(plan);
+    pending.current?.abort();
+    const controller = new AbortController();
+    pending.current = controller;
+    setBusy(true);
+    setNotice('');
+    const started = performance.now();
+    try {
+      const result = await narrate(plan.messages, connection, { maxTokens: target.options.replyTokens, signal: controller.signal, prefill: plan.prefill });
+      if (controller.signal.aborted) return;
+      const ms = Math.round(performance.now() - started);
+      const promptTokens = promptTokensOf(result.usage);
+      logCall({ at: new Date().toLocaleTimeString(), purpose: 'narration', ok: true, ms, message: `${result.text.length} characters${promptTokens ? `, prompt ${promptTokens} tokens` : ''}`, diagnostics: result.diagnostics ?? null });
+      const reply = replyFrom(plan, from ? result.text.replace(/<think>[\s\S]*?<\/think>/gi, '') : cleanReply(result.text, turn.input));
+      setTries((seen) => ({ turnId: turn.id, texts: seen.turnId === turn.id ? [...seen.texts, reply] : [reply] }));
+      setSave((current) => {
+        const placed = setReply(current, turn.id, reply);
+        if (!placed.ok) return current;
+        return promptTokens ? recordPromptSize(placed.save, promptChars(plan.messages, plan.prefill), promptTokens) : placed.save;
+      });
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      const message = error instanceof Error ? error.message : 'Narration failed.';
+      setNotice(`${message} Settings › Testing › Diagnostics has the details.`);
+      logCall({ at: new Date().toLocaleTimeString(), purpose: 'narration', ok: false, ms: 0, message, diagnostics: error instanceof NarrationError ? error.diagnostics : null });
+    } finally {
+      if (pending.current === controller) { pending.current = null; setBusy(false); }
+    }
+  }
+
+  // Asks for the latest turn again, several times, without touching the story: the replies
+  // join this turn's tries, to read side by side or export. A way to see how often the
+  // narrator follows what the rules decided.
+  async function sampleTurn(times: number) {
+    const turn = lastTurn(save);
+    if (!turn || !connection.connected || busy) return;
+    let plan: ContextPlan;
+    try { plan = contextPlan(module, save); } catch { return; }
+    setLastPlan(plan);
+    setBusy(true);
+    try {
+      for (let index = 0; index < times; index += 1) {
+        setNotice(`Trying this turn again: ${index + 1} of ${times}…`);
+        const result = await narrate(plan.messages, connection, { maxTokens: save.options.replyTokens, prefill: plan.prefill });
+        const reply = replyFrom(plan, cleanReply(result.text, turn.input));
+        setTries((seen) => ({ turnId: turn.id, texts: seen.turnId === turn.id ? [...seen.texts, reply] : [reply] }));
+      }
+      setNotice(`Tried ${times} more times. Settings › What the narrator was sent has them all.`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'Narration failed.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Journal suggestions run in the background and land as a pending suggestion.
+  async function suggest(target: Save, request: { kind: 'entry'; from: number; to: number } | { kind: 'compress'; entryIds: string[] }) {
+    if (suggesting.current || !connection.connected) return;
+    suggesting.current = true;
+    setJournalBusy(true);
+    const started = performance.now();
+    try {
+      const built = request.kind === 'entry' ? entryRequest(module, target, request) : compressRequest(module, target, request.entryIds);
+      const model = helperModelOf(connection, prefs.helperModel);
+      const result = await narrate(built.messages, { ...connection, model, format: model === connection.model ? connection.format : 'auto' }, { maxTokens: built.maxTokens, temperature: 0.5 });
+      const text = cleanSuggestion(result.text);
+      logCall({ at: new Date().toLocaleTimeString(), purpose: 'journal', ok: true, ms: Math.round(performance.now() - started), message: `${request.kind === 'entry' ? 'Entry' : 'Compression'} suggested, ${text.length} characters`, diagnostics: result.diagnostics ?? null });
+      if (!text) throw new Error('The suggestion came back empty.');
+      setSave((current) => (current.journal.pending ? current : setPending(current, request.kind === 'entry' ? { ...request, text } : { ...request, text })));
+    } catch (error) {
+      failedAt.current = target.turns.length;
+      const message = error instanceof Error ? error.message : 'The journal suggestion failed.';
+      logCall({ at: new Date().toLocaleTimeString(), purpose: 'journal', ok: false, ms: 0, message, diagnostics: error instanceof NarrationError ? error.diagnostics : null });
+    } finally {
+      suggesting.current = false;
+      setJournalBusy(false);
+    }
+  }
+
+  // Ask for a journal entry when story is about to leave the window, and for a compression
+  // when the journal is over its budget. Never while narrating, and never twice at once.
+  useEffect(() => {
+    if (busy || suggesting.current || !connection.connected || save.journal.pending) return;
+    if (failedAt.current === save.turns.length) return;
+    if (save.options.autoJournal) {
+      const due = journalDue(module, save);
+      if (due) { void suggest(save, { kind: 'entry', ...due }); return; }
+    }
+    if (save.options.autoCompress) {
+      const ids = compressionDue(save);
+      if (ids) void suggest(save, { kind: 'compress', entryIds: ids });
+    }
+  });
+
+  function send() {
+    const result = say(module, save, newId('t'), draft);
+    if (!result.ok) { setNotice(result.reason); return; }
+    setDraft('');
+    setSave(result.save);
+    void runNarration(result.save);
+  }
+
+  function perform(action: Action) {
+    const result = act(module, save, newId('t'), action);
+    if (!result.ok) { setNotice(result.reason); return; }
+    setSave(result.save);
+    setCheck(null);
+    const terminal = result.terminals[0];
+    setNotice(terminal ? terminal.note : '');
+    void runNarration(result.save);
+  }
+
+  // The rules move the clock or you, and nothing is written. The narrator sees where and when
+  // you are on your next turn.
+  function performQuietly(move: Move) {
+    const result = moveQuietly(module, save, move);
+    if (!result.ok) { setNotice(result.reason); return; }
+    setSave(result.save);
+    setCheck(null);
+    setNotice(`${result.told} Done quietly: nothing was written, and the narrator will see it on your next turn.`);
+  }
+
+  // Back from a screen in the menu space to the menu, with the open section in view.
+  function backToMenu() {
+    setPage('menu');
+    if (section !== 'none') bringToTop(sectionAnchor(section));
+  }
+
+  function closeCheck() {
+    const fromMenu = check?.fromMenu;
+    setCheck(null);
+    if (fromMenu && section !== 'none') bringToTop(sectionAnchor(section));
+  }
+
+  function undo() {
+    pending.current?.abort();
+    setBusy(false);
+    const result = undoLastTurn(save);
+    if (!result.ok) { setNotice(result.reason); return; }
+    setSave(result.save);
+    if (result.turn.kind === 'say') setDraft(result.turn.input);
+    setNotice('The last turn was undone.');
+  }
+
+  function stop() {
+    pending.current?.abort();
+    pending.current = null;
+    setBusy(false);
+    setNotice('Stopped. Reroll to try again.');
+  }
+
+  const api: PlayApi = {
+    module,
+    world,
+    save,
+    name,
+    prefs,
+    setPrefs,
+    connection,
+    setConnection,
+    busy,
+    journalBusy,
+    calls,
+    lastPlan,
+    tries: tries.turnId === lastTurn(save)?.id ? tries.texts : [],
+    sampleTurn: (times) => { void sampleTurn(times); },
+    commit: (next, message) => { setSave(next); if (message !== undefined) setNotice(message); },
+    notify: setNotice,
+    perform,
+    performQuietly,
+    grow: (approach, what) => {
+      const result = grow(module, save, approach, what);
+      if (!result.ok) { setNotice(result.reason); return; }
+      setSave(result.save);
+      const name = world.ruleset.approaches.find((entry) => entry.id === approach)?.name ?? approach;
+      setNotice(what === 'rating' ? `${name} is now ${read(result.save.values, stateDefFor(world, approach, playerId)!, playerId)}.` : `${name} has a new charge.`);
+    },
+    startWork: (goodId) => {
+      const result = startWork(module, save, goodId);
+      if (!result.ok) { setNotice(result.reason); return; }
+      setSave(result.save);
+      setNotice('Begun. Work on it with Focus from You › Making, or aim a check at it.');
+    },
+    abandonWork: (goodId) => {
+      const result = abandonWork(module, save, goodId);
+      if (!result.ok) { setNotice(result.reason); return; }
+      setSave(result.save);
+      setNotice('Given up. The materials are lost.');
+    },
+    setValue: (defId, owner, value) => {
+      const result = setState(module, save, defId, owner, value);
+      if (!result.ok) { setNotice(result.reason); return; }
+      setSave(result.save);
+      const terminal = result.terminals[0];
+      setNotice(terminal ? terminal.note : '');
+    },
+    putSelf: (placeId) => {
+      const result = placeCharacter(module, save, playerId, placeId);
+      if (!result.ok) { setNotice(result.reason); return; }
+      setSave(result.save);
+      showLatest();
+      const place = world.world.places.find((entry) => entry.id === placeId);
+      setNotice(`You are at ${inSentence(place?.name ?? placeId)}, by your own hand. The narrator will see it on your next turn.`);
+    },
+    talkTo: (person) => {
+      setDraft((current) => current || `I turn to ${inSentence(person)}. `);
+      setCheck(null);
+      setTimeout(() => { composer.current?.focus({ preventScroll: true }); showLatest(); }, 0);
+    },
+    lookUp: (query) => { setWorldQuery(query); setSection('world'); setPage('menu'); bringToTop(sectionAnchor('world')); },
+    open: (next, nextSection) => {
+      if (next === 'story') { setCheck(null); showLatest(); return; }
+      if (nextSection) setSection(nextSection);
+      setPage(next);
+      if (next === 'menu') bringToTop(nextSection ? sectionAnchor(nextSection) : 'menu-space');
+    },
+    editRecord: (target) => { setRecordTarget(target); setPage('record'); },
+    openCheck: (owner) => {
+      const menu = document.getElementById('menu-space');
+      setCheck({ owner, fromMenu: Boolean(menu && menu.getBoundingClientRect().top < window.innerHeight / 2) });
+    },
+    draft,
+    clearDraft: () => setDraft(''),
+    suggestEntry: () => {
+      const range = uncoveredTurns(save);
+      if (!range) { setNotice('Every narrated turn is already in the journal.'); return; }
+      failedAt.current = -1;
+      void suggest(save, { kind: 'entry', ...range });
+    },
+    suggestCompression: () => {
+      const ids = compressionDue({ ...save, options: { ...save.options, journalTokens: 0 }, journal: { ...save.journal, compressDeclinedAt: 0 } });
+      if (!ids) { setNotice('There need to be at least two entries to combine.'); return; }
+      failedAt.current = -1;
+      void suggest(save, { kind: 'compress', entryIds: ids });
+    },
+    leave: onClose,
+  };
+
+  const actions = sceneActionsFor(world, save);
+  // Quick ways out for the chips: open, and under an hour.
+  const openExits = scene.exits.filter((exit) => !exit.blocked && exit.edge.minutes <= 60).slice(0, 2);
+  const pendingSuggestion = save.journal.pending;
+  // Someone or something is always here to aim at: at the least, the place itself.
+  const canCheck = world.ruleset.approaches.length > 0;
+
+  return (
+    <div className="play">
+      <section className="log" aria-label="Story" aria-live="polite">
+        {module.scenario.opening && <article aria-label="Narrator"><RichText text={module.scenario.opening} /></article>}
+        {save.turns.map((turn, index) => (
+          <div key={turn.id} className="turn" id={turn === latest ? 'latest-turn' : undefined}>
+            <TurnView
+              world={world}
+              save={save}
+              turn={turn}
+              next={save.turns[index + 1]}
+              latest={turn === latest}
+              busy={busy}
+              connected={connection.connected}
+              onReroll={() => void runNarration(save)}
+              onUndo={undo}
+              editing={editing?.turnId === turn.id ? editing.text : null}
+              onEdit={(text) => setEditing(text === null ? null : { turnId: turn.id, text })}
+              onSaveEdit={(text) => {
+                const placed = setReply(save, turn.id, text);
+                if (!placed.ok) { setNotice(placed.reason); return; }
+                setSave(placed.save);
+                setEditing(null);
+                setNotice('Reply saved as you edited it.');
+              }}
+              onContinue={(text) => {
+                setEditing(null);
+                void runNarration(save, text);
+              }}
+              onStop={stop}
+              model={calls.find((call) => call.purpose === 'narration' && call.ok)}
+            />
+          </div>
+        ))}
+      </section>
+
+      <section
+        id="prompt"
+        className={`prompt${check ? ' checking' : ''}`}
+        aria-label="Your turn"
+        onKeyDown={(event: KeyboardEvent<HTMLElement>) => { if (event.key === 'Escape' && check) closeCheck(); }}
+      >
+        {notice && <p className="notice" role="status">{notice}</p>}
+        {check ? (
+          <CheckPanel key={check.owner ?? 'any'} api={api} owner={check.owner} headRef={checkHead} onCancel={closeCheck} />
+        ) : (
+          <>
+            {pendingSuggestion && (
+              <button type="button" className="ready-bar" onClick={() => api.open('journal')}>
+                <span aria-hidden="true" className="dot" style={{ width: 8, height: 8, background: 'var(--you)' }} />
+                <span style={{ flex: 1 }}>{pendingSuggestion.kind === 'entry' ? 'A journal entry is ready to review' : 'A shorter journal is ready to review'}</span>
+                <b>Review</b>
+              </button>
+            )}
+            <div className="chips" aria-label="Things you can do here">
+              {actions.map((action) => (
+                <button key={action.id} type="button" className="chip" disabled={busy} onClick={() => perform({ type: 'scene', actionId: action.id })}>{action.name}</button>
+              ))}
+              {canCheck && (
+                <button type="button" className="chip" disabled={busy} onClick={() => api.openCheck()}>
+                  <DiamondIcon />Make a check
+                </button>
+              )}
+              <button type="button" className="chip" disabled={busy} onClick={() => perform({ type: 'wait', minutes: 10 })}>Wait 10 min</button>
+              {openExits.map((exit) => (
+                <button key={exit.place.id} type="button" className="chip" disabled={busy} onClick={() => perform({ type: 'travel', to: exit.place.id })}>
+                  {exit.place.name} · {durationWords(exit.edge.minutes)}
+                </button>
+              ))}
+            </div>
+            <div className="compose-row">
+              <label htmlFor="turn-input" className="sr">Your turn</label>
+              <textarea
+                id="turn-input"
+                ref={composer}
+                rows={2}
+                value={draft}
+                placeholder='Your turn: *action*, speech, (thought)'
+                onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>) => {
+                  if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) { event.preventDefault(); send(); }
+                }}
+              />
+              <button type="button" className="send" aria-label="Send" onClick={send} disabled={busy || !draft.trim()}><SendIcon /></button>
+            </div>
+          </>
+        )}
+      </section>
+
+      <section
+        id="menu-space"
+        className={`menu-space${page === 'menu' ? '' : ' paged'}`}
+        aria-label="Menu"
+        onKeyDown={(event: KeyboardEvent<HTMLElement>) => { if (event.key === 'Escape' && page !== 'menu') backToMenu(); }}
+      >
+        {page === 'journal' ? <JournalPanel api={api} headRef={pageHead} onBack={backToMenu} />
+          : page === 'guide' ? <GuidePanel headRef={pageHead} onBack={backToMenu} />
+          : page === 'test' ? <GenerationTestPanel api={api} headRef={pageHead} onBack={backToMenu} />
+          : page === 'record' ? <RecordPanel key={JSON.stringify(recordTarget)} api={api} target={recordTarget} headRef={pageHead} onDone={backToMenu} />
+          : <Menu api={api} section={section} setSection={setSection} worldQuery={worldQuery} setWorldQuery={setWorldQuery} />}
+      </section>
+    </div>
+  );
+}
+
+// Scrolls so the element with this id starts at the top of the screen, once it has rendered.
+function bringToTop(id: string) {
+  setTimeout(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }), 0);
+}
+
+// Whether the player has scrolled down into the menu: its top is in the upper half.
+function readingMenu(): boolean {
+  const menu = document.getElementById('menu-space');
+  return Boolean(menu && menu.getBoundingClientRect().top < window.innerHeight / 2);
+}
+
+// Shows the end of the story: the prompt at the foot of the screen, unless the latest turn
+// is taller than the screen, in which case the turn's start, so it reads from the top.
+function showLatest() {
+  setTimeout(() => {
+    const prompt = document.getElementById('prompt');
+    if (!prompt) return;
+    const y = window.scrollY;
+    const view = window.innerHeight;
+    let top = y + prompt.getBoundingClientRect().bottom - view + 12;
+    const turn = document.getElementById('latest-turn');
+    if (turn) top = Math.min(top, y + turn.getBoundingClientRect().top - 16);
+    window.scrollTo({ top: Math.max(0, top) });
+  }, 0);
+}
+
+function TurnView({ world, save, turn, next, latest, busy, connected, onReroll, onUndo, onStop, model, editing, onEdit, onSaveEdit, onContinue }: {
+  world: PraxisModule;
+  save: Save;
+  turn: Turn;
+  next: Turn | undefined;
+  latest: boolean;
+  busy: boolean;
+  connected: boolean;
+  onReroll: () => void;
+  onUndo: () => void;
+  onStop: () => void;
+  model: Call | undefined;
+  // The reply as it is being edited, or null when it is not.
+  editing: string | null;
+  onEdit: (text: string | null) => void;
+  onSaveEdit: (text: string) => void;
+  onContinue: (text: string) => void;
+}) {
+  // Hidden states (momentum) stay out of the story, and so do people's days elsewhere: only
+  // comings and goings where you were show here. The ledger in Settings has everything.
+  const playerId = world.scenario.playerCharacterId;
+  const places = new Set([turn.before.positions[playerId], (next ? next.before : save).positions[playerId]]);
+  const entries = save.ledger.slice(turn.ledgerStart, next ? next.ledgerStart : save.ledger.length)
+    .filter((entry) => entry.kind !== 'state' || world.ruleset.states.find((def) => def.id === entry.defId)?.display !== 'hidden')
+    .filter((entry) => entry.kind !== 'move' || entry.characterId === playerId || entry.source !== 'rule' || places.has(entry.from ?? '') || places.has(entry.to ?? ''));
+  const waiting = latest && busy && !turn.reply;
+  return (
+    <>
+      <section className="turn-you" aria-label="Your turn">
+        <div className="who"><b>You</b><span>{timeOfDay(turn.before.clock)}</span></div>
+        <RichText text={turn.input} />
+      </section>
+      {turn.check && <CheckCard check={turn.check} />}
+      {entries.length > 0 && (
+        <div className="changes" aria-label="What changed">
+          {entries.map((entry, index) => (
+            <div key={index} className="change">
+              <span className="what">{describeEntry(world, entry)}</span>
+              <SourceTag source={entry.source} />
+            </div>
+          ))}
+        </div>
+      )}
+      {editing !== null ? (
+        <div className="edit-reply">
+          <label htmlFor={`edit-${turn.id}`} className="label field-label">Edit the reply</label>
+          <textarea id={`edit-${turn.id}`} className="area" rows={8} value={editing} onChange={(event) => onEdit(event.target.value)} />
+          <p className="meta" style={{ margin: '6px 0 10px', lineHeight: 1.4 }}>Save it as it stands, or cut it where it went wrong and let the narrator carry on from there.</p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button type="button" className="btn primary" disabled={!editing.trim()} onClick={() => onSaveEdit(editing)}>Save</button>
+            <button type="button" className="btn" disabled={!editing.trim() || !connected || busy} onClick={() => onContinue(editing)}>Continue from here</button>
+            <button type="button" className="btn quiet" onClick={() => onEdit(null)}>Cancel</button>
+          </div>
+        </div>
+      ) : turn.reply ? <article aria-label="Narrator"><RichText text={turn.reply} /></article>
+        : waiting ? <p className="writing">The narrator is writing…</p>
+        : latest ? <p className="muted" style={{ fontSize: 14 }}>{connected ? 'Not narrated yet.' : 'Not narrated. Connect a narrator in Settings to have turns narrated.'}</p>
+        : null}
+      {latest && (
+        <div className="turn-tools">
+          {waiting ? (
+            <button type="button" className="ghost" onClick={onStop}><StopIcon />Stop</button>
+          ) : (
+            <button type="button" className="ghost" onClick={onReroll} disabled={!connected}><RerollIcon />{turn.reply ? 'Reroll' : 'Narrate'}</button>
+          )}
+          {turn.reply && editing === null && !waiting && <button type="button" className="ghost" onClick={() => onEdit(turn.reply ?? '')}><PenIcon />Edit</button>}
+          <button type="button" className="ghost" onClick={onUndo}><UndoIcon />Undo turn</button>
+          {model && turn.reply && <span className="meta">{[typeof model.diagnostics?.model === 'string' ? model.diagnostics.model : '', model.ms ? `${(model.ms / 1000).toFixed(1)} s` : ''].filter(Boolean).join(' · ')}</span>}
+        </div>
+      )}
+    </>
+  );
+}
