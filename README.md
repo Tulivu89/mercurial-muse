@@ -11,9 +11,11 @@ Working name. An AI roleplay platform built on scripted context management: a na
 
 Planned: a character-chat side built on the same context core, and a hub that both sides draw their worlds and characters from.
 
+`docs/` holds the design: `docs/praxis/` (charter, working notes, the Bogwater module, the rules proposals) and `docs/abernys/` (the setting). Some setting docs still mention Bitterroot in passing; those references are to be trimmed.
+
 ## Orbis: what to trim
 
-`orbis/` is the Orbis code as of its commit 87be9af (2026-10-13), and `ember/` Ember's as of 6c48dcf; their earlier history is in the archive uploaded in this repository's first commits. It still carries parts that belong to the Howling Whispers deployment rather than this project:
+`orbis/` is the Orbis code as of its commit 87be9af (2026-10-13), and `ember/` Ember's as of 6c48dcf; their earlier history is in the archive uploaded in this repository's first commits. Orbis still carries parts that belong to the Howling Whispers deployment rather than this project:
 
 - Bitterroot world data and its import (`server/data/bitterroot.json`, `server/bitterroot-*.ts`, `server/import-bitterroot.ts`, their tests, and the fixtures in `src/features/library/fixtures.ts`).
 - Links to other Howling Whispers services: Coda and its Discord bot, the Speculus bridge, and the GitHub repository list in `server/config.ts`.
