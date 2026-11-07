@@ -11,7 +11,7 @@ Working name. An AI roleplay platform built on scripted context management: a na
 
 Planned: a character-chat side built on the same context core, and a hub that both sides draw their worlds and characters from.
 
-`docs/` holds the design: `docs/praxis/` (charter, working notes, the Bogwater module, the rules proposals) and `docs/abernys/` (the setting). Some setting docs still mention Bitterroot in passing; those references are to be trimmed.
+`docs/roadmap.md` is the plan for the whole project: brand, the shared core, the hub and the chat side, in order. `docs/` also holds the design: `docs/praxis/` (charter, working notes, the Bogwater module, the rules proposals) and `docs/abernys/` (the setting). Some setting docs still mention Bitterroot in passing; those references are to be trimmed.
 
 ## Orbis: what to trim
 
