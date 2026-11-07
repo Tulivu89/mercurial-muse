@@ -11,7 +11,7 @@ Working name. An AI roleplay platform built on scripted context management: a na
 
 Planned: a character-chat side and a studio for worlds and characters, on one core with the adventure. Their foundations are the owner's NovelAI scripts [Character Engine](https://github.com/Tulivu89/Character-Engine) and [CharacterRoom](https://github.com/Tulivu89/CharacterRoom); the records are our own, for any genre.
 
-`docs/roadmap.md` is the plan for the whole project: the direction, the record model, brand, the shared core, the studio and the chat side, in order. `docs/` also holds the design: `docs/praxis/` (charter, working notes, the Bogwater module, the rules proposals) and `docs/abernys/` (the setting). Some setting docs still mention Bitterroot in passing; those references are to be trimmed.
+`docs/roadmap.md` is the plan for the whole project: the direction, brand, the shared core, the studio and the chat side, in order. `docs/records.md` is the record model, built around what reaches the model and when; `docs/brand.md` is the name shortlist. `docs/` also holds the design: `docs/praxis/` (charter, working notes, the Bogwater module, the rules proposals) and `docs/abernys/` (the setting). Some setting docs still mention Bitterroot in passing; those references are to be trimmed.
 
 ## Orbis and Ember
 

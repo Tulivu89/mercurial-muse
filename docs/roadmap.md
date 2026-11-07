@@ -17,21 +17,32 @@ We are independent of Howling Whispers, and we go our own way rather than carry 
 
 | Source | What we take | What stays behind |
 | --- | --- | --- |
-| [Character Engine](https://github.com/Tulivu89/Character-Engine) | The character model: Classic and Profile Plus shapes (Presence, Drive, Pattern, Resistance, Conduct, Facets); pressure (Hook, Pursuit, Position) with its history. States as bounded numbers with bands, a resting band, a scope and terminals. The four approaches, rolls and stakes. Threads (five questions, a kind, milestones, one active). The journal with active and archived entries. Places nested inside places, with description, lorebook entry and atmosphere. Schedules as plans of stops. Factions with standing ladders and resources. Chat modes, including the interview. Image prompt fields and presets. | NovelAI's script platform: the lorebook and Author's Note injection, the bridge userscript, the story-file storage. |
-| [CharacterRoom](https://github.com/Tulivu89/CharacterRoom) | The chat side's features: Contact, user and scenario cards; example chats; brains (keyed lore); Jots, Diary, Plans and Process; posts with comments; story time and schedules with a week view; emotions and portraits; the dice system and its presets; sheets per person; group chat; Stage mode; chat bubbles; card import and export. | AnotherRoom's context code (see below), the Xialong-only prompt, the NovelAI panels. |
+| [Character Engine](https://github.com/Tulivu89/Character-Engine) | Profile Plus (Presence, Drive, Pattern, Resistance, Conduct, Facets) as a section template; pressure (Hook, Pursuit, Position) with its history. States as bounded numbers with bands, a resting band, a scope and terminals. The four approaches, rolls and stakes. Threads (five questions, a kind, milestones, one active). The journal with active and archived entries. Places nested inside places, with description, lorebook entry and atmosphere. Schedules as plans of stops. Factions with standing ladders and resources. Chat modes, including the interview. Image prompt fields and presets. | NovelAI's script platform: the lorebook and Author's Note injection, the bridge userscript, the story-file storage. |
+| [CharacterRoom](https://github.com/Tulivu89/CharacterRoom) | Its context management, rewritten by the owner, and the chat side's features: Contact, user and scenario cards; example chats; brains (keyed lore); Jots, Diary, Plans and Process; posts with comments; story time and schedules with a week view; emotions and portraits; the dice system and its presets; sheets per person; group chat; Stage mode; chat bubbles; card import and export. | The Xialong-only prompt and the NovelAI panels. |
 | Praxis | Stack, engine pattern, relay, formats, saves, server, deploy, CI. Canon and instance: a world is read-only, and play lives in the save. | Its Orbis-shaped records, once the new ones are in. Bogwater and Port Covenant become worlds on the new records. |
+| The Discord bot | Character packs, per-person keys and personas, schedule-keyed openers, rooms with several people, the helper with search. | Discord itself: the bot stays separate. |
 | Orbis, Ember | Nothing required. Reference for an editor, import and export, and a launch handoff, if useful. | Everything else. |
 
-### AnotherRoom
+### The Discord bot
 
-CharacterRoom is a fork of AnotherRoom 1.1.5 by Triplis, made with Triplis's permission for a NovelAI script. Its context builder (system prompt, message rebuild, brains assembly, rollover, emotion parsing) is AnotherRoom's code. That permission covered a NovelAI fork, not a website.
+A Python bot that plays a CharacterRoom character in Discord on Xialong, with CharacterRoom's context. It is character-agnostic: each character is a pack (`card.json`, `user.json`, `greetings.json`, `settings.json`). What it adds that the site wants:
+- **Whoever triggers it pays:** each person links their own key.
+- **Personas per person.**
+- **Jots, brains and memories per character.**
+- **Openers keyed to the schedule:** a stop says what she's doing; the arrival lives with the greetings.
+- **Several people in one room.**
+- **A helper model with search.**
 
-The site writes its own chat context instead, on the shared core. It has to anyway: AnotherRoom builds for Xialong only, and the site serves many models. CharacterRoom's own additions are the owner's and come across freely. Character cards keep reading AetherRoom field names, so existing characters can be imported.
+Its lessons go into the chat side, the most important being that examples steer more than any profile text, and that schedule stops never say how she arrives. The bot stays its own thing, and the site imports its packs.
+
+### Context code
+
+CharacterRoom's context management is the owner's own rewrite. AnotherRoom itself came from what remained of AetherRoom, for Xialong only. The site carries CharacterRoom's context management across and grows it to serve every model family the adventure already formats for.
 
 ## The design: one world model, three ways in
 
 **Records (canon).** Made once, used everywhere:
-- **Character:** one record for chat and adventure alike. A profile in one shape (Classic, Profile Plus or custom), plus Facets, Presence for how they look, voice, a greeting, example chats, emotions and portraits, a schedule, an inventory, and states.
+- **Character:** one record for chat and adventure alike. A conventional profile of titled sections the author can add to, rename and reorder (Profile Plus is one template among others), plus greetings, example chats, emotions and portraits, a schedule, an inventory, and states. At heart, a lorebook entry plus the dynamic parts.
 - **Place:** nested to any depth (region, town, building, room), with description, lorebook entry and atmosphere by time of day.
 - **Item, Faction, Thread, Lore entry** (brains), **Scenario** (a starting situation), **Persona** (the player's own card).
 - **World:** the container. Genre, tone, calendar, the state definitions and the ruleset, and every record inside.
@@ -48,7 +59,7 @@ The site writes its own chat context instead, on the shared core. It has to anyw
 
 ## Decisions (open to the owner's veto)
 
-1. **The record model is designed before any studio code.** One design doc, `docs/records.md`, built from CE, CharacterRoom and what the adventure reads, and reviewed by the owner. Everything else waits on it.
+1. **The record model is designed before any studio code.** `docs/records.md` (drafted Nov 7) is built around context management: every block of text has a reach (Always, Here, Named, When, Never), and every record has a one-sentence line and a full entry, so a big world costs lines for what is off stage. The owner reviews it; everything else waits on it.
 2. **Folders and code are named by job, not by brand.** `core/`, `adventure/`, `chat/`, `studio/`. Brand names live in one file of display text per side.
 3. **One shared core.** The provider relay, prompt formats, context budget, journal, records and state engine live in `core/`. Adventure and chat both import it.
 4. **Browser storage first.** Records, saves and chats live in the player's browser, with export and import, and a **Back up everything** file. Nothing about play is stored on the server, and keys are sent per request and never kept. Testers lose nothing they have backed up, and the server has nothing of theirs to leak.
@@ -68,11 +79,8 @@ That fits on the current server. It waits until the studio and chat are worth sy
 
 Each step is one or more pull requests. The adventure keeps its own list (charter, *Next, in order*) alongside, on its current records, until step 6.
 
-1. **The record model.** `docs/records.md`, as decision 1. Claude drafts it from the three sources; the owner reviews it field by field.
-2. **Brand,** alongside step 1:
-   - one name for the site, and a name or plain label for each side;
-   - checks before choosing: a free domain, no AI chat or game product using the name, easy to say on first sight;
-   - a look and a domain to replace the sslip.io address.
+1. **The record model.** `docs/records.md`, as decision 1: drafted, waiting on the owner's review and its four open questions.
+2. **Brand,** alongside step 1. `docs/brand.md` has the shortlist (Talehoard recommended), with plain labels for the sides: Studio, Adventure, Chat. The owner chooses; then a domain to replace the sslip.io address, and a look.
 3. **Repository shape.** `praxis/` becomes `adventure/`, `core/` comes out of it, the formats get neutral names, and `orbis/` and `ember/` leave the tree (their history stays in git).
 4. **Studio v0.** The new records in the browser: an editor per kind, a world view of nested places, guided builders, generate buttons that show what they send, import of CharacterRoom cards, and export and import of a world.
 5. **Chat v0.** CharacterRoom on the site, on the core:
@@ -88,7 +96,5 @@ Each step is one or more pull requests. The adventure keeps its own list (charte
 
 ## Questions for the owner
 
-1. Should the character record default to Profile Plus, with Classic as the alternative, or the other way round?
-2. Any record kinds or fields you've already planned that neither CE nor CharacterRoom has? A list in any form is enough to start `docs/records.md`.
-3. Where is the Discord bot's code? It is in neither repository. It can wait until chat v0.
-4. Should Claude draft name candidates now, with the step 2 checks done for each?
+1. The record model's open questions, at the end of `docs/records.md`.
+2. A name from `docs/brand.md`, or a direction to look in instead.
