@@ -207,6 +207,8 @@ The test page is built (Settings › Testing › Generation test, PR #8) and nee
 
 ## Orbis proposal (collected as we build)
 
+Superseded: the project no longer builds on Orbis (`docs/roadmap.md`). These stay as input for `docs/records.md`, since each is something the adventure needs from its records.
+
 1. A Praxis launch and generation route, following the existing Ember pattern.
 2. A region bundle export: the world plus every record inside a chosen region.
 3. Route records between places (`distanceKm`, `terrain`, `routeClass`, and conditions for use). Orbis currently stores each place's distance from a hub, not the roads between places.

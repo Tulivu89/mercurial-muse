@@ -2,82 +2,93 @@
 
 Nov 7, 2026 · @AmbiProp
 
-The plan for everything past the first live server. *Praxis — Charter* keeps the adventure's own decisions; this page keeps the order of the whole project and the decisions that cross its parts.
+The plan for the whole project now that it stands on its own. *Praxis — Charter* keeps the adventure's own decisions; this page keeps the direction, the order of work, and the decisions that cross the parts.
 
-## Where we stand
+## Direction
 
-- **The adventure** (Praxis, `praxis/`, 0.21.0) is live on the Hetzner server at `135-181-31-213.sslip.io`. It plays Bogwater and narrates through the player's own key. Updates are `bash /srv/muse/deploy/deploy.sh` on the server.
-- **The hub** exists only as the Orbis reference copy (`orbis/`). It is the Howling Whispers archive: Discord sign-in, PostgreSQL, Coda, the Speculus bridge, Bitterroot data and branding. Most of it does not belong here.
-- **The chat side** exists as the CharacterRoom NovelAI userscript and its Discord bot. Neither is in this repository yet.
-- **Ember** (`ember/`) is a reference copy of a freeform adventure shell. Its storybook reader and its launch handoff are the parts worth reading.
+We are independent of Howling Whispers, and we go our own way rather than carry its shapes forward.
 
-## The four parts
+- **Our own records.** Characters and worlds get a shape of our own, designed fresh. Orbis's record shapes are not the base.
+- **Any kind of story.** Fantasy is one genre among many: modern, crime, science fiction, horror, romance, slice of life. Nothing in a record assumes swords, species or a medieval calendar.
+- **Character Engine and CharacterRoom are the foundation.** They are the owner's NovelAI scripts. Orbis and Praxis grew out of them, and they hold the owner's style more fully than either.
+- **Praxis gives the site its working parts.** The web stack, the pure engine, the provider relay, the prompt formats for each model family, browser saves, and the server and its deploy scripts all stay.
 
-| Part | Today | Goal |
+## What each source gives
+
+| Source | What we take | What stays behind |
 | --- | --- | --- |
-| Brand | Working name Mercurial Muse. Praxis and Orbis are Howling Whispers names. | Our own name for the site and for each side, our own look, no Howling Whispers name or asset anywhere a player can see. |
-| Adventure | Praxis, built and live. | The rules-driven text adventure under its new name, with the same engine. |
-| Hub | Orbis, someone else's deployment. | A worlds-and-characters hub of our own that feeds both sides. |
-| Chat | A NovelAI userscript and a Discord bot. | Deep character chat on the site, on the same context core and provider relay as the adventure. |
+| [Character Engine](https://github.com/Tulivu89/Character-Engine) | The character model: Classic and Profile Plus shapes (Presence, Drive, Pattern, Resistance, Conduct, Facets); pressure (Hook, Pursuit, Position) with its history. States as bounded numbers with bands, a resting band, a scope and terminals. The four approaches, rolls and stakes. Threads (five questions, a kind, milestones, one active). The journal with active and archived entries. Places nested inside places, with description, lorebook entry and atmosphere. Schedules as plans of stops. Factions with standing ladders and resources. Chat modes, including the interview. Image prompt fields and presets. | NovelAI's script platform: the lorebook and Author's Note injection, the bridge userscript, the story-file storage. |
+| [CharacterRoom](https://github.com/Tulivu89/CharacterRoom) | The chat side's features: Contact, user and scenario cards; example chats; brains (keyed lore); Jots, Diary, Plans and Process; posts with comments; story time and schedules with a week view; emotions and portraits; the dice system and its presets; sheets per person; group chat; Stage mode; chat bubbles; card import and export. | AnotherRoom's context code (see below), the Xialong-only prompt, the NovelAI panels. |
+| Praxis | Stack, engine pattern, relay, formats, saves, server, deploy, CI. Canon and instance: a world is read-only, and play lives in the save. | Its Orbis-shaped records, once the new ones are in. Bogwater and Port Covenant become worlds on the new records. |
+| Orbis, Ember | Nothing required. Reference for an editor, import and export, and a launch handoff, if useful. | Everything else. |
 
-## Decisions this plan makes (open to the owner's veto)
+### AnotherRoom
 
-1. **Folders and code are named by job, not by brand.** `adventure/`, `hub/`, `chat/`, `core/`. Brand names live in one file of display text per side. A later rebrand is then a text change, not a move.
-2. **One shared core.** What the adventure already has that chat needs moves to `core/`: the provider list and relay (`src/narration/`), the prompt formats, the context budget, the journal, and the record shapes. Both sides import it. One repository, npm workspaces, one CI job per folder as now.
-3. **The hub is built fresh, not trimmed from Orbis.** Orbis is mostly the parts we must drop. We keep its record shapes (`docs/orbis-record-shapes.md`), the patterns of its editor and its import and export, and Ember's launch handoff, and write the rest on the adventure's stack.
-4. **Local first, accounts later.** Hub v0 stores records in the browser, with export and import files, like adventure saves. No sign-in, no database, nothing personal on the server. Accounts come when sharing does (step 6).
-5. **The format names change before outside players arrive.** `praxis-module/1`, `praxis-save/1`, `praxis-records/1`, `praxis-export/1`, the `praxis` browser database and `PRAXIS_PROVIDERS` carry the old brand. They get neutral names, and the importer keeps reading the old ones so no save is lost.
+CharacterRoom is a fork of AnotherRoom 1.1.5 by Triplis, made with Triplis's permission for a NovelAI script. Its context builder (system prompt, message rebuild, brains assembly, rollover, emotion parsing) is AnotherRoom's code. That permission covered a NovelAI fork, not a website.
+
+The site writes its own chat context instead, on the shared core. It has to anyway: AnotherRoom builds for Xialong only, and the site serves many models. CharacterRoom's own additions are the owner's and come across freely. Character cards keep reading AetherRoom field names, so existing characters can be imported.
+
+## The design: one world model, three ways in
+
+**Records (canon).** Made once, used everywhere:
+- **Character:** one record for chat and adventure alike. A profile in one shape (Classic, Profile Plus or custom), plus Facets, Presence for how they look, voice, a greeting, example chats, emotions and portraits, a schedule, an inventory, and states.
+- **Place:** nested to any depth (region, town, building, room), with description, lorebook entry and atmosphere by time of day.
+- **Item, Faction, Thread, Lore entry** (brains), **Scenario** (a starting situation), **Persona** (the player's own card).
+- **World:** the container. Genre, tone, calendar, the state definitions and the ruleset, and every record inside.
+- **Ruleset:** state definitions, how a roll is built and judged (the four approaches, or a preset such as Blades or Year Zero), and the outcomes.
+
+**Play (instances).** The save holds what changed; canon never changes in play:
+- **Adventure:** a world played as a text adventure, with rules, a narrator, a clock and the player's own records (Praxis today).
+- **Chat:** one or more characters in conversation, with Jots, Diary, Plans, posts and story time (CharacterRoom today).
+- The two can meet: an adventure character opens a chat, and a chat can be summarised into the adventure's journal, as CE's interview does.
+
+**Making (the studio, called the hub until it has a name).** Where records are written, with the guided builders and generate buttons that CE has, and import from CharacterRoom cards and from Praxis's records.
+
+**The rule over all of it:** the model never moves a number. States, pressure and standing change by a rule firing on something that happened, or by the player's hand. The model narrates. Where its judgment is needed, it picks a label from a closed list, and a table says what that label does.
+
+## Decisions (open to the owner's veto)
+
+1. **The record model is designed before any studio code.** One design doc, `docs/records.md`, built from CE, CharacterRoom and what the adventure reads, and reviewed by the owner. Everything else waits on it.
+2. **Folders and code are named by job, not by brand.** `core/`, `adventure/`, `chat/`, `studio/`. Brand names live in one file of display text per side.
+3. **One shared core.** The provider relay, prompt formats, context budget, journal, records and state engine live in `core/`. Adventure and chat both import it.
+4. **Browser storage first.** Records, saves and chats live in the player's browser, with export and import, and a **Back up everything** file. Nothing about play is stored on the server, and keys are sent per request and never kept. Testers lose nothing they have backed up, and the server has nothing of theirs to leak.
+5. **Neutral format names before outside players arrive.** `praxis-module/1`, `praxis-save/1`, `praxis-records/1`, `praxis-export/1`, the `praxis` browser database and `PRAXIS_PROVIDERS` get neutral names. The old ones are still read.
+
+## Accounts
+
+Not needed for testing: decision 4 keeps testers safe and costs nothing. When people want their work on two devices or want to share it, the light version is:
+- sign-in by emailed link, with no passwords to store;
+- one SQLite file on the same server, holding each person's records and saves as they are exported now;
+- an email sender's free tier, which needs the domain from the brand step;
+- Hetzner backups (about a fifth more on the server bill), a privacy page and a delete-my-account button.
+
+That fits on the current server. It waits until the studio and chat are worth syncing.
 
 ## Order
 
-Each step is one or more pull requests. The adventure's own list (charter, *Next, in order*) runs alongside from step 2 on.
+Each step is one or more pull requests. The adventure keeps its own list (charter, *Next, in order*) alongside, on its current records, until step 6.
 
-### 1. Brand (the owner's call, Claude drafts)
-
-- One name for the site, and a name or plain label for each side (adventure, hub, chat). Plain labels ("Adventure", "Characters", "Worlds") under one site name are the cheap option and never collide with anyone.
-- Checks before choosing: the .com or a good alternative is free, no live product in AI chat or games uses it, and it reads aloud on first sight.
-- A look: one logo mark, two typefaces, a colour set. The adventure's current look (dark ground, Literata, Atkinson Hyperlegible Next) is a fair start.
-- A domain, which replaces the sslip.io address.
-
-Nothing else waits on this except step 3's display text.
-
-### 2. Shape the repository
-
-- Move `praxis/` to `adventure/`, pull `core/` out of it, and keep every test passing. The server account, service and paths move with it (`/srv/muse/adventure`); `deploy.sh` handles the move once.
-- Rename the formats and the browser database, with old names still read.
-- Trim `orbis/` and `ember/` to the parts listed in decision 3, or archive them out of the tree once the hub has what it needs.
-
-### 3. The new name on the adventure
-
-- The display text, the page title, the in-app guide's title, and the README.
-- The adventure keeps its own development pace: the evaluator, NPC opposition dice, branches, Bogwater's engine asks.
-
-### 4. Hub v0
-
-- Records for worlds, places, people, groups, things and notes, in the shapes the adventure already reads.
-- An editor per record kind, a world view that lists what is inside a place, and export and import of one world as a file.
-- **Play in the adventure** and **Chat with** on a record: the handoff Ember used, carrying the records the other side needs.
-- The adventure's local records (`praxis-records/1` today) come in as hub records.
-
-### 5. Chat v0
-
-- Needs from the owner first: the CharacterRoom userscript, the Discord bot's code, and a list of what each does that players use most.
-- Port, don't copy: CharacterRoom's behaviour on `core/` (provider relay, prompt formats, context budget, journal), with the site's own screen.
-- A character card holds persona, appearance, greeting, example messages, lorebook entries and schedule. The card is a hub record, so a character made once works in both sides.
-- Chats saved in the browser with export and import, like adventure saves.
-- The Discord bot stays its own thing until the site version is solid; then it reads cards from the hub.
-
-### 6. Accounts and sharing
-
-Only once there is something to share: sign-in (email link, no Discord dependency), records stored on the server, public and private worlds, and a published character list. This brings terms, a privacy page, a content policy and backups, so it waits until the rest is worth it.
-
-### 7. Partner models
-
-When a partner provides models, their endpoint goes in the provider list (`PRAXIS_PROVIDERS` today), and the "bring your own key" step becomes optional for players.
+1. **The record model.** `docs/records.md`, as decision 1. Claude drafts it from the three sources; the owner reviews it field by field.
+2. **Brand,** alongside step 1:
+   - one name for the site, and a name or plain label for each side;
+   - checks before choosing: a free domain, no AI chat or game product using the name, easy to say on first sight;
+   - a look and a domain to replace the sslip.io address.
+3. **Repository shape.** `praxis/` becomes `adventure/`, `core/` comes out of it, the formats get neutral names, and `orbis/` and `ember/` leave the tree (their history stays in git).
+4. **Studio v0.** The new records in the browser: an editor per kind, a world view of nested places, guided builders, generate buttons that show what they send, import of CharacterRoom cards, and export and import of a world.
+5. **Chat v0.** CharacterRoom on the site, on the core:
+   - characters, persona and scenario;
+   - brains, Jots, Diary and Plans;
+   - story time and schedules;
+   - emotions and portraits, uploaded at first.
+   - Then posts, dice and sheets, group chat and Stage mode.
+6. **The adventure on the new records.** Praxis's engine reads them through the core; Bogwater and Port Covenant are converted; CE's pressure and threads join its rules.
+7. **Images** through the player's own image provider, after everything else is established, as the charter already says.
+8. **Accounts,** when syncing and sharing are wanted.
+9. **Partner models,** when a partner provides them.
 
 ## Questions for the owner
 
-1. Can Orbis and Praxis code be reused freely here, with only the names and assets left behind? This plan assumes yes.
-2. Should Claude draft name candidates now, with the checks in step 1 done for each?
-3. Where are the CharacterRoom script and the Discord bot's code? A zip or a repository Claude can be given works.
-4. Is local-first right for the hub's first version, or are accounts needed sooner?
+1. Should the character record default to Profile Plus, with Classic as the alternative, or the other way round?
+2. Any record kinds or fields you've already planned that neither CE nor CharacterRoom has? A list in any form is enough to start `docs/records.md`.
+3. Where is the Discord bot's code? It is in neither repository. It can wait until chat v0.
+4. Should Claude draft name candidates now, with the step 2 checks done for each?
