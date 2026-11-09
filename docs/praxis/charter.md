@@ -2,6 +2,8 @@
 
 Nov 6, 2026 · @AmbiProp
 
+The whole project's order and the decisions that cross its parts are in `docs/roadmap.md`.
+
 Praxis is a single-player chat RPG: text-adventure roleplay with optional dice-driven mechanics, modeled on Character Engine. It loads a world module whose starting records come from Orbis, and keeps the live records in the player's own save.
 
 ## Settled
@@ -20,7 +22,7 @@ Praxis is a single-player chat RPG: text-adventure roleplay with optional dice-d
 | Growth, challenge and economy | From *Praxis — Growth, Challenge and Economy*, all decided Oct 17 and built in 0.17.0 to 0.19.0. XP is earned from what the engine sees: overcoming people, obstacles, lessons and module milestones. It is spent at Genesys's prices on ratings and a charge ladder to Master. Every approach has one secondary lane. Challenge grows by rank and gangs, with one potential enemy to a place, and a fight that ends is over. Coin goes on a ten-step scale, and the narrator reads its band. Each good does one job (help, weapon, armour, use). Bribes are paid only if taken. Bargains, terms that count down, and making things with Focus. |
 | People in the scene | Schedules hold while you're with someone. Followers (companion by bond tier, captive, won over, or by hand) travel with you, keep no schedule, and are checked again on every journey. |
 | Optional mechanics | Anything can be set by hand. The player can change any state directly, put themselves anywhere, take a closed way anyway, or resolve any check as an automatic success. Every override is recorded in the ledger as the player's edit. |
-| Interface | One play screen and one scroll: the story, the prompt at its end, and the menu under the prompt. The menu is five sections, all closed until one is opened, one open at a time, most present first: Scene, You, Map, World, Settings. No header bar and no menu button: the player scrolls past the prompt to reach it. A check opens in the prompt's place; the journal, the rules guide and the record form open where the menu was. The design canvas is *Praxis play screen* in Leon's artifacts. Look: dark ground, Literata for the story, Atkinson Hyperlegible Next for the interface, the four approach colours, blue for anything the player did by hand. |
+| Interface | One play screen and one scroll: the story, the prompt at its end, and the menu under the prompt. The menu is five sections, all closed until one is opened, one open at a time, most present first: Scene, You, Map, World, Settings. No header bar and no menu button: the player scrolls past the prompt to reach it. A check opens in the prompt's place; the journal, the rules guide and the record form open where the menu was. The design canvas is *Praxis play screen* in the owner's artifacts. Look: dark ground, Literata for the story, Atkinson Hyperlegible Next for the interface, the four approach colours, blue for anything the player did by hand. |
 | Journal | The primary record of the story so far, sent with every turn. The player can write anything. When story is about to leave the model's window, Praxis suggests a short entry for it; past the journal's budget, it suggests combining the oldest entries. Nothing joins the journal until the player keeps it, and both suggestions can be switched off. Character Engine's shape: active entries are sent, archived ones are kept and never sent. |
 | Local records | Players add people, places, things, groups and notes to their save, and start bonds with people they meet. The narrator reads them like canon and they can be exported to bring into another save. Organizing them under the player's Orbis space is Orbis's job. |
 | Rules reference | An in-app guide, *How Praxis plays*, that every part of the game can point to. |
@@ -28,11 +30,11 @@ Praxis is a single-player chat RPG: text-adventure roleplay with optional dice-d
 | Relationship to Speculus | Settled: Praxis is free to become what it needs to be. |
 | Test module | *Abernys: Bogwater*, from 0.20.0: a fen town in the autumn eel run, played by a runaway from a Port Covenant indenture. Its design is the Claude Doc *Praxis — Bogwater Module Plan*. *Abernys: Port Covenant*, whose content was shaped by its tests, stays loaded until Bogwater's tests cover what its tests do, then retires. |
 | Images | After everything else is established. |
-| Deployment | A server of Leon's own: `deploy/setup-server.sh` once on a fresh Ubuntu 24.04 box (or `deploy/cloud-config.yaml` pasted into Hetzner's Cloud config box, which runs it with no terminal), then `bash /srv/muse/deploy/deploy.sh` for updates. Praxis runs as the `praxis` service on 127.0.0.1:8791 behind nginx with HTTPS. Not set up yet. |
+| Deployment | Live since Nov 7, 2026 on a Hetzner server of the owner's own, at `135-181-31-213.sslip.io`: `deploy/setup-server.sh` once on a fresh Ubuntu 24.04 box (or `deploy/cloud-config.yaml` pasted into Hetzner's Cloud config box, which runs it with no terminal), then `bash /srv/muse/deploy/deploy.sh` for updates. Praxis runs as the `praxis` service on 127.0.0.1:8791 behind nginx with HTTPS. |
 
 ## How work lands
 
-Claude's sessions can push only to `claude/*` branches, and cannot merge into `main` without a person approving. Each change goes to a branch, passes the CI check (tests, type checks, build, and a check that the production server answers), and arrives as a pull request. Leon can try any branch first in a GitHub codespace, which builds and starts Praxis by itself (the repository's `.devcontainer`); then he merges it on GitHub: open the pull request, click **Merge pull request**, then **Confirm merge**.
+Claude's sessions can push only to `claude/*` branches, and cannot merge into `main` without a person approving. Each change goes to a branch, passes the CI check (tests, type checks, build, and a check that the production server answers), and arrives as a pull request. The owner can try any branch first in a GitHub codespace, which builds and starts Praxis by itself (the repository's `.devcontainer`); then they merge it on GitHub: open the pull request, click **Merge pull request**, then **Confirm merge**.
 
 ## Four Approaches: interim answers
 
@@ -127,8 +129,8 @@ Saves are `praxis-save/1`, exports `praxis-export/1` (a save with its module), a
 | Oct 16, 2026 | 0.12.0 merged (PR #12) and deployed: the Four Approaches on every person, thing and place; Focus's Leverage and Prepared; difficulty by record, tier or seeded random; Something in the story; the standard ruleset `four-approaches/1`. Port Covenant 0.5.0. |
 | Oct 16, 2026 | 0.13.0 merged (PR #13): the house format (plain speech, *narration*, (thoughts), [notes]); the context ladder; statuses and outcomes as story. Port Covenant 0.6.0. |
 | Oct 16, 2026 | 0.14.0 merged (PR #14): NovelAI's layout with a lorebook section, the dramatis personae and a prefill; key-activated lore kept for the scene; brief imperative outcomes and conditions; schedules that hold; followers. |
-| Oct 16, 2026 | 0.14.1 merged (PR #15): stakes on a check ("What you want from it"), stated outright in the outcome; a turn exported in one click with its replies; "Try this turn 5 more times" to count how often a ruling is followed. Leon's first measurements: 5 of 6 replies followed the ruling, twice. |
-| Oct 17, 2026 | 0.15.0 merged (PR #16): the prefill as clean sentences; pronouns; only the story kept after a turn resolves; editable replies with Continue from here; a minion falls to one success. Leon's Force test: 6 of 7 replies followed the ruling, and edit-and-continue worked. |
+| Oct 16, 2026 | 0.14.1 merged (PR #15): stakes on a check ("What you want from it"), stated outright in the outcome; a turn exported in one click with its replies; "Try this turn 5 more times" to count how often a ruling is followed. The owner's first measurements: 5 of 6 replies followed the ruling, twice. |
+| Oct 17, 2026 | 0.15.0 merged (PR #16): the prefill as clean sentences; pronouns; only the story kept after a turn resolves; editable replies with Continue from here; a minion falls to one success. The owner's Force test: 6 of 7 replies followed the ruling, and edit-and-continue worked. |
 | Oct 17, 2026 | 0.16.0 merged (PR #17): the outer lanes (the Tarred Rope, the Reddles, the contract hall), Coin, Bound by contract and In your pay; scene actions that need people present and change their states. Port Covenant 0.8.0. |
 | Oct 17, 2026 | 0.16.1 merged (PR #18): wait or go quietly, moving the clock or the player by the rules without a turn or narration, to correct drift; and a fight that ends stays over (the standard `fight` rule). *Praxis — Growth, Challenge and Economy* proposed: Genesys's costs with our own earning, rank and gangs for challenge, coin on a ten-step scale, and bribes as Leverage you pay for. |
 | Oct 17, 2026 | 0.17.0 merged (PR #19): experience and growth, one secondary lane per approach, rank and gangs. Port Covenant 0.9.0. |
@@ -136,6 +138,8 @@ Saves are `praxis-save/1`, exports `praxis-export/1` (a save with its module), a
 | Oct 17, 2026 | 0.19.0 merged (PR #21): making things with Focus. Port Covenant 0.11.0. |
 | Oct 18, 2026 | 0.20.0 merged (PR #22): *Abernys: Bogwater*, the new test module, with 17 people, 38 places, 16 scene actions and a forty-day census test that fails on more than four people in one place; schedule rules that wait on a state; scene actions that set world states. *Praxis — Bogwater Module Plan* written. |
 | Nov 5, 2026 | 0.21.0 opened as PR #24: narration from any OpenAI-compatible provider or the player's own server; prompt formats for the main open-model families; `PRAXIS_PROVIDERS` for a partner's endpoint; windows up to 128k. |
+| Nov 6, 2026 | Moved to `Tulivu89/mercurial-muse` at 0.21.0. Setup from a phone with `deploy/cloud-config.yaml` (PR #2). |
+| Nov 7, 2026 | Live on the owner's Hetzner server at `135-181-31-213.sslip.io`. *Roadmap* written (`docs/roadmap.md`): brand, the shared core, the hub, the chat side. |
 
 **v0.1 still to do:** branches (keeping alternate continuations rather than only replacing the latest).
 
@@ -144,7 +148,7 @@ Saves are `praxis-save/1`, exports `praxis-export/1` (a save with its module), a
 **v0.3** is done with 0.10.0 except the evaluator, which waits on the generation test. The evaluator also lets free text propose a check instead of the player choosing one.
 
 **Next, in order:**
-1. Merge PR #24, then deploy. Then compare narrators on the same Bogwater turn with "Try this turn 5 more times": GLM-4.6 on NovelAI against the same model on another provider, then one or two other large models. Count how often each follows the ruling and the conditions.
+1. Compare narrators on the same Bogwater turn with "Try this turn 5 more times": GLM-4.6 on NovelAI against the same model on another provider, then one or two other large models. Count how often each follows the ruling and the conditions.
 2. Play Bogwater from the opening, in the net at the long fence:
    - earn a coin at the smokehouse or on the fence, and hire Gethin and his flatboat;
    - load Cadfan's barrels on boat day (day 4, a Monday);
@@ -199,9 +203,11 @@ Before v0.3 commits to anything beyond narration, we measure:
 
 The result decides between narration-only, helper calls on GLM-4.6, and staged calls on the narration model. Journal suggestions are the first helper call; they go to the model chosen in Settings (GLM-4.6 by default) about once per piece of story.
 
-The test page is built (Settings › Testing › Generation test, PR #8) and needs Leon's key in his own browser. Per model it makes 11 short replies: three short prompts for the fixed cost of a call, two fresh prompts of about 4,000 tokens and two of about 16,000 for the cost of reading, and the first large prompt again word for word and with new endings. With a second model, the first model's large prompt is tried again after the second has run. Times are measured on the Praxis server around NovelAI's answer (`upstreamMs`). A repeat that saves half or more of the reading time counts as reuse. **Copy the results** gives the numbers to paste back.
+The test page is built (Settings › Testing › Generation test, PR #8) and needs the owner's key in their own browser. Per model it makes 11 short replies: three short prompts for the fixed cost of a call, two fresh prompts of about 4,000 tokens and two of about 16,000 for the cost of reading, and the first large prompt again word for word and with new endings. With a second model, the first model's large prompt is tried again after the second has run. Times are measured on the Praxis server around NovelAI's answer (`upstreamMs`). A repeat that saves half or more of the reading time counts as reuse. **Copy the results** gives the numbers to paste back.
 
 ## Orbis proposal (collected as we build)
+
+Superseded: the project no longer builds on Orbis (`docs/roadmap.md`). These stay as input for `docs/records.md`, since each is something the adventure needs from its records.
 
 1. A Praxis launch and generation route, following the existing Ember pattern.
 2. A region bundle export: the world plus every record inside a chosen region.

@@ -1,6 +1,6 @@
 # Abernys — Pirates: the Crowns, the Rookery and the Pirate Queen
 
-Oct 5, 2026 · @Bruce
+Oct 5, 2026 · @AmbiProp
 
 Lore for the pirates of Abernys, organised as a location, a settlement, a faction and a character. The owner's material is marked; everything else is a suggestion. Companion to the [region seed](https://claude.ai/code/artifact/e8b2a2e3-f3fb-4831-8690-f5c3516643a0) and the [societies doc](https://claude.ai/code/artifact/93be074a-3425-4644-be08-b318382de4f7).
 

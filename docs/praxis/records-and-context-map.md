@@ -8,7 +8,7 @@ This page lists every kind of world and game record, what the narrator reads fro
 - 0.11.0: GLM-4.6 rules and mentioned records.
 - 0.12.0: the Four Approaches on every record (§8).
 - 0.13.0: one home per fact.
-- 0.14.0 follows Leon's review of 0.13.0:
+- 0.14.0 follows the owner's review of 0.13.0:
   - lore goes where NovelAI puts lorebooks;
   - the outcome comes after your words;
   - conditions go in the reply's opening, as NovelAI's prefill does;
@@ -215,12 +215,12 @@ Write in second person, present tense, in concrete physical detail: what can be 
 
 ### Xialong: on hold
 
-Leon's call: focus on GLM-4.6. When it comes back, Xialong gets its own prompt built the way NovelAI builds one:
+The owner's call: focus on GLM-4.6. When it comes back, Xialong gets its own prompt built the way NovelAI builds one:
 - NovelAI's default system prompt, word for word.
 - The story as continued text: ATTG, `----` information, `***`, the journal, then the transcript as prose.
 - The notes as spaced bracket notes.
 
-**Needed from Leon then:**
+**Needed from the owner then:**
 - NovelAI's default System Prompt and Prefill for Xialong, from the Advanced tab, in Storyteller and Text Adventure mode.
 - One turn's Context viewer output in Text Adventure mode.
 
@@ -291,7 +291,7 @@ The table comes from which approach owns which state, plus **deeds**: acts with 
 | **Place** | No claim | Lie low, cover your tracks: **Alert** down | Search it, learn its ways: **Prepared** up | No claim |
 | **Group** | Not yet: groups aren't in the scene as records. Faction standing arrives in v0.4 | | | |
 
-Leon's call on Finesse against a person: use the place's Alert rather than a separate Guard track. How hard a particular person is to rob is their Finesse difficulty.
+The owner's call on Finesse against a person: use the place's Alert rather than a separate Guard track. How hard a particular person is to rob is their Finesse difficulty.
 
 ### Focus: Leverage and Prepared
 
