@@ -35,3 +35,25 @@ export function ago(time: number, now: number): string {
   if (hours < 24) return `${hours} h ago`;
   return new Date(time).toLocaleDateString();
 }
+
+export async function readFileBytes(file: File): Promise<Uint8Array> {
+  return new Uint8Array(await file.arrayBuffer());
+}
+
+// A picture as a data URL, scaled down so its longest side is at most `max` pixels.
+export async function imageDataUrl(file: Blob, max = 512, type = 'image/webp', quality = 0.85): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close?.();
+  return canvas.toDataURL(type, quality);
+}
+
+export function clock(time: number, now: number): string {
+  const date = new Date(time);
+  const sameDay = new Date(now).toDateString() === date.toDateString();
+  return sameDay ? date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}

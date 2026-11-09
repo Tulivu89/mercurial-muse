@@ -1,40 +1,18 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { KIND_NAMES, RECORD_KINDS, newWorld, parseWorld, type World } from '../../core/records/index.js';
-import { Drop, Wordmark } from './Mark';
+import { Drop, Wordmark } from '../../kit/src/Mark';
+import { THEME_NAMES, useTheme, type Theme } from '../../kit/src/theme';
 import { WorldView } from './WorldView';
-import { deleteWorld, listWorlds, putWorld } from './storage';
-import { ago, newId, readJsonFile } from './util';
-
-type Theme = 'auto' | 'paper' | 'night';
-const THEME_KEY = 'inkwyrm.theme';
-const THEME_NAMES: Record<Theme, string> = { auto: 'Match device', paper: 'Paper', night: 'Night' };
-
-function readTheme(): Theme {
-  try {
-    const stored = localStorage.getItem(THEME_KEY);
-    return stored === 'paper' || stored === 'night' ? stored : 'auto';
-  } catch {
-    return 'auto';
-  }
-}
-
-function applyTheme(theme: Theme) {
-  const night = theme === 'night' || (theme === 'auto' && typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches);
-  document.documentElement.dataset.theme = night ? 'night' : 'paper';
-}
+import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
+import { ago, newId, readJsonFile } from '../../kit/src/util';
 
 export function App() {
   const [worlds, setWorlds] = useState<World[] | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [status, setStatus] = useState<{ text: string; bad?: boolean } | null>(null);
-  const [theme, setTheme] = useState<Theme>(readTheme);
+  const [theme, setTheme] = useTheme();
   const pending = useRef(new Map<string, World>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    applyTheme(theme);
-    try { localStorage.setItem(THEME_KEY, theme); } catch { /* private browsing: the choice lasts this visit */ }
-  }, [theme]);
 
   useEffect(() => {
     listWorlds().then(setWorlds).catch((error: Error) => { setWorlds([]); setStatus({ text: error.message, bad: true }); });
@@ -86,6 +64,7 @@ export function App() {
           <select id="theme" className="input" style={{ width: 'auto' }} value={theme} onChange={(event) => setTheme(event.target.value as Theme)}>
             {(Object.keys(THEME_NAMES) as Theme[]).map((option) => <option key={option} value={option}>{THEME_NAMES[option]}</option>)}
           </select>
+          <a className="btn quiet" href="/chat/">Chat</a>
           <a className="btn quiet" href="/">Adventure</a>
         </div>
       </header>

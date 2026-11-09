@@ -1,4 +1,5 @@
 // Worlds live in this browser's IndexedDB. Nothing goes to the server; a world file is the backup.
+// The Studio writes them and Chat reads them from the same store.
 import { parseWorld, type World } from '../../core/records/index.js';
 
 const DB_NAME = 'inkwyrm-studio';

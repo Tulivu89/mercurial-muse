@@ -7,8 +7,11 @@ Read `README.md` for what each folder is and how to install, then `docs/roadmap.
 The site is **Inkwyrm** (`docs/brand.md`: the name, the Wet Ink look and its tokens, the ink-drop marks); the repository keeps its working name. An AI roleplay platform whose strength is its features: scripted context management, a rules-driven roleplay system, and worldbuilding and character-building tools. Three parts on one core: the Praxis text-adventure RPG (built), a deep character-chat side, and a studio for worlds and characters. The foundations are the owner's NovelAI scripts, Character Engine (`Tulivu89/Character-Engine`) and CharacterRoom (`Tulivu89/CharacterRoom`); the records are our own, for any genre, not Orbis's. CharacterRoom's context management (the owner's rewrite) carries across to the site and grows to serve every model family. The record model is `docs/records.md`; its first worked example is the mascot, Errata (`docs/mascot-record.md`). Players bring their own model keys until a partner provides models.
 
 - `adventure/` is the working app (Praxis until 0.22.0). Most work happens here.
-- `core/` holds what every side shares: narration (providers, prompt formats, the relay's shapes) and the record model (`core/records/`). Code moves into it when a second side needs it, not before.
+- `core/` holds what every side shares: narration (providers, prompt formats, the relay's shapes, streaming), the record model (`core/records/`) and the chat kernel (`core/chat/`). Code moves into it when a second side needs it, not before.
+- `core/chat/aetherroom.ts` is CharacterRoom's kernel for xialong-v1, held byte for byte by `core/tests/aetherroom-parity.test.ts`. Don't change it without re-recording the fixtures from CharacterRoom.
+- `kit/` is the browser code the Studio and Chat share: the Wet Ink stylesheet, world storage, fields and the connection settings (the adventure's own `praxis.*` keys; never rename them).
 - `studio/` is the Studio, served at `/studio/`: worlds and characters in the record model.
+- `chat/` is Chat, served at `/chat/`: CharacterRoom on the site (`docs/chat-brief.md`). Its phases and changelog are in `chat/README.md`.
 - One npm install at the root (workspaces). Orbis and Ember are gone from the tree; their code is in the history.
 - `docs/abernys/` is the setting, all the user's own. `docs/praxis/` holds the design docs, including the Bogwater test module's plan and full design.
 
@@ -31,6 +34,6 @@ The site is **Inkwyrm** (`docs/brand.md`: the name, the Wet Ink look and its tok
 
 ## Git and checks
 
-- Work on a branch and open a pull request into `main`. CI (the Site workflow) runs when `adventure/`, `core/`, `studio/` or the root package files change.
+- Work on a branch and open a pull request into `main`. CI (the Site workflow) runs when `adventure/`, `core/`, `kit/`, `studio/`, `chat/` or the root package files change.
 - From the root, run `npm test`, `npm run lint` and `npm run build` before finishing.
 - Deploys: `deploy/setup-server.sh` once on a fresh Ubuntu 24.04 server, then `bash /srv/muse/deploy/deploy.sh`. The service is `inkwyrm`, defined in `deploy/inkwyrm.service`; the server account is still `praxis`.

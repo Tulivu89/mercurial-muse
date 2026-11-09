@@ -21,6 +21,13 @@ export const narrationRequestSchema = z.object({
   // The prompt format; left out, it is guessed from the model's name.
   format: z.enum(FORMAT_IDS).optional(),
   prefill: z.string().max(20_000).optional(),
+  // Samplers beyond temperature, for models that are run with set values (xialong-v1). Sent only
+  // when given.
+  top_p: z.number().min(0).max(1).optional(),
+  top_k: z.number().int().min(0).max(1000).optional(),
+  min_p: z.number().min(0).max(1).optional(),
+  // Extra stop strings, added to the format's own.
+  stop: z.array(z.string().min(1).max(80)).max(8).optional(),
 }).strict();
 export type NarrationRequest = z.infer<typeof narrationRequestSchema>;
 
@@ -30,17 +37,22 @@ export interface Upstream {
   format: FormatId | null;
 }
 
-export function buildUpstream(request: NarrationRequest, provider: ProviderInfo): Upstream {
+export function buildUpstream(request: NarrationRequest, provider: ProviderInfo, stream = false): Upstream {
   const { messages, prefill, model, max_tokens, temperature } = request;
+  const samplers = {
+    ...(request.top_p !== undefined ? { top_p: request.top_p } : {}),
+    ...(request.top_k !== undefined ? { top_k: request.top_k } : {}),
+    ...(request.min_p !== undefined ? { min_p: request.min_p } : {}),
+  };
   const mode = request.mode === 'prompt' && provider.completions ? 'prompt' : 'chat';
   if (mode === 'prompt') {
     const format = request.format ?? guessFormat(model);
     const { prompt, stop } = formatPrompt(format, messages as Message[], prefill ?? '');
-    return { path: '/completions', format, body: { model, prompt, stop, max_tokens, temperature, stream: false } };
+    return { path: '/completions', format, body: { model, prompt, stop: [...stop, ...(request.stop ?? [])], max_tokens, temperature, ...samplers, stream } };
   }
   const sent: Message[] = [...messages];
   if (prefill) sent.push({ role: provider.chatPrefill === 'assistant' ? 'assistant' : 'system', content: prefill });
-  return { path: '/chat/completions', format: null, body: { model, messages: sent, max_tokens, temperature, stream: false, ...(provider.thinkingOff ?? {}) } };
+  return { path: '/chat/completions', format: null, body: { model, messages: sent, max_tokens, temperature, ...samplers, ...(request.stop?.length ? { stop: request.stop } : {}), stream, ...(provider.thinkingOff ?? {}) } };
 }
 
 // Thinking a model wrote into its reply, which the player should never see.

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { World } from '../../core/records/index.js';
-import { NameField } from './Fields';
-import { newId } from './util';
+import { NameField } from '../../kit/src/Fields';
+import { newId } from '../../kit/src/util';
 
 export function WorldSettings({ world, onChange, onDelete }: { world: World; onChange: (world: World) => void; onDelete: () => void }) {
   const [label, setLabel] = useState('');

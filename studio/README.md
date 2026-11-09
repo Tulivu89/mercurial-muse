@@ -12,17 +12,18 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 - **Sets:** one entry in use at a time, such as outfits.
 - **Greetings and example chats** for characters, for chat only.
 - **In context now:** put people and a place in the scene, type what was just said, tick what holds, and see what the world would send, with a rough token count.
-- **Files:** a world exports as `<name>.world.json` (`studio-world/1`) and opens again. A CharacterRoom contact card imports as a character:
-  - persona and appearance become Here sections;
-  - brains become sections;
-  - conditional brains become Named or When sections, behind CharacterRoom's bond tiers;
-  - the species becomes a group.
+- **Files:** a world exports as `<name>.world.json` (`studio-world/1`) and opens again. Cards import into the open world (0.1.1):
+  - a CharacterRoom contact card as a character: persona and appearance become Here sections, brains become sections, conditional brains become Named or When sections behind CharacterRoom's bond tiers, the species becomes a group, and the schedule is kept;
+  - a CharacterRoom user card as a persona, and a scenario card as a scenario;
+  - a Character Card V1, V2 or V3, as JSON or PNG: description and personality as Here sections, the scenario as a Scenario, greetings and example chats, the lorebook as Named sections, and the card's own system prompt kept as a Never section.
 
-  Schedules don't come across yet.
+  Pictures on a card are kept by Chat, which is where portraits live; import there to bring them.
 
 ## Not yet
 
-Schedules, generate buttons, guided builders, images, and playing a Studio world in chat or the adventure.
+A schedule editor, a gender field, generate buttons, guided builders, images, and playing a Studio world in the adventure. Chat (`/chat/`) plays Studio characters now.
+
+The shared look, world storage and fields moved to `kit/` in 0.1.1, for Chat to use too.
 
 ## Develop
 

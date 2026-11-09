@@ -4,14 +4,17 @@
   "type": "module",
   "workspaces": [
     "core",
+    "kit",
     "adventure",
-    "studio"
+    "studio",
+    "chat"
   ],
   "scripts": {
     "test": "npm test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "build": "npm run build -w adventure && npm run build -w studio",
+    "build": "npm run build -w adventure && npm run build -w studio && npm run build -w chat",
     "dev:all": "npm run dev:all -w adventure",
-    "dev:studio": "npm run dev -w studio"
+    "dev:studio": "npm run dev -w studio",
+    "dev:chat": "npm run dev -w chat"
   }
 }

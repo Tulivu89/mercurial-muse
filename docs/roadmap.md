@@ -90,7 +90,7 @@ Each step is one or more pull requests. The adventure keeps its own list (charte
    - world files, and CharacterRoom card import.
 
    Still to come: schedules, generate buttons that show what they send, guided builders.
-5. **Chat v0.** Briefed in `docs/chat-brief.md` for the session that builds it. CharacterRoom on the site, on the core:
+5. **Chat v0.** Briefed in `docs/chat-brief.md`. **Phase A built Nov 9 (Chat 0.1.0, at `/chat/`):** the context kernel in `core/chat/` with both profiles (AetherRoom for Xialong, byte for byte against CharacterRoom's fixtures; General for every other model), streaming through the relay, the chat screen, card import (CharacterRoom, Character Card V1 to V3, PNG), portraits, and `kit/` for what the Studio and Chat share. Phase B (the clock, schedules, modes, memories, plans) and Phase C (posts, dice, games, Stage mode) follow once the owner has tried Phase A. CharacterRoom on the site, on the core:
    - characters, persona and scenario;
    - brains, Jots, Diary and Plans;
    - story time and schedules;

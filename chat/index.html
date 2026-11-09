@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#16130F" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,500&family=Literata:ital,opsz,wght@0,7..72,400;1,7..72,400&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" />
+    <title>Inkwyrm Chat</title>
+  </head>
+  <body>
+    <div id="root">
+      <p id="boot" style="font:16px/1.5 system-ui,sans-serif;padding:24px">Opening Chat…</p>
+    </div>
+    <script>
+      window.addEventListener('error', function (event) {
+        var boot = document.getElementById('boot');
+        if (boot) boot.textContent = 'Chat could not start: ' + (event.message || 'a script failed to load');
+      }, true);
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
