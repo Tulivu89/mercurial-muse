@@ -56,12 +56,12 @@ One shape, used four ways. Final drawings go to an illustrator; the workshop's v
 
 ## Mascot
 
-A goth ink dragon, a writer, and the site's house muse and chat persona. Working name **Sepia**, open. The visual brief for whoever draws her is `docs/mascot-brief.md`; her character record is `docs/mascot-record.md`.
+A goth ink dragon, a writer, and the site's house muse and chat persona. Her name is **Errata**: the list of corrections bound into the back of a book. Her card is being built in the owner's CharacterVault. The visual brief for whoever draws her is `docs/mascot-brief.md`; her character record is `docs/mascot-record.md`.
 
 ## Still to do
 
 1. Check and register the domains: inkwyrm.com first, inkworm.com for the misspelling.
 2. Final drawings of the drop family.
-3. The mascot's name, then her art.
+3. The mascot's art, from `docs/mascot-brief.md`.
 4. A trademark search where the site will be marketed.
 5. The look in code: these tokens become the site's theme (roadmap step 3).
