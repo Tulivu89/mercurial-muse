@@ -1,5 +1,5 @@
 #cloud-config
-# Sets up Praxis on a new server with no terminal, from a phone if need be.
+# Sets up Inkwyrm on a new server with no terminal, from a phone if need be.
 #
 # On Hetzner's Create Server page, paste this whole file into "Cloud config" (Ubuntu 24.04,
 # public IPv4 on). Once the server is running, wait two minutes and open http://<its IPv4>
@@ -43,7 +43,7 @@ write_files:
       <html lang="en"><head><meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       $refresh
-      <title>Praxis setup</title>
+      <title>Inkwyrm setup</title>
       <style>
       :root{--bg:#fff;--fg:#111;--box:#f3f3f3;--line:#ccc;--accent:#1f6feb}
       @media (prefers-color-scheme:dark){:root{--bg:#111;--fg:#eee;--box:#222;--line:#444;--accent:#4c8dff}}
@@ -67,7 +67,7 @@ write_files:
         page "Setup stopped" "<p>$*</p><p>Copy the text below and send it to Claude.</p>
       <textarea rows=\"20\" readonly>$tail</textarea>"
         if [ -d /etc/nginx/sites-available ]; then
-          rm -f /etc/nginx/sites-enabled/praxis
+          rm -f /etc/nginx/sites-enabled/inkwyrm /etc/nginx/sites-enabled/praxis
           ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
           systemctl restart nginx || true
         fi
@@ -79,7 +79,7 @@ write_files:
       export DEBIAN_FRONTEND=noninteractive
       apt-get -o DPkg::Lock::Timeout=600 update -q || fail "Could not update the package lists."
       apt-get -o DPkg::Lock::Timeout=600 install -y -q nginx git || fail "Could not install nginx."
-      page "Praxis setup" "<p>Starting. This page reloads by itself.</p>" 10
+      page "Inkwyrm setup" "<p>Starting. This page reloads by itself.</p>" 10
 
       say "The $APP_USER account and its deploy key"
       id "$APP_USER" >/dev/null 2>&1 || useradd --system --create-home --home-dir "/home/$APP_USER" --shell /bin/bash "$APP_USER"
@@ -104,15 +104,15 @@ write_files:
       done
 
       say "The key works; cloning"
-      page "Step 2 of 2: installing Praxis" "<p>The key works. Installing now: about ten minutes. This page reloads by itself.</p>
-      <p>When it is done, this page sends you to Praxis at <b>https://$address</b>. Bookmark that address; it is the one to share.</p>" 20
+      page "Step 2 of 2: installing Inkwyrm" "<p>The key works. Installing now: about ten minutes. This page reloads by itself.</p>
+      <p>When it is done, this page sends you to Inkwyrm at <b>https://$address</b>. Bookmark that address; it is the one to share.</p>" 20
       mkdir -p "$REPO_DIR"
       chown "$APP_USER:$APP_USER" "$REPO_DIR"
       [ -d "$REPO_DIR/.git" ] || sudo -u "$APP_USER" git clone -q "$REPO" "$REPO_DIR" || fail "Could not clone the repository."
 
       say "Running deploy/setup-server.sh"
       MUSE_REPO="$REPO" MUSE_ADDRESS="$address" bash "$REPO_DIR/deploy/setup-server.sh" </dev/null \
-        || fail "deploy/setup-server.sh stopped before Praxis was live."
+        || fail "deploy/setup-server.sh stopped before Inkwyrm was live."
 
       say "Sending visits to the bare IP on to https://$address"
       cat > /etc/nginx/sites-available/muse-ip <<SITE
@@ -125,8 +125,8 @@ write_files:
       SITE
       ln -sf /etc/nginx/sites-available/muse-ip /etc/nginx/sites-enabled/muse-ip
       nginx -t && systemctl reload nginx
-      say "Done: Praxis is live at https://$address"
+      say "Done: Inkwyrm is live at https://$address"
 
 runcmd:
   # Its own service, so the long wait for the deploy key holds up nothing else on first boot.
-  - [systemd-run, --unit=muse-setup, --description=Praxis first-boot setup, bash, /root/muse-setup.sh]
+  - [systemd-run, --unit=muse-setup, --description=Inkwyrm first-boot setup, bash, /root/muse-setup.sh]

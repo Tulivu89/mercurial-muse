@@ -10,11 +10,11 @@ Praxis is a single-player chat RPG: text-adventure roleplay with optional dice-d
 
 | Topic | Decision |
 | --- | --- |
-| Repository | `Tulivu89/mercurial-muse`, in `praxis/`, from Nov 6, 2026, beside reference copies of Orbis and Ember. Earlier history is in HowlingWhispers/HW-Praxis (the Java prototype at `d3b13ee`). |
+| Repository | `Tulivu89/mercurial-muse`, in `adventure/` since 0.22.0 (`praxis/` from Nov 6, 2026), with the narration code shared from `core/`. One npm install at the root. Earlier history is in HowlingWhispers/HW-Praxis (the Java prototype at `d3b13ee`). |
 | Stack | TypeScript throughout: React and Vite for the interface, a thin Express server, zod schemas, Vitest. The same stack as Orbis and Speculus. Pieces are lifted from Speculus where they fit; the interface is our own. |
 | Players | Single player. No accounts, no multiplayer. |
 | Saves | In the browser (IndexedDB). Clearing site data clears them, so exporting and importing a save file is a core feature. The server stores nothing about play. |
-| Generation | Any OpenAI-compatible provider, from 0.21.0, with the player's own key: NovelAI, OpenRouter, Featherless, ArliAI, Infermatic, NanoGPT, DeepSeek, Z.ai, more added by the server operator with `PRAXIS_PROVIDERS`, or a server of the player's own. Listed providers go through a relay on the Praxis server that forwards only to them, with the key sent per request and never stored; the player's own server is called from the browser. By default one prompt in the model's own format (GLM, ChatML, Qwen 3, Llama 3, Mistral, Gemma, DeepSeek) goes to the completions endpoint, so the prefill works; providers without one get chat messages. This stays until Orbis's generation gateway can carry Praxis. |
+| Generation | Any OpenAI-compatible provider, from 0.21.0, with the player's own key: NovelAI, OpenRouter, Featherless, ArliAI, Infermatic, NanoGPT, DeepSeek, Z.ai, more added by the server operator with `NARRATION_PROVIDERS` (`PRAXIS_PROVIDERS` before 0.22.0), or a server of the player's own. Listed providers go through a relay on the Praxis server that forwards only to them, with the key sent per request and never stored; the player's own server is called from the browser. By default one prompt in the model's own format (GLM, ChatML, Qwen 3, Llama 3, Mistral, Gemma, DeepSeek) goes to the completions endpoint, so the prefill works; providers without one get chat messages. This stays until Orbis's generation gateway can carry Praxis. |
 | Mechanics | *Four approaches on Genesys dice* (proposal 0.1), on Character Engine's state primitive. Its open questions use Genesys defaults for now (below). |
 | Four Approaches everywhere | Every person, thing and place can be acted on with the Four Approaches without authoring: states owned by approaches, deeds (Finesse against a person: it works or fails, and failure raises Alert), and Focus building Leverage (people) or Prepared (things, places) that another approach spends. Difficulty comes from the target, its tier, or a random roll fixed per save. Anything the story mentions can be added on the spot. Modules extend the standard ruleset `four-approaches/1`. |
 | Narrator | GLM-4.6 first; Xialong on hold. A traditional text adventure in second person, present tense. The rules are written as what to do. The house format: speech plain, with no quotation marks; *narration and action* in asterisks; (thoughts) in parentheses; [notes] in square brackets, outside the story. |
@@ -30,7 +30,7 @@ Praxis is a single-player chat RPG: text-adventure roleplay with optional dice-d
 | Relationship to Speculus | Settled: Praxis is free to become what it needs to be. |
 | Test module | *Abernys: Bogwater*, from 0.20.0: a fen town in the autumn eel run, played by a runaway from a Port Covenant indenture. Its design is the Claude Doc *Praxis — Bogwater Module Plan*. *Abernys: Port Covenant*, whose content was shaped by its tests, stays loaded until Bogwater's tests cover what its tests do, then retires. |
 | Images | After everything else is established. |
-| Deployment | Live since Nov 7, 2026 on a Hetzner server of the owner's own, at `135-181-31-213.sslip.io`: `deploy/setup-server.sh` once on a fresh Ubuntu 24.04 box (or `deploy/cloud-config.yaml` pasted into Hetzner's Cloud config box, which runs it with no terminal), then `bash /srv/muse/deploy/deploy.sh` for updates. Praxis runs as the `praxis` service on 127.0.0.1:8791 behind nginx with HTTPS. |
+| Deployment | Live since Nov 7, 2026 on a Hetzner server of the owner's own, at `135-181-31-213.sslip.io`: `deploy/setup-server.sh` once on a fresh Ubuntu 24.04 box (or `deploy/cloud-config.yaml` pasted into Hetzner's Cloud config box, which runs it with no terminal), then `bash /srv/muse/deploy/deploy.sh` for updates. From 0.22.0 the site runs as the `inkwyrm` service (`deploy/inkwyrm.service`) from `/srv/muse/adventure`, on 127.0.0.1:8791 behind nginx with HTTPS; the server account is still `praxis`. |
 
 ## How work lands
 
@@ -140,6 +140,7 @@ Saves are `praxis-save/1`, exports `praxis-export/1` (a save with its module), a
 | Nov 5, 2026 | 0.21.0 opened as PR #24: narration from any OpenAI-compatible provider or the player's own server; prompt formats for the main open-model families; `PRAXIS_PROVIDERS` for a partner's endpoint; windows up to 128k. |
 | Nov 6, 2026 | Moved to `Tulivu89/mercurial-muse` at 0.21.0. Setup from a phone with `deploy/cloud-config.yaml` (PR #2). |
 | Nov 7, 2026 | Live on the owner's Hetzner server at `135-181-31-213.sslip.io`. *Roadmap* written (`docs/roadmap.md`): brand, the shared core, the hub, the chat side. |
+| Nov 9, 2026 | Brand decided: Inkwyrm, the Wet Ink look (`docs/brand.md`). Record model settled (`docs/records.md`). 0.22.0 opened: `praxis/` becomes `adventure/`, narration moves to `core/`, neutral format names with the old still read, the `inkwyrm` service, Orbis and Ember out of the tree. |
 
 **v0.1 still to do:** branches (keeping alternate continuations rather than only replacing the latest).
 

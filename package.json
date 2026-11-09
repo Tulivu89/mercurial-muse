@@ -1,0 +1,12 @@
+{
+  "name": "mercurial-muse",
+  "private": true,
+  "type": "module",
+  "workspaces": ["core", "adventure"],
+  "scripts": {
+    "test": "npm test -w adventure",
+    "lint": "npm run lint -w adventure",
+    "build": "npm run build -w adventure",
+    "dev:all": "npm run dev:all -w adventure"
+  }
+}

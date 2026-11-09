@@ -4,7 +4,7 @@ Nov 9, 2026 · @AmbiProp · Draft, revised after the owner's review
 
 What a world and its characters are made of, and when each part reaches the model. The test of every field here: does it help decide what is in context, and when, so a big world or a long story stays manageable? A field that never reaches the model and never drives a rule doesn't belong.
 
-Sources: Character Engine (profiles, states, threads, the journal, nested places, schedules), CharacterRoom and the Discord bot (cards, brains, Jots, memories, greetings, example chats), and Praxis (canon and instance, the context layout, the budget).
+Sources: Character Engine (profiles, states, threads, the journal, nested places, schedules), CharacterRoom and the Discord bot (cards, brains, Jots (now journals), memories, greetings, example chats), and Praxis (canon and instance, the context layout, the budget).
 
 ## The idea
 
@@ -141,7 +141,7 @@ The world is never changed by play. A save (adventure) or a chat holds:
 
 - **Transcript.**
 - **Journal:** active entries (sent) and archived (kept, never sent), for the story and per character.
-- **Jots:** short facts a character keeps about the player, per pairing. Always, with a cap.
+- **Character journals:** what a character keeps about the player, per pairing. CharacterRoom's Jots fold in here: they work like the adventure's journal, with the same active and archived entries, budget and suggestions to combine.
 - **Memories:** diary entries and feelings with keys (Named), and plans with a countdown (When). They are the same reaches as everything else. In the adventure, with several people present, each one is written in the third person under its owner's name and sent only while its owner is here, so one person's memory never reads as another's.
 - **Clock, positions, state values, standing,** and the player's own records, laid over canon.
 - **The ledger:** every change, and who made it: a rule, or the player's hand.
@@ -168,7 +168,7 @@ The world is never changed by play. A save (adventure) or a chat holds:
 
 ## Worked example
 
-`docs/mascot-record.md` is Errata, Inkwyrm's mascot, written in this shape. Her card itself is being built in the owner's CharacterVault.
+`docs/mascot-record.md` maps Errata, Inkwyrm's mascot, onto this shape: her card in the owner's CharacterVault, section by section, by reach.
 
 ## Settled on Nov 9
 
@@ -177,13 +177,13 @@ The world is never changed by play. A save (adventure) or a chat holds:
 3. **Sets** for choose-one entries: outfits, scenario locations, versions of a character.
 4. **Groups hold species** as well as families and factions, and a person can belong to several.
 5. **Memories in the adventure** are written under their owner's name and sent only while the owner is here.
+6. **Always for characters,** for now: in the adventure, one line each in a cast list for the current region (Praxis's who's who); in chat, nothing.
+7. **Jots fold into journals.** A character's journal about the player works like the adventure's journal, so there is one mechanism, not two.
 
-## Still open
+## Pinned
 
-1. **Always for characters:** nothing, or one line each in a cast list for the current region?
-2. **Group chats.** CharacterRoom and the Discord bot make one call per character, because swapping one shared cache between characters is expensive. Two ways for Inkwyrm:
+1. **Group chats.** CharacterRoom and the Discord bot make one call per character, because swapping one shared cache between characters is expensive. Two ways for Inkwyrm:
    - **One call per speaker.** Each character keeps a fixed prefix of their own (the rules, their card, their examples), then the shared world and transcript. Each prefix stays warm in the provider's cache, the voices stay strongest, and each reply costs a call.
    - **One narrator call** that writes everyone, the adventure's way. One cache and the cheapest, but no per-character examples, so the voices are weaker.
 
-   Chat could take the first and the adventure the second. Which providers keep several prefixes warm at once is a question for the generation test.
-3. **How many Jots before the oldest go?** Proposed: twenty per pairing. Past that, the chat suggests combining the oldest few, and nothing goes until the player keeps the suggestion. Nothing is dropped silently.
+   Pinned on Nov 9: there is plenty else to build for chat first. Which providers keep several prefixes warm at once is a question for the generation test.

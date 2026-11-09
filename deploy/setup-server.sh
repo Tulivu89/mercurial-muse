@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sets up Praxis on a fresh Ubuntu 24.04 server (Hetzner, DigitalOcean or similar), once.
+# Sets up Inkwyrm on a fresh Ubuntu 24.04 server (Hetzner, DigitalOcean or similar), once.
 #
 # Run it as root on the new server:
 #   bash setup-server.sh
@@ -12,17 +12,17 @@
 # Without a terminal (as deploy/cloud-config.yaml runs it) it asks nothing: it takes MUSE_REPO,
 # MUSE_ADDRESS and MUSE_EMAIL if set, the defaults if not, and the deploy key must already work.
 #
-# It installs Node 22, nginx and certbot; makes a `praxis` account that owns the app; clones
-# the repository with a deploy key; builds; runs Praxis as the `praxis` service on
-# 127.0.0.1:8791 behind nginx with HTTPS; and turns on the firewall (SSH and web only).
+# It installs Node 22, nginx and certbot; makes a `praxis` account that owns the app (the name is
+# from before the rename and stays, since nothing outside the server sees it); clones the
+# repository with a deploy key; builds; runs the site as the `inkwyrm` service on 127.0.0.1:8791
+# behind nginx with HTTPS; and turns on the firewall (SSH and web only).
 # Afterwards, updates are one command: bash /srv/muse/deploy/deploy.sh
 
 set -euo pipefail
 
 APP_USER=praxis
 REPO_DIR=/srv/muse
-APP_DIR=$REPO_DIR/praxis
-SERVICE=praxis
+SERVICE=inkwyrm
 PORT=8791
 
 say() { printf '\n== %s\n' "$*"; }
@@ -91,43 +91,17 @@ main() {
   fi
 
   say "Installing and building (a few minutes)"
-  sudo -u "$APP_USER" bash -c "cd '$APP_DIR' && npm ci && npm run build"
+  sudo -u "$APP_USER" bash -c "cd '$REPO_DIR' && npm ci && npm run build"
 
   say "The $SERVICE service"
-  # Optional settings, such as extra narration providers (see README, Narration).
-  [ -f /etc/praxis.env ] || printf '%s\n' '# PRAXIS_PROVIDERS=[{"id":"partner","name":"Partner","base":"https://api.partner.example/v1"}]' > /etc/praxis.env
-  cat > "/etc/systemd/system/$SERVICE.service" <<UNIT
-[Unit]
-Description=Praxis
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=simple
-User=$APP_USER
-Group=$APP_USER
-WorkingDirectory=$APP_DIR
-ExecStart=/usr/bin/node dist-server/server/index.js
-Restart=on-failure
-RestartSec=3
-Environment=NODE_ENV=production
-Environment=PORT=$PORT
-EnvironmentFile=-/etc/praxis.env
-# No provider key belongs here: players send their own with each request, and the server
-# never stores it.
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ProtectHome=true
-
-[Install]
-WantedBy=multi-user.target
-UNIT
+  # Optional settings, such as extra narration providers (see adventure/README.md, Narration).
+  [ -f /etc/inkwyrm.env ] || printf '%s\n' '# NARRATION_PROVIDERS=[{"id":"partner","name":"Partner","base":"https://api.partner.example/v1"}]' > /etc/inkwyrm.env
+  install -m 644 "$REPO_DIR/deploy/inkwyrm.service" "/etc/systemd/system/$SERVICE.service"
   systemctl daemon-reload
   systemctl enable --now "$SERVICE"
 
   say "nginx in front of it"
-  cat > /etc/nginx/sites-available/praxis <<SITE
+  cat > /etc/nginx/sites-available/inkwyrm <<SITE
 server {
     listen 80;
     listen [::]:80;
@@ -146,7 +120,7 @@ server {
     }
 }
 SITE
-  ln -sf /etc/nginx/sites-available/praxis /etc/nginx/sites-enabled/praxis
+  ln -sf /etc/nginx/sites-available/inkwyrm /etc/nginx/sites-enabled/inkwyrm
   rm -f /etc/nginx/sites-enabled/default
   nginx -t
   systemctl reload nginx
@@ -167,7 +141,7 @@ SITE
   say "Checking it is live"
   sleep 2
   if curl -fsS "http://127.0.0.1:$PORT/api/health" >/dev/null; then
-    echo "Praxis is live at https://$domain"
+    echo "Inkwyrm is live at https://$domain"
     echo "To update it later: bash $REPO_DIR/deploy/deploy.sh"
   else
     echo "The service did not answer. Check: journalctl -u $SERVICE -n 50"

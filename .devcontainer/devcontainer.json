@@ -18,14 +18,14 @@
     }
   },
   "remoteUser": "node",
-  "postCreateCommand": "cd praxis && npm ci",
+  "postCreateCommand": "npm ci",
   "forwardPorts": [
     8791,
     5176
   ],
   "portsAttributes": {
     "8791": {
-      "label": "Praxis",
+      "label": "Inkwyrm",
       "onAutoForward": "openBrowser"
     },
     "5176": {
@@ -37,6 +37,6 @@
     "cpus": 2
   },
   "postAttachCommand": {
-    "praxis": "bash praxis/scripts/codespace-start.sh"
+    "inkwyrm": "bash adventure/scripts/codespace-start.sh"
   }
 }

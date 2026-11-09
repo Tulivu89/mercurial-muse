@@ -1,6 +1,6 @@
 # Mascot brief: Errata, Inkwyrm's ink dragon
 
-Nov 9, 2026 · @AmbiProp · Hand-off for the visual design chat
+Nov 9, 2026 · @AmbiProp · Hand-off for the visual design chat · Done: her design was locked the same day, and her look and prompts now live in the owner's CharacterVault (`Characters/Errata/`). Kept as the starting brief.
 
 Everything a separate chat needs to design the mascot's look and write her NovelAI image prompts. Her personality and body text are in `docs/mascot-record.md`; this brief covers only how she looks.
 
