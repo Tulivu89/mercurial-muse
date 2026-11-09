@@ -90,7 +90,7 @@ Each step is one or more pull requests. The adventure keeps its own list (charte
    - world files, and CharacterRoom card import.
 
    Still to come: schedules, generate buttons that show what they send, guided builders.
-5. **Chat v0.** CharacterRoom on the site, on the core:
+5. **Chat v0.** Briefed in `docs/chat-brief.md` for the session that builds it. CharacterRoom on the site, on the core:
    - characters, persona and scenario;
    - brains, Jots, Diary and Plans;
    - story time and schedules;
