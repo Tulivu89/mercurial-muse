@@ -5,7 +5,8 @@ The repository's working name. The site is **Inkwyrm** (`docs/brand.md`): an AI 
 | Folder | What it is | State |
 | --- | --- | --- |
 | [`adventure/`](adventure/) | The text-adventure RPG (Praxis until 0.22.0): Four Approaches on Genesys dice, living schedules, the journal, context built per turn, narration from any OpenAI-compatible provider. | Working site, 0.22.0. |
-| [`core/`](core/) | What every side shares. For now, narration: the provider list, prompt formats for each model family, and the relay's request and reply shapes. Records and the state engine join as the Studio and chat need them. | Used by the adventure. |
+| [`core/`](core/) | What every side shares: narration (the provider list, prompt formats, the relay's shapes) and the record model (`core/records/`: schemas, reach, what is in context, CharacterRoom card import). | Used by the adventure and the Studio. |
+| [`studio/`](studio/) | The Studio, at `/studio/`: worlds and characters in the record model, with an "In context now" panel. | 0.1.0, first version. |
 | [`deploy/`](deploy/) | One-time server setup and updates. | Praxis only, for now. |
 
 Planned: a character-chat side and a studio for worlds and characters, on one core with the adventure. Their foundations are the owner's NovelAI scripts [Character Engine](https://github.com/Tulivu89/Character-Engine) and [CharacterRoom](https://github.com/Tulivu89/CharacterRoom); the records are our own, for any genre.
@@ -14,7 +15,7 @@ Planned: a character-chat side and a studio for worlds and characters, on one co
 
 ## Working on it
 
-One npm install at the root serves every part (npm workspaces): `npm ci`, then `npm test`, `npm run lint` and `npm run build` from the root. `npm run dev:all` starts the adventure's API and interface together.
+One npm install at the root serves every part (npm workspaces): `npm ci`, then `npm test`, `npm run lint` and `npm run build` from the root. `npm run dev:all` starts the adventure's API and interface together; `npm run dev:studio` starts the Studio.
 
 Orbis and Ember, the Howling Whispers reference copies, left the tree in 0.22.0; their code is in the history before that.
 

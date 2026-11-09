@@ -8,6 +8,12 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.22.1 - The Studio's door - 2026-11-09
+
+- The server also serves the Studio at `/studio/`, when it is built (it is, with `npm run build`
+  from the root).
+- The start screen links to it.
+
 ## 0.22.0 - New layout - 2026-11-09
 
 - **The adventure moves to `adventure/`,** and its narration code (providers, prompt formats,

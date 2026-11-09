@@ -125,6 +125,8 @@ export function App() {
 
       {storageNote && <p className="notice warn">{storageNote}</p>}
 
+      <p className="meta"><a href="/studio/">Studio</a>: make your own worlds and characters, and see what each part sends the model.</p>
+
       {saves.length > 0 && (
         <section>
           <h2>Continue</h2>

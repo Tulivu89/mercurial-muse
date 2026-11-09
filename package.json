@@ -2,11 +2,16 @@
   "name": "mercurial-muse",
   "private": true,
   "type": "module",
-  "workspaces": ["core", "adventure"],
+  "workspaces": [
+    "core",
+    "adventure",
+    "studio"
+  ],
   "scripts": {
-    "test": "npm test -w adventure",
-    "lint": "npm run lint -w adventure",
-    "build": "npm run build -w adventure",
-    "dev:all": "npm run dev:all -w adventure"
+    "test": "npm test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "build": "npm run build -w adventure && npm run build -w studio",
+    "dev:all": "npm run dev:all -w adventure",
+    "dev:studio": "npm run dev -w studio"
   }
 }

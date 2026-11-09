@@ -1,6 +1,7 @@
 // The Praxis server is deliberately thin. It serves the built interface and relays narration
 // requests to the providers it knows, with the player's own key. It holds no play state: saves
 // live in the browser.
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express, { type NextFunction, type Request, type Response } from 'express';
@@ -48,6 +49,12 @@ export function createApp(options: AppOptions = {}) {
   if (options.production) {
     const directory = path.dirname(fileURLToPath(import.meta.url));
     const webRoot = path.resolve(directory, '../../../dist');
+    // The Studio is its own build, served under /studio/ (built from studio/ at the repository root).
+    const studioRoot = path.resolve(directory, '../../../../studio/dist');
+    if (existsSync(studioRoot)) {
+      app.use('/studio', express.static(studioRoot, { index: false, maxAge: '1h' }));
+      app.get(['/studio', '/studio/*splat'], (_request, response) => response.sendFile(path.join(studioRoot, 'index.html')));
+    }
     app.use(express.static(webRoot, { index: false, maxAge: '1h' }));
     app.get('*splat', (_request, response) => response.sendFile(path.join(webRoot, 'index.html')));
   }
