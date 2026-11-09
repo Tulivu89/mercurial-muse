@@ -1,0 +1,30 @@
+# The site's service. setup-server.sh installs it and deploy.sh keeps it in step with this file,
+# so a change here reaches the server with the next update.
+[Unit]
+Description=Inkwyrm
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=praxis
+Group=praxis
+WorkingDirectory=/srv/muse/adventure
+ExecStart=/usr/bin/node dist-server/adventure/server/index.js
+Restart=on-failure
+RestartSec=3
+Environment=NODE_ENV=production
+Environment=PORT=8791
+# Optional settings, such as NARRATION_PROVIDERS. /etc/praxis.env is the name from before 0.22.0
+# and is still read; /etc/inkwyrm.env wins where both set something.
+EnvironmentFile=-/etc/praxis.env
+EnvironmentFile=-/etc/inkwyrm.env
+# No provider key belongs here: players send their own with each request, and the server
+# never stores it.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

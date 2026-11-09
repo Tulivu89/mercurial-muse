@@ -21,7 +21,7 @@ We are independent of Howling Whispers, and we go our own way rather than carry 
 | [CharacterRoom](https://github.com/Tulivu89/CharacterRoom) | Its context management, rewritten by the owner, and the chat side's features: Contact, user and scenario cards; example chats; brains (keyed lore); Jots, Diary, Plans and Process; posts with comments; story time and schedules with a week view; emotions and portraits; the dice system and its presets; sheets per person; group chat; Stage mode; chat bubbles; card import and export. | The Xialong-only prompt and the NovelAI panels. |
 | Praxis | Stack, engine pattern, relay, formats, saves, server, deploy, CI. Canon and instance: a world is read-only, and play lives in the save. | Its Orbis-shaped records, once the new ones are in. Bogwater and Port Covenant become worlds on the new records. |
 | The Discord bot | Character packs, per-person keys and personas, schedule-keyed openers, rooms with several people, the helper with search. | Discord itself: the bot stays separate. |
-| Orbis, Ember | Nothing required. Reference for an editor, import and export, and a launch handoff, if useful. | Everything else. |
+| Orbis, Ember | Nothing. They left the tree in 0.22.0; their code is in the history. | Everything. |
 
 ### The Discord bot
 
@@ -63,7 +63,7 @@ CharacterRoom's context management is the owner's own rewrite. AnotherRoom itsel
 2. **Folders and code are named by job, not by brand.** `core/`, `adventure/`, `chat/`, `studio/`. Brand names live in one file of display text per side.
 3. **One shared core.** The provider relay, prompt formats, context budget, journal, records and state engine live in `core/`. Adventure and chat both import it.
 4. **Browser storage first.** Records, saves and chats live in the player's browser, with export and import, and a **Back up everything** file. Nothing about play is stored on the server, and keys are sent per request and never kept. Testers lose nothing they have backed up, and the server has nothing of theirs to leak.
-5. **Neutral format names before outside players arrive.** `praxis-module/1`, `praxis-save/1`, `praxis-records/1`, `praxis-export/1`, the `praxis` browser database and `PRAXIS_PROVIDERS` get neutral names. The old ones are still read.
+5. **Neutral format names before outside players arrive.** Done in 0.22.0: the files players handle are `adventure-module/1`, `adventure-save/1`, `adventure-export/1` and `adventure-records/1`, and the server reads `NARRATION_PROVIDERS`; the old names are still read. The `praxis` browser database and settings keys keep their names, because players never see them and renaming them risks losing saves.
 
 ## Accounts
 
@@ -79,9 +79,9 @@ That fits on the current server. It waits until the studio and chat are worth sy
 
 Each step is one or more pull requests. The adventure keeps its own list (charter, *Next, in order*) alongside, on its current records, until step 6.
 
-1. **The record model.** `docs/records.md`, as decision 1: drafted, waiting on the owner's review and its four open questions.
+1. **The record model.** Settled on Nov 9 (`docs/records.md`), with Errata as its worked example. Group chats are pinned.
 2. **Brand: decided Nov 9.** Inkwyrm, the Wet Ink look, the ink-drop mark family and the line *Characters who remember you. Worlds that keep their rules.* (`docs/brand.md`). The mascot, Errata, is drafted as the first record in the new model (`docs/mascot-record.md`), and her visual design is briefed for a separate chat (`docs/mascot-brief.md`). Still to do: domains, final logo drawings, mascot art.
-3. **Repository shape.** `praxis/` becomes `adventure/`, `core/` comes out of it, the formats get neutral names, and `orbis/` and `ember/` leave the tree (their history stays in git).
+3. **Repository shape.** Done in 0.22.0: `praxis/` is `adventure/`, narration is in `core/`, one npm install at the root, neutral format names, the `inkwyrm` service, and Orbis and Ember out of the tree. The rest of the core (records, the state engine, the journal and context budget) moves when the Studio and chat need it, so its shape comes from two users, not one.
 4. **Studio v0.** The new records in the browser: an editor per kind, a world view of nested places, guided builders, generate buttons that show what they send, import of CharacterRoom cards, and export and import of a world.
 5. **Chat v0.** CharacterRoom on the site, on the core:
    - characters, persona and scenario;

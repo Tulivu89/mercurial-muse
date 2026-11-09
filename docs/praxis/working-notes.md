@@ -6,7 +6,7 @@ Read *Praxis — Charter* first: it holds every decision and the progress table.
 
 ## Where things stand
 
-- Praxis now lives in `Tulivu89/mercurial-muse`, under `praxis/`, at 0.21.0 (Bogwater, and narration from any OpenAI-compatible provider). `orbis/` and `ember/` are reference copies of those apps, to trim; the root README lists what belongs to the old Howling Whispers deployment. The HW-Praxis repository and its server are no longer where work lands. *Praxis — Growth, Challenge and Economy* is the design behind 0.17 to 0.19. Its odds came from a scratch script over `src/engine/dice.ts` (exact, every face), so rerun one rather than estimating.
+- The adventure lives in `Tulivu89/mercurial-muse`, under `adventure/` since 0.22.0 (it was `praxis/`), with narration shared from `core/`. One npm install at the root (workspaces); run `npm test`, `npm run lint` and `npm run build` from there. Orbis and Ember left the tree in 0.22.0. The HW-Praxis repository and its server are no longer where work lands. *Praxis — Growth, Challenge and Economy* is the design behind 0.17 to 0.19. Its odds came from a scratch script over `src/engine/dice.ts` (exact, every face), so rerun one rather than estimating.
 - The test module is now *Abernys: Bogwater* (`modules/abernys-bogwater.json`, the first button on the start screen). Its design is the Claude Doc *Praxis — Bogwater Module Plan*: the Plan tab for rules and phases, the Bogwater tab for every place, person, number and reason. The JSON is the source; the script that first generated it was scratch, so edit the JSON and keep the doc in step. Port Covenant stays until the coverage audit, then retires.
 - `tests/engine-bogwater.test.ts` includes a census: forty days of schedules at the four times of day, failing on any stop that isn't a real place or any place with more than four people. A new schedule has to pass it.
 - The house format: speech plain, with no quotation marks; *narration and action* in asterisks; (thoughts) in parentheses; [notes] in square brackets, outside the story. Don't bring back quotes or bracketed thoughts.
@@ -31,7 +31,7 @@ Read *Praxis — Charter* first: it holds every decision and the progress table.
 
 - Claude can push only to `claude/*` branches. Open pull requests with the REST API, not `gh pr create`: `gh api repos/Tulivu89/mercurial-muse/pulls -f title=… -f head=<branch> -f base=main -F body=@file`.
 - After pushing a new branch, set its upstream: `git config --add remote.origin.fetch +refs/heads/<b>:refs/remotes/origin/<b>; git fetch; git branch --set-upstream-to=origin/<b>`.
-- CI: `gh api repos/Tulivu89/mercurial-muse/commits/<sha>/check-runs` (one workflow per part: Praxis, Orbis, Ember, each running only when its folder changes). Job logs are not reachable through the proxy; read failures from `check-runs/<id>/annotations`.
+- CI: `gh api repos/Tulivu89/mercurial-muse/commits/<sha>/check-runs` (one workflow, Adventure, running when `adventure/`, `core/` or the root package files change). Job logs are not reachable through the proxy; read failures from `check-runs/<id>/annotations`.
 - CI runs `npm test`, `npm run lint`, `npm run build` and a production serve check. The npm registry is blocked in the sandbox, so new dependencies cannot be added (the lockfile cannot be updated).
 
 ## Checking locally without npm
@@ -48,8 +48,8 @@ Read *Praxis — Charter* first: it holds every decision and the progress table.
 
 ## Engine rules worth remembering
 
-- Narration lives in `src/narration/` (no DOM, no Node), shared by the server's relay (`server/narration-relay.ts`) and the browser (`src/ui/narration.ts`): `formats.ts` writes one prompt per model family and guesses the family from the name; `providers.ts` lists the providers the relay may reach, plus `PRAXIS_PROVIDERS`; `upstream.ts` builds the provider's body and reads the reply. Its relative imports end in `.js` because the server compiles them with NodeNext. A player's own server ("custom") never goes through the relay.
-- NovelAI's browser settings keep their old storage names (`praxis.novelai.token`, `.model`, `.mode`) so existing players stay connected.
+- Narration lives in `core/narration/` (no DOM, no Node), shared by the server's relay (`server/narration-relay.ts`) and the browser (`src/ui/narration.ts`): `formats.ts` writes one prompt per model family and guesses the family from the name; `providers.ts` lists the providers the relay may reach, plus `PRAXIS_PROVIDERS`; `upstream.ts` builds the provider's body and reads the reply. Its relative imports end in `.js` because the server compiles them with NodeNext; the server's build output is `dist-server/adventure/server/` beside `dist-server/core/`. A player's own server ("custom") never goes through the relay.
+- Browser storage keeps its old names on purpose: the `praxis` IndexedDB database and the `praxis.*` settings (`praxis.novelai.token`, `.model`, `.mode` and the rest), so players keep their saves and connections. Players never see these names. Files players handle got neutral formats in 0.22.0 (`adventure-module/1`, `adventure-save/1`, `adventure-export/1`, `adventure-records/1`), and the old `praxis-*` ones are still read.
 
 - A schedule rule can carry `when.state`: `stateId`, `atLeast` and `atMost`, and `characterId`, which defaults to the person and can be the player or `"world"`. `whereabouts` and `scheduledPositions` take a state test built by `stateTestFor(module, save.values)`; `followSchedules` builds its own. Scene action conditions and effects can name `characterId: "world"` for a world-scope state.
 - A countdown state set high stays put: Bogwater cures Lowri by setting Rabitis to 1000, inside its "well" band. The calendar's `monthDay` counts from 0, so the 14th is 13.
