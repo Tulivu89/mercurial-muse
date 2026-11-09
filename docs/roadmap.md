@@ -80,7 +80,7 @@ That fits on the current server. It waits until the studio and chat are worth sy
 Each step is one or more pull requests. The adventure keeps its own list (charter, *Next, in order*) alongside, on its current records, until step 6.
 
 1. **The record model.** `docs/records.md`, as decision 1: drafted, waiting on the owner's review and its four open questions.
-2. **Brand,** alongside step 1. `docs/brand.md` has the shortlist (Talehoard recommended), with plain labels for the sides: Studio, Adventure, Chat. The owner chooses; then a domain to replace the sslip.io address, and a look.
+2. **Brand: decided Nov 9.** Inkwyrm, the Wet Ink look, the ink-drop mark family and the line *Characters who remember you. Worlds that keep their rules.* (`docs/brand.md`). The mascot, Sepia (working name), is drafted as the first record in the new model (`docs/mascot-record.md`), and her visual design is briefed for a separate chat (`docs/mascot-brief.md`). Still to do: domains, final logo drawings, mascot art.
 3. **Repository shape.** `praxis/` becomes `adventure/`, `core/` comes out of it, the formats get neutral names, and `orbis/` and `ember/` leave the tree (their history stays in git).
 4. **Studio v0.** The new records in the browser: an editor per kind, a world view of nested places, guided builders, generate buttons that show what they send, import of CharacterRoom cards, and export and import of a world.
 5. **Chat v0.** CharacterRoom on the site, on the core:

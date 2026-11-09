@@ -143,9 +143,15 @@ The world is never changed by play. A save (adventure) or a chat holds:
 - A section says what someone could see or test in a scene, not a summary of their virtues.
 - The full rules are in `docs/praxis/bogwater-plan.md` under Writing rules, and in the bot-writing skill for cards.
 
-## Open questions
+## Worked example
 
-1. Is five reaches the right set, or should When fold into the other four as an optional condition on any of them?
-2. Should example chats also reach the adventure narrator for characters present, as a short voice sample, or stay chat-only?
-3. Group chat: does each character present send their whole entry, or does the one replying get their entry and the others their lines?
-4. How many Jots before the oldest are dropped or combined?
+`docs/mascot-record.md` is Sepia, Inkwyrm's mascot, written in this shape: a line, sections each with a reach, a section kept apart for her look, a Lore entry for her job on the site, and a hidden section behind a When.
+
+## Open questions, with proposed answers
+
+Proposals from Nov 9, waiting on the owner.
+
+1. **Is five reaches the right set?** Proposed: four reaches (Always, Here, Named, Never), with **When** as an optional condition on any of the first three ("Here, when close friends"). The editor shows a reach and an optional *only when*. It's simpler to explain, and it covers a secret that is Named-only as well as one that is Here-only.
+2. **Do example chats reach the adventure narrator?** Proposed: no. Examples are long, and they teach a reply's length and format, which would fight the narrator's own. The Speech section carries a character's voice into the adventure.
+3. **What does each character send in a group chat?** Proposed: everyone present sends their Here sections, as in the adventure. Only the one replying sends their example chats and greeting, because examples are the expensive part and steer only the one speaking.
+4. **How many Jots before the oldest go?** Proposed: twenty per pairing. Past that, the chat suggests combining the oldest few into one, and nothing goes until the player keeps the suggestion, the same rule as the journal. Nothing is ever dropped silently.

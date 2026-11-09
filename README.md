@@ -1,6 +1,6 @@
 # Mercurial Muse
 
-Working name. An AI roleplay platform built on scripted context management: a narrator that keeps to the rules, and tools for building worlds and characters. Players bring their own model keys.
+The repository's working name. The site is **Inkwyrm** (`docs/brand.md`): an AI roleplay platform built on scripted context management: a narrator that keeps to the rules, and tools for building worlds and characters. Players bring their own model keys.
 
 | Folder | What it is | State |
 | --- | --- | --- |
@@ -11,7 +11,7 @@ Working name. An AI roleplay platform built on scripted context management: a na
 
 Planned: a character-chat side and a studio for worlds and characters, on one core with the adventure. Their foundations are the owner's NovelAI scripts [Character Engine](https://github.com/Tulivu89/Character-Engine) and [CharacterRoom](https://github.com/Tulivu89/CharacterRoom); the records are our own, for any genre.
 
-`docs/roadmap.md` is the plan for the whole project: the direction, brand, the shared core, the studio and the chat side, in order. `docs/records.md` is the record model, built around what reaches the model and when; `docs/brand.md` is the name shortlist. `docs/` also holds the design: `docs/praxis/` (charter, working notes, the Bogwater module, the rules proposals) and `docs/abernys/` (the setting). Some setting docs still mention Bitterroot in passing; those references are to be trimmed.
+`docs/roadmap.md` is the plan for the whole project: the direction, brand, the shared core, the studio and the chat side, in order. `docs/records.md` is the record model, built around what reaches the model and when, with the mascot as its worked example (`docs/mascot-record.md`). `docs/brand.md` holds the brand decisions; `docs/mascot-brief.md` is the mascot's visual brief. `docs/` also holds the design: `docs/praxis/` (charter, working notes, the Bogwater module, the rules proposals) and `docs/abernys/` (the setting). Some setting docs still mention Bitterroot in passing; those references are to be trimmed.
 
 ## Orbis and Ember
 
