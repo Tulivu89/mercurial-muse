@@ -9,6 +9,7 @@
 // This lives until Orbis's generation gateway can carry Praxis; see the charter.
 import { CUSTOM_PROVIDER, type ProviderInfo } from '../../core/narration/providers.js';
 import { buildUpstream, diagnosticsFor, emptyReplyReason, narrationRequestSchema, readModels, readReply } from '../../core/narration/upstream.js';
+import { readStreamChunk, sseReader, thinkingFilter } from '../../core/narration/stream.js';
 
 export interface RelayResult {
   status: number;
@@ -123,6 +124,109 @@ export async function relayChat(fetchImpl: Fetch, providers: ProviderInfo[], raw
     return { status: 502, body: { error: emptyReplyReason(reply, request.max_tokens, provider.name, json !== null), diagnostics } };
   }
   return { status: 200, body: { text: reply.content, model: diagnostics.model, usage: reply.usage, diagnostics } };
+}
+
+// One event to the browser. `delta` carries text as it arrives, `done` the whole reply and its
+// diagnostics, `error` a failure in the same shape relayChat returns.
+export type StreamEvent =
+  | { event: 'delta'; data: { text: string } }
+  | { event: 'done'; data: { text: string; model: string; usage: Record<string, unknown> | null; diagnostics: Record<string, unknown> } }
+  | { event: 'error'; data: { status: number; error: string; diagnostics?: Record<string, unknown> } };
+
+// The same request as relayChat, streamed. A provider that streams is passed on as it writes; one
+// that answers whole is passed on as a single piece, so the browser handles one shape.
+export async function relayStream(fetchImpl: Fetch, providers: ProviderInfo[], rawKey: string | undefined, raw: unknown, send: (event: StreamEvent) => void, signal?: AbortSignal): Promise<void> {
+  const fail = (result: RelayResult) => {
+    const body = result.body as { error: string; diagnostics?: Record<string, unknown> };
+    send({ event: 'error', data: { status: result.status, error: body.error, ...(body.diagnostics ? { diagnostics: body.diagnostics } : {}) } });
+  };
+  const parsed = narrationRequestSchema.safeParse(raw);
+  if (!parsed.success) return fail({ status: 400, body: { error: `Invalid narration request: ${parsed.error.issues[0]?.message ?? 'unknown problem'}.` } });
+  const request = parsed.data;
+  const provider = find(providers, request.provider);
+  if (!provider) return fail(unknownProvider(request.provider));
+  const key = cleanKey(rawKey);
+  if (!key) return fail(missingKey(provider));
+  const upstream = buildUpstream(request, provider, true);
+  const mode = upstream.path === '/completions' ? 'prompt' : 'chat';
+  const started = performance.now();
+  const upstreamMs = () => Math.round(performance.now() - started);
+  const timeout = AbortSignal.timeout(300_000);
+
+  let response: Response;
+  try {
+    response = await fetchImpl(`${provider.base}${upstream.path}`, {
+      method: 'POST',
+      headers: { Accept: 'text/event-stream, application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify(upstream.body),
+      signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
+    });
+  } catch {
+    if (signal?.aborted) return;
+    return fail({ status: 502, body: { error: `Could not reach ${provider.name}.`, diagnostics: { provider: provider.id, endpoint: upstream.path, mode, upstreamMs: upstreamMs() } } });
+  }
+  if (!response.ok) {
+    const failed = await upstreamError(response, provider);
+    const body = failed.body as { error: string; diagnostics?: Record<string, unknown> };
+    return fail({ status: failed.status, body: { ...body, diagnostics: { ...body.diagnostics, endpoint: upstream.path, mode, format: upstream.format, upstreamMs: upstreamMs() } } });
+  }
+
+  const finish = (reply: ReturnType<typeof readReply>, parsedOk: boolean, extra: Record<string, unknown>) => {
+    const diagnostics = { ...diagnosticsFor(upstream, mode, provider, response.status, reply, request.max_tokens, upstreamMs()), model: reply.model ?? request.model, ...extra };
+    if (!reply.content) {
+      logEmptyReply(provider.id, upstream.path, reply, request.max_tokens);
+      return fail({ status: 502, body: { error: emptyReplyReason(reply, request.max_tokens, provider.name, parsedOk), diagnostics } });
+    }
+    send({ event: 'done', data: { text: reply.content, model: diagnostics.model, usage: reply.usage, diagnostics } });
+  };
+
+  // The provider answered whole after all.
+  if (!(response.headers.get('content-type') ?? '').includes('text/event-stream') || !response.body) {
+    const json = await response.json().catch(() => null);
+    const reply = readReply(json);
+    if (reply.content) send({ event: 'delta', data: { text: reply.content } });
+    return finish(reply, json !== null, { streamed: false });
+  }
+
+  const events = sseReader();
+  const filter = thinkingFilter();
+  const decoder = new TextDecoder();
+  let reasoning = '';
+  let finishReason: string | null = null;
+  let model: string | null = null;
+  let usage: Record<string, unknown> | null = null;
+  let firstChunk = '';
+  let streamError: string | null = null;
+  const take = (payloads: string[]) => {
+    for (const payload of payloads) {
+      if (!firstChunk && payload.trim() !== '[DONE]') firstChunk = payload.slice(0, 600);
+      const chunk = readStreamChunk(payload);
+      if (!chunk) continue;
+      if (chunk.error) streamError = chunk.error;
+      reasoning += chunk.reasoning;
+      finishReason = chunk.finishReason ?? finishReason;
+      model = chunk.model ?? model;
+      usage = chunk.usage ?? usage;
+      if (!chunk.text) continue;
+      const text = filter.push(chunk.text);
+      if (text) send({ event: 'delta', data: { text } });
+    }
+  };
+  try {
+    const reader = response.body.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      take(events.push(decoder.decode(value, { stream: true })));
+    }
+    take(events.rest());
+  } catch {
+    if (signal?.aborted) return;
+    // A stream that breaks midway still has what arrived; it is finished below.
+  }
+  const content = filter.text();
+  if (!content.trim() && streamError) return fail({ status: 502, body: { error: streamError, diagnostics: { provider: provider.id, endpoint: upstream.path, mode, upstreamMs: upstreamMs(), firstChunk } } });
+  finish({ content: content.trim() ? content : '', reasoning, finishReason, model, usage, choice: null }, true, { streamed: true, firstChunk });
 }
 
 // Server log for an empty reply. Structure only: never provider text, prompts, keys or reasoning.

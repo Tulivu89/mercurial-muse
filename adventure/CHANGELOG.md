@@ -8,6 +8,17 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.22.2 - Chat's door - 2026-11-09
+
+- **Streaming through the relay.** `POST /api/narration/stream` takes the same request as
+  `/api/narration/chat` and answers as server-sent events: `delta` with text as the provider
+  writes it, then `done` with the whole reply and its diagnostics, or `error`. A provider that
+  answers whole is passed on in one piece. A model's thinking is held back from the stream as it
+  is from a whole reply. The adventure itself still asks for whole replies.
+- A narration request can carry `top_p`, `top_k`, `min_p` and extra `stop` strings, sent on only
+  when given.
+- The server also serves Chat at `/chat/`, when it is built, and the start screen links to it.
+
 ## 0.22.1 - The Studio's door - 2026-11-09
 
 - The server also serves the Studio at `/studio/`, when it is built (it is, with `npm run build`

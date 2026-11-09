@@ -1,6 +1,7 @@
 import { Component, StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import '../../kit/src/wet-ink.css';
 import './studio.css';
 
 // A crash while drawing would otherwise leave a blank page; show what broke instead.

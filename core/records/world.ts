@@ -56,7 +56,7 @@ export function newSection(id: string, title: string, reach: Reach = 'here'): Se
 
 export function newRecord(kind: RecordKind, id: string, name: string, ids: () => string): StoryRecord {
   return {
-    id, kind, name, keys: [], line: '', groupIds: [], tags: [], notes: '', parentId: null, groupKind: 'other', pronouns: '',
+    id, kind, name, keys: [], line: '', groupIds: [], tags: [], notes: '', parentId: null, groupKind: 'other', pronouns: '', gender: '', schedule: null,
     sections: TEMPLATES[kind].map((template) => newSection(ids(), template.title, template.reach)),
     sets: kind === 'character' ? [{ id: ids(), title: 'Outfits', reach: 'here', active: null, members: [] }] : [],
     greetings: [], examples: [],

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { providersFrom, type ProviderInfo } from '../../core/narration/providers.js';
-import { publicProviders, relayChat, relayModels } from './narration-relay.js';
+import { publicProviders, relayChat, relayModels, relayStream } from './narration-relay.js';
 
 export interface AppOptions {
   production?: boolean;
@@ -46,6 +46,23 @@ export function createApp(options: AppOptions = {}) {
     } catch (error) { next(error); }
   });
 
+  // The same request, answered as server-sent events so a reply shows as it is written.
+  app.post('/api/narration/stream', async (request, response) => {
+    const gone = new AbortController();
+    response.on('close', () => { if (!response.writableEnded) gone.abort(); });
+    response.status(200).set({ 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store, no-transform', 'X-Accel-Buffering': 'no', Connection: 'keep-alive' });
+    response.flushHeaders();
+    try {
+      await relayStream(fetchImpl, providers, keyOf(request), request.body, ({ event, data }) => {
+        if (!response.writableEnded) response.write(`event: ${event}\ndata: ${JSON.stringify({ type: event, ...data })}\n\n`);
+      }, gone.signal);
+    } catch {
+      // Never echoes request details, so a token cannot leak through an error.
+      if (!response.writableEnded) response.write(`event: error\ndata: ${JSON.stringify({ type: 'error', status: 500, error: 'The request failed.' })}\n\n`);
+    }
+    response.end();
+  });
+
   if (options.production) {
     const directory = path.dirname(fileURLToPath(import.meta.url));
     const webRoot = path.resolve(directory, '../../../dist');
@@ -54,6 +71,12 @@ export function createApp(options: AppOptions = {}) {
     if (existsSync(studioRoot)) {
       app.use('/studio', express.static(studioRoot, { index: false, maxAge: '1h' }));
       app.get(['/studio', '/studio/*splat'], (_request, response) => response.sendFile(path.join(studioRoot, 'index.html')));
+    }
+    // Chat is its own build too, served under /chat/ (built from chat/ at the repository root).
+    const chatRoot = path.resolve(directory, '../../../../chat/dist');
+    if (existsSync(chatRoot)) {
+      app.use('/chat', express.static(chatRoot, { index: false, maxAge: '1h' }));
+      app.get(['/chat', '/chat/*splat'], (_request, response) => response.sendFile(path.join(chatRoot, 'index.html')));
     }
     app.use(express.static(webRoot, { index: false, maxAge: '1h' }));
     app.get('*splat', (_request, response) => response.sendFile(path.join(webRoot, 'index.html')));

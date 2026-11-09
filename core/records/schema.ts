@@ -82,6 +82,21 @@ export const exampleChatSchema = z.object({
 });
 export type ExampleChat = z.infer<typeof exampleChatSchema>;
 
+// A character's week, in CharacterRoom's shape: events in minutes from midnight, per weekday and
+// under Daily. A range may wrap past midnight. A stop says what they are doing, never how they
+// arrive. Kept on import; chat reads it from Phase B.
+export const SCHEDULE_DAYS = ['Daily', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
+export const scheduleEventSchema = z.object({
+  id,
+  startTime: z.number().int().min(0).max(1440),
+  endTime: z.number().int().min(0).max(1440),
+  text: shortText(2000),
+  requiredIntimacy: shortText(40).default('none'),
+});
+export type ScheduleEvent = z.infer<typeof scheduleEventSchema>;
+export const scheduleSchema = z.record(z.string().max(20), z.array(scheduleEventSchema).max(200));
+export type Schedule = z.infer<typeof scheduleSchema>;
+
 export const recordSchema = z.object({
   id,
   kind: z.enum(RECORD_KINDS),
@@ -100,6 +115,8 @@ export const recordSchema = z.object({
   groupKind: z.enum(GROUP_KINDS).default('other'),
   // Characters and personas.
   pronouns: shortText(40).default(''),
+  gender: shortText(80).default(''),
+  schedule: scheduleSchema.nullable().default(null),
   // Characters, for chat only.
   greetings: z.array(greetingSchema).max(20).default([]),
   examples: z.array(exampleChatSchema).max(30).default([]),

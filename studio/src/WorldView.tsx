@@ -1,12 +1,12 @@
 import { useState, type ChangeEvent } from 'react';
 import {
-  KIND_NAMES, RECORD_KINDS, importCharacterCard, newRecord, placeTree, putRecord, recordById, removeRecord,
+  KIND_NAMES, RECORD_KINDS, importCardFile, newRecord, placeTree, putRecord, recordById, removeRecord,
   type RecordKind, type StoryRecord, type World,
 } from '../../core/records/index.js';
 import { ContextPanel } from './ContextPanel';
 import { RecordEditor } from './RecordEditor';
 import { WorldSettings } from './WorldSettings';
-import { downloadJson, fileSafe, newId, readJsonFile } from './util';
+import { downloadJson, fileSafe, newId, readFileBytes } from '../../kit/src/util';
 
 type Status = { text: string; bad?: boolean } | null;
 
@@ -32,7 +32,7 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
     event.target.value = '';
     if (!file) return;
     try {
-      const imported = importCharacterCard(world, await readJsonFile(file), newId, Date.now());
+      const imported = importCardFile(world, await readFileBytes(file), newId, Date.now());
       if (!imported.ok) { onStatus({ text: imported.errors.join(' '), bad: true }); return; }
       onChange(imported.result.world);
       setSelected(imported.result.recordId);
@@ -55,8 +55,8 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
         <div className="row">
           <button type="button" className="btn small quiet" onClick={() => downloadJson(`${fileSafe(world.name)}.world.json`, world)}>Export</button>
           <span className="btn small quiet file-btn">
-            Import a CharacterRoom card
-            <input type="file" accept="application/json,.json" aria-label="Import a CharacterRoom card" onChange={(event) => void importCard(event)} />
+            Import a card
+            <input type="file" accept="application/json,.json,image/png,.png" aria-label="Import a card" onChange={(event) => void importCard(event)} />
           </span>
         </div>
         {status && <p className={`status${status.bad ? ' bad' : ''}`} role="status">{status.text}</p>}

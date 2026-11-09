@@ -142,6 +142,7 @@ Saves are `praxis-save/1`, exports `praxis-export/1` (a save with its module), a
 | Nov 7, 2026 | Live on the owner's Hetzner server at `135-181-31-213.sslip.io`. *Roadmap* written (`docs/roadmap.md`): brand, the shared core, the hub, the chat side. |
 | Nov 9, 2026 | Brand decided: Inkwyrm, the Wet Ink look (`docs/brand.md`). Record model settled (`docs/records.md`). 0.22.0 opened: `praxis/` becomes `adventure/`, narration moves to `core/`, neutral format names with the old still read, the `inkwyrm` service, Orbis and Ember out of the tree. |
 | Nov 9, 2026 | 0.22.1 and Studio 0.1.0 opened: the record model in `core/records/` and the Studio at `/studio/`, which the adventure's server now serves and its start screen links to. |
+| Nov 9, 2026 | Chat 0.1.0, Studio 0.1.1 and 0.22.2 opened: Chat's Phase A at `/chat/` (`docs/chat-brief.md`), with CharacterRoom's kernel ported to `core/chat/` and held to its parity fixtures, a General context for other models, streaming through the relay (`/api/narration/stream`), Character Card import, and `kit/` for the Studio and Chat to share. |
 
 **v0.1 still to do:** branches (keeping alternate continuations rather than only replacing the latest).
 

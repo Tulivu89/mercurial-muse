@@ -2,8 +2,8 @@ import {
   GROUP_KINDS, KIND_NAMES, REACHES, REACH_HINTS, REACH_NAMES, hintFor, newSection, wouldLoop,
   type ExampleChat, type RecordSet, type Section, type StoryRecord, type World,
 } from '../../core/records/index.js';
-import { KeysField, NameField } from './Fields';
-import { newId } from './util';
+import { KeysField, NameField } from '../../kit/src/Fields';
+import { newId } from '../../kit/src/util';
 
 type Change = (record: StoryRecord) => void;
 
