@@ -177,7 +177,6 @@ The world is never changed by play. A save (adventure) or a chat holds:
 3. **Sets** for choose-one entries: outfits, scenario locations, versions of a character.
 4. **Groups hold species** as well as families and factions, and a person can belong to several.
 5. **Memories in the adventure** are written under their owner's name and sent only while the owner is here.
-
 6. **Always for characters,** for now: in the adventure, one line each in a cast list for the current region (Praxis's who's who); in chat, nothing.
 7. **Jots fold into journals.** A character's journal about the player works like the adventure's journal, so there is one mechanism, not two.
 
