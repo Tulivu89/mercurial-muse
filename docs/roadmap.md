@@ -82,7 +82,14 @@ Each step is one or more pull requests. The adventure keeps its own list (charte
 1. **The record model.** Settled on Nov 9 (`docs/records.md`), with Errata as its worked example. Group chats are pinned.
 2. **Brand: decided Nov 9.** Inkwyrm, the Wet Ink look, the ink-drop mark family and the line *Characters who remember you. Worlds that keep their rules.* (`docs/brand.md`). The mascot, Errata, is drafted as the first record in the new model (`docs/mascot-record.md`), and her visual design is briefed for a separate chat (`docs/mascot-brief.md`). Still to do: domains, final logo drawings, mascot art.
 3. **Repository shape.** Done in 0.22.0: `praxis/` is `adventure/`, narration is in `core/`, one npm install at the root, neutral format names, the `inkwyrm` service, and Orbis and Ember out of the tree. The rest of the core (records, the state engine, the journal and context budget) moves when the Studio and chat need it, so its shape comes from two users, not one.
-4. **Studio v0.** The new records in the browser: an editor per kind, a world view of nested places, guided builders, generate buttons that show what they send, import of CharacterRoom cards, and export and import of a world.
+4. **Studio v0.** First version in 0.1.0 (Nov 9), at `/studio/`:
+   - the record model in `core/records/`, with tests;
+   - worlds in the browser, every record kind, nested places, groups that hold species;
+   - sections by reach with shared conditions, sets, greetings and example chats;
+   - an "In context now" panel that shows what a moment would send;
+   - world files, and CharacterRoom card import.
+
+   Still to come: schedules, generate buttons that show what they send, guided builders.
 5. **Chat v0.** CharacterRoom on the site, on the core:
    - characters, persona and scenario;
    - brains, Jots, Diary and Plans;

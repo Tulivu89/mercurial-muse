@@ -1,12 +1,12 @@
-name: Adventure
+name: Site
 
 on:
   push:
     branches: [main, 'claude/**']
-    paths: ['adventure/**', 'core/**', 'package.json', 'package-lock.json', '.github/workflows/adventure.yml']
+    paths: ['adventure/**', 'core/**', 'studio/**', 'package.json', 'package-lock.json', '.github/workflows/site.yml']
   pull_request:
     branches: [main]
-    paths: ['adventure/**', 'core/**', 'package.json', 'package-lock.json', '.github/workflows/adventure.yml']
+    paths: ['adventure/**', 'core/**', 'studio/**', 'package.json', 'package-lock.json', '.github/workflows/site.yml']
 
 permissions:
   contents: read
@@ -26,7 +26,7 @@ jobs:
       - run: npm test
       - run: npm run lint
       - run: npm run build
-      - name: Serve the production build and check it answers
+      - name: Serve the production build and check the adventure and the Studio answer
         working-directory: adventure
         run: |
           NODE_ENV=production PORT=8791 node dist-server/adventure/server/index.js &
@@ -35,3 +35,7 @@ jobs:
           script=$(grep -o 'src="/assets/[^"]*\.js"' /tmp/index.html | head -1 | cut -d'"' -f2)
           test -n "$script"
           curl -fsS -o /dev/null -w '%{content_type}\n' "http://127.0.0.1:8791$script" | grep -q javascript
+          curl -fsS http://127.0.0.1:8791/studio/ | tee /tmp/studio.html | grep -q 'id="root"'
+          studio=$(grep -o 'src="/studio/assets/[^"]*\.js"' /tmp/studio.html | head -1 | cut -d'"' -f2)
+          test -n "$studio"
+          curl -fsS -o /dev/null -w '%{content_type}\n' "http://127.0.0.1:8791$studio" | grep -q javascript
