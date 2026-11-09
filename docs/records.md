@@ -1,6 +1,6 @@
 # Records
 
-Nov 7, 2026 · @AmbiProp · Draft for the owner's review
+Nov 9, 2026 · @AmbiProp · Draft, revised after the owner's review
 
 What a world and its characters are made of, and when each part reaches the model. The test of every field here: does it help decide what is in context, and when, so a big world or a long story stays manageable? A field that never reaches the model and never drives a rule doesn't belong.
 
@@ -21,11 +21,23 @@ Every block of text carries one reach.
 
 | Reach | Enters context | Used for |
 | --- | --- | --- |
-| **Always** | Every turn. | The world's premise, the player's persona, the active thread's next beat, a character's core in chat. Kept small. |
-| **Here** | While the record is part of the scene: the place you're in, people present, things carried or in the room, the character you're chatting with. | Most of a character's profile; a place's entry and atmosphere. |
-| **Named** | When one of its keys appears in the player's words or the last few turns. It stays until the scene changes, so it doesn't flicker in and out. | Lore, off-stage people and places, history. |
-| **When** | Only while a condition holds: a state's band, a bond tier, the time of day, a world state, a thread's status. Combines with Here or Named. | Secrets, intimacy-gated brains, what a place is like after the raid. |
-| **Never** | Not sent. Visible in the studio only. | The author's notes, design reasons, image prompts. |
+| **Always** | Every turn. Kept to very little. | The world's premise, the player's persona line, the active thread's next beat. |
+| **Here** | While the record is part of the scene: the place you're in, people present, things carried or in the room, the character you're chatting with. | The core of a profile; a place's entry and atmosphere. |
+| **Named** | When one of its keys appears in the player's words or the last few turns. It stays until the scene changes, so it doesn't flicker in and out. | The rest of a profile, never repeating what Here already sends; lore; off-stage people and places. |
+| **When** | Only while a condition holds. | Schedules, outfits by time of day, what she admits once you're friends, a place after the raid. |
+| **Never** | Not sent as written. | Mechanics (states, numbers, rules), which reach the model only as the sentences the rules write for them; the author's notes; image prompts. |
+
+**Conditions are shared.** The time of day, bond tiers, world states and thread statuses are defined once, in the world and its ruleset, and every record's When text points at them. Nobody writes the same condition twice.
+
+### A character, reach by reach
+
+| Reach | What of a character |
+| --- | --- |
+| Always | Nothing, or at most one line in a cast list of the people in the current region. Open. |
+| Here | The profile the scene needs while she's present: how she looks, how she talks, how she treats people. |
+| Named | The rest of her profile, not overlapping Here, when her keys come up: history, the things she goes long about, people she knows. |
+| When | Her schedule stop for this time of day, her current outfit, sections behind a bond tier. |
+| Never | Her states and ratings, written as sentences by the rules; the author's notes about her. |
 
 ### Line and entry
 
@@ -34,6 +46,15 @@ Every record has two lengths:
 - **Entry:** everything with a reach that currently holds.
 
 This is what keeps a big world cheap. A town of forty people costs forty lines at most, and only the ones named or nearby. The four people in the room get their entries.
+
+### Sets: one of several
+
+A **set** is a group of entries where only one is in context at a time. The one in use takes the set's reach.
+- **A character's outfits:** everyday, work, formal. The player picks, or a schedule stop or a When condition does.
+- **A scenario's locations:** a chat with only a scenario and no world keeps one location's details in context at a time.
+- **Versions of a character:** the same person in two worlds, each version holding only what differs.
+
+This is CharacterRoom's set brains, made general.
 
 ## How a turn's context is laid out
 
@@ -67,7 +88,7 @@ Always text and the moment's core (place, the player, the outcome) are never cut
 | **Character** | Anyone: chat partner, adventure NPC, companion. One record for both sides. | Here | Below. |
 | **Persona** | The player's own card. Several per player, one chosen per chat or save. | Line: Always. Entry: Here in chat | CharacterRoom's user card and the bot's personas. |
 | **Item** | A thing that matters to a scene or a rule. | Here when in the room. Folded into the carrier's entry while carried or worn | Character Engine's rule: a carried item reads as part of whoever has it. |
-| **Group** | A faction, family, crew or court, with its standing ladder and resources. | Line when a member is present; entry Named | |
+| **Group** | Anything a person belongs to: species, family, faction, crew, profession. A person belongs to as many as fit. Factions carry a standing ladder and resources. | Line when a member is present; entry Named | Character Engine's species and bestiary are groups of the kind species, so a character shows their species in a trait or two and the group holds the rest. |
 | **Lore** | Any free entry: history, a custom, a rumour, a rule of the world. | Named | CharacterRoom's brains are Lore with Always, Named or When. |
 | **Thread** | What's pushing the story: the five questions (pressure, objective, opposition, cost, consequence), a kind, milestones, a status. | The active thread's current milestone: Always. Others: Named | From Character Engine. |
 | **Scenario** | A starting situation: where, when, who, and what's happening. | Always for the chat or save it starts, until replaced | CharacterRoom's scenario cards; the bot's scenes. |
@@ -88,13 +109,15 @@ A conventional profile with room to change it. In the end it is a lorebook entry
   - Relationships.
 
   Authors add, rename, remove and reorder sections freely. Templates offer other sets, such as Character Engine's Profile Plus (Presence, Drive, Pattern, Resistance, Conduct). The engine reads only titles, text and reach, so any template works.
-- **Hidden sections:** a section with a When reach: what she admits once you're Friends, what shows when she's drunk.
+- **Reach by section:** the core sections are Here, the rest Named, and anything behind a condition When (what she admits once you're friends, what shows when she's drunk).
+- **Sets:** outfits, and versions of her for other worlds.
+- **Groups:** her species, family, faction and the rest, as links.
 - **Chat parts:**
   - **Greetings:** one or more openers. Each can be keyed to a schedule stop, as the bot's `greetings.json` is.
   - **Example chats:** named exchanges with speakers and an emotion per message.
   - **Emotion set and portraits.**
 
-  The examples steer more than any section does, so the studio treats them as first-class and doesn't bury them.
+  The examples steer more than any section does, so the studio treats them as first-class and doesn't bury them. Greetings and example chats are for chat only; the adventure narrator never gets them, and the Speech section carries her voice there.
 - **Dynamic parts:**
   - **Schedule:** plans of stops in times of day, with alternates ("market day"). A stop says what they're doing, never how they arrive.
   - **States:** values for the ruleset's definitions.
@@ -119,7 +142,7 @@ The world is never changed by play. A save (adventure) or a chat holds:
 - **Transcript.**
 - **Journal:** active entries (sent) and archived (kept, never sent), for the story and per character.
 - **Jots:** short facts a character keeps about the player, per pairing. Always, with a cap.
-- **Memories:** diary entries and feelings with keys (Named), and plans with a countdown (When).
+- **Memories:** diary entries and feelings with keys (Named), and plans with a countdown (When). They are the same reaches as everything else. In the adventure, with several people present, each one is written in the third person under its owner's name and sent only while its owner is here, so one person's memory never reads as another's.
 - **Clock, positions, state values, standing,** and the player's own records, laid over canon.
 - **The ledger:** every change, and who made it: a rule, or the player's hand.
 
@@ -145,13 +168,22 @@ The world is never changed by play. A save (adventure) or a chat holds:
 
 ## Worked example
 
-`docs/mascot-record.md` is Sepia, Inkwyrm's mascot, written in this shape: a line, sections each with a reach, a section kept apart for her look, a Lore entry for her job on the site, and a hidden section behind a When.
+`docs/mascot-record.md` is Errata, Inkwyrm's mascot, written in this shape. Her card itself is being built in the owner's CharacterVault.
 
-## Open questions, with proposed answers
+## Settled on Nov 9
 
-Proposals from Nov 9, waiting on the owner.
+1. **Five reaches,** with When conditions shared across records rather than written per record.
+2. **Example chats and greetings are chat only.**
+3. **Sets** for choose-one entries: outfits, scenario locations, versions of a character.
+4. **Groups hold species** as well as families and factions, and a person can belong to several.
+5. **Memories in the adventure** are written under their owner's name and sent only while the owner is here.
 
-1. **Is five reaches the right set?** Proposed: four reaches (Always, Here, Named, Never), with **When** as an optional condition on any of the first three ("Here, when close friends"). The editor shows a reach and an optional *only when*. It's simpler to explain, and it covers a secret that is Named-only as well as one that is Here-only.
-2. **Do example chats reach the adventure narrator?** Proposed: no. Examples are long, and they teach a reply's length and format, which would fight the narrator's own. The Speech section carries a character's voice into the adventure.
-3. **What does each character send in a group chat?** Proposed: everyone present sends their Here sections, as in the adventure. Only the one replying sends their example chats and greeting, because examples are the expensive part and steer only the one speaking.
-4. **How many Jots before the oldest go?** Proposed: twenty per pairing. Past that, the chat suggests combining the oldest few into one, and nothing goes until the player keeps the suggestion, the same rule as the journal. Nothing is ever dropped silently.
+## Still open
+
+1. **Always for characters:** nothing, or one line each in a cast list for the current region?
+2. **Group chats.** CharacterRoom and the Discord bot make one call per character, because swapping one shared cache between characters is expensive. Two ways for Inkwyrm:
+   - **One call per speaker.** Each character keeps a fixed prefix of their own (the rules, their card, their examples), then the shared world and transcript. Each prefix stays warm in the provider's cache, the voices stay strongest, and each reply costs a call.
+   - **One narrator call** that writes everyone, the adventure's way. One cache and the cheapest, but no per-character examples, so the voices are weaker.
+
+   Chat could take the first and the adventure the second. Which providers keep several prefixes warm at once is a question for the generation test.
+3. **How many Jots before the oldest go?** Proposed: twenty per pairing. Past that, the chat suggests combining the oldest few, and nothing goes until the player keeps the suggestion. Nothing is dropped silently.

@@ -1,4 +1,4 @@
-# Mascot brief: Sepia, Inkwyrm's ink dragon
+# Mascot brief: Errata, Inkwyrm's ink dragon
 
 Nov 9, 2026 · @AmbiProp · Hand-off for the visual design chat
 
@@ -7,7 +7,7 @@ Everything a separate chat needs to design the mascot's look and write her Novel
 ## Who she is
 
 - **Inkwyrm** is an AI roleplay site with three sides: Studio (make characters and worlds), Chat (talk with them), Adventure (play their world as a text adventure). Its line: *Characters who remember you. Worlds that keep their rules.*
-- **Sepia** (working name) is its mascot and house muse: a goth ink dragon and stalled novelist who reads your drafts and won't write them for you. Quiet, deadpan, dry, cold-handed, a night owl.
+- **Errata** is its mascot and house muse: a goth ink dragon and stalled novelist who reads your drafts and won't write them for you. Quiet, deadpan, dry, cold-handed, a night owl.
 - She will be the site's face (front page, social posts, loading screens) and a chat character with emotion portraits.
 
 ## The look in one sentence
@@ -93,7 +93,7 @@ best quality, masterpiece, very aesthetic, high complexity, 2::painterly, cel sh
 
 **Character caption:**
 ```
-girl, Sepia, ink dragon, dragon girl, goth aesthetic, pale skin, porcelain skin, slender build, long straight hair, white hair, gradient hair, grey hair, black hair tips, hair over one eye, grey eyes, slit pupils, thick eyebrows, long eyelashes, dark circles, black eyeliner, winged eyeliner, smoky eyes, black lipstick, beauty mark under left eye, small scar on right eyebrow, multiple ear piercings, silver hoops, studs, glossy black horns, smooth horns, curved back horns, black scales on forearms, black scales on hands, ink-stained fingers, black nail polish, silver rings, thin bracelets, long slender black dragon tail, pointed tail tip, ink dripping from tail, narrow waist, wide hips, black t-shirt, crop top, off-shoulder, red plaid skirt, pleated skirt, black thighhighs, ink stains, fountain pen behind ear,
+girl, Errata, ink dragon, dragon girl, goth aesthetic, pale skin, porcelain skin, slender build, long straight hair, white hair, gradient hair, grey hair, black hair tips, hair over one eye, grey eyes, slit pupils, thick eyebrows, long eyelashes, dark circles, black eyeliner, winged eyeliner, smoky eyes, black lipstick, beauty mark under left eye, small scar on right eyebrow, multiple ear piercings, silver hoops, studs, glossy black horns, smooth horns, curved back horns, black scales on forearms, black scales on hands, ink-stained fingers, black nail polish, silver rings, thin bracelets, long slender black dragon tail, pointed tail tip, ink dripping from tail, narrow waist, wide hips, black t-shirt, crop top, off-shoulder, red plaid skirt, pleated skirt, black thighhighs, ink stains, fountain pen behind ear,
 ```
 
 **Undesired content:** the Qiulong list with `limited palette, monochrome, greyscale, dark` taken out (we want those now), and colour kept out:
