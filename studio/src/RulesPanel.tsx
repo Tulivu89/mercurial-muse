@@ -9,6 +9,7 @@ import {
 } from '../../core/rules/index.js';
 import { LevelPick, Num, OptNum, Origin, Rule, StatePick, Words, plural } from './rules/bits';
 import { carriedWords } from '../../core/convert/index.js';
+import { InTheAdventure } from './InTheAdventure';
 
 const OPEN_KEY = 'inkwyrm.studio.rules.open';
 const wasOpen = () => { try { return localStorage.getItem(OPEN_KEY) === '1'; } catch { return false; } };
@@ -34,20 +35,20 @@ function actWords(act: ActReading): string {
 
 type Path = readonly string[];
 
-export function RulesPanel({ world, record, onChange }: { world: World; record: StoryRecord; onChange: (record: StoryRecord) => void }) {
+export function RulesPanel({ world, record, onChange, onWorld }: { world: World; record: StoryRecord; onChange: (record: StoryRecord) => void; onWorld?: (world: World) => void }) {
   const reading = useMemo(() => rulesFor(world, record), [world, record]);
   const [open, setOpen] = useState(wasOpen);
   const came = useMemo(() => carriedWords(world, record), [world, record]);
-  if (!reading) {
-    // A scenario has no rules of its own, but may have come with a place to start in.
-    return came.length ? <section className="card" aria-label="Came with the adventure module">{came.map((line) => <p key={line} className="part">{line}</p>)}</section> : null;
-  }
+  const adventure = <InTheAdventure world={world} record={record} onChange={onChange} onWorld={onWorld} />;
+  // A scenario has no rules of its own, but says where play starts.
+  if (!reading) return adventure;
 
   const set = (path: Path, value: unknown) => onChange({ ...record, rules: setRule(record.rules, path, value) });
   const back = (path: Path) => onChange({ ...record, rules: clearRule(record.rules, path) });
   const groupGives = (field: keyof MemberRules) => record.groupIds.some((groupId) => world.records.find((entry) => entry.id === groupId)?.rules?.members?.[field] !== undefined);
 
   return (
+    <>
     <details className="card rules" open={open} onToggle={(event) => { const next = (event.target as HTMLDetailsElement).open; setOpen(next); keepOpen(next); }}>
       <summary>
         <span className="rules-title">Rules</span>
@@ -69,14 +70,10 @@ export function RulesPanel({ world, record, onChange }: { world: World; record: 
       {reading.subject === 'thing' && reading.good && <Good reading={reading} good={reading.good} record={record} set={set} back={back} />}
       {reading.subject === 'group' && <Members reading={reading} record={record} set={set} back={back} />}
       <States reading={reading} set={set} back={back} />
-      {came.length > 0 && (
-        <>
-          <h3 className="sub">Came with the adventure module</h3>
-          {came.map((line) => <p key={line} className="part">{line}</p>)}
-          <p className="hint">These go back out unchanged when the world is played or exported. Changing them here comes with routes and schedules.</p>
-        </>
-      )}
+      {came.includes('Marked as a draft.') && <p className="hint">Marked as a draft in the module it came from.</p>}
     </details>
+    {adventure}
+    </>
   );
 }
 

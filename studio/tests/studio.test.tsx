@@ -139,3 +139,61 @@ describe('the launchpad', () => {
     expect(screen.getByRole('link', { name: 'Chat with Ada Moss' })).toHaveAttribute('href', '/chat/#/with/w/ada');
   });
 });
+
+describe('what the adventure needs', () => {
+  const view = () => {
+    let current = world();
+    const onChange = vi.fn((next: World) => { current = next; });
+    const { rerender } = render(<WorldView world={current} onChange={onChange} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    return { get: () => current, again: () => rerender(<WorldView world={current} onChange={onChange} onDelete={() => {}} onStatus={() => {}} status={null} />) };
+  };
+  const rail = () => within(screen.getByRole('navigation', { name: 'Low Tide: records' }));
+
+  it('puts a part of someone\'s day at a place, behind a condition', () => {
+    const { get, again } = view();
+    fireEvent.click(rail().getByRole('button', { name: 'Ada Moss' }));
+    fireEvent.click(within(screen.getByRole('region', { name: 'Schedule' })).getByRole('button', { name: 'Night' }));
+    again();
+    fireEvent.change(screen.getByLabelText(/^\w+ [\d:]+.*: where$/), { target: { value: 'booth' } });
+    again();
+    fireEvent.change(screen.getByLabelText(/^\w+ [\d:]+.*: weekday$/), { target: { value: '5' } });
+    expect(Object.values(get().records.find((record) => record.id === 'ada')!.schedule!).flat()[0]).toMatchObject({ startTime: 1320, place: 'booth', when: { weekday: 5 } });
+    again();
+    expect(screen.getByText('Only on Friday')).toBeInTheDocument();
+    expect(screen.getByText(/1 stop in their day/)).toBeInTheDocument();
+  });
+
+  it('joins two places with a route, and finds one that ends nowhere', () => {
+    const { get, again } = view();
+    fireEvent.click(rail().getByRole('button', { name: 'Add a place' }));
+    again();
+    fireEvent.click(rail().getByRole('button', { name: 'Booth B' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add a route from here' }));
+    expect(get().routes).toMatchObject([{ from: 'booth', distanceKm: 1, requires: [] }]);
+    again();
+    expect(screen.getByText(/1 way out: New place/)).toBeInTheDocument();
+    expect(rail().getByRole('button', { name: /^Checks/ })).toHaveTextContent('All clear');
+    // The other end is deleted: the Checks page says so.
+    const far = get().routes![0]!.to;
+    const without = { ...get(), records: get().records.filter((record) => record.id !== far) };
+    render(<WorldView world={without} onChange={() => {}} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    const checks = screen.getAllByRole('button', { name: /^Checks/ }).at(-1)!;
+    expect(checks).toHaveTextContent('1 to look at');
+    fireEvent.click(checks);
+    expect(screen.getByText(/A route ends at a place that is gone/)).toBeInTheDocument();
+  });
+
+  it('writes a scene action and a calendar on the Rules page', () => {
+    const { get, again } = view();
+    fireEvent.click(rail().getByRole('button', { name: /^Rules/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add a scene action' }));
+    again();
+    fireEvent.change(screen.getByLabelText('Action name'), { target: { value: 'Work a shift' } });
+    again();
+    fireEvent.click(within(screen.getByRole('group', { name: /Offered at/ })).getByLabelText('Booth B'));
+    expect(get().rules?.actions).toMatchObject([{ name: 'Work a shift', placeIds: ['booth'], effects: [{ stateId: 'coin', add: 1 }] }]);
+    again();
+    fireEvent.change(screen.getByLabelText('The days of the week'), { target: { value: 'Oneday, Twoday, Restday' } });
+    expect(get().rules?.calendar?.dayNames).toEqual(['Oneday', 'Twoday', 'Restday']);
+  });
+});

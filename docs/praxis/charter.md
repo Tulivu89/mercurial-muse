@@ -147,6 +147,7 @@ Saves are `praxis-save/1`, exports `praxis-export/1` (a save with its module), a
 | Nov 10, 2026 | Chat 0.2.0 merged (PR #9). The owner set Chat's last phase to Home and socials, with no dice or games. Chat 0.3.0 opened: Home, with a character's clock, relationship and needs kept per character and shared by every chat with them. |
 | Nov 10, 2026 | 0.23.0 and Studio 0.3.0 opened: the first phase of `docs/studio-brief.md`. The state primitive, the clock, the standard ruleset and the ruleset's schemas move to `core/rules/`, re-exported by the engine with no change in play. The Studio gains a Rules page for the world and a Rules panel on every character, place, item and group, read through `rulesFor(world, record)`. |
 | Nov 10, 2026 | 0.24.0 and Studio 0.4.0 added to the same pull request: the brief's second phase. `core/convert/` turns modules into Studio worlds and back; Bogwater and Port Covenant round-trip to the same modules, and the suite runs a second time on the round-tripped ones. The Studio gets Play in the adventure, module export and import, and Chat with; the start screen lists worlds sent from the Studio. |
+| Nov 10, 2026 | Studio 0.5.0 and 0.24.1 opened: the brief's third phase. Schedule events gain a place and a condition and convert to day plans and back; routes become a typed part of a world; the Studio writes routes, scene actions, the calendar, goods and the scenario's start, and checks a world before it is played. |
 
 **v0.1 still to do:** branches (keeping alternate continuations rather than only replacing the latest).
 

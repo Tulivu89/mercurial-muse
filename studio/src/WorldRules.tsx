@@ -3,14 +3,15 @@
 import { useState, type ReactNode } from 'react';
 import type { World } from '../../core/records/index.js';
 import {
-  EXTRA_STATES, TIERS, TIER_NAMES, approachOrigin, changeRules, changedCount, deedKey, deedOrigin, fieldOrigin, goodOrigin, inStandard, listOf,
-  readRuleset, stateOrigin, tierOrigin, worthWords,
+  EMPTY_RULES, EXTRA_STATES, TIERS, TIER_NAMES, approachOrigin, changeRules, changedCount, deedKey, deedOrigin, fieldOrigin, goodOrigin, inStandard, listOf,
+  pruneRules, readRuleset, stateOrigin, tierOrigin, worthWords,
   type Approach, type Block, type Cost, type Deed, type Ruleset, type StateDef, type Tier, type WorldRules as Rules,
 } from '../../core/rules/index.js';
 import { newId } from '../../kit/src/util';
 import { LevelPick, Num, OptNum, Origin, PutBack, Rule, StatePick, Words, plural } from './rules/bits';
 import { StateEditor } from './rules/StateEditor';
 import { approachWords, costWords, stateWords } from './rules/words';
+import { CalendarPart, SceneActionsPart } from './rules/WorldParts';
 
 const WHO: Record<Cost['who'], string> = { player: 'You', place: 'The place', target: 'The target' };
 const fitsWho = (who: Cost['who'] | 'player' | 'place') => (def: StateDef) => (who === 'place' ? def.scope === 'place' : who === 'player' ? def.scope === 'char' || def.scope === 'protagonist' : ['char', 'npc', 'protagonist'].includes(def.scope));
@@ -33,6 +34,7 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
   const field = (block: Block, name: string, value: unknown) => apply(changeRules.field(rules, block, name, value));
   const fieldBack = (block: Block, name: string) => fieldOrigin(rules, block, name) === 'world' && (() => apply(changeRules.withoutField(rules, block, name)));
   const from = (block: Block, name: string) => fieldOrigin(rules, block, name);
+  const put = (patch: Partial<Rules>) => apply(pruneRules({ ...(rules ?? EMPTY_RULES), ...patch }));
 
   const categories = [...new Set(ruleset.states.map((def) => def.category ?? 'Other'))];
   const dice = ruleset.dice!;
@@ -233,7 +235,7 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
 
       <section className="rules-part" aria-label="Goods">
         <h2 className="sub">Goods anyone can sell</h2>
-        <p className="hint">A plain catalog every world starts with. Rename them to suit the world; an item you make in this world is a good too, and people can sell and carry it.</p>
+        <p className="hint">A plain catalog every world starts with. Rename them to suit the world and add its own: each good does one job. An item you make in this world is a good too, and people can sell and carry it.</p>
         {ruleset.goods.map((good) => {
           const origin = goodOrigin(rules, good.id);
           const does = good.kind === 'weapon' ? `weapon, harm ${good.harm ?? 0}` : good.kind === 'armour' ? `armour ${good.armour ?? 0}` : good.kind === 'help' ? `helps ${listOf((good.helps?.approaches ?? []).map((id) => ruleset.approaches.find((approach) => approach.id === id)?.name ?? id))}` : good.kind === 'use' ? 'used up when used' : 'goods';
@@ -242,15 +244,27 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
               <label className="field grow"><span>One</span><Words label={`${good.name}, one`} value={good.name} max={80} onChange={(name) => apply(changeRules.good(rules, { ...good, name }))} /></label>
               <label className="field grow"><span>More than one</span><Words label={`${good.name}, more than one`} value={good.plural ?? ''} max={80} allowEmpty placeholder={`${good.name.replace(/^an? /, '')}s`} onChange={(text) => apply(changeRules.good(rules, { ...good, plural: text.trim() ? text : undefined }))} /></label>
               <label className="field"><span>Worth</span><Num label={`${good.name}, worth`} value={good.worth} min={0} max={1_000_000} onChange={(worth) => apply(changeRules.good(rules, { ...good, worth }))} /></label>
-              <span className="rule-source"><span className="hint">{does} · buys {worthWords(ruleset, good.worth)}</span><Origin source={origin} />{origin === 'world' && inStandard.good(good.id) && <PutBack onClick={() => apply(changeRules.withoutGood(rules, good.id))} />}</span>
+              <label className="field"><span>What it does</span>
+                <select value={good.kind} onChange={(event) => apply(changeRules.good(rules, { ...good, kind: event.target.value as typeof good.kind, ...(event.target.value === 'help' && !good.helps ? { helps: { approaches: [ruleset.approaches[0]!.id], kinds: [], ids: [] } } : {}) }))}>
+                  <option value="goods">Worth only</option><option value="weapon">A weapon</option><option value="armour">Armour</option><option value="help">A help</option><option value="use">Used up</option>
+                </select>
+              </label>
+              {good.kind === 'weapon' && <label className="field"><span>Harm</span><Num label={`${good.name}, harm`} value={good.harm ?? 0} min={0} max={5} onChange={(harm) => apply(changeRules.good(rules, { ...good, harm }))} /></label>}
+              {good.kind === 'armour' && <label className="field"><span>Armour</span><Num label={`${good.name}, armour`} value={good.armour ?? 0} min={0} max={5} onChange={(armour) => apply(changeRules.good(rules, { ...good, armour }))} /></label>}
+              <span className="rule-source"><span className="hint">{does} · buys {worthWords(ruleset, good.worth)}</span><Origin source={origin} />{origin === 'world' && inStandard.good(good.id) && <PutBack onClick={() => apply(changeRules.withoutGood(rules, good.id))} />}{origin === 'world' && !inStandard.good(good.id) && <button type="button" className="icon-btn" aria-label={`Remove ${good.name}`} onClick={() => apply(changeRules.withoutGood(rules, good.id))}>×</button>}</span>
             </div>
           );
         })}
       </section>
 
+      <div className="row"><button type="button" className="btn small" onClick={() => apply(changeRules.good(rules, { id: `good-${newId().slice(0, 8)}`, name: 'a new thing', description: '', worth: 1, kind: 'goods', hidden: false, hinders: [], makeable: true, fine: false, restores: [] }))}>Add a good</button></div>
+
+      <CalendarPart rules={rules} ruleset={ruleset} put={put} />
+      <SceneActionsPart world={world} rules={rules} ruleset={ruleset} put={put} />
+
       <section className="rules-part" aria-label="Not yet changed from here">
         <h2 className="sub">Fixed for now</h2>
-        <p className="hint">A fight is over when someone is down or yields to Force and no one else here is still in it, and the place settles to uneasy. Someone travels with you as a companion by your bond, as your captive once they are down, or because you won them over. The calendar is the real one. These, a world&rsquo;s own goods, routes and scene actions come to this page next.</p>
+        <p className="hint">A fight is over when someone is down or yields to Force and no one else here is still in it, and the place settles to uneasy. Someone travels with you as a companion by your bond, as your captive once they are down, or because you won them over. These two come to this page later. Routes are on each place&rsquo;s page, under In the adventure.</p>
       </section>
     </>
   );

@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { carriedWords, isModule, moduleToWorld, readLaunches, withLaunch, withoutLaunch, worldToModule } from '../convert/index.js';
+import { carriedWords, checkWorld, eventsFromPlans, isModule, moduleToWorld, plansFromEvents, readLaunches, sameDays, withLaunch, withoutLaunch, worldToModule } from '../convert/index.js';
 import { parseWorld } from '../records/index.js';
-import { rulesFor, rulesetOf, standardRuleset } from '../rules/index.js';
+import { DEFAULT_CALENDAR, rulesFor, rulesetOf, standardRuleset } from '../rules/index.js';
 
 const bogwater: unknown = JSON.parse(readFileSync(new URL('../../adventure/modules/abernys-bogwater.json', import.meta.url), 'utf8'));
 type Loose = Record<string, any>;
@@ -96,5 +96,75 @@ describe('the hand-off to the adventure', () => {
     expect(readLaunches('{"not":"a list"}')).toEqual([]);
     expect(readLaunches('nonsense')).toEqual([]);
     expect(withoutLaunch(list, 'c').map((launch) => launch.id)).toEqual(['a']);
+  });
+});
+
+describe('one schedule model', () => {
+  const imported = moduleToWorld(bogwater, 5);
+  if (!imported.ok) throw new Error(imported.errors.join('\n'));
+  const { world } = imported;
+  const raw = bogwater as Loose;
+
+  it('turns every day plan into events with a place and a condition, and back', () => {
+    for (const person of raw.characters as Loose[]) {
+      if (!person.schedule) continue;
+      const events = eventsFromPlans(person.schedule);
+      const back = plansFromEvents(events, DEFAULT_CALENDAR.dayNames)!;
+      expect(sameDays(back, person.schedule), person.id).toBe(true);
+      expect(world.records.find((record) => record.id === person.id)!.schedule).toEqual(events);
+    }
+    const cadfan = world.records.find((record) => record.id === 'cadfan')!.schedule!.Daily!;
+    expect(cadfan.filter((event) => !event.when).map((event) => [event.startTime, event.endTime])).toEqual([[360, 720], [720, 1080], [1080, 1320], [1320, 360]]);
+    expect(cadfan.find((event) => event.when?.weekday === 3)).toMatchObject({ startTime: 360, place: expect.any(String) });
+  });
+
+  it('sends a changed day out in place of the one the module came with', () => {
+    const gethin = world.records.find((record) => record.id === 'gethin')!;
+    const moved = { ...gethin, schedule: { Daily: gethin.schedule!.Daily!.map((event, index) => (index === 0 ? { ...event, place: 'landing-dock', text: 'Mending a net.' } : event)) } };
+    const out = (worldToModule({ ...world, records: world.records.map((record) => (record.id === 'gethin' ? moved : record)) }).module.characters as Loose[]).find((person) => person.id === 'gethin')!;
+    expect(out.schedule.plans[0]).toMatchObject({ id: 'day', rows: expect.arrayContaining([{ fromHour: 6, locationId: 'landing-dock', doing: 'Mending a net.' }]) });
+    expect(out.schedule.rules).toEqual([{ planId: 'when-1', when: { weekday: 1 } }]);
+  });
+
+  it('lays a weekday\'s own events over the ordinary day', () => {
+    const event = (id: string, startTime: number, place: string | undefined, text: string) => ({ id, startTime, endTime: startTime + 60, text, requiredIntimacy: 'none', sets: {}, rooms: {}, spots: {}, needs: {}, ...(place ? { place } : {}) });
+    const plans = plansFromEvents({ Daily: [event('a', 360, 'bar', 'Opens up.'), event('b', 1320, 'room', 'Asleep.'), event('c', 600, undefined, 'Thinks of home.')], Monday: [event('d', 360, 'market', 'Buys fish.')] }, DEFAULT_CALENDAR.dayNames)!;
+    expect(plans.plans.map((plan) => [plan.id, plan.rows.map((row) => `${row.fromHour} ${row.locationId}`)])).toEqual([['day', ['6 bar', '22 room']], ['monday', ['6 market', '22 room']]]);
+    expect(plans.rules).toEqual([{ planId: 'monday', when: { weekday: 1 } }]);
+    expect(plansFromEvents({ Daily: [event('c', 600, undefined, 'No place.')] }, DEFAULT_CALENDAR.dayNames)).toBeNull();
+  });
+});
+
+describe('checks', () => {
+  it('finds nothing wrong with Bogwater over forty days', () => {
+    const imported = moduleToWorld(bogwater, 5);
+    if (!imported.ok) throw new Error(imported.errors.join('\n'));
+    expect(checkWorld(imported.world)).toEqual([]);
+  });
+
+  it('finds a crowd, a stop nowhere, a When with no condition, a route to nowhere and a rule pointing at nothing', () => {
+    const event = (id: string, place: string) => ({ id, startTime: 360, endTime: 360, text: '', place });
+    const made = parseWorld({
+      format: 'studio-world/1', id: 'w', name: 'Low Tide',
+      routes: [{ id: 'r1', from: 'bar', to: 'nowhere', distanceKm: 1 }],
+      records: [
+        { id: 'bar', kind: 'place', name: 'The Anchor' },
+        { id: 'coast', kind: 'place', name: 'The coast', rules: { placeKind: 'region' } },
+        ...['Ada', 'Bo', 'Cy', 'Di', 'Ed'].map((name) => ({ id: name.toLowerCase(), kind: 'character', name, schedule: { Daily: [event('e', 'bar')] } })),
+        { id: 'fy', kind: 'character', name: 'Fy', schedule: { Daily: [event('e', 'gone'), event('f', 'coast')] }, rules: { states: { luck: 2 }, sells: ['ghost'] },
+          sections: [{ id: 's', title: 'Secret', reach: 'when', text: 'She knows.' }] },
+      ],
+    });
+    if (!made.ok) throw new Error(made.errors.join('\n'));
+    const found = checkWorld(made.world).map((problem) => `${problem.where}: ${problem.text}`);
+    expect(found).toEqual([
+      'Fy: The section "Secret" is When, with no condition to wait on.',
+      'Fy: Sets "luck", which it doesn\'t hold.',
+      'Fy: Sells or carries something that is gone: "ghost".',
+      'Low Tide: A route ends at a place that is gone: "nowhere".',
+      'Fy: A stop on Daily is at a place that is gone: "gone".',
+      'Fy: A stop on Daily is at The coast, a region, not somewhere to be.',
+      'The Anchor: Holds 5 people at once on Sunday 06:00, day 1: Ada, Bo, Cy, Di, Ed. More than 4 is a crowd the narrator loses track of.',
+    ]);
   });
 });

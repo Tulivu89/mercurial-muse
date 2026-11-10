@@ -279,6 +279,41 @@ export const rulesetSchema = z.object({
   tiers: z.object({ minion: tierSchema.optional(), rival: tierSchema.optional(), nemesis: tierSchema.optional() }).optional(),
 });
 
+// A condition on the player's character for using a route.
+export const requirementSchema = z.object({
+  stateId: id,
+  atLeast: z.number().int(),
+  // When set, the condition applies only when travelling toward this end of the route.
+  toward: id.optional(),
+  // What the player is told when the condition fails.
+  reason: z.string().min(1).max(400),
+});
+
+export const routeSchema = z.object({
+  id,
+  from: id,
+  to: id,
+  distanceKm: z.number().min(0).max(10_000),
+  terrain: text(200).default(''),
+  routeClass: text(80).default(''),
+  requires: z.array(requirementSchema).max(8).default([]),
+}).passthrough();
+
+// When part of someone's day holds. Every field must match; an absent field matches anything.
+// Weekday, month and day of the month count from zero; fromDay and toDay are days since story
+// zero. `state` waits on a state: the person's own, or the one `characterId` names ("world" for
+// a world state). The adventure's plan rules and a schedule event's condition share this shape.
+export const scheduleWhenSchema = z.object({
+  weekday: z.number().int().min(0).optional(),
+  month: z.number().int().min(0).optional(),
+  monthDay: z.number().int().min(0).optional(),
+  fromDay: z.number().int().min(0).optional(),
+  toDay: z.number().int().min(0).optional(),
+  state: z.object({ stateId: id, characterId: id.optional(), atLeast: z.number().int().optional(), atMost: z.number().int().optional() }).optional(),
+});
+export type ScheduleWhen = z.infer<typeof scheduleWhenSchema>;
+export type Route = z.infer<typeof routeSchema>;
+
 export type Ruleset = z.infer<typeof rulesetSchema>;
 export type SceneAction = z.infer<typeof sceneActionSchema>;
 export type Approach = z.infer<typeof approachSchema>;

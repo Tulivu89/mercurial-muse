@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { recordRulesSchema } from '../rules/record-rules.js';
 import { worldRulesSchema } from '../rules/world-rules.js';
+import { routeSchema, scheduleWhenSchema } from '../rules/ruleset.js';
 
 export const WORLD_FORMAT = 'studio-world/1';
 
@@ -140,6 +141,12 @@ export const scheduleEventSchema = z.object({
   spots: z.record(id, spotSchema).default({}),
   // Home: what this does to their needs while it is on, a change an hour by need id.
   needs: z.record(id, z.number().min(-1000).max(1000)).default({}),
+  // The adventure: the place they are while this is on, by the place record's id. An event
+  // with no place moves nobody.
+  place: id.optional(),
+  // The adventure: this holds only while the condition does, and a day with a condition that
+  // holds replaces the ordinary day (a market day, the day of the raid, once she is cured).
+  when: scheduleWhenSchema.optional(),
 });
 export type ScheduleEvent = z.infer<typeof scheduleEventSchema>;
 export const scheduleSchema = z.record(z.string().max(20), z.array(scheduleEventSchema).max(200));
@@ -212,6 +219,8 @@ export const worldSchema = z.object({
   records: z.array(recordSchema).max(5000).default([]),
   // The world's own rules: only what it changes from the standard ruleset (core/rules).
   rules: worldRulesSchema.optional(),
+  // The ways between places: two ends, a distance, and what a traveller needs to use one.
+  routes: z.array(routeSchema).max(10_000).optional(),
   // The same for the world: the module's own id and version, its routes and relationships.
   carried: z.record(z.string().max(80), z.unknown()).optional(),
   updatedAt: z.number().int().nonnegative().default(0),
