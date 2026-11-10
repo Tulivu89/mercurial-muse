@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "What every side of the site shares: providers, prompt formats and the relay's request and reply shapes.",
+  "description": "What every side of the site shares: narration, the record model, the rules and the chat kernel.",
   "dependencies": {
     "zod": "^4.1.5"
   },

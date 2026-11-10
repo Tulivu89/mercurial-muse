@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'reac
 import bogwaterRaw from '../../modules/abernys-bogwater.json';
 import abernysRaw from '../../modules/abernys-port-covenant.json';
 import { loadModule, readSaveFile, sceneOf, startSave, type PraxisModule, type Save } from '../engine';
+import { LAUNCH_KEY, readLaunches, withoutLaunch, type Launched } from '../../../core/convert/launch';
 import { ConnectForm, initialConnection, reconnect, type Connection } from './Connect';
 import { Play } from './Play';
 import { readJsonFile } from './files';
@@ -42,6 +43,23 @@ export function App() {
     const loaded = loadModule(raw);
     if (!loaded.ok) { setErrors(loaded.errors); return; }
     void begin(loaded.module, startSave(loaded.module, Math.floor(Math.random() * 2 ** 31)), loaded.module.name);
+  }
+
+  // Worlds sent from the Studio with "Play in the adventure". One named in the address starts
+  // straight away.
+  const [launches, setLaunches] = useState<Launched[]>(() => { try { return readLaunches(window.localStorage.getItem(LAUNCH_KEY)); } catch { return []; } });
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('launch');
+    if (!id) return;
+    window.history.replaceState(null, '', window.location.pathname);
+    const sent = launches.find((entry) => entry.id === id);
+    if (sent) newGame(sent.module);
+    else setErrors(['That world is not in this browser any more. Send it again from the Studio.']);
+  }, []);
+  function forget(id: string) {
+    const next = withoutLaunch(launches, id);
+    setLaunches(next);
+    try { window.localStorage.setItem(LAUNCH_KEY, JSON.stringify(next)); } catch { /* nothing to keep it in */ }
   }
 
   async function onModuleFile(event: ChangeEvent<HTMLInputElement>) {
@@ -141,6 +159,24 @@ export function App() {
                 </div>
                 <button type="button" className="btn primary" onClick={() => void resume(record)}>Continue</button>
                 <button type="button" className="btn quiet" aria-label={`Delete ${record.name}`} onClick={() => void remove(record)}>Delete</button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {launches.length > 0 && (
+        <section>
+          <h2>From the Studio</h2>
+          <div className="card clip">
+            {launches.map((entry) => (
+              <div key={entry.id} className="save-row">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className="name">{entry.name}</p>
+                  <p className="meta">Sent {new Date(entry.at).toLocaleString()}</p>
+                </div>
+                <button type="button" className="btn primary" onClick={() => newGame(entry.module)}>Play</button>
+                <button type="button" className="btn quiet" aria-label={`Remove ${entry.name}`} onClick={() => forget(entry.id)}>Remove</button>
               </div>
             ))}
           </div>

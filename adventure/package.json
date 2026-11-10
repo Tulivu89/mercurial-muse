@@ -1,7 +1,7 @@
 {
   "name": "adventure",
   "private": true,
-  "version": "0.22.2",
+  "version": "0.24.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,8 @@
     "build:web": "tsc -b && vite build",
     "build:api": "tsc -p server/tsconfig.json",
     "start:api": "node dist-server/adventure/server/index.js",
-    "test": "vitest run",
+    "test": "vitest run && npm run test:roundtrip",
+    "test:roundtrip": "vitest run --config tests/roundtrip.config.ts",
     "test:watch": "vitest",
     "lint": "tsc -b --pretty false && tsc -p server/tsconfig.json --pretty false",
     "dev:all": "node scripts/dev-all.mjs"

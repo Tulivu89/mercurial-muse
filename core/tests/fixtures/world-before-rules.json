@@ -1,0 +1,297 @@
+{
+  "format": "studio-world/1",
+  "id": "before-rules",
+  "name": "Low Tide",
+  "premise": "A harbour town after midnight.",
+  "genre": "Crime",
+  "tone": "Wet and tired",
+  "conditions": [
+    {
+      "id": "close",
+      "label": "Close friends"
+    }
+  ],
+  "records": [
+    {
+      "id": "town",
+      "kind": "place",
+      "name": "Low Tide",
+      "keys": [],
+      "line": "A harbour town.",
+      "sections": [
+        {
+          "id": "id-1",
+          "title": "Entry",
+          "reach": "here",
+          "keys": [],
+          "when": null,
+          "text": ""
+        },
+        {
+          "id": "id-2",
+          "title": "Atmosphere",
+          "reach": "here",
+          "keys": [],
+          "when": null,
+          "text": ""
+        }
+      ],
+      "sets": [],
+      "groupIds": [],
+      "tags": [],
+      "notes": "",
+      "parentId": null,
+      "groupKind": "other",
+      "pronouns": "",
+      "gender": "",
+      "schedule": null,
+      "chatDefaults": null,
+      "sourceId": "",
+      "greetings": [],
+      "examples": []
+    },
+    {
+      "id": "bar",
+      "kind": "place",
+      "name": "The Anchor",
+      "keys": [],
+      "line": "A bar on the harbour road.",
+      "sections": [
+        {
+          "id": "id-3",
+          "title": "Entry",
+          "reach": "here",
+          "keys": [],
+          "when": null,
+          "text": ""
+        },
+        {
+          "id": "id-4",
+          "title": "Atmosphere",
+          "reach": "here",
+          "keys": [],
+          "when": null,
+          "text": ""
+        }
+      ],
+      "sets": [],
+      "groupIds": [],
+      "tags": [],
+      "notes": "",
+      "parentId": "town",
+      "groupKind": "other",
+      "pronouns": "",
+      "gender": "",
+      "schedule": null,
+      "chatDefaults": null,
+      "sourceId": "",
+      "greetings": [],
+      "examples": []
+    },
+    {
+      "id": "crew",
+      "kind": "group",
+      "name": "The night crew",
+      "keys": [],
+      "line": "The people who keep KXRT on air.",
+      "sections": [
+        {
+          "id": "id-5",
+          "title": "Entry",
+          "reach": "named",
+          "keys": [],
+          "when": null,
+          "text": ""
+        }
+      ],
+      "sets": [],
+      "groupIds": [],
+      "tags": [],
+      "notes": "",
+      "parentId": null,
+      "groupKind": "crew",
+      "pronouns": "",
+      "gender": "",
+      "schedule": null,
+      "chatDefaults": null,
+      "sourceId": "",
+      "greetings": [],
+      "examples": []
+    },
+    {
+      "id": "ada",
+      "kind": "character",
+      "name": "Ada Moss",
+      "keys": [],
+      "line": "The voice of KXRT after midnight.",
+      "sections": [
+        {
+          "id": "id-6",
+          "title": "Appearance",
+          "reach": "here",
+          "keys": [],
+          "when": null,
+          "text": "Forty, broad in the shoulders."
+        },
+        {
+          "id": "id-7",
+          "title": "Personality",
+          "reach": "here",
+          "keys": [],
+          "when": null,
+          "text": ""
+        },
+        {
+          "id": "id-8",
+          "title": "Speech",
+          "reach": "here",
+          "keys": [],
+          "when": null,
+          "text": ""
+        },
+        {
+          "id": "id-9",
+          "title": "Background",
+          "reach": "named",
+          "keys": [],
+          "when": null,
+          "text": ""
+        },
+        {
+          "id": "id-10",
+          "title": "Wants",
+          "reach": "named",
+          "keys": [],
+          "when": null,
+          "text": ""
+        }
+      ],
+      "sets": [
+        {
+          "id": "id-11",
+          "title": "Outfits",
+          "reach": "here",
+          "active": null,
+          "members": []
+        }
+      ],
+      "groupIds": [
+        "crew"
+      ],
+      "tags": [],
+      "notes": "",
+      "parentId": null,
+      "groupKind": "other",
+      "pronouns": "she/her",
+      "gender": "",
+      "schedule": {
+        "Friday": [
+          {
+            "id": "e1",
+            "startTime": 1320,
+            "endTime": 360,
+            "text": "On the air.",
+            "requiredIntimacy": "none",
+            "sets": {},
+            "rooms": {}
+          }
+        ]
+      },
+      "chatDefaults": null,
+      "sourceId": "",
+      "greetings": [],
+      "examples": []
+    },
+    {
+      "id": "safe",
+      "kind": "item",
+      "name": "The station safe",
+      "keys": [],
+      "line": "A green safe under the desk.",
+      "sections": [
+        {
+          "id": "id-12",
+          "title": "Entry",
+          "reach": "here",
+          "keys": [],
+          "when": null,
+          "text": ""
+        }
+      ],
+      "sets": [],
+      "groupIds": [],
+      "tags": [],
+      "notes": "",
+      "parentId": null,
+      "groupKind": "other",
+      "pronouns": "",
+      "gender": "",
+      "schedule": null,
+      "chatDefaults": null,
+      "sourceId": "",
+      "greetings": [],
+      "examples": []
+    },
+    {
+      "id": "you",
+      "kind": "persona",
+      "name": "Sam",
+      "keys": [],
+      "line": "A late caller.",
+      "sections": [
+        {
+          "id": "id-13",
+          "title": "Who you are",
+          "reach": "always",
+          "keys": [],
+          "when": null,
+          "text": ""
+        }
+      ],
+      "sets": [],
+      "groupIds": [],
+      "tags": [],
+      "notes": "",
+      "parentId": null,
+      "groupKind": "other",
+      "pronouns": "",
+      "gender": "",
+      "schedule": null,
+      "chatDefaults": null,
+      "sourceId": "",
+      "greetings": [],
+      "examples": []
+    },
+    {
+      "id": "tale",
+      "kind": "lore",
+      "name": "The ferry song",
+      "keys": [],
+      "line": "A song the truckers ask for.",
+      "sections": [
+        {
+          "id": "id-14",
+          "title": "Entry",
+          "reach": "named",
+          "keys": [],
+          "when": null,
+          "text": ""
+        }
+      ],
+      "sets": [],
+      "groupIds": [],
+      "tags": [],
+      "notes": "",
+      "parentId": null,
+      "groupKind": "other",
+      "pronouns": "",
+      "gender": "",
+      "schedule": null,
+      "chatDefaults": null,
+      "sourceId": "",
+      "greetings": [],
+      "examples": []
+    }
+  ],
+  "updatedAt": 2
+}
