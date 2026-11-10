@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { EMOTIONS, readChatFile, type Chat } from '../../core/chat/index.js';
-import { importCardFile, newWorld, recordById, type World } from '../../core/records/index.js';
+import { EMOTIONS, careAt, lifeKey, lifeNow, needsText, newChat, newLife, readChatFile, type Chat, type Life } from '../../core/chat/index.js';
+import { importCardFile, newWorld, recordById, type StoryRecord, type World } from '../../core/records/index.js';
 import { initialConnection, reconnect, type Connection } from '../../kit/src/connection';
 import { Drop, Wordmark } from '../../kit/src/Mark';
 import { useTheme } from '../../kit/src/theme';
@@ -9,24 +9,26 @@ import { listWorlds, putWorld } from '../../kit/src/worlds';
 import { ChatView } from './ChatView';
 import { HOUSE_VERSION, HOUSE_WORLD_ID, houseWorld, refreshHouse } from './errata';
 import { Home, type Status } from './Home';
+import { House } from './House';
 import { SettingsView } from './SettingsView';
 import { readSettings, writeSettings, type Settings } from './settings';
 import {
-  allPortraits, deleteChat, deletePortrait, getSent, listChats, makeBackup, portraitOwner, portraitSets, putChat, putPortrait, putSent, restoreBackup,
+  allPortraits, deleteChat, deletePortrait, getSent, listChats, listLives, makeBackup, putLife, portraitOwner, portraitSets, putChat, putPortrait, putSent, restoreBackup,
   type PortraitSet, type Sent,
 } from './store';
 
 const IMPORTS_WORLD_ID = 'inkwyrm-imports';
 const SEEDED_KEY = 'inkwyrm.chat.seeded';
 
-type View = { name: 'home' } | { name: 'settings' } | { name: 'chat'; id: string };
+type View = { name: 'home' } | { name: 'house' } | { name: 'settings' } | { name: 'chat'; id: string };
 function viewFromHash(): View {
   const hash = window.location.hash.replace(/^#\/?/, '');
   if (hash === 'settings') return { name: 'settings' };
+  if (hash === 'home') return { name: 'house' };
   if (hash.startsWith('chat/') && hash.length > 5) return { name: 'chat', id: decodeURIComponent(hash.slice(5)) };
   return { name: 'home' };
 }
-const hashFor = (view: View) => (view.name === 'chat' ? `#/chat/${encodeURIComponent(view.id)}` : view.name === 'settings' ? '#/settings' : '#/');
+const hashFor = (view: View) => (view.name === 'chat' ? `#/chat/${encodeURIComponent(view.id)}` : view.name === 'settings' ? '#/settings' : view.name === 'house' ? '#/home' : '#/');
 
 // The world a chat plays in: the character's own, plus the persona and scenario when they were
 // picked from another world. A persona made once serves every chat.
@@ -45,6 +47,7 @@ export function App() {
   const [worlds, setWorlds] = useState<World[] | null>(null);
   const [chats, setChats] = useState<Chat[] | null>(null);
   const [portraits, setPortraits] = useState<Record<string, PortraitSet>>({});
+  const [lives, setLives] = useState<Record<string, Life>>({});
   const [connection, setConnection] = useState<Connection>(initialConnection);
   const [settings, setSettings] = useState<Settings>(readSettings);
   const [theme, setTheme] = useTheme();
@@ -90,6 +93,7 @@ export function App() {
       }
       listChats().then(setChats).catch(() => setChats([]));
       allPortraits().then((all) => setPortraits(portraitSets(all))).catch(() => undefined);
+      listLives().then(setLives).catch(() => undefined);
     })();
     void reconnect(initialConnection()).then(setConnection);
   }, []);
@@ -116,6 +120,34 @@ export function App() {
     if (now) flush(); else timer.current = setTimeout(flush, 400);
   }, [flush]);
 
+  // A character has one life on this device: one clock, one relationship, one set of pins and
+  // needs, shared by Home and every chat with them. Until Home or a chat changes it, it is read
+  // from their latest chat, so chats from before Home carry on as they were.
+  const lifeOf = (worldId: string, record: StoryRecord): Life => {
+    const kept = lives[lifeKey(worldId, record.id)];
+    if (kept) return kept;
+    const latest = chats?.find((chat) => chat.worldId === worldId && chat.characterId === record.id);
+    const fresh = newLife(worldId, record, Date.now());
+    return latest ? { ...fresh, clock: latest.clock, relationship: latest.relationship, pins: latest.pins } : fresh;
+  };
+  const saveLife = (life: Life) => { setLives((all) => ({ ...all, [life.key]: life })); putLife(life).catch(fail); };
+  const saveWorld = (world: World) => { setWorlds((list) => (list ?? []).map((entry) => (entry.id === world.id ? world : entry))); putWorld(world).catch(fail); };
+  // A chat reads its character's life, and what it changes there goes back to the life.
+  const withLife = (chat: Chat, life: Life): Chat => ({ ...chat, clock: life.clock, relationship: life.relationship, pins: life.pins });
+  const saveChat = (next: Chat, life: Life | null) => {
+    if (life && (next.clock !== life.clock || next.relationship !== life.relationship || next.pins !== life.pins)) saveLife({ ...life, clock: next.clock, relationship: next.relationship, pins: next.pins });
+    save(next);
+  };
+  const chatFrom = (world: World, record: StoryRecord, scenario: StoryRecord) => {
+    const existing = chats?.find((chat) => chat.worldId === world.id && chat.characterId === record.id && chat.scenarioId === scenario.id);
+    if (existing) { go({ name: 'chat', id: existing.id }); return; }
+    const life = lifeOf(world.id, record);
+    const greeting = record.greetings[0] ?? null;
+    const chat = withLife(newChat({ id: newId(), worldId: world.id, characterId: record.id, characterName: record.name, personaId: null, scenarioId: scenario.id, userName: settings.userName || 'User', relationship: life.relationship, style: 'roleplay', responseLength: 'unspecified', greeting }, newId, Date.now()), life);
+    save(chat, true);
+    go({ name: 'chat', id: chat.id });
+  };
+
   const openId = view.name === 'chat' ? view.id : null;
   const open = chats?.find((chat) => chat.id === openId) ?? null;
   useEffect(() => {
@@ -125,7 +157,8 @@ export function App() {
 
   const setPortrait = async (owner: string, slot: string, file: File | null) => {
     try {
-      const data = file ? await imageDataUrl(file) : null;
+      // A room is seen large; a figure or a face is not.
+      const data = file ? await imageDataUrl(file, slot.startsWith('room:') || slot.startsWith('layer:') ? 1600 : slot.startsWith('fig:') ? 900 : 512) : null;
       if (data) await putPortrait(owner, slot, data); else await deletePortrait(owner, slot);
       setPortraits((all) => {
         const next = { ...(all[owner] ?? {}) };
@@ -198,16 +231,23 @@ export function App() {
         </main>
       );
     }
+    const openWorld = worlds ? worldFor(worlds, open) : null;
+    const character = openWorld ? recordById(openWorld, open.characterId) : undefined;
+    const life = character ? lifeOf(open.worldId, character) : null;
+    // Needs are sent once they are being kept in Home; until then nothing about them reaches the model.
+    const kept = !!life && !!character && Object.keys(life.levels).length > 0;
+    const needs = kept ? needsText(character!, careAt(character!, life!, lifeNow(life!, Date.now())), open.userName, lifeNow(life!, Date.now())) : undefined;
     return (
       <ChatView
         key={open.id}
-        chat={open}
-        world={worlds ? worldFor(worlds, open) : null}
+        chat={life ? withLife(open, life) : open}
+        needs={needs}
+        world={openWorld}
         connection={connection}
         settings={settings}
         portraits={portraits[portraitOwner(open.worldId, open.characterId)]}
         sent={sent[open.id] ?? null}
-        onChange={save}
+        onChange={(next) => saveChat(next, life)}
         onSent={(record) => { setSent((all) => ({ ...all, [record.chatId]: record })); putSent(record).catch(() => undefined); }}
         onBack={() => { flush(); go({ name: 'home' }); }}
         onDelete={() => void remove(open)}
@@ -225,12 +265,19 @@ export function App() {
           <span className="side">Chat</span>
         </button>
         <div className="bar-actions">
+          <button type="button" className="btn quiet" aria-current={view.name === 'home'} onClick={() => go({ name: 'home' })}>Chats</button>
+          <button type="button" className="btn quiet" aria-current={view.name === 'house'} onClick={() => go({ name: 'house' })}>Home</button>
           <button type="button" className="btn quiet" aria-current={view.name === 'settings'} onClick={() => go(view.name === 'settings' ? { name: 'home' } : { name: 'settings' })}>{view.name === 'settings' ? 'Done' : 'Settings'}</button>
           <a className="btn quiet" href="/studio/">Studio</a>
           <a className="btn quiet" href="/">Adventure</a>
         </div>
       </header>
-      {view.name === 'settings' ? (
+      {view.name === 'house' ? (
+        <House
+          worlds={worlds ?? []} chats={chats ?? []} portraits={portraits} lives={lives} userName={settings.userName}
+          onLife={saveLife} onWorld={saveWorld} onPicture={(owner, slot, file) => void setPortrait(owner, slot, file)} onChat={chatFrom}
+        />
+      ) : view.name === 'settings' ? (
         <SettingsView
           connection={connection} onConnection={setConnection} settings={settings} onSettings={setSettings} theme={theme} onTheme={setTheme}
           worlds={worlds ?? []} portraits={portraits} onPortrait={(owner, slot, file) => void setPortrait(owner, slot, file)}
@@ -244,7 +291,14 @@ export function App() {
           <Home
             worlds={worlds} chats={chats} portraits={portraits} status={status} userName={settings.userName}
             onOpen={(id) => go({ name: 'chat', id })}
-            onStart={(chat) => { setSettings((now) => ({ ...now, userName: chat.personaId ? now.userName : chat.userName })); save(chat, true); go({ name: 'chat', id: chat.id }); }}
+            onStart={(chat) => {
+              setSettings((now) => ({ ...now, userName: chat.personaId ? now.userName : chat.userName }));
+              // What a new chat is set to becomes how things stand with the character.
+              const record = worlds?.find((world) => world.id === chat.worldId)?.records.find((entry) => entry.id === chat.characterId);
+              if (record) saveLife({ ...lifeOf(chat.worldId, record), clock: chat.clock, relationship: chat.relationship });
+              save(chat, true);
+              go({ name: 'chat', id: chat.id });
+            }}
             onImport={(file) => void importCharacter(file)}
           />
         </>

@@ -27,7 +27,7 @@ function sample() {
     { id: 's3', title: 'Why she left the city', reach: 'when', keys: [], when: 'close', text: 'She walked out of a morning show.' },
     { id: 's4', title: 'Notes', reach: 'never', keys: [], when: null, text: 'Make her older?' },
   ];
-  ada.sets = [{ id: 'outfits', title: 'Outfits', reach: 'here', active: 'm2', members: [{ id: 'm1', name: 'Day', text: 'A cardigan.', lock: null }, { id: 'm2', name: 'On air', text: 'Headphones round her neck.', lock: null }] }];
+  ada.sets = [{ id: 'outfits', title: 'Outfits', reach: 'here', active: 'm2', members: [{ id: 'm1', name: 'Day', text: 'A cardigan.', lock: null, layers: [] }, { id: 'm2', name: 'On air', text: 'Headphones round her neck.', lock: null, layers: [] }] }];
   const sol: StoryRecord = { ...newRecord('character', 'sol', 'Sol Brannigan', ids), keys: ['Sol'], line: 'The station engineer.' };
   sol.sections = sol.sections.map((section) => ({ ...section, text: section.title === 'Appearance' ? 'Tall, always on a ladder.' : '' }));
   for (const record of [town, street, studio, booth, radio, ada, sol]) world = putRecord(world, record, 2);

@@ -37,6 +37,8 @@ export interface BuildOptions {
   dryRun: boolean;
   rngInt: (min: number, max: number) => number;
   draft?: string;
+  // Home: how the character's needs stand, already worded. Sent as CharacterRoom's Needs brain.
+  needs?: string;
 }
 
 export interface BuiltPart { label: string; tokens: number }
@@ -98,6 +100,7 @@ const answerFor = (scene: Scene, chat: Chat, options: BuildOptions) =>
 
 async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, side?: SideTask): Promise<Built> {
   const sheet = sheetFor(scene);
+  if (options.needs) sheet.char.brains = [...(sheet.char.brains ?? []), { name: 'Needs', content: options.needs }];
   const history = chat.messages.slice(0, options.upTo);
   const carried = !side && options.continuing && history.at(-1)?.from === 'character' ? history.pop()! : null;
   const slot = carried ? openReplyText(pickedAlt(carried).parts, scene.charName, true) : '';
@@ -185,6 +188,7 @@ function generalMoment(chat: Chat, scene: Scene, options: BuildOptions, windowSt
     const mood = moodFor(recentEmotions(chat, 3, options.upTo), away, options.rngInt);
     if (mood) lines.push(`${charName}'s mood. ${moodLine(mood, charName)}`);
   }
+  if (options.needs) lines.push(options.needs);
   const said = recentText(chat, options.upTo, options.draft);
   for (const entry of chat.diary) if (mentions(said, entry.keys)) lines.push(`From ${charName}'s diary, ${entry.name}: ${entry.content}`);
   for (const entry of chat.process) if (mentions(said, entry.keys)) lines.push(`How ${charName} remembers feeling, ${entry.name}: ${entry.content}`);

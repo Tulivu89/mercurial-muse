@@ -130,13 +130,17 @@ One pull request per phase at most; smaller is fine. Stop after Phase A and show
   - In the General profile, as a brief note in the moment, never as a fake thinking block.
 - **Side generations use CR's prompts,** each budgeted, started by the player, and showing what it will send. Moved to the player's model, they are written in its format.
 
-### Phase C: play and show
+### Phase C: home and socials
 
-- **Posts** (F-21): a feed about the chat or the character's day, with comments from other characters, the player and strangers the model names; a post can be kept on the profile.
-- **Dice and sheets,** from CR's README: CR's presets (D&D 5e, Pathfinder 2e, PbtA, Blades, Chronicles of Darkness, Year Zero, Call of Cthulhu, Fate Accelerated) and the character reacting to the roll. Where the adventure's rules engine already does this, share it through `core/` instead of building it twice.
-- **Small games** (F-28) and their stats in context.
-- **Stage mode** (CR-PLAN §6.8b): the visual-novel reading of a chat.
-- **Bubble styling** per character (§6.8c), the emoji set (F-04), Imitate (F-22), and the farewell on delete (F-29).
+Changed by the owner on Nov 10: dice, sheets and small games are no part of the chat side. Phase C is Home and socials. The idea: look at your characters, see them go about their days, manage them and their moods and memories, then jump into a chat with them. CharacterRoom has not finished this; it is finished here.
+
+- **Home** (CR-PLAN §6.12, CharacterRoom's Tamagotchi mode). Built first, as Chat 0.3.0:
+  - a place with everyone in it: a scenario's rooms as pictures, each character drawn in the room and at the spot their schedule puts them, with layers over and under them and simple movement;
+  - a character's day belongs to the character, on this device: one clock, one relationship, their needs and where they are, shared by Home and every chat with them;
+  - needs that fall with the clock and move with the schedule, actions that change them, a bond that follows how well they are kept, and a replay of what happened while you were away;
+  - pictures are uploaded. Image generation comes with roadmap step 7.
+- **Socials** (F-21, Posts): a feed about the chat or the character's day, with comments from other characters, the player and strangers the model names; a post can be kept on the profile. Next, as its own pull request. The away replay gets its one-press narration here.
+- **Later, if wanted:** Stage mode (CR-PLAN §6.8b), bubble styling per character (§6.8c), the emoji set (F-04), Imitate (F-22), the farewell on delete (F-29), a place's atmosphere lines.
 
 ## Gotchas already found
 

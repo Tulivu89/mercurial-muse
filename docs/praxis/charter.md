@@ -144,6 +144,7 @@ Saves are `praxis-save/1`, exports `praxis-export/1` (a save with its module), a
 | Nov 9, 2026 | 0.22.1 and Studio 0.1.0 opened: the record model in `core/records/` and the Studio at `/studio/`, which the adventure's server now serves and its start screen links to. |
 | Nov 9, 2026 | Chat 0.1.0, Studio 0.1.1 and 0.22.2 opened: Chat's Phase A at `/chat/` (`docs/chat-brief.md`), with CharacterRoom's kernel ported to `core/chat/` and held to its parity fixtures, a General context for other models, streaming through the relay (`/api/narration/stream`), Character Card import, and `kit/` for the Studio and Chat to share. |
 | Nov 10, 2026 | Chat 0.1.0 merged (PR #8) and tried live on Xialong. Chat 0.2.0 and Studio 0.2.0 opened: Chat's Phase B (the clock, schedules, sets that follow them, moods, memories, plans, side generations), a chat screen rebuilt for reading, the Studio's week view, and Errata's real card. |
+| Nov 10, 2026 | Chat 0.2.0 merged (PR #9). The owner set Chat's last phase to Home and socials, with no dice or games. Chat 0.3.0 opened: Home, with a character's clock, relationship and needs kept per character and shared by every chat with them. |
 
 **v0.1 still to do:** branches (keeping alternate continuations rather than only replacing the latest).
 

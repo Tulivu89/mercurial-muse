@@ -35,6 +35,8 @@ export interface ChatViewProps {
   settings: Settings;
   portraits?: PortraitSet;
   sent?: Sent | null;
+  // Home: how the character's needs stand, when they are being kept.
+  needs?: string;
   onChange: (chat: Chat) => void;
   onSent?: (sent: Sent) => void;
   onBack: () => void;
@@ -44,7 +46,7 @@ export interface ChatViewProps {
   generateImpl?: typeof generate;
 }
 
-export function ChatView({ chat, world, connection, settings, portraits, sent = null, onChange, onSent, onBack, onDelete, onSettings, generateImpl = generate }: ChatViewProps) {
+export function ChatView({ chat, world, connection, settings, portraits, sent = null, needs, onChange, onSent, onBack, onDelete, onSettings, generateImpl = generate }: ChatViewProps) {
   // The status line follows the clock without a reply having to happen.
   const [tick, setTick] = useState(() => Date.now());
   useEffect(() => { const timer = setInterval(() => setTick(Date.now()), 30_000); return () => clearInterval(timer); }, []);
@@ -102,7 +104,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     contextTokens: contextTokensFor(settings, connection),
     replyTokens: settings.replyTokens,
     nowMs: Date.now(),
-    upTo, continuing, draft, dryRun,
+    upTo, continuing, draft, dryRun, needs,
     firstBuild: firstBuild.current,
     rngInt: rng,
   });
