@@ -5,6 +5,7 @@ import { THEME_NAMES, useTheme, type Theme } from '../../kit/src/theme';
 import { WorldView } from './WorldView';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
 import { ago, newId, readJsonFile } from '../../kit/src/util';
+import { isModule, moduleToWorld } from '../../core/convert/index.js';
 
 export function App() {
   const [worlds, setWorlds] = useState<World[] | null>(null);
@@ -97,12 +98,33 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
     event.target.value = '';
     if (!file) return;
     try {
-      const read = parseWorld(await readJsonFile(file));
+      const raw = await readJsonFile(file);
+      // An adventure module opens as a world too.
+      if (isModule(raw)) { bringIn(raw); return; }
+      const read = parseWorld(raw);
       if (!read.ok) { onStatus({ text: read.errors.join(' '), bad: true }); return; }
       const taken = worlds?.some((world) => world.id === read.world.id);
       const world = taken ? { ...read.world, id: newId(), name: `${read.world.name} (copy)` } : read.world;
       onCreate(world);
       onStatus({ text: `Opened ${world.name}.` });
+    } catch (error) {
+      onStatus({ text: (error as Error).message, bad: true });
+    }
+  };
+
+  const bringIn = (raw: unknown) => {
+    const read = moduleToWorld(raw, Date.now());
+    if (!read.ok) { onStatus({ text: read.errors.join(' '), bad: true }); return; }
+    const taken = worlds?.some((world) => world.id === read.world.id);
+    const world = taken ? { ...read.world, id: newId(), name: `${read.world.name} (copy)` } : read.world;
+    onCreate(world);
+    onStatus({ text: [`Brought in ${world.name}: ${read.notes.join(' ')}`, 'It goes back out as the same module, with whatever you change.'].join(' ') });
+  };
+  // The adventure's own modules, fetched only when asked for.
+  const bringModule = async (which: 'bogwater' | 'port-covenant') => {
+    try {
+      const loaded = which === 'bogwater' ? await import('../../adventure/modules/abernys-bogwater.json') : await import('../../adventure/modules/abernys-port-covenant.json');
+      bringIn(loaded.default);
     } catch (error) {
       onStatus({ text: (error as Error).message, bad: true });
     }
@@ -125,10 +147,15 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
         </label>
         <button type="submit" className="btn primary" style={{ alignSelf: 'flex-end' }} disabled={!name.trim()}>Make it</button>
         <span className="btn file-btn" style={{ alignSelf: 'flex-end' }}>
-          Open a world file
-          <input type="file" accept="application/json,.json" aria-label="Open a world file" onChange={(event) => void openFile(event)} />
+          Open a world or module file
+          <input type="file" accept="application/json,.json" aria-label="Open a world or module file" onChange={(event) => void openFile(event)} />
         </span>
       </form>
+      <div className="row">
+        <span className="hint">Or bring in one of the adventure&rsquo;s:</span>
+        <button type="button" className="btn small quiet" onClick={() => void bringModule('bogwater')}>Abernys: Bogwater</button>
+        <button type="button" className="btn small quiet" onClick={() => void bringModule('port-covenant')}>Abernys: Port Covenant</button>
+      </div>
       {worlds === null && <p className="hint">Opening your worlds…</p>}
       {worlds?.length === 0 && <p className="hint">No worlds in this browser yet. Make one above, or open a world file.</p>}
       {!!worlds?.length && (

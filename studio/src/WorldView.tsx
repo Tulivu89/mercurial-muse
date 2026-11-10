@@ -6,6 +6,8 @@ import {
 import { ContextPanel } from './ContextPanel';
 import { RecordEditor } from './RecordEditor';
 import { WorldSettings } from './WorldSettings';
+import { WorldRules } from './WorldRules';
+import { changedCount } from '../../core/rules/index.js';
 import { downloadJson, fileSafe, newId, readFileBytes } from '../../kit/src/util';
 
 type Status = { text: string; bad?: boolean } | null;
@@ -17,8 +19,8 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
   onStatus: (status: Status) => void;
   status: Status;
 }) {
-  const [selected, setSelected] = useState<string | 'world' | null>(world.records.length ? null : 'world');
-  const record = selected && selected !== 'world' ? recordById(world, selected) : undefined;
+  const [selected, setSelected] = useState<string | 'world' | 'rules' | null>(world.records.length ? null : 'world');
+  const record = selected && selected !== 'world' && selected !== 'rules' ? recordById(world, selected) : undefined;
 
   const add = (kind: RecordKind) => {
     const fresh = newRecord(kind, newId(), `New ${KIND_NAMES[kind].one.toLowerCase()}`, newId);
@@ -52,6 +54,10 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
         <button type="button" className="item" aria-current={selected === 'world'} onClick={() => setSelected('world')}>
           <h2>{world.name}</h2>
         </button>
+        <button type="button" className="item" aria-current={selected === 'rules'} onClick={() => setSelected('rules')}>
+          <span>Rules</span>
+          <small>{changedCount(world.rules) ? `${changedCount(world.rules)} changed` : 'Standard'}</small>
+        </button>
         <div className="row">
           <button type="button" className="btn small quiet" onClick={() => downloadJson(`${fileSafe(world.name)}.world.json`, world)}>Export</button>
           <span className="btn small quiet file-btn">
@@ -83,6 +89,7 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
       <main className="editor">
         <button type="button" className="btn small quiet back" onClick={() => setSelected(null)}>Back to {world.name}</button>
         {selected === 'world' && <WorldSettings world={world} onChange={onChange} onDelete={onDelete} />}
+        {selected === 'rules' && <WorldRules world={world} onChange={onChange} />}
         {record && (
           <RecordEditor
             key={record.id}

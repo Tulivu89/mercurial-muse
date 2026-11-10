@@ -5,6 +5,7 @@ import {
 import { KeysField, NameField } from '../../kit/src/Fields';
 import { newId } from '../../kit/src/util';
 import { ScheduleEditor } from './ScheduleEditor';
+import { RulesPanel } from './RulesPanel';
 
 type Change = (record: StoryRecord) => void;
 
@@ -26,7 +27,10 @@ export function RecordEditor({ world, record, onChange, onDelete }: { world: Wor
     <>
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <h1>{record.name}</h1>
-        <span className="chip line">{KIND_NAMES[record.kind].one}</span>
+        <span className="row">
+          {record.kind === 'character' && <a className="btn small quiet" href={`/chat/#/with/${encodeURIComponent(world.id)}/${encodeURIComponent(record.id)}`}>Chat with {record.name}</a>}
+          <span className="chip line">{KIND_NAMES[record.kind].one}</span>
+        </span>
       </div>
 
       <NameField label="Name" value={record.name} onChange={(name) => update({ name })} />
@@ -85,6 +89,8 @@ export function RecordEditor({ world, record, onChange, onDelete }: { world: Wor
           </div>
         </fieldset>
       )}
+
+      <RulesPanel world={world} record={record} onChange={onChange} />
 
       <h2 className="sub">Sections</h2>
       {record.sections.map((section, index) => (

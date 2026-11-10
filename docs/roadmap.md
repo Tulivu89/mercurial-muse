@@ -89,7 +89,14 @@ Each step is one or more pull requests. The adventure keeps its own list (charte
    - an "In context now" panel that shows what a moment would send;
    - world files, and CharacterRoom card import.
 
-   Schedules came with Chat's Phase B (Studio 0.2.0). **Next:** rules on every record, Bogwater both ways, Play in the adventure, and adventure authoring with a Checks panel, briefed in `docs/studio-brief.md`. Then generate buttons and guided builders.
+   Schedules came with Chat's Phase B (Studio 0.2.0).
+
+   The next stage is briefed in `docs/studio-brief.md`, in three phases:
+   - **S1, rules on every record: built Nov 10 (Studio 0.3.0, adventure 0.23.0).** The rules moved to `core/rules/`. A world has a ruleset, the standard Four Approaches unless it changes a part, on a Rules page that says what is standard and what is the world's. Every character, place, item and group has a Rules panel: what a player can do there, how its states read to the narrator, and where each value came from, with one tap to change and one to put back. Groups give their members defaults. In context now shows the state sentences.
+   - **S2, Bogwater both ways: built Nov 10 (Studio 0.4.0, adventure 0.24.0).** `core/convert/` turns a module into a world and a world into a module. Bogwater and Port Covenant come back as the same modules, and the adventure's whole suite runs on the round-tripped ones, census included. A world's page has **Play in the adventure**, a character's has **Chat with**, and the adventure's start screen lists the worlds sent to it. Routes, relationships, a day's stops and the scenario's start are carried through unchanged, with no editor until S3.
+   - **S3, next:** routes, scene actions, the calendar, threads, goods, one schedule model with Chat, and a Checks panel.
+
+   Then generate buttons and guided builders.
 5. **Chat v0.** Briefed in `docs/chat-brief.md`. **Phase A built Nov 9 (Chat 0.1.0, at `/chat/`):** the context kernel in `core/chat/` with both profiles (AetherRoom for Xialong, byte for byte against CharacterRoom's fixtures; General for every other model), streaming through the relay, the chat screen, card import (CharacterRoom, Character Card V1 to V3, PNG), portraits, and `kit/` for what the Studio and Chat share. **Phase B built Nov 10 (Chat 0.2.0, Studio 0.2.0):** the chat clock and story time, schedules in context with a status line and the Studio's week view, sets that follow the schedule, moods, diary and feelings, plans, and CharacterRoom's side generations, each in CharacterRoom's form for Xialong and as notes for other models; and the chat screen rebuilt for reading. The owner's first live test confirmed Xialong streams as plain text through the relay. Phase C (posts, dice, games, Stage mode) is next. CharacterRoom on the site, on the core:
    - characters, persona and scenario;
    - brains, Jots, Diary and Plans;

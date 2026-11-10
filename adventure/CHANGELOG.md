@@ -8,6 +8,32 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.24.0 - From the Studio - 2026-11-10
+
+- **Worlds sent from the Studio.** The start screen lists every world the Studio handed over
+  with **Play in the adventure**, under *From the Studio*, each with Play and Remove. The Studio
+  leaves the converted module in this browser (`inkwyrm.launch`), and an address ending
+  `/?launch=<world id>` starts that one straight away.
+- **The converters are proved on every test run.** `npm test` now runs the suite twice: once as
+  before, and once with every module turned into a Studio world and back first
+  (`npm run test:roundtrip`, `tests/roundtrip.config.ts`), the census included.
+  `tests/studio-roundtrip.test.ts` holds Bogwater and Port Covenant to the same parsed module
+  after the trip.
+- No change to the rules, the module format or saves.
+
+## 0.23.0 - Shared rules - 2026-11-10
+
+- **The rules move to `core/rules/`,** because the Studio now reads them too: the state
+  primitive and its band sentences (`state.ts`), the story clock (`clock.ts`), the sentence
+  helpers (`words.ts`), the standard ruleset `four-approaches/1` (`standard.ts`) and the
+  ruleset's own schemas, split out of the module schema (`ruleset.ts`). The files in
+  `src/engine/` with those names re-export them, and `module.ts` still exports every schema it
+  did, so nothing that imports the engine changes.
+- No change in play. The module format, saves and every rule are as they were, and the tests
+  pass untouched.
+- `AGENTS.md` notes that the Orbis field names in modules stay only while the converter between
+  Studio worlds and modules lives.
+
 ## 0.22.2 - Chat's door - 2026-11-09
 
 - **Streaming through the relay.** `POST /api/narration/stream` takes the same request as
