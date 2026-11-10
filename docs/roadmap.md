@@ -82,14 +82,14 @@ Each step is one or more pull requests. The adventure keeps its own list (charte
 1. **The record model.** Settled on Nov 9 (`docs/records.md`), with Errata as its worked example. Group chats are pinned.
 2. **Brand: decided Nov 9.** Inkwyrm, the Wet Ink look, the ink-drop mark family and the line *Characters who remember you. Worlds that keep their rules.* (`docs/brand.md`). The mascot, Errata, is drafted as the first record in the new model (`docs/mascot-record.md`), and her visual design is briefed for a separate chat (`docs/mascot-brief.md`). Still to do: domains, final logo drawings, mascot art.
 3. **Repository shape.** Done in 0.22.0: `praxis/` is `adventure/`, narration is in `core/`, one npm install at the root, neutral format names, the `inkwyrm` service, and Orbis and Ember out of the tree. The rest of the core (records, the state engine, the journal and context budget) moves when the Studio and chat need it, so its shape comes from two users, not one.
-4. **Studio v0.** First version in 0.1.0 (Nov 9), at `/studio/`: Next: rules on every record, Bogwater both ways, and adventure authoring, briefed in `docs/studio-brief.md`.
+4. **Studio v0.** First version in 0.1.0 (Nov 9), at `/studio/`:
    - the record model in `core/records/`, with tests;
    - worlds in the browser, every record kind, nested places, groups that hold species;
    - sections by reach with shared conditions, sets, greetings and example chats;
    - an "In context now" panel that shows what a moment would send;
    - world files, and CharacterRoom card import.
 
-   Still to come: schedules, generate buttons that show what they send, guided builders.
+   Schedules came with Chat's Phase B (Studio 0.2.0). **Next:** rules on every record, Bogwater both ways, Play in the adventure, and adventure authoring with a Checks panel, briefed in `docs/studio-brief.md`. Then generate buttons and guided builders.
 5. **Chat v0.** Briefed in `docs/chat-brief.md`. **Phase A built Nov 9 (Chat 0.1.0, at `/chat/`):** the context kernel in `core/chat/` with both profiles (AetherRoom for Xialong, byte for byte against CharacterRoom's fixtures; General for every other model), streaming through the relay, the chat screen, card import (CharacterRoom, Character Card V1 to V3, PNG), portraits, and `kit/` for what the Studio and Chat share. **Phase B built Nov 10 (Chat 0.2.0, Studio 0.2.0):** the chat clock and story time, schedules in context with a status line and the Studio's week view, sets that follow the schedule, moods, diary and feelings, plans, and CharacterRoom's side generations, each in CharacterRoom's form for Xialong and as notes for other models; and the chat screen rebuilt for reading. The owner's first live test confirmed Xialong streams as plain text through the relay. Phase C (posts, dice, games, Stage mode) is next. CharacterRoom on the site, on the core:
    - characters, persona and scenario;
    - brains, Jots, Diary and Plans;
