@@ -6,7 +6,7 @@ import { ConnectForm, ModelFields } from '../../kit/src/Connect';
 import type { Connection } from '../../kit/src/connection';
 import { THEME_NAMES, type Theme } from '../../kit/src/theme';
 import { castOf, type Status } from './Home';
-import { AUTO_CAP, contextTokensFor, type Settings, type TextSize } from './settings';
+import { AUTO_CAP, contextTokensFor, type Layout, type Settings, type TextSize } from './settings';
 import { portraitOwner, type PortraitSet } from './store';
 import type { World } from '../../core/records/index.js';
 
@@ -89,7 +89,13 @@ export function SettingsView({ connection, onConnection, settings, onSettings, t
               <option value="small">Small</option><option value="medium">Medium</option><option value="large">Large</option>
             </select>
           </label>
+          <label className="field grow"><span>Messages as</span>
+            <select value={settings.layout} onChange={(event) => onSettings({ ...settings, layout: event.target.value as Layout })}>
+              <option value="bubbles">Bubbles</option><option value="page">A page: no bubbles, full width</option>
+            </select>
+          </label>
         </div>
+        <label className="checks"><input type="checkbox" checked={settings.rail} onChange={(event) => onSettings({ ...settings, rail: event.target.checked })} /> On a wide screen, show the portrait in a column beside the chat</label>
       </section>
 
       <section className="card" aria-label="Portraits">

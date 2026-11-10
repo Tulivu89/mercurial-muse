@@ -62,6 +62,11 @@ export interface GeneralOptions {
   continuing: boolean;
   nowMs: number;
   draft?: string;
+  // More for the moment, already worded: time apart, the schedule, the mood, plans, memories.
+  momentLines?: string[];
+  // Something other than a reply: a diary entry, a plan. It takes the place of the chat rules
+  // and of the moment, and the model is started on `lead`.
+  task?: { rules: string; ask: string; lead: string };
 }
 
 export interface GeneralPart { label: string; text: string; tokens: number }
@@ -116,7 +121,7 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
 
   const parts: GeneralPart[] = [];
   const add = (label: string, text: string) => { if (text.trim()) parts.push({ label, text, tokens: estimateTokens(text) }); };
-  add('Rules', rulesFor(charName, userName));
+  add('Rules', options.task?.rules ?? rulesFor(charName, userName));
   add(charName, macros(`## ${charName}\n${charLines.join('\n')}`));
   if (userLines.length) add(`${userName} (you)`, macros(`## ${userName}, who ${charName} is talking to\n${userLines.join('\n')}`));
   if (scenarioLines.length) add('Scenario', macros(`## The scenario\n${scenarioLines.join('\n')}`));
@@ -157,11 +162,12 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
     ...blockText(blockOf(scenario?.id), false),
     ...others.flatMap((block) => (cameByKey(block) ? block.parts.map((part) => `${block.name}: ${part.reach === 'line' ? part.text : part.text}`) : blockText(block, false).map((line) => `${block.name}, ${line}`))),
   ].map(macros);
+  momentLines.push(...(options.momentLines ?? []).map(macros));
   const style = `Style: ${chat.style}${chat.responseLength !== 'unspecified' ? `; response length: ${chat.responseLength}` : ''}.`;
   const ask = carried && !options.canPrefill
     ? `Carry on ${charName}'s last message from exactly where it stops. Don't repeat any of it.`
     : !history.length ? `Write ${charName}'s greeting.` : `Reply as ${charName} only.`;
-  const moment = `[${[style, ...momentLines, ask].join('\n')}]`;
+  const moment = options.task ? `[${options.task.ask}]` : `[${[style, ...momentLines, ask].join('\n')}]`;
   parts.push({ label: 'The moment', text: moment, tokens: estimateTokens(moment) });
   if (turns.at(-1)?.role === 'user') turns.at(-1)!.content += `\n\n${moment}`;
   else turns.push({ role: 'user', content: moment });
@@ -170,7 +176,7 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
   parts.splice(parts.length - 1, 0, { label: 'Transcript', text: '', tokens: Math.max(0, transcriptTokens) });
 
   const messages: Message[] = [{ role: 'system', content: system }, ...(journal ? [{ role: 'system' as const, content: journal }] : []), ...turns];
-  const lead = carried ? openText : `${charName}:`;
+  const lead = options.task ? options.task.lead : carried ? openText : `${charName}:`;
   return { messages, prefill: options.canPrefill ? lead : '', lead, answer, parts, prefixTokens, costs };
 }
 

@@ -37,4 +37,21 @@ describe('the world view', () => {
     const changed = onChange.mock.calls.at(-1)?.[0] as World;
     expect(changed.records.find((record) => record.id === 'ada')?.name).toBe('Ada Marsh');
   });
+
+  it('adds a schedule event from a time of day and draws it on the week', () => {
+    const onChange = vi.fn();
+    const { rerender } = render(<WorldView world={world()} onChange={onChange} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ada Moss' }));
+    const schedule = screen.getByRole('region', { name: 'Schedule' });
+    fireEvent.click(within(schedule).getByRole('tab', { name: /Fri/ }));
+    fireEvent.click(within(schedule).getByRole('button', { name: 'Night' }));
+    const changed = onChange.mock.calls.at(-1)?.[0] as World;
+    const events = changed.records.find((record) => record.id === 'ada')!.schedule!.Friday!;
+    expect(events).toMatchObject([{ startTime: 1320, endTime: 360, requiredIntimacy: 'none', sets: {}, rooms: {} }]);
+    rerender(<WorldView world={changed} onChange={onChange} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    // It wraps past midnight, so it is drawn as two pieces.
+    expect(screen.getByRole('region', { name: 'Schedule' }).querySelectorAll('.strip.on .block-bar')).toHaveLength(2);
+    fireEvent.change(screen.getByLabelText("What they're doing"), { target: { value: 'On the air.' } });
+    expect((onChange.mock.calls.at(-1)?.[0] as World).records.find((record) => record.id === 'ada')!.schedule!.Friday![0]!.text).toBe('On the air.');
+  });
 });

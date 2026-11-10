@@ -7,6 +7,7 @@ import type { Section, StoryRecord } from '../records/schema.js';
 import { recordById } from '../records/world.js';
 import type { KernelBrain, KernelCard, KernelFloaty, KernelKeyedBrain } from './aetherroom.js';
 import type { Scene } from './scene.js';
+import { kernelSchedule } from './time.js';
 
 const titled = (record: StoryRecord, pattern: RegExp) => record.sections.filter((section) => pattern.test(section.title.trim()) && (section.reach === 'here' || section.reach === 'always') && section.text.trim());
 const joined = (sections: Section[]) => sections.map((section) => section.text.trim()).join('\n');
@@ -58,6 +59,7 @@ export function sheetFor(scene: Scene): Sheet {
     ...card(character, scene, [PERSONA, APPEARANCE]),
     persona: joined(titled(character, PERSONA)),
     appearance: joined(titled(character, APPEARANCE)),
+    schedule: kernelSchedule(character.schedule, scene.relationship),
     exampleChats: character.examples.filter((chat) => chat.messages.length).map((chat) => ({
       name: chat.name,
       userName: chat.userName || scene.userName,

@@ -37,7 +37,7 @@ function chat(over: Partial<Chat> = {}): Chat {
   return { ...base, ...over };
 }
 
-const options = (model: string, over: Partial<BuildOptions> = {}): BuildOptions => ({ model, canPrefill: true, contextTokens: 16_000, replyTokens: 1000, nowMs: NOW, upTo: 1, continuing: false, firstBuild: true, rngInt: (min) => min, ...over });
+const options = (model: string, over: Partial<BuildOptions> = {}): BuildOptions => ({ model, canPrefill: true, contextTokens: 16_000, replyTokens: 1000, nowMs: NOW, upTo: 1, continuing: false, firstBuild: true, dryRun: false, rngInt: (min) => min, ...over });
 
 describe('replies', () => {
   it('reads Name: text and Emotion: word, with neutral when there is none', () => {
@@ -186,7 +186,7 @@ describe('the General profile', () => {
 
 describe('the AetherRoom profile from records', () => {
   it('reads records as CharacterRoom cards', () => {
-    const scene = sceneFor(world(), chat({ relationship: 'close' }))!;
+    const scene = sceneFor(world(), chat({ relationship: 'close' }), NOW)!;
     const sheet = sheetFor(scene);
     expect(sheet.char.persona).toBe('Dry. Calls everyone {{user}} or pal.');
     expect(sheet.char.appearance).toBe('Forty, broad in the shoulders.');
@@ -196,7 +196,7 @@ describe('the AetherRoom profile from records', () => {
     expect(sheet.user.persona).toBe('A night-shift cabbie.');
     expect(sheet.scenario).toMatchObject({ environment: 'A radio booth.', scene: 'Three a.m.', tags: 'rain' });
     expect(sheet.floaty.map((entry) => entry.entry.name)).toEqual(['The curfew']);
-    expect(sheetFor(sceneFor(world(), chat())!).char.brains!.map((brain) => brain.name)).toEqual(['Speech']);
+    expect(sheetFor(sceneFor(world(), chat(), NOW)!).char.brains!.map((brain) => brain.name)).toEqual(['Speech']);
   });
 
   it('builds CharacterRoom\'s context for xialong', async () => {

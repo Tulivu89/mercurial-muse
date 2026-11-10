@@ -63,7 +63,14 @@ export const setSchema = z.object({
   title: shortText(120),
   reach: z.enum(REACHES).default('here'),
   active: id.nullable().default(null),
-  members: z.array(z.object({ id, name: shortText(120), text: shortText(20000) })).max(60).default([]),
+  members: z.array(z.object({
+    id,
+    name: shortText(120),
+    text: shortText(20000),
+    // A condition that must hold before the player can pick this one by hand (a place she takes
+    // you to only once you're close). A schedule can still put her there.
+    lock: id.nullable().default(null),
+  })).max(60).default([]),
 });
 export type RecordSet = z.infer<typeof setSchema>;
 
@@ -92,6 +99,11 @@ export const scheduleEventSchema = z.object({
   endTime: z.number().int().min(0).max(1440),
   text: shortText(2000),
   requiredIntimacy: shortText(40).default('none'),
+  // While this is on: the member each set uses, by set id (her pajamas while asleep).
+  sets: z.record(id, id).default({}),
+  // Where it happens in a scenario: the member of that scenario's set, by the scenario's id, or
+  // by the id its card had where it came from.
+  rooms: z.record(id, id).default({}),
 });
 export type ScheduleEvent = z.infer<typeof scheduleEventSchema>;
 export const scheduleSchema = z.record(z.string().max(20), z.array(scheduleEventSchema).max(200));
@@ -117,6 +129,10 @@ export const recordSchema = z.object({
   pronouns: shortText(40).default(''),
   gender: shortText(80).default(''),
   schedule: scheduleSchema.nullable().default(null),
+  // What a new chat with this character starts set to. Empty means the app's own default.
+  chatDefaults: z.object({ relationship: shortText(40).default(''), style: shortText(40).default(''), responseLength: shortText(40).default('') }).nullable().default(null),
+  // The id this had on the card it was imported from, so links between cards still meet.
+  sourceId: shortText(80).default(''),
   // Characters, for chat only.
   greetings: z.array(greetingSchema).max(20).default([]),
   examples: z.array(exampleChatSchema).max(30).default([]),

@@ -1,7 +1,7 @@
 // The start: recent chats on top, then every character in the Studio's worlds, and import.
 import { useState, type ChangeEvent } from 'react';
 import {
-  RESPONSE_LENGTHS, STYLES, STYLE_HINTS, STYLE_NAMES, lastEmotion, lastLine, newChat, responseLengthName, type Chat, type NewChat,
+  RESPONSE_LENGTHS, STYLES, STYLE_HINTS, STYLE_NAMES, lastEmotion, lastLine, newChat, responseLengthName, setClockMode, hasSchedule, type Chat, type NewChat,
 } from '../../core/chat/index.js';
 import { RELATIONSHIPS, type StoryRecord, type World } from '../../core/records/index.js';
 import { Drop } from '../../kit/src/Mark';
@@ -104,9 +104,14 @@ function NewChatSheet({ cast, worlds, userName, onCancel, onStart }: { cast: Cas
   const [personaId, setPersonaId] = useState(personas[0]?.record.id ?? '');
   const [name, setName] = useState(userName);
   const [scenarioId, setScenarioId] = useState(own?.record.id ?? '');
-  const [relationship, setRelationship] = useState<Chat['relationship']>('stranger');
-  const [style, setStyle] = useState<Chat['style']>('roleplay');
-  const [responseLength, setResponseLength] = useState<Chat['responseLength']>('unspecified');
+  // The card's own defaults, where it has them.
+  const defaults = record.chatDefaults;
+  const among = <T extends string>(list: readonly T[], value: string | undefined, fallback: T): T => (list.includes(value as T) ? value as T : fallback);
+  const [relationship, setRelationship] = useState<Chat['relationship']>(among(RELATIONSHIPS, defaults?.relationship, 'stranger'));
+  const [style, setStyle] = useState<Chat['style']>(among(STYLES, defaults?.style, 'roleplay'));
+  const [responseLength, setResponseLength] = useState<Chat['responseLength']>(among(RESPONSE_LENGTHS, defaults?.responseLength, 'unspecified'));
+  const scheduled = hasSchedule(record.schedule);
+  const [storyTime, setStoryTime] = useState(false);
   const [greetingId, setGreetingId] = useState(record.greetings[0]?.id ?? '');
 
   const start = () => {
@@ -117,7 +122,11 @@ function NewChatSheet({ cast, worlds, userName, onCancel, onStart }: { cast: Cas
       userName: personas.find((entry) => entry.record.id === personaId)?.record.name ?? (name.trim() || 'User'),
       relationship, style, responseLength, greeting,
     };
-    onStart(newChat(input, newId, Date.now()));
+    const chat = newChat(input, newId, Date.now());
+    // Story time starts at the device's hour, and the greeting is stamped with it.
+    if (!storyTime) { onStart(chat); return; }
+    const clock = setClockMode(chat.clock, 'story', Date.now());
+    onStart({ ...chat, clock, messages: chat.messages.map((message) => ({ ...message, clock: clock.storyMs })) });
   };
 
   return (
@@ -164,6 +173,9 @@ function NewChatSheet({ cast, worlds, userName, onCancel, onStart }: { cast: Cas
           <option value="">None: start with an empty chat</option>
         </select>
       </label>
+      {scheduled && (
+        <label className="checks"><input type="checkbox" checked={storyTime} onChange={(event) => setStoryTime(event.target.checked)} /> Keep story time, so {record.name}'s schedule is live. You can change this later under Time.</label>
+      )}
       <div className="row">
         <button type="button" className="btn primary" onClick={start}>Start the chat</button>
         <button type="button" className="btn quiet" onClick={onCancel}>Cancel</button>

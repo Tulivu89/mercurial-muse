@@ -4,7 +4,7 @@
 // brains are Here, keyed brains are Named, and intimacy-gated brains are When behind the shared
 // bond conditions. Greetings, example chats and the schedule carry over.
 import { z } from 'zod';
-import { SCHEDULE_DAYS, type Schedule, type Section, type StoryRecord, type World } from './schema.js';
+import { SCHEDULE_DAYS, type RecordSet, type Schedule, type Section, type StoryRecord, type World } from './schema.js';
 import { ensureCondition, newRecord, putRecord } from './world.js';
 
 const text = z.string().max(40000).catch('');
@@ -17,7 +17,12 @@ const brainsConditional = z.array(z.object({
 })).catch([]).default([]);
 const image = z.string().max(4_000_000).catch('');
 
+// CharacterRoom's own additions to a card. Read loosely: only what the record model has a place for.
+const extra = z.unknown().optional();
+
 const shared = {
+  id: text.default(''),
+  cr: extra,
   name: z.string().min(1).max(120),
   description: text.default(''),
   pronouns: text.default(''),
@@ -44,12 +49,17 @@ const contactSchema = z.object({
     messages: z.array(z.object({ isContact: z.boolean().catch(false), text: text.default(''), emotion: text.default('') })).catch([]).default([]),
   })).catch([]).default([]),
   schedule: z.unknown().optional(),
+  relationship: text.default(''),
+  style: text.default(''),
+  responseLength: text.default(''),
   avatarUri: image.default(''),
   emotions: z.record(z.string(), image).catch({}).default({}),
 });
 const userSchema = z.object({ cardType: z.literal('user'), ...shared });
 const scenarioSchema = z.object({
   cardType: z.literal('scenario'),
+  id: text.default(''),
+  cr: extra,
   name: z.string().min(1).max(120),
   description: text.default(''),
   environment: text.default(''),
@@ -114,7 +124,54 @@ function speciesGroup(world: World, species: string, ids: Ids, now: number, note
   return { world: putRecord(world, group, now), groupIds: [group.id] };
 }
 
-function readSchedule(raw: unknown, ids: Ids): Schedule | null {
+const isObject = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
+const plainId = (value: unknown): string => (typeof value === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(value) ? value : '');
+
+// CharacterRoom's sets (`cr.sets`): one version in use at a time. Outfits on a contact, locations
+// on a scenario. A version's lock becomes the bond condition a player needs before picking it.
+function readSets(world: World, cr: unknown, reach: Section['reach'], ids: Ids): { world: World; sets: RecordSet[] } {
+  let next = world;
+  const sets: RecordSet[] = [];
+  const raw = isObject(cr) && Array.isArray(cr.sets) ? cr.sets : [];
+  for (const entry of raw.slice(0, 20)) {
+    if (!isObject(entry)) continue;
+    const members: RecordSet['members'] = [];
+    for (const variant of (Array.isArray(entry.variants) ? entry.variants : []).slice(0, 60)) {
+      if (!isObject(variant)) continue;
+      const bond = BOND_CONDITIONS.find((condition) => condition.tier === variant.lock);
+      if (bond) next = ensureCondition(next, { id: bond.id, label: bond.label });
+      members.push({
+        id: plainId(variant.id) || ids(),
+        name: typeof variant.name === 'string' ? variant.name.trim().slice(0, 120) : '',
+        text: typeof variant.content === 'string' ? variant.content.trim().slice(0, 20000) : '',
+        lock: bond?.id ?? null,
+      });
+    }
+    if (!members.length) continue;
+    sets.push({ id: plainId(entry.id) || ids(), title: (typeof entry.name === 'string' && entry.name.trim().slice(0, 120)) || 'Set', reach, active: members[0]!.id, members });
+  }
+  return { world: next, sets };
+}
+
+// Schedule event id -> set id -> version id (`cr.schedLinks`), and event id -> scenario id -> the
+// room it happens in (`cr.lineHome`). Both are folded into the events themselves.
+function readLinks(cr: unknown): { sets: Record<string, Record<string, string>>; rooms: Record<string, Record<string, string>> } {
+  const out = { sets: {} as Record<string, Record<string, string>>, rooms: {} as Record<string, Record<string, string>> };
+  if (!isObject(cr)) return out;
+  for (const [eventId, row] of Object.entries(isObject(cr.schedLinks) ? cr.schedLinks : {})) {
+    if (!isObject(row)) continue;
+    for (const [setId, memberId] of Object.entries(row)) if (plainId(setId) && plainId(memberId)) (out.sets[eventId] ??= {})[setId] = memberId as string;
+  }
+  for (const [eventId, row] of Object.entries(isObject(cr.lineHome) ? cr.lineHome : {})) {
+    if (!isObject(row)) continue;
+    for (const [scenarioId, place] of Object.entries(row)) if (plainId(scenarioId) && isObject(place) && plainId(place.room)) (out.rooms[eventId] ??= {})[scenarioId] = place.room as string;
+  }
+  return out;
+}
+
+const STYLE_FROM_CARD: Record<string, string> = { chat: 'chat', roleplay: 'roleplay', 'roleplay, novel style': 'novel' };
+
+function readSchedule(raw: unknown, ids: Ids, links: ReturnType<typeof readLinks> = { sets: {}, rooms: {} }): Schedule | null {
   if (!raw || typeof raw !== 'object') return null;
   const out: Schedule = {};
   let any = false;
@@ -124,10 +181,15 @@ function readSchedule(raw: unknown, ids: Ids): Schedule | null {
     if (!Array.isArray(events)) continue;
     for (const event of events.slice(0, 200)) {
       if (!event || typeof event !== 'object') continue;
-      const { startTime, endTime, text: body, requiredIntimacy } = event as Record<string, unknown>;
+      const { id: eventId, startTime, endTime, text: body, requiredIntimacy } = event as Record<string, unknown>;
+      const key = typeof eventId === 'string' ? eventId : '';
       if (typeof startTime !== 'number' || typeof endTime !== 'number' || typeof body !== 'string' || !body.trim()) continue;
       const minute = (value: number) => Math.min(1440, Math.max(0, Math.round(value)));
-      out[day]!.push({ id: ids(), startTime: minute(startTime), endTime: minute(endTime), text: body.slice(0, 2000), requiredIntimacy: typeof requiredIntimacy === 'string' ? requiredIntimacy.slice(0, 40) : 'none' });
+      out[day]!.push({
+        id: plainId(key) || ids(), startTime: minute(startTime), endTime: minute(endTime), text: body.slice(0, 2000),
+        requiredIntimacy: typeof requiredIntimacy === 'string' ? requiredIntimacy.slice(0, 40) : 'none',
+        sets: links.sets[key] ?? {}, rooms: links.rooms[key] ?? {},
+      });
       any = true;
     }
   }
@@ -165,10 +227,19 @@ export function importCharacterCard(world: World, raw: unknown, ids: Ids, now: n
     userName: chat.userName.trim().slice(0, 60) || 'User',
     messages: chat.messages.slice(0, 80).map((message) => ({ fromCharacter: message.isContact, text: message.text.slice(0, 8000), emotion: message.emotion.trim().slice(0, 40) })),
   }));
-  record.schedule = readSchedule(card.schedule, ids);
-  if (record.schedule) notes.push('The schedule came in. Chat starts using schedules in a later version.');
+  record.schedule = readSchedule(card.schedule, ids, readLinks(card.cr));
+  if (record.schedule) notes.push('The schedule came in.');
+  record.sourceId = card.id.trim().slice(0, 80);
+  const relationship = (RELATIONSHIPS as readonly string[]).includes(card.relationship) ? card.relationship : '';
+  const style = STYLE_FROM_CARD[card.style] ?? '';
+  if (relationship || style || card.responseLength.trim()) record.chatDefaults = { relationship, style, responseLength: card.responseLength.trim().slice(0, 40) };
+  const withSets = readSets(brained.world, card.cr, 'here', ids);
+  if (withSets.sets.length) {
+    record.sets = withSets.sets;
+    notes.push(`Its sets came in: ${withSets.sets.map((set) => set.title).join(', ')}.`);
+  }
 
-  const grouped = speciesGroup(brained.world, card.species, ids, now, notes);
+  const grouped = speciesGroup(withSets.world, card.species, ids, now, notes);
   record.groupIds = grouped.groupIds;
 
   const emotions: Record<string, string> = {};
@@ -193,7 +264,10 @@ export function importUserCard(world: World, raw: unknown, ids: Ids, now: number
   if (card.appearance.trim()) record.sections.push(section(ids, 'Appearance', 'here', card.appearance));
   const brained = brainSections(world, ids, card.brains, card.brainsConditional, 'here');
   record.sections.push(...brained.sections);
-  const grouped = speciesGroup(brained.world, card.species, ids, now, notes);
+  record.sourceId = card.id.trim().slice(0, 80);
+  const withSets = readSets(brained.world, card.cr, 'here', ids);
+  record.sets = withSets.sets;
+  const grouped = speciesGroup(withSets.world, card.species, ids, now, notes);
   record.groupIds = grouped.groupIds;
   return { ok: true, result: { world: putRecord(grouped.world, record, now), recordId: record.id, kind: 'persona', notes } };
 }
@@ -210,7 +284,12 @@ export function importScenarioCard(world: World, raw: unknown, ids: Ids, now: nu
   if (card.scene.trim()) record.sections.push(section(ids, 'Scene', 'always', card.scene));
   const brained = brainSections(world, ids, card.brains, card.brainsConditional, 'always');
   record.sections.push(...brained.sections);
-  return { ok: true, result: { world: putRecord(brained.world, record, now), recordId: record.id, kind: 'scenario', notes: [] } };
+  record.sourceId = card.id.trim().slice(0, 80);
+  // A scenario's sets are its locations: one place's details in context at a time.
+  const withSets = readSets(brained.world, card.cr, 'always', ids);
+  record.sets = withSets.sets;
+  const notes = withSets.sets.length ? [`Its sets came in: ${withSets.sets.map((set) => `${set.title} (${set.members.map((member) => member.name).join(', ')})`).join('; ')}.`] : [];
+  return { ok: true, result: { world: putRecord(withSets.world, record, now), recordId: record.id, kind: 'scenario', notes } };
 }
 
 // Any CharacterRoom card, filed by what it says it is.
