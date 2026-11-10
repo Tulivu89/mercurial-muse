@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react';
+import { useMemo, useState, type ChangeEvent } from 'react';
 import {
   KIND_NAMES, RECORD_KINDS, importCardFile, newRecord, placeTree, putRecord, recordById, removeRecord,
   type RecordKind, type StoryRecord, type World,
@@ -8,6 +8,7 @@ import { RecordEditor } from './RecordEditor';
 import { WorldSettings } from './WorldSettings';
 import { WorldRules } from './WorldRules';
 import { changedCount } from '../../core/rules/index.js';
+import { checkWorld } from '../../core/convert/index.js';
 import { downloadJson, fileSafe, newId, readFileBytes } from '../../kit/src/util';
 
 type Status = { text: string; bad?: boolean } | null;
@@ -19,8 +20,9 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
   onStatus: (status: Status) => void;
   status: Status;
 }) {
-  const [selected, setSelected] = useState<string | 'world' | 'rules' | null>(world.records.length ? null : 'world');
-  const record = selected && selected !== 'world' && selected !== 'rules' ? recordById(world, selected) : undefined;
+  const [selected, setSelected] = useState<string | 'world' | 'rules' | 'checks' | null>(world.records.length ? null : 'world');
+  const problems = useMemo(() => checkWorld(world), [world]);
+  const record = selected && selected !== 'world' && selected !== 'rules' && selected !== 'checks' ? recordById(world, selected) : undefined;
 
   const add = (kind: RecordKind) => {
     const fresh = newRecord(kind, newId(), `New ${KIND_NAMES[kind].one.toLowerCase()}`, newId);
@@ -58,6 +60,10 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
           <span>Rules</span>
           <small>{changedCount(world.rules) ? `${changedCount(world.rules)} changed` : 'Standard'}</small>
         </button>
+        <button type="button" className="item" aria-current={selected === 'checks'} onClick={() => setSelected('checks')}>
+          <span>Checks</span>
+          <small>{problems.length ? `${problems.length} to look at` : 'All clear'}</small>
+        </button>
         <div className="row">
           <button type="button" className="btn small quiet" onClick={() => downloadJson(`${fileSafe(world.name)}.world.json`, world)}>Export</button>
           <span className="btn small quiet file-btn">
@@ -90,12 +96,29 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
         <button type="button" className="btn small quiet back" onClick={() => setSelected(null)}>Back to {world.name}</button>
         {selected === 'world' && <WorldSettings world={world} onChange={onChange} onDelete={onDelete} />}
         {selected === 'rules' && <WorldRules world={world} onChange={onChange} />}
+        {selected === 'checks' && (
+          <>
+            <h1>Checks</h1>
+            <p className="lede">What would trip the adventure or lose the narrator, found before anyone plays: stops that are not real places, more than four people in one place over forty days, a When with no condition, routes that end nowhere, and rules that point at something gone.</p>
+            {problems.length === 0 && <p className="status" role="status">All clear.</p>}
+            {problems.map((problem, index) => (
+              <div key={index} className="card">
+                <div className="card-head">
+                  <b className="grow">{problem.where}</b>
+                  {problem.recordId && <button type="button" className="btn small quiet" onClick={() => setSelected(problem.recordId)}>Open</button>}
+                </div>
+                <p className="part">{problem.text}</p>
+              </div>
+            ))}
+          </>
+        )}
         {record && (
           <RecordEditor
             key={record.id}
             world={world}
             record={record}
             onChange={(next) => onChange(putRecord(world, next, Date.now()))}
+            onWorld={onChange}
             onDelete={() => {
               if (!window.confirm(`Delete ${record.name}?`)) return;
               onChange(removeRecord(world, record.id, Date.now()));

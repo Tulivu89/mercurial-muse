@@ -11,6 +11,28 @@ All of this happens with no rules authoring, and an author can change any of it.
 
 Read this whole page before writing code. Where it decides something, build that. Where it leaves a question open, ask the owner.
 
+## Where it stands (Nov 10, 2026): start here
+
+All three phases are built: Studio 0.5.0, adventure 0.24.1. `studio/README.md` lists what the Studio does and what it doesn't yet. The owner's answers to the early questions: group defaults in S1, the Rules panel folded with a summary, the order as written. The owner does not test each phase, so several can go in one turn.
+
+**What a new session should know**
+- `core/rules/` holds the rules. Read a record's rules through `rulesFor(world, record)`, never from its `rules` block. A world's `rules` block and a record's hold only what was changed.
+- `core/convert/` holds the converters, the schedule model (`schedule.ts`), the checks (`checks.ts`) and the launch hand-off. The adventure's tests run twice, the second time on modules that went through the Studio and back. Keep that green: it is the proof that nothing is lost.
+- A record's `carried` block still holds, in the module's names: where someone lives and works, where an item lies, the scenario's start, and anything the model has no field for. A world's holds relationships and the module's own id, version and notes. The Studio edits home, item place and scenario start in place there.
+- The adventure still loads modules. Play in the adventure converts the world first.
+
+**Left from this brief**
+1. Threads with milestones in the adventure. The engine has no threads yet, so this is engine work first.
+2. An editor for relationships between two people, with their bond kinds. They come through from a module unchanged.
+3. Chat reading a schedule event's `when`, and the address `/chat/#/with/<world id>/<record id>` for Chat with. Both are for the Chat session.
+4. On World › Rules: the fight and follow rules, craft's steps, what a hop into a room costs, and taking an approach away.
+5. Where a place or a group starts its states reaching the adventure.
+
+**Asked for, not planned**
+- Maps. The owner wants a plan. Nothing is decided: what a map is for (travel, authoring routes, showing the player where they are), where it lives (the Studio, the adventure, both), and whether it is drawn from places and routes or from a picture with places pinned on it.
+
+**Then, as the brief already says:** the owner's own setting built in the Studio; the adventure rebuilt to read records directly (roadmap step 6), when `core/convert/` and `carried` retire; generate buttons and guided builders.
+
 ## A second session is working beside you
 
 Chat is being built at the same time, by another session on another account (`docs/chat-brief.md`, `chat/README.md`). You share files with it, so these rules hold:

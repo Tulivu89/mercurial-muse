@@ -2,7 +2,7 @@
 
 Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the record model (`docs/records.md`), and see exactly what each part sends the model.
 
-## What it does (0.4.0)
+## What it does (0.5.0)
 
 - **Worlds** in this browser's storage, with a premise, genre, tone and shared conditions.
 - **Records of every kind:** characters, places, groups, items, lore, threads, scenarios and personas.
@@ -22,6 +22,11 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - **Export as a module** saves the same module as a file. The page says first what will not go with it (threads, a second scenario) and what the adventure will fill in (a plain traveller when there is no persona, the first place when nothing says where play starts).
   - **Chat with**, on a character's page, opens Chat. The link is `/chat/#/with/<world id>/<record id>`; Chat opens its home on it until the Chat session reads that address.
 - **Adventure modules open as worlds** (0.4.0): **Open a world or module file**, or one tap for Abernys: Bogwater and Abernys: Port Covenant. Dossiers become lines and sections, species and factions become groups, tiers and difficulties become rules, and the module's ruleset becomes the world's own. A person's page says what came with them that has no editor yet: where they live and work, how many stops their day has. Those go back out unchanged.
+- **What the adventure needs** (0.5.0):
+  - **In the adventure**, a folded panel on a person, a thing, a place and a scenario. A person: where they live, and for each event of their schedule, the place they are and the condition it waits on (a weekday, a day of the month, a span of days, a state). A thing: where it lies or who carries it. A scenario: where and when play starts and who is there. A place: its routes, each with a distance, what the way is like and what it asks of a traveller.
+  - **One schedule model.** The week view's events are also the adventure's day. An event with a place puts the person there; a condition that holds makes a day that replaces the ordinary one. A module's day plans come in as events and go back out as the same plans.
+  - **On World › Rules:** the calendar (week, months, the times of day the narrator hears), walking pace, scene actions (where offered, who must be there, what must hold, opening days and hours, what changes, the player's line and what the narrator shows), and a world's own goods.
+  - **Checks**, beside Rules: every stop is a real place; no place holds more than four people at the four times of day over forty days; every When has its condition; every route ends somewhere; nothing a rule points at is gone. Each finding opens the record it is about.
 - **Genre:** the purse's words are the Coin state's bands and the catalog's names are editable, so a modern world's hundred *could buy a car*.
 - **In context now:** put people and a place in the scene, type what was just said, tick what holds, and see what the world would send, with a rough token count. From 0.3.0 it shows the sentence of every state that is off its resting band, under the record it belongs to, as the narrator would read it.
 - **Files:** a world exports as `<name>.world.json` (`studio-world/1`) and opens again. Cards import into the open world (0.1.1):
@@ -37,14 +42,16 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 | --- | --- | --- |
 | S1 | Rules on every record: `core/rules/`, World › Rules, the Rules panel, state sentences in In context now. | Built, 0.3.0. |
 | S2 | Bogwater and Port Covenant into the Studio and back out as modules (`core/convert/`); Play in the adventure; Chat with. | Built, 0.4.0. |
-| S3 | Routes, scene actions, the calendar and world states, threads, goods, one schedule model with Chat, and a Checks panel. | Next. |
+| S3 | Routes, scene actions, the calendar and world states, goods, one schedule model with Chat, and Checks. | Built, 0.5.0, but for threads with milestones. |
 
 ## Not yet
 
-- Editors for what a module carries: routes, relationships, where people live and work, their day in the adventure, where an item lies, where play starts (S3). A world made here from nothing has none of these yet, so its people stay where the scenario puts them.
-- A world checked before it is played: a module the adventure refuses says why on the adventure's start screen, not here (S3's Checks panel).
-- Where a place or a group starts its states reaching the adventure, and threads.
-- On World › Rules: taking an approach away (the four can be renamed and re-costed, and a fifth added with its rating state), the fight and follow rules, craft's steps, the calendar, travel and scene actions (S3).
+- Threads with milestones in the adventure, and an editor for relationships between two people (a module's come through unchanged).
+- Maps. A plan is wanted; nothing is decided.
+- Chat reading an event's condition: until it does, a day that waits on one shows in Chat as part of every day.
+- A world checked by the adventure's own loader before it is played: Checks covers what the brief lists, and anything else the adventure refuses is said on its start screen.
+- Where a place or a group starts its states reaching the adventure.
+- On World › Rules: taking an approach away (the four can be renamed and re-costed, and a fifth added with its rating state), the fight and follow rules, craft's steps, and what a hop into a room costs.
 - Generate buttons, guided builders and images.
 
 The shared look, world storage and fields moved to `kit/` in 0.1.1, for Chat to use too.

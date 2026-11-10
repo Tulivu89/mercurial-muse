@@ -17,7 +17,7 @@ const move = <T,>(list: T[], from: number, to: number): T[] => {
   return next;
 };
 
-export function RecordEditor({ world, record, onChange, onDelete }: { world: World; record: StoryRecord; onChange: Change; onDelete: () => void }) {
+export function RecordEditor({ world, record, onChange, onDelete, onWorld }: { world: World; record: StoryRecord; onChange: Change; onDelete: () => void; onWorld?: (world: World) => void }) {
   const update = (patch: Partial<StoryRecord>) => onChange({ ...record, ...patch });
   const groups = world.records.filter((entry) => entry.kind === 'group' && entry.id !== record.id);
   const places = world.records.filter((entry) => entry.kind === 'place' && !wouldLoop(world, record.id, entry.id));
@@ -90,7 +90,7 @@ export function RecordEditor({ world, record, onChange, onDelete }: { world: Wor
         </fieldset>
       )}
 
-      <RulesPanel world={world} record={record} onChange={onChange} />
+      <RulesPanel world={world} record={record} onChange={onChange} onWorld={onWorld} />
 
       <h2 className="sub">Sections</h2>
       {record.sections.map((section, index) => (

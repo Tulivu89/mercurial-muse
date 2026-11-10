@@ -148,9 +148,15 @@ Decided in `docs/studio-brief.md`, built in Studio 0.3.0 (`core/rules/`).
 - **The order, weakest first:** the standard, the world, a tier, a group, set here. Every value says which it came from.
 - **Mechanics stay Never text.** A state reaches the model as the sentence its band writes, and only while it is off its resting band.
 
+## One schedule
+
+A schedule event can name a **place** and a **condition** (`core/convert/schedule.ts`). With a place, the person is there in the adventure while the event is on; without one, it moves nobody and is for chat alone. A condition (a weekday, a day of the month, a span of days, a state at some value) makes a day that takes the ordinary day's place while it holds. The adventure's day plans and rules convert to these and back. Chat does not read conditions yet.
+
+A world's **routes** are its own list: two ends, a distance, what the way is like, and what it asks of a traveller.
+
 ## What a module carries
 
-A world brought in from an adventure module (`core/convert/`) keeps what the record model has no place for yet in a `carried` block, on the world and on each record, in the module's own names: routes, relationships, where someone lives and works, a day's stops, where an item lies, and the scenario's start. It goes back out unchanged when the world is played or exported. Each gets a home in the model, and an editor, as the Studio's authoring phase reaches it; the block goes when the adventure reads records directly.
+A world brought in from an adventure module (`core/convert/`) keeps what the record model has no place for yet in a `carried` block, on the world and on each record, in the module's own names: relationships, where someone lives and works, where an item lies, and the scenario's start (the Studio edits the last three in place). Routes and schedules have homes of their own now. It goes back out unchanged when the world is played or exported. Each gets a home in the model, and an editor, as the Studio's authoring phase reaches it; the block goes when the adventure reads records directly.
 
 ## Play data (instances)
 

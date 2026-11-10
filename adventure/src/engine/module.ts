@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { appliesTo, forOwner, WORLD_OWNER, type StateDef } from './state';
 import { withStandard } from './standard';
 import {
-  AREA_KINDS, LADDER, PLACE_KINDS, TIERS, WORK_PREFIX, difficultySchema, rulesetSchema,
+  AREA_KINDS, LADDER, PLACE_KINDS, TIERS, WORK_PREFIX, difficultySchema, routeSchema, rulesetSchema,
 } from '../../../core/rules/ruleset';
 
 // The ruleset's own shapes live in core/rules since 0.23.0; they are part of this module's surface as before.
@@ -46,26 +46,6 @@ export const placeSchema = z.object({
   kind: z.enum(PLACE_KINDS).default('other'),
   parentLocationId: id.nullable().default(null),
   difficulty: difficultySchema,
-}).passthrough();
-
-// A condition on the player's character for using a route.
-export const requirementSchema = z.object({
-  stateId: id,
-  atLeast: z.number().int(),
-  // When set, the condition applies only when travelling toward this end of the route.
-  toward: id.optional(),
-  // What the player is told when the condition fails.
-  reason: z.string().min(1).max(400),
-});
-
-export const routeSchema = z.object({
-  id,
-  from: id,
-  to: id,
-  distanceKm: z.number().min(0).max(10_000),
-  terrain: text(200).default(''),
-  routeClass: text(80).default(''),
-  requires: z.array(requirementSchema).max(8).default([]),
 }).passthrough();
 
 // Species, factions, societies and families: the Orbis editor asks only for these two fields.
@@ -526,7 +506,6 @@ export const moduleSchema = z.object({
 
 export type PraxisModule = z.infer<typeof moduleSchema>;
 export type Place = z.infer<typeof placeSchema>;
-export type Route = z.infer<typeof routeSchema>;
 export type Character = z.infer<typeof characterSchema>;
 export type Relationship = z.infer<typeof relationshipSchema>;
 export type Schedule = z.infer<typeof scheduleSchema>;

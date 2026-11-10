@@ -15,6 +15,8 @@ import { rulesFor } from '../rules/for.js';
 import { AREA_KINDS } from '../rules/ruleset.js';
 import { STANDARD_RULESET_ID } from '../rules/standard.js';
 import { BLOCKS, rulesetOf, worldRulesSchema } from '../rules/world-rules.js';
+import { DEFAULT_CALENDAR } from '../rules/clock.js';
+import { eventsFromPlans, plansFromEvents, sameDays, type PlanSchedule } from './schedule.js';
 
 export const MODULE_FORMAT = 'adventure-module/1';
 const MODULE_FORMATS = [MODULE_FORMAT, 'praxis-module/1'];
@@ -109,6 +111,7 @@ export function moduleToWorld(raw: unknown, now: number): ImportResult {
         section('description', 'Background', 'named', person.description),
       ],
       rules: rulesFrom(person, MEMBER_FIELDS),
+      schedule: isObject(person.schedule) && Array.isArray(person.schedule.plans) ? eventsFromPlans(person.schedule as unknown as PlanSchedule) : null,
       carried: split(person, ['id', 'name', 'role', 'pronouns', 'draftNote', 'speciesId', 'factionIds', 'appearance', 'personality', 'speech', 'description', ...MEMBER_FIELDS]).rest,
     }));
   }
@@ -138,10 +141,10 @@ export function moduleToWorld(raw: unknown, now: number): ImportResult {
   const built = {
     format: WORLD_FORMAT, id: text(module.id), name: text(module.name), premise, genre, tone, conditions: [], records, updatedAt: now,
     rules: rules.data,
+    routes: world.routes ?? [],
     carried: {
       id: module.id, version: module.version, notes: module.notes, source: module.source,
       world: { ...split(world, collections).rest, identity: split(identity, mapped).rest ?? {} },
-      routes: world.routes ?? [],
       relationships: module.relationships ?? [],
     },
   };
@@ -203,6 +206,7 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
     return out as MemberRules;
   };
   const people = world.records.filter((entry) => entry.kind === 'character' || entry.kind === 'persona');
+  const dayNames = (world.rules?.calendar ?? DEFAULT_CALENDAR).dayNames;
   const scenarioRecord = of('scenario')[0];
   const start = scenarioRecord ? extra(scenarioRecord) : {};
   const personas = of('persona');
@@ -211,8 +215,14 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
 
   const characters: Raw[] = people.map((person) => {
     const groups = person.groupIds.map((groupId) => byId.get(groupId)).filter((group): group is StoryRecord => group?.kind === 'group');
+    // Their day: the events that name a place. Untouched since it came from a module, it goes
+    // back as it came, plan names and all.
+    const carriedDay = isObject(extra(person).schedule) ? extra(person).schedule as unknown as PlanSchedule : null;
+    const day = person.kind === 'persona' ? null : plansFromEvents(person.schedule, dayNames);
+    const schedule = day && carriedDay && sameDays(day, carriedDay) ? carriedDay : day;
+    const { schedule: _was, ...kept } = extra(person);
     return {
-      ...extra(person), id: person.id, name: person.name, description: body(person, 'description', ['background', 'description'], true),
+      ...kept, ...(schedule ? { schedule } : {}), id: person.id, name: person.name, description: body(person, 'description', ['background', 'description'], true),
       ...optional({
         role: person.line.slice(0, 200), pronouns: person.pronouns, draftNote: person.notes,
         appearance: body(person, 'appearance', ['appearance']), personality: body(person, 'personality', ['personality']), speech: body(person, 'speech', ['speech']),
@@ -276,7 +286,7 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
     source: isObject(carried.source) ? carried.source : { kind: 'local' },
     world: {
       id: world.id, name: world.name, ...carriedWorld, identity,
-      places, routes: Array.isArray(carried.routes) ? carried.routes : [],
+      places, routes: world.routes ?? (Array.isArray(carried.routes) ? carried.routes : []),
       species: groupsOf('species'), factions: groupsOf('faction'), societies: groupsOf('other', 'crew', 'profession'), families: groupsOf('family'),
       memories: of('lore').map((lore) => ({ ...extra(lore), id: lore.id, title: lore.name, description: body(lore, 'entry', ['entry'], true) })),
     },

@@ -126,3 +126,7 @@
 .card.approach-focus { border-left: 4px solid #a99bf0; }
 .card.approach-flair { border-left: 4px solid #d9b46d; }
 .btn.small.danger { border-color: var(--seal); color: var(--seal); }
+.stop { display: flex; flex-direction: column; gap: 6px; padding: 8px 0; border-top: 1px solid var(--rule); }
+.stop .row .input:not(.num):not(.pick) { flex: 1 1 160px; min-width: 0; }
+.more.when { border-top: 0; }
+.more.when > summary { font-weight: 400; color: var(--text-2); }

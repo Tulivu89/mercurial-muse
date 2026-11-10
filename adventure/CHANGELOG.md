@@ -8,6 +8,13 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.24.1 - Routes shared - 2026-11-10
+
+- The route schema and its requirements move to `core/rules/ruleset.ts`, where the Studio now
+  writes routes; `module.ts` exports them as before. No change in play.
+- The round-trip pass now also proves the shared schedule model: every person's day leaves the
+  Studio as events with a place and a condition and comes back as the same day plans.
+
 ## 0.24.0 - From the Studio - 2026-11-10
 
 - **Worlds sent from the Studio.** The start screen lists every world the Studio handed over
