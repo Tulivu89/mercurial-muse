@@ -1,5 +1,5 @@
 import { defineConfig, type Plugin } from 'vitest/config';
-import { moduleToWorld, worldToModule } from '../core/convert';
+import { moduleToWorld, worldToModule } from '../../core/convert';
 
 // The proof for the converters between Studio worlds and modules: every module the tests load
 // is first turned into a Studio world and back, and the whole suite runs on what comes back.

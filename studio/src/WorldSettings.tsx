@@ -1,15 +1,51 @@
 import { useState } from 'react';
 import type { World } from '../../core/records/index.js';
 import { NameField } from '../../kit/src/Fields';
-import { newId } from '../../kit/src/util';
+import { downloadJson, fileSafe, newId } from '../../kit/src/util';
+import { go } from './go';
+import { LAUNCH_KEY, readLaunches, withLaunch, worldToModule } from '../../core/convert/index.js';
 
 export function WorldSettings({ world, onChange, onDelete }: { world: World; onChange: (world: World) => void; onDelete: () => void }) {
   const [label, setLabel] = useState('');
   const used = (id: string) => world.records.some((record) => record.sections.some((section) => section.when === id));
+  const [note, setNote] = useState<string[]>([]);
+
+  // Hands the world to the adventure as a module, in this browser, and opens it there.
+  const play = () => {
+    const { module } = worldToModule(world);
+    const entry = { id: world.id, name: world.name, at: Date.now(), module };
+    try {
+      try {
+        window.localStorage.setItem(LAUNCH_KEY, JSON.stringify(withLaunch(readLaunches(window.localStorage.getItem(LAUNCH_KEY)), entry)));
+      } catch {
+        // Out of room: keep only this one.
+        window.localStorage.setItem(LAUNCH_KEY, JSON.stringify([entry]));
+      }
+    } catch {
+      setNote(['This browser would not keep the world for the adventure. Export it as a module and open that file there instead.']);
+      return;
+    }
+    go(`/?launch=${encodeURIComponent(world.id)}`);
+  };
+  const exportModule = () => {
+    const { module, notes } = worldToModule(world);
+    downloadJson(`${fileSafe(world.name)}.module.json`, module);
+    setNote(notes.length ? notes : ['Saved as a module the adventure opens under New game.']);
+  };
+  const going = worldToModule(world).notes;
 
   return (
     <>
       <h1>{world.name}</h1>
+      <section className="card" aria-label="Play">
+        <div className="row">
+          <button type="button" className="btn primary" onClick={play}>Play in the adventure</button>
+          <button type="button" className="btn quiet" onClick={exportModule}>Export as a module</button>
+        </div>
+        <p className="hint">Everything in this world plays by its rules as it stands. The adventure gets a copy; what happens there never changes the world.</p>
+        {going.map((line) => <p key={line} className="hint">{line}</p>)}
+        {note.map((line) => <p key={line} className="status" role="status">{line}</p>)}
+      </section>
       <NameField label="Name" value={world.name} onChange={(name) => onChange({ ...world, name })} />
       <label className="field">
         <span>Premise · Always</span>

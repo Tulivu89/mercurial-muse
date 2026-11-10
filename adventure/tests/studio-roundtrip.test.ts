@@ -7,7 +7,7 @@ import { rulesFor, rulesetOf } from '../../core/rules';
 import { loadModule } from '../src/engine';
 
 // A module into a Studio world and back out. The whole suite also runs against the round-tripped
-// modules (vitest.roundtrip.config.ts); this says exactly what comes back.
+// modules (tests/roundtrip.config.ts); this says exactly what comes back.
 describe.each([['Bogwater', bogwaterRaw as unknown], ['Port Covenant', portCovenantRaw as unknown]])('%s through the Studio', (_name, raw) => {
   const original = loadModule(raw);
   const imported = moduleToWorld(raw, 1);

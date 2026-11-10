@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { newRecord, newWorld, putRecord, type World } from '../../core/records/index.js';
 import { WorldView } from '../src/WorldView';
 
+vi.mock('../src/go', () => ({ go: vi.fn() }));
+
 function world(): World {
   let n = 0;
   const ids = () => `id-${++n}`;
@@ -112,5 +114,28 @@ describe('rules on every record', () => {
     expect(within(panel).getByText('No tier · Hard to act on · nothing set here.')).toBeInTheDocument();
     expect(within(panel).getByLabelText('Difficulty by Muscle')).toHaveValue('3');
     expect(within(panel).getAllByText('This world').length).toBeGreaterThan(0);
+  });
+});
+
+describe('the launchpad', () => {
+  it('hands a world to the adventure as a module and opens it there', async () => {
+    const { go } = await import('../src/go');
+    window.localStorage.clear();
+    render(<WorldView world={world()} onChange={() => {}} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Low Tide: records' })).getByRole('button', { name: 'Low Tide' }));
+    // No persona yet, and the page says what the adventure will do about it.
+    expect(screen.getByText(/no persona, so the player is a plain traveller/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Play in the adventure' }));
+    const sent = JSON.parse(window.localStorage.getItem('inkwyrm.launch')!) as { id: string; name: string; module: { format: string; characters: { id: string }[]; scenario: { startPlaceId: string } } }[];
+    expect(sent).toHaveLength(1);
+    expect(sent[0]).toMatchObject({ id: 'w', name: 'Low Tide', module: { format: 'adventure-module/1', scenario: { startPlaceId: 'booth' } } });
+    expect(sent[0]!.module.characters.map((person) => person.id)).toEqual(['ada', 'the-player']);
+    expect(go).toHaveBeenCalledWith('/?launch=w');
+  });
+
+  it('links a character to Chat', () => {
+    render(<WorldView world={world()} onChange={() => {}} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Low Tide: records' })).getByRole('button', { name: 'Ada Moss' }));
+    expect(screen.getByRole('link', { name: 'Chat with Ada Moss' })).toHaveAttribute('href', '/chat/#/with/w/ada');
   });
 });

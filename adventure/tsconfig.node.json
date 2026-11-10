@@ -7,5 +7,5 @@
     "noEmit": true,
     "strict": true
   },
-  "include": ["vite.config.ts", "vitest.config.ts", "vitest.roundtrip.config.ts"]
+  "include": ["vite.config.ts", "vitest.config.ts"]
 }

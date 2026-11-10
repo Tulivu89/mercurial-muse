@@ -148,6 +148,10 @@ Decided in `docs/studio-brief.md`, built in Studio 0.3.0 (`core/rules/`).
 - **The order, weakest first:** the standard, the world, a tier, a group, set here. Every value says which it came from.
 - **Mechanics stay Never text.** A state reaches the model as the sentence its band writes, and only while it is off its resting band.
 
+## What a module carries
+
+A world brought in from an adventure module (`core/convert/`) keeps what the record model has no place for yet in a `carried` block, on the world and on each record, in the module's own names: routes, relationships, where someone lives and works, a day's stops, where an item lies, and the scenario's start. It goes back out unchanged when the world is played or exported. Each gets a home in the model, and an editor, as the Studio's authoring phase reaches it; the block goes when the adventure reads records directly.
+
 ## Play data (instances)
 
 The world is never changed by play. A save (adventure) or a chat holds:

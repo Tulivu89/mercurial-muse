@@ -27,7 +27,10 @@ export function RecordEditor({ world, record, onChange, onDelete }: { world: Wor
     <>
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <h1>{record.name}</h1>
-        <span className="chip line">{KIND_NAMES[record.kind].one}</span>
+        <span className="row">
+          {record.kind === 'character' && <a className="btn small quiet" href={`/chat/#/with/${encodeURIComponent(world.id)}/${encodeURIComponent(record.id)}`}>Chat with {record.name}</a>}
+          <span className="chip line">{KIND_NAMES[record.kind].one}</span>
+        </span>
       </div>
 
       <NameField label="Name" value={record.name} onChange={(name) => update({ name })} />
