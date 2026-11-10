@@ -34,7 +34,8 @@ function split(source: Raw, typed: readonly string[]): { rest: Raw | undefined }
 function record(kind: RecordKind, id: string, name: string, patch: Partial<StoryRecord>): StoryRecord {
   return {
     id, kind, name, keys: [], line: '', sections: [], sets: [], groupIds: [], tags: [], notes: '', parentId: null, groupKind: 'other',
-    pronouns: '', gender: '', schedule: null, chatDefaults: null, sourceId: '', greetings: [], examples: [], ...patch,
+    pronouns: '', gender: '', schedule: null, chatDefaults: null, sourceId: '', greetings: [], examples: [],
+    figures: [], idle: {}, needs: [], homeActions: [], bond: null, ...patch,
   };
 }
 

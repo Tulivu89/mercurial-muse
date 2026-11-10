@@ -244,8 +244,12 @@ describe('a world saved before rules existed', () => {
     expect(summaryOf(ada)).toBe('No tier · Average to act on · nothing set here.');
     expect(read(file.world, 'safe').deeds).toHaveLength(4);
     expect(read(file.world, 'bar').deeds).toHaveLength(4);
-    // Saving it again writes no rules into it.
-    expect(JSON.parse(JSON.stringify(file.world))).toEqual(raw);
+    // Saving it again keeps everything it had and writes no rules into it. Fields added to the
+    // record model since (Home's needs, figures and the rest) come back as their defaults.
+    const saved = JSON.parse(JSON.stringify(file.world));
+    expect(saved).toMatchObject(raw);
+    expect(saved).not.toHaveProperty('rules');
+    expect(saved.records.every((record: Record<string, unknown>) => !('rules' in record))).toBe(true);
   });
 });
 
