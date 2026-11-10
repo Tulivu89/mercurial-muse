@@ -55,3 +55,62 @@ describe('the world view', () => {
     expect((onChange.mock.calls.at(-1)?.[0] as World).records.find((record) => record.id === 'ada')!.schedule!.Friday![0]!.text).toBe('On the air.');
   });
 });
+
+describe('rules on every record', () => {
+  const open = (name: string) => {
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Low Tide: records' })).getByRole('button', { name }));
+    return screen.getByText('Rules', { selector: '.rules-title' }).closest('details')!;
+  };
+
+  it('shows what a player can do and how the states read, with nothing authored', () => {
+    render(<WorldView world={world()} onChange={() => {}} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    const panel = open('Ada Moss');
+    expect(within(panel).getByText('No tier · Average to act on · nothing set here.')).toBeInTheDocument();
+    expect(within(panel).getByText('Lift, slip past or plant something')).toBeInTheDocument();
+    expect(within(panel).getByText('Read them, find the pressure point')).toBeInTheDocument();
+    expect(within(panel).getByText('Ada Moss is unhurt.')).toBeInTheDocument();
+    expect(within(panel).getByLabelText('Difficulty by Force')).toHaveValue('2');
+    // A place has its own: Alert, moved by Finesse, and by Flair off its home ground.
+    expect(within(open('Booth B')).getAllByText('Lie low, cover your tracks')).toHaveLength(2);
+  });
+
+  it('changes one value, sends its sentence to the context, and puts it back', () => {
+    let current = world();
+    const onChange = vi.fn((next: World) => { current = next; });
+    const { rerender } = render(<WorldView world={current} onChange={onChange} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    const again = () => rerender(<WorldView world={current} onChange={onChange} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    let panel = open('Ada Moss');
+    fireEvent.change(within(panel).getByLabelText('Health starts at'), { target: { value: '3' } });
+    expect(current.records.find((record) => record.id === 'ada')!.rules).toEqual({ states: { health: 3 } });
+    again();
+    panel = screen.getByText('Rules', { selector: '.rules-title' }).closest('details')!;
+    expect(within(panel).getByText('Sent now')).toBeInTheDocument();
+    const context = screen.getByRole('complementary', { name: 'In context now' });
+    expect(within(context).getByText('Ada Moss is hurt, bleeding and slowed, but still fighting.')).toBeInTheDocument();
+
+    fireEvent.click(within(panel).getByRole('button', { name: 'Put back' }));
+    expect(current.records.find((record) => record.id === 'ada')!.rules).toBeUndefined();
+    again();
+    expect(within(screen.getByRole('complementary', { name: 'In context now' })).queryByText(/Ada Moss is hurt/)).toBeNull();
+  });
+
+  it('changes the world\'s ruleset from its Rules page, and every record follows', () => {
+    let current = world();
+    const onChange = vi.fn((next: World) => { current = next; });
+    const { rerender } = render(<WorldView world={current} onChange={onChange} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    const again = () => rerender(<WorldView world={current} onChange={onChange} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    fireEvent.click(screen.getByRole('button', { name: /^Rules/ }));
+    expect(screen.getByText('All standard')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('How hard, when nothing else says'), { target: { value: '3' } });
+    expect(current.rules?.dice).toEqual({ difficulty: 3 });
+    again();
+    expect(screen.getByText('1 part changed in this world')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Force: its name'), { target: { value: 'Muscle' } });
+    again();
+    expect(current.rules?.approaches.map((approach) => approach.name)).toEqual(['Muscle']);
+    const panel = open('Ada Moss');
+    expect(within(panel).getByText('No tier · Hard to act on · nothing set here.')).toBeInTheDocument();
+    expect(within(panel).getByLabelText('Difficulty by Muscle')).toHaveValue('3');
+    expect(within(panel).getAllByText('This world').length).toBeGreaterThan(0);
+  });
+});

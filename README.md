@@ -4,10 +4,10 @@ The repository's working name. The site is **Inkwyrm** (`docs/brand.md`): an AI 
 
 | Folder | What it is | State |
 | --- | --- | --- |
-| [`adventure/`](adventure/) | The text-adventure RPG (Praxis until 0.22.0): Four Approaches on Genesys dice, living schedules, the journal, context built per turn, narration from any OpenAI-compatible provider. | Working site, 0.22.0. |
-| [`core/`](core/) | What every side shares: narration (the provider list, prompt formats, the relay's shapes, streaming), the record model (`core/records/`: schemas, reach, what is in context, card import) and the chat kernel (`core/chat/`: the AetherRoom and General context profiles). | Used by all three. |
+| [`adventure/`](adventure/) | The text-adventure RPG (Praxis until 0.22.0): Four Approaches on Genesys dice, living schedules, the journal, context built per turn, narration from any OpenAI-compatible provider. | Working site, 0.23.0. |
+| [`core/`](core/) | What every side shares: narration (the provider list, prompt formats, the relay's shapes, streaming), the record model (`core/records/`: schemas, reach, what is in context, card import), the rules (`core/rules/`: the state primitive, the standard Four Approaches, a world's own ruleset, and `rulesFor(world, record)`) and the chat kernel (`core/chat/`: the AetherRoom and General context profiles). | Used by all three. |
 | [`kit/`](kit/) | The browser code the Studio and Chat share: the Wet Ink look, world storage, the connection settings. | Imported by path. |
-| [`studio/`](studio/) | The Studio, at `/studio/`: worlds and characters in the record model, with an "In context now" panel and a week view for schedules. | 0.2.0. |
+| [`studio/`](studio/) | The Studio, at `/studio/`: worlds and characters in the record model, with rules on every record, a Rules page for the world, an "In context now" panel and a week view for schedules. | 0.3.0. |
 | [`chat/`](chat/) | Chat, at `/chat/`: CharacterRoom on the site. Characters from the Studio's worlds, streaming replies, both context profiles, card import, story time, schedules, memories and plans. | 0.2.0, Phases A and B. |
 | [`deploy/`](deploy/) | One-time server setup and updates. | Praxis only, for now. |
 

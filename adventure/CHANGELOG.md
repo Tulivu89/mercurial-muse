@@ -8,6 +8,19 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.23.0 - Shared rules - 2026-11-10
+
+- **The rules move to `core/rules/`,** because the Studio now reads them too: the state
+  primitive and its band sentences (`state.ts`), the story clock (`clock.ts`), the sentence
+  helpers (`words.ts`), the standard ruleset `four-approaches/1` (`standard.ts`) and the
+  ruleset's own schemas, split out of the module schema (`ruleset.ts`). The files in
+  `src/engine/` with those names re-export them, and `module.ts` still exports every schema it
+  did, so nothing that imports the engine changes.
+- No change in play. The module format, saves and every rule are as they were, and the tests
+  pass untouched.
+- `AGENTS.md` notes that the Orbis field names in modules stay only while the converter between
+  Studio worlds and modules lives.
+
 ## 0.22.2 - Chat's door - 2026-11-09
 
 - **Streaming through the relay.** `POST /api/narration/stream` takes the same request as

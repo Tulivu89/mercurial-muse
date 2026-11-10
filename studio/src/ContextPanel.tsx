@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { KIND_NAMES, contextFor, contextText, type World } from '../../core/records/index.js';
+import { KIND_NAMES, type World } from '../../core/records/index.js';
+import { contextWithRules, ruledText } from '../../core/rules/index.js';
 
 const WHY: Record<string, string> = { always: 'Always', here: 'Here', named: 'Named', when: 'When', line: 'Line' };
 const HERE_KINDS = new Set(['character', 'place', 'item', 'persona', 'scenario']);
@@ -18,12 +19,12 @@ export function ContextPanel({ world, focusId }: { world: World; focusId: string
   }, [focusId]);
 
   const present = hereIds.filter((id) => world.records.some((record) => record.id === id));
-  const answer = useMemo(() => contextFor(world, { hereIds: present, recentText, conditionIds }), [world, present.join('|'), recentText, conditionIds]);
+  const answer = useMemo(() => contextWithRules(world, { hereIds: present, recentText, conditionIds }), [world, present.join('|'), recentText, conditionIds]);
   const candidates = world.records.filter((record) => HERE_KINDS.has(record.kind));
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(contextText(answer));
+      await navigator.clipboard.writeText(ruledText(answer));
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -34,7 +35,7 @@ export function ContextPanel({ world, focusId }: { world: World; focusId: string
   return (
     <aside className="context" aria-label="In context now">
       <h2>In context now</h2>
-      <p className="hint">Set up a moment and see exactly what this world would send the model.</p>
+      <p className="hint">Set up a moment and see exactly what this world would send the model. A state shows as its sentence, and only while it is off its resting one.</p>
 
       <fieldset className="card" style={{ margin: 0 }}>
         <legend className="sub">Here in the scene</legend>
@@ -81,7 +82,7 @@ export function ContextPanel({ world, focusId }: { world: World; focusId: string
             <span className={`chip ${block.why}`}>{WHY[block.why]}</span>
           </div>
           {block.parts.map((part, index) => (
-            <p key={index} className="part">{part.reach !== 'line' && <b>{part.title}</b>}{part.text}</p>
+            <p key={index} className={`part${part.reach === 'state' ? ' from-rules' : ''}`}>{part.reach === 'state' ? <b>{part.title}, from the rules</b> : part.reach !== 'line' && <b>{part.title}</b>}{part.text}</p>
           ))}
         </section>
       ))}

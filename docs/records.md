@@ -135,6 +135,19 @@ What a character learns in play (Jots about you, diary entries, plans, mood) bel
 - **Routes:** links to other places, with a distance or time and the conditions for using them.
 - **States:** the place's own numbers, such as Alert.
 
+## Rules on records
+
+Decided in `docs/studio-brief.md`, built in Studio 0.3.0 (`core/rules/`).
+
+- **The world has a ruleset,** the standard Four Approaches (`four-approaches/1`) unless it changes a part. The world stores only the parts it changed.
+- **A record's rules are worked out, not stored.** They come from its kind, its tier, its groups and the world's ruleset. A record's `rules` block holds only what its author set there:
+  - **character:** tier, rank, gang, charges, where states start and their most, difficulty by approach, purse, price, what they sell and carry;
+  - **place:** its kind, difficulty by approach, where its states start;
+  - **item:** what kind of good it is, its worth, harm or armour, what it helps or restores, and difficulty to take or break;
+  - **group:** where its own states start (a faction's standing), and defaults for its members.
+- **The order, weakest first:** the standard, the world, a tier, a group, set here. Every value says which it came from.
+- **Mechanics stay Never text.** A state reaches the model as the sentence its band writes, and only while it is off its resting band.
+
 ## Play data (instances)
 
 The world is never changed by play. A save (adventure) or a chat holds:

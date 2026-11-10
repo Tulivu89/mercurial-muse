@@ -5,6 +5,7 @@ import {
 import { KeysField, NameField } from '../../kit/src/Fields';
 import { newId } from '../../kit/src/util';
 import { ScheduleEditor } from './ScheduleEditor';
+import { RulesPanel } from './RulesPanel';
 
 type Change = (record: StoryRecord) => void;
 
@@ -85,6 +86,8 @@ export function RecordEditor({ world, record, onChange, onDelete }: { world: Wor
           </div>
         </fieldset>
       )}
+
+      <RulesPanel world={world} record={record} onChange={onChange} />
 
       <h2 className="sub">Sections</h2>
       {record.sections.map((section, index) => (
