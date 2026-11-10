@@ -141,6 +141,10 @@ export const recordSchema = z.object({
   // The rules: only what the author set here. Everything else is worked out from the record's
   // kind, its tier, its groups and the world's ruleset (core/rules, rulesFor).
   rules: recordRulesSchema.optional(),
+  // What came with this record from an adventure module and has no place in the record model
+  // yet (where an item lies, a day's stops), in the module's own names. It goes back out
+  // unchanged when the world is exported as a module (core/convert).
+  carried: z.record(z.string().max(80), z.unknown()).optional(),
 });
 export type StoryRecord = z.infer<typeof recordSchema>;
 
@@ -159,6 +163,8 @@ export const worldSchema = z.object({
   records: z.array(recordSchema).max(5000).default([]),
   // The world's own rules: only what it changes from the standard ruleset (core/rules).
   rules: worldRulesSchema.optional(),
+  // The same for the world: the module's own id and version, its routes and relationships.
+  carried: z.record(z.string().max(80), z.unknown()).optional(),
   updatedAt: z.number().int().nonnegative().default(0),
 }).superRefine((world, context) => {
   const ids = new Set<string>();
