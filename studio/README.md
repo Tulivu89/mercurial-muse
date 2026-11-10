@@ -2,14 +2,15 @@
 
 Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the record model (`docs/records.md`), and see exactly what each part sends the model.
 
-## What it does (0.1.0)
+## What it does (0.2.0)
 
 - **Worlds** in this browser's storage, with a premise, genre, tone and shared conditions.
 - **Records of every kind:** characters, places, groups, items, lore, threads, scenarios and personas.
   - Places nest inside places.
   - A group can be a species, family, faction, crew or profession, and anyone can belong to several.
 - **Sections, each with a reach:** Always, Here, Named (by its own keys, or the record's), When (a shared condition) or Never. New records start from a template the author can change.
-- **Sets:** one entry in use at a time, such as outfits.
+- **Sets:** one entry in use at a time, such as outfits or a scenario's locations. An entry can be locked behind a condition, so a player can pick it only once it holds.
+- **Schedules** (0.2.0), for characters: CharacterRoom's week view. A strip for each day and one for Daily, with every event drawn where it falls; pick a day to add events from the times of day (morning, afternoon, evening, night) and edit their words, hours, day, who gets told, and which outfit and which room of a scenario go with them.
 - **Greetings and example chats** for characters, for chat only.
 - **In context now:** put people and a place in the scene, type what was just said, tick what holds, and see what the world would send, with a rough token count.
 - **Files:** a world exports as `<name>.world.json` (`studio-world/1`) and opens again. Cards import into the open world (0.1.1):
@@ -21,7 +22,7 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 
 ## Not yet
 
-A schedule editor, a gender field, generate buttons, guided builders, images, and playing a Studio world in the adventure. Chat (`/chat/`) plays Studio characters now.
+Generate buttons, guided builders, images, and playing a Studio world in the adventure. Chat (`/chat/`) plays Studio characters now.
 
 The shared look, world storage and fields moved to `kit/` in 0.1.1, for Chat to use too.
 

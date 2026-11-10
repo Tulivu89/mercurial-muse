@@ -4,6 +4,7 @@ import {
 } from '../../core/records/index.js';
 import { KeysField, NameField } from '../../kit/src/Fields';
 import { newId } from '../../kit/src/util';
+import { ScheduleEditor } from './ScheduleEditor';
 
 type Change = (record: StoryRecord) => void;
 
@@ -40,6 +41,12 @@ export function RecordEditor({ world, record, onChange, onDelete }: { world: Wor
           <label className="field grow">
             <span>Pronouns</span>
             <input value={record.pronouns} maxLength={40} placeholder="she/her" onChange={(event) => update({ pronouns: event.target.value })} />
+          </label>
+        )}
+        {isPerson && (
+          <label className="field grow">
+            <span>Gender</span>
+            <input value={record.gender} maxLength={80} onChange={(event) => update({ gender: event.target.value })} />
           </label>
         )}
         {record.kind === 'place' && (
@@ -102,6 +109,7 @@ export function RecordEditor({ world, record, onChange, onDelete }: { world: Wor
         <SetCard
           key={set.id}
           set={set}
+          conditions={world.conditions}
           onChange={(next) => update({ sets: record.sets.map((existing) => (existing.id === set.id ? next : existing)) })}
           onRemove={() => update({ sets: record.sets.filter((existing) => existing.id !== set.id) })}
         />
@@ -109,6 +117,13 @@ export function RecordEditor({ world, record, onChange, onDelete }: { world: Wor
       <div className="row">
         <button type="button" className="btn small" onClick={() => update({ sets: [...record.sets, { id: newId(), title: 'New set', reach: 'here', active: null, members: [] }] })}>Add a set</button>
       </div>
+
+      {record.kind === 'character' && (
+        <>
+          <h2 className="sub">Schedule</h2>
+          <ScheduleEditor record={record} world={world} onChange={(schedule) => update({ schedule })} />
+        </>
+      )}
 
       {record.kind === 'character' && <ChatParts record={record} update={update} />}
 
@@ -174,7 +189,7 @@ function SectionCard({ world, record, section, onChange, onMove, onRemove, first
   );
 }
 
-function SetCard({ set, onChange, onRemove }: { set: RecordSet; onChange: (set: RecordSet) => void; onRemove: () => void }) {
+function SetCard({ set, conditions, onChange, onRemove }: { set: RecordSet; conditions: World['conditions']; onChange: (set: RecordSet) => void; onRemove: () => void }) {
   const id = `set-${set.id}`;
   const member = (memberId: string, patch: Partial<RecordSet['members'][number]>) =>
     onChange({ ...set, members: set.members.map((existing) => (existing.id === memberId ? { ...existing, ...patch } : existing)) });
@@ -199,13 +214,22 @@ function SetCard({ set, onChange, onRemove }: { set: RecordSet; onChange: (set: 
             <input id={`${id}-${entry.id}-name`} className="input" value={entry.name} maxLength={120} placeholder="Everyday, Work, Formal…" onChange={(event) => member(entry.id, { name: event.target.value })} />
             <label className="sr" htmlFor={`${id}-${entry.id}-text`}>{entry.name} text</label>
             <textarea id={`${id}-${entry.id}-text`} maxLength={20000} value={entry.text} onChange={(event) => member(entry.id, { text: event.target.value })} />
+            {(conditions.length > 0 || entry.lock) && (
+              <label className="field">
+                <span>A player can pick it</span>
+                <select value={entry.lock ?? ''} onChange={(event) => member(entry.id, { lock: event.target.value || null })}>
+                  <option value="">Any time</option>
+                  {conditions.map((condition) => <option key={condition.id} value={condition.id}>Once: {condition.label}</option>)}
+                </select>
+              </label>
+            )}
           </div>
           <button type="button" className="icon-btn" aria-label={`Remove ${entry.name || 'this one'}`} onClick={() => onChange({ ...set, members: set.members.filter((existing) => existing.id !== entry.id), active: set.active === entry.id ? null : set.active })}>×</button>
         </div>
       ))}
       <div className="row">
         <button type="button" className="btn small quiet" onClick={() => {
-          const fresh = { id: newId(), name: '', text: '' };
+          const fresh = { id: newId(), name: '', text: '', lock: null };
           onChange({ ...set, members: [...set.members, fresh], active: set.active ?? fresh.id });
         }}>Add one</button>
       </div>

@@ -5,7 +5,7 @@ import { newChat, type Chat } from '../../core/chat/index.js';
 import type { Connection, Generated, GenerateOptions } from '../../kit/src/connection';
 import { ChatView } from '../src/ChatView';
 import { worldFor } from '../src/App';
-import { ERRATA, ERRATA_ID, HOUSE_WORLD_ID, houseWorld } from '../src/errata';
+import { ERRATA, ERRATA_ID, HOUSE_WORLD_ID, houseWorld, refreshHouse } from '../src/errata';
 import { Home } from '../src/Home';
 import { RichText } from '../src/RichText';
 import { DEFAULT_SETTINGS } from '../src/settings';
@@ -34,9 +34,9 @@ function provider(replies: string[]) {
 }
 
 // Holds the chat the way the app does, so changes come back in as props.
-function Harness({ impl, connected = true }: { impl: ReturnType<typeof provider>['impl']; connected?: boolean }) {
+function Harness({ impl, connected = true, layout = 'bubbles' as const }: { impl: ReturnType<typeof provider>['impl']; connected?: boolean; layout?: 'bubbles' | 'page' }) {
   const [chat, setChat] = useState(start);
-  return <ChatView chat={chat} world={world} connection={{ ...connection, connected }} settings={DEFAULT_SETTINGS} onChange={setChat} onBack={() => {}} onDelete={() => {}} onSettings={() => {}} generateImpl={impl as never} />;
+  return <ChatView chat={chat} world={world} connection={{ ...connection, connected }} settings={{ ...DEFAULT_SETTINGS, layout }} onChange={setChat} onBack={() => {}} onDelete={() => {}} onSettings={() => {}} generateImpl={impl as never} />;
 }
 
 describe('the house format', () => {
@@ -56,6 +56,14 @@ describe('the bundled world', () => {
     expect(read.ok).toBe(true);
     expect(ERRATA.examples).toHaveLength(5);
     for (const text of [...ERRATA.sections.map((section) => section.text), ...ERRATA.greetings.map((greeting) => greeting.text), ...ERRATA.examples.flatMap((example) => example.messages.map((message) => message.text))]) expect(text).not.toContain('\n\n');
+  });
+  it('swaps an older bundled Errata for the current one and leaves the rest of her world alone', () => {
+    const mine = { ...newRecord('lore', 'mine', 'My note', () => 'x') };
+    const old = { ...world, records: [{ ...ERRATA, line: 'An old draft.', examples: [] }, mine], conditions: [] };
+    const fresh = refreshHouse(old, 9);
+    expect(fresh.records.find((record) => record.id === ERRATA_ID)).toEqual(ERRATA);
+    expect(fresh.records.map((record) => record.id)).toContain('mine');
+    expect(parseWorld(JSON.parse(JSON.stringify(fresh))).ok).toBe(true);
   });
   it('lends a chat a persona from another world', () => {
     const other = putRecord(newWorld('other', 'Other', 1), { ...newRecord('persona', 'p1', 'Robin', () => 'x') }, 2);
@@ -77,14 +85,16 @@ describe('the home screen', () => {
     fireEvent.click(within(sheet).getByRole('button', { name: 'Start the chat' }));
     const chat = onStart.mock.calls[0]![0] as Chat;
     expect(chat).toMatchObject({ characterId: ERRATA_ID, userName: 'Sam', relationship: 'close', style: 'roleplay' });
-    expect(chat.messages[0]!.alts[0]!.parts[0]!.emotion).toBe('thinking');
+    expect(chat.messages[0]!.alts[0]!.parts[0]!.emotion).toBe('bored');
+    // The card's own defaults fill the sheet.
+    expect(chat.responseLength).toBe('medium');
   });
 
   it('shows recent chats with their last line', () => {
     const onOpen = vi.fn();
     render(<Home worlds={[world]} chats={[start()]} portraits={{}} status={null} userName="" onOpen={onOpen} onStart={() => {}} onImport={() => {}} />);
     const recent = screen.getByRole('region', { name: 'Recent chats' });
-    expect(within(recent).getByText(/The writing room is quiet/)).toBeInTheDocument();
+    expect(within(recent).getByText(/Loose pages cover the floor/)).toBeInTheDocument();
     fireEvent.click(within(recent).getByRole('button'));
     expect(onOpen).toHaveBeenCalledWith('c1');
   });
@@ -95,7 +105,7 @@ describe('the chat screen', () => {
     const { calls, impl } = provider(['Errata: *I take the page.*\nThis line is yours.\n  Emotion: smug']);
     const { container } = render(<Harness impl={impl} />);
     expect(screen.getByText(/Give it here\./)).toBeInTheDocument();
-    expect(container.querySelector('.portrait')).toHaveAttribute('data-emotion', 'thinking');
+    expect(container.querySelector('.chat-head .portrait')).toHaveAttribute('data-emotion', 'bored');
     fireEvent.change(screen.getByLabelText('Your message'), { target: { value: 'Here is my draft.' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
     await screen.findByText('This line is yours.');
@@ -142,7 +152,10 @@ describe('the chat screen', () => {
     const { container } = render(<Harness impl={impl} />);
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
     await screen.findByText('Frist.');
-    fireEvent.click(screen.getAllByRole('button', { name: 'Edit' }).at(-1)!);
+    // A message's controls stay out of the way until it is touched.
+    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
+    fireEvent.click(screen.getByText('Frist.'));
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
     const box = screen.getByLabelText('Edit this message');
     expect(box).toHaveValue('Frist.\n  Emotion: bored');
     fireEvent.change(box, { target: { value: 'First.\n  Emotion: laughing' } });
@@ -156,12 +169,15 @@ describe('the chat screen', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<Harness impl={impl} />);
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
-    await screen.findByText('A start');
+    await screen.findByRole('button', { name: 'Regenerate' });
+    fireEvent.click(screen.getByText('A start'));
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     await screen.findByText('A start and an end.');
     // The open turn goes as the start of the reply, for the model to carry on.
     expect(calls[1]!.options.prefill).toBe('Errata: A start');
 
+    await screen.findByRole('button', { name: 'Regenerate' });
+    fireEvent.click(screen.getByText('A start and an end.'));
     fireEvent.click(screen.getByRole('button', { name: 'Remember this' }));
     const dialog = screen.getByRole('dialog', { name: 'Remember this' });
     fireEvent.change(within(dialog).getByLabelText('The fact'), { target: { value: 'Sam writes at night.' } });
@@ -172,7 +188,7 @@ describe('the chat screen', () => {
     expect(calls[2]!.messages[1]!.content).toContain('- Sam writes at night.');
 
     fireEvent.click(screen.getByText('Well?'));
-    fireEvent.click(screen.getAllByRole('button', { name: 'Delete' })[0]!);
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(screen.queryByText('Well?')).toBeNull();
   });
 
@@ -189,7 +205,52 @@ describe('the chat screen', () => {
     expect(within(panel).getByText('Errata: Ink.', { exact: false })).toBeInTheDocument();
     fireEvent.click(within(panel).getByRole('tab', { name: 'In context now' }));
     await waitFor(() => expect(within(panel).getByRole('region', { name: 'Errata' })).toBeInTheDocument());
-    expect(within(panel).getByText(/Deadpan and unhurried/)).toBeInTheDocument();
+    expect(within(panel).getByText(/deadpan and unhurried/)).toBeInTheDocument();
+  });
+
+  it('keeps story time, moved by hand, and shows it under the hood', () => {
+    const { impl } = provider(['x']);
+    render(<Harness impl={impl} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Under the hood' }));
+    const panel = screen.getByRole('complementary', { name: 'Under the hood' });
+    fireEvent.click(within(panel).getByRole('tab', { name: 'Time' }));
+    expect(within(panel).queryByRole('region', { name: 'Story time' })).toBeNull();
+    fireEvent.click(within(panel).getByLabelText('Story time'));
+    const story = within(panel).getByRole('region', { name: 'Story time' });
+    fireEvent.change(within(story).getByLabelText('Set the time of day'), { target: { value: '08:00' } });
+    expect(story.querySelector('.stamp')).toHaveTextContent(/ 08:00/);
+    fireEvent.click(within(story).getByRole('button', { name: '+1 h' }));
+    expect(story.querySelector('.stamp')).toHaveTextContent(/ 09:00/);
+    expect(within(panel).getByText(/Errata has no schedule/)).toBeInTheDocument();
+  });
+
+  it('writes a plan when asked, showing what it will send first, and the plan rides on the next reply', async () => {
+    const { calls, impl } = provider([' Ask again\nContent: Ask Sam for the bad draft before the good one.', 'Errata: So. The bad draft.\n  Emotion: smug']);
+    render(<Harness impl={impl} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Under the hood' }));
+    const panel = screen.getByRole('complementary', { name: 'Under the hood' });
+    fireEvent.click(within(panel).getByRole('tab', { name: 'Memory' }));
+    fireEvent.click(within(panel).getByRole('button', { name: 'Plan' }));
+    const ask = await within(panel).findByRole('region', { name: 'Plan: what it will send' });
+    expect(impl).not.toHaveBeenCalled();
+    expect(within(ask).getByText(/An action plan consists of a Title: and Content:/)).toBeInTheDocument();
+    fireEvent.click(within(ask).getByRole('button', { name: 'Write it' }));
+    await waitFor(() => expect(within(panel).getByLabelText('The plan')).toHaveValue('Ask Sam for the bad draft before the good one.'));
+    expect(calls[0]!.options.prefill).toBe('Title:');
+    fireEvent.click(within(panel).getByRole('button', { name: 'Close' }));
+    fireEvent.change(screen.getByLabelText('Your message'), { target: { value: 'Hello.' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    await screen.findByText('So. The bad draft.');
+    expect(calls[1]!.messages.at(-1)!.content).toContain('What Errata means to do next (act on it, don\'t announce it): Ask Sam for the bad draft before the good one.');
+  });
+
+  it('lays messages out as a page when asked, and draws a picture a card wrote in', () => {
+    const { impl } = provider(['x']);
+    const { container } = render(<Harness impl={impl} layout="page" />);
+    expect(container.querySelector('.chat')).toHaveAttribute('data-layout', 'page');
+    const picture = render(<RichText text={'A door. ![the door](https://example.com/door.png)\n![x](javascript:alert(1))'} />).container;
+    expect(picture.querySelector('img.picture')).toHaveAttribute('src', 'https://example.com/door.png');
+    expect(picture.querySelectorAll('img')).toHaveLength(1);
   });
 
   it('says so when no model is connected', async () => {

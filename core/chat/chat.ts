@@ -4,6 +4,7 @@
 import { z } from 'zod';
 import { RELATIONSHIPS } from '../records/charactercard.js';
 import { EMOTIONS, FALLBACK_EMOTION, parseReply, type ReplyPart } from './emotions.js';
+import { DEFAULT_CLOCK, storyActive } from './time.js';
 
 export const CHAT_FORMAT = 'inkwyrm-chat/1';
 export const CHAT_EXPORT_FORMAT = 'inkwyrm-chat-export/1';
@@ -33,12 +34,42 @@ export const messageSchema = z.object({
   // Every reply written for this turn is kept; `pick` is the one in the story.
   alts: z.array(altSchema).min(1).max(200),
   pick: z.number().int().nonnegative().default(0),
+  // Story time when this was written, so removing it puts the clock back.
+  clock: z.number().nonnegative().optional(),
 });
 export type ChatMessage = z.infer<typeof messageSchema>;
 export type Alt = z.infer<typeof altSchema>;
 
 export const journalEntrySchema = z.object({ id, text: z.string().max(2000), at: z.number().nonnegative().default(0), active: z.boolean().default(true) });
 export type JournalEntry = z.infer<typeof journalEntrySchema>;
+
+// A memory the character keeps: a diary entry or a feeling about one moment (CharacterRoom's Diary
+// and Process). It comes back into context when one of its keys is said.
+export const memorySchema = z.object({ id, name: z.string().max(200).default(''), content: z.string().max(8000), keys: z.array(z.string().min(1).max(80)).max(40).default([]), at: z.number().nonnegative().default(0) });
+export type Memory = z.infer<typeof memorySchema>;
+
+// A plan: something the character means to do in the next few turns (CharacterRoom's Plans, F-20).
+// The AI's own or the player's, limited to a number of turns or ongoing.
+export const PLAN_TURNS = 3;
+export const planSchema = z.object({
+  id,
+  name: z.string().max(200).default(''),
+  content: z.string().max(4000),
+  planType: z.enum(['AI', 'User']).default('AI'),
+  durationType: z.enum(['Limited', 'Ongoing']).default('Limited'),
+  totalTurns: z.number().int().min(1).max(999).default(PLAN_TURNS),
+  remainingTurns: z.number().int().min(-1).max(999).default(PLAN_TURNS),
+  running: z.boolean().default(false),
+  startedAtCount: z.number().int().default(-1),
+});
+export type Plan = z.infer<typeof planSchema>;
+
+export const clockSchema = z.object({
+  mode: z.enum(['real', 'story']).default('real'),
+  storyMs: z.number().nonnegative().default(0),
+  stepMin: z.number().int().min(0).max(1440).default(0),
+  trackReal: z.boolean().default(false),
+});
 
 export const chatSchema = z.object({
   format: z.literal(CHAT_FORMAT),
@@ -62,6 +93,14 @@ export const chatSchema = z.object({
   // The General profile's window: the first message still sent.
   windowStart: z.number().int().nonnegative().default(0),
   draft: z.string().max(40_000).default(''),
+  clock: clockSchema.default(DEFAULT_CLOCK),
+  // Emotional modes (F-16): the character's recent emotions, or time away, set a mood.
+  moods: z.boolean().default(false),
+  diary: z.array(memorySchema).max(500).default([]),
+  process: z.array(memorySchema).max(500).default([]),
+  plans: z.array(planSchema).max(100).default([]),
+  // Set members pinned for this chat, by "recordId:setId": an outfit, a location.
+  pins: z.record(z.string().max(200), id).default({}),
   createdAt: z.number().nonnegative().default(0),
   updatedAt: z.number().nonnegative().default(0),
 });
@@ -85,7 +124,8 @@ export function newChat(input: NewChat, ids: () => string, now: number): Chat {
     format: CHAT_FORMAT, id: input.id, worldId: input.worldId, characterId: input.characterId, characterName: input.characterName,
     personaId: input.personaId, scenarioId: input.scenarioId, userName: input.userName.trim() || 'User',
     relationship: input.relationship, style: input.style, responseLength: input.responseLength,
-    messages: [], journal: [], loreOff: [], roll: { startIndex: 0, pathIdList: [], trimmed: false }, windowStart: 0, draft: '', createdAt: now, updatedAt: now,
+    messages: [], journal: [], loreOff: [], roll: { startIndex: 0, pathIdList: [], trimmed: false }, windowStart: 0, draft: '',
+    clock: { ...DEFAULT_CLOCK }, moods: false, diary: [], process: [], plans: [], pins: {}, createdAt: now, updatedAt: now,
   };
   const text = input.greeting?.text.trim();
   if (text) {
@@ -114,7 +154,10 @@ export function addUserMessage(chat: Chat, text: string, messageId: string, now:
 }
 
 export function addReply(chat: Chat, parts: ReplyPart[], messageId: string, now: number, model = ''): Chat {
-  return touch(chat, now, [...chat.messages, { id: messageId, from: 'character', at: now, alts: [{ parts, at: now, model }], pick: 0 }]);
+  // In story time the reply is stamped with the clock, and the clock then takes its step.
+  const story = storyActive(chat.clock);
+  const next = touch(chat, now, [...chat.messages, { id: messageId, from: 'character', at: now, alts: [{ parts, at: now, model }], pick: 0, ...(story ? { clock: chat.clock.storyMs } : {}) }]);
+  return story && chat.clock.stepMin > 0 ? { ...next, clock: { ...chat.clock, storyMs: chat.clock.storyMs + chat.clock.stepMin * 60_000 } } : next;
 }
 
 // Another reply for the same turn. The earlier ones are kept, and the new one is shown.
@@ -149,7 +192,11 @@ export function editMessage(chat: Chat, messageId: string, text: string, charNam
 export function deleteMessage(chat: Chat, messageId: string, now: number): Chat {
   const at = chat.messages.findIndex((message) => message.id === messageId);
   if (at < 0) return chat;
-  return { ...touch(chat, now, chat.messages.filter((message) => message.id !== messageId)), windowStart: Math.min(chat.windowStart, Math.max(0, chat.messages.length - 1)) };
+  const gone = chat.messages[at]!;
+  const next = { ...touch(chat, now, chat.messages.filter((message) => message.id !== messageId)), windowStart: Math.min(chat.windowStart, Math.max(0, chat.messages.length - 1)) };
+  // Taking back the latest reply puts story time back to when it was written.
+  const rewind = at === chat.messages.length - 1 && storyActive(chat.clock) && gone.clock !== undefined && gone.clock < chat.clock.storyMs;
+  return rewind ? { ...next, clock: { ...chat.clock, storyMs: gone.clock! } } : next;
 }
 
 // Remember this: a fact for the character's journal about the player.
@@ -162,6 +209,44 @@ export function remember(chat: Chat, text: string, entryId: string, now: number)
 export function setJournalEntry(chat: Chat, entryId: string, patch: Partial<Pick<JournalEntry, 'text' | 'active'>> | null, now: number): Chat {
   const journal = patch === null ? chat.journal.filter((entry) => entry.id !== entryId) : chat.journal.map((entry) => (entry.id === entryId ? { ...entry, ...patch } : entry));
   return { ...chat, journal, updatedAt: now };
+}
+
+// The character's last few emotions, newest first, for emotional modes. Neutral when there are none.
+export function recentEmotions(chat: Chat, count: number, upTo = chat.messages.length): string[] {
+  const found: string[] = [];
+  for (let index = Math.min(upTo, chat.messages.length) - 1; index >= 0 && found.length < count; index -= 1) {
+    const message = chat.messages[index]!;
+    if (message.from !== 'character') continue;
+    const parts = pickedAlt(message).parts;
+    for (let at = parts.length - 1; at >= 0 && found.length < count; at -= 1) found.push(parts[at]!.emotion);
+  }
+  return found.length ? found : [FALLBACK_EMOTION];
+}
+
+// When the character last wrote, on the chat's clock: story time if the chat keeps it, else real.
+export function lastContactMs(chat: Chat, upTo = chat.messages.length): number | undefined {
+  for (let index = Math.min(upTo, chat.messages.length) - 1; index >= 0; index -= 1) {
+    const message = chat.messages[index]!;
+    if (message.from === 'character') return storyActive(chat.clock) ? message.clock : message.at || undefined;
+  }
+  return undefined;
+}
+
+export type MemoryKind = 'diary' | 'process';
+export function addMemory(chat: Chat, kind: MemoryKind, entry: Omit<Memory, 'at'>, now: number): Chat {
+  return { ...chat, [kind]: [...chat[kind], { ...entry, at: now }], updatedAt: now };
+}
+export function setMemory(chat: Chat, kind: MemoryKind, entryId: string, patch: Partial<Pick<Memory, 'name' | 'content' | 'keys'>> | null, now: number): Chat {
+  const list = patch === null ? chat[kind].filter((entry) => entry.id !== entryId) : chat[kind].map((entry) => (entry.id === entryId ? { ...entry, ...patch } : entry));
+  return { ...chat, [kind]: list, updatedAt: now };
+}
+export function addPlan(chat: Chat, plan: Pick<Plan, 'id' | 'name' | 'content'> & Partial<Plan>, now: number): Chat {
+  const turns = plan.totalTurns ?? PLAN_TURNS;
+  return { ...chat, plans: [...chat.plans, { planType: 'AI', durationType: 'Limited', totalTurns: turns, remainingTurns: turns, running: false, startedAtCount: -1, ...plan }], updatedAt: now };
+}
+export function setPlan(chat: Chat, planId: string, patch: Partial<Plan> | null, now: number): Chat {
+  const plans = patch === null ? chat.plans.filter((plan) => plan.id !== planId) : chat.plans.map((plan) => (plan.id === planId ? { ...plan, ...patch } : plan));
+  return { ...chat, plans, updatedAt: now };
 }
 
 export const lastLine = (chat: Chat): string => {

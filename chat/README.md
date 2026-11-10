@@ -2,7 +2,7 @@
 
 Inkwyrm's chat side, at `/chat/` on the site: CharacterRoom, rebuilt as a web app on the shared core. Characters, personas and scenarios are records from the Studio's worlds. A chat is an instance and never writes to them. The plan is `docs/chat-brief.md`.
 
-## What it does (0.1.0, Phase A)
+## What it does (0.2.0, Phases A and B)
 
 - **Home:** recent chats on top, then every character in the Studio's worlds. Errata, the house muse, comes bundled.
 - **Import** onto the character list:
@@ -11,11 +11,26 @@ Inkwyrm's chat side, at `/chat/` on the site: CharacterRoom, rebuilt as a web ap
 
   Imports land in a world named Imported, which the Studio can edit.
 - **A new chat** asks what CharacterRoom asks: persona, scenario, relationship, style, response length and which greeting.
-- **The chat screen:** bubbles in the house format (*narration*, plain speech, (thoughts), [notes]), a portrait that follows the emotion of the last reply, and replies that stream in.
+- **The chat screen** is built for reading:
+  - the transcript takes the whole screen, in the house format (*narration*, plain speech, (thoughts), [notes]), as bubbles or as a page with no bubbles;
+  - on a phone the header tucks away while you read down and comes back on the way up;
+  - a message's controls stay hidden until you touch it; the latest reply shows only its alternatives and a regenerate button;
+  - the portrait follows the emotion of the last reply: small in the header, large in a column beside the chat on a wide screen, and full size when you tap it;
+  - a picture a card wrote into a message (`![](address)`) is drawn under its words.
 - **On any message:** step between alternative replies (or swipe the last one), regenerate, continue, edit in place, delete, copy, and Remember this.
-- **The composer** keeps its draft, sends on Enter, stops a reply midway, and can wrap what you type in asterisks as an action.
-- **Under the hood:** the exact request for the last reply and what came back; In context now for this chat, by reach; the character's journal about you; and this chat's settings and lore switches.
-- **Settings:** the connection (the site's own, shared with the adventure), the model and how it is sent, the context window, reply length and temperature, paper or night, text size, and an avatar plus 24 emotion portraits per character, where a partial set works.
+- **The composer** keeps its draft, sends on Enter, stops a reply midway, and can send what you type as an action, in asterisks.
+- **Time:**
+  - each chat runs on real time or story time. Story time stands still until you move it, by hand or by a step with each reply, and deleting the latest reply puts it back;
+  - when the clock is on, the character is told how long you've been apart and what their schedule has on, and the header shows what they are doing now;
+  - sets follow the schedule: the outfit an event calls for, and the room of the scenario it happens in. A chat can pin one instead; a locked one waits for the relationship.
+- **Memory:**
+  - the journal: facts the character keeps about you, sent with every reply;
+  - a diary (Reflect) and feelings (Process), written by the model when you ask, and recalled when one of their keys is said;
+  - plans (Plan, or your own): limited to a few turns or ongoing, counting down by your messages;
+  - moods: the character's last few emotions, or time away, put them in one of nine states of mind;
+  - each generation shows what it will send and what it costs before it is sent.
+- **Under the hood** (the token count in the header): the exact request for the last reply and what came back; In context now, by reach; Memory; Time; and this chat's settings, sets and lore switches.
+- **Settings:** the connection (the site's own, shared with the adventure), the model and how it is sent, the context window, reply length and temperature, paper or night, text size, bubbles or a page, and an avatar plus 24 emotion portraits per character, where a partial set works.
 - **Files:** a chat exports and imports as `<name>.chat.json`; Back up everything makes one file of every world, chat and portrait in this browser.
 
 Everything is kept in this browser (IndexedDB `inkwyrm-chat`; worlds in the Studio's `inkwyrm-studio`). Keys go through the site's relay per request and are never stored on the server.
@@ -46,21 +61,40 @@ When a chat outgrows the window, the oldest messages leave a piece at a time and
 
 ## Not yet
 
-- **Phase B:** the clock and story time, Time Apart, schedules in context and the status line, emotional modes, Diary and Process memories, plans, side generations. The kernel already carries all of these for xialong (the parity fixtures cover them); they have no state or screens yet.
 - **Phase C:** posts, dice and sheets, small games, Stage mode, bubble styling, the emoji set, Imitate, the farewell on delete.
 - Group chat stays pinned (`docs/records.md`). Image generation is roadmap step 7.
 
 ## To check with a real key
 
-These could not be tried from the build session, which has no key and cannot reach NovelAI.
+The build sessions have no key and cannot reach NovelAI. The owner's first live test (Nov 10) settled the first question: NovelAI's chat endpoint streams `xialong-v1` as plain text, in OpenAI's shape, so no token decoding is needed. Still open:
 
-1. **What NovelAI's chat endpoint returns for `xialong-v1`.** The Discord bot had to decode token ids. If a reply comes back empty or as numbers, What was sent shows the first raw chunk under Settings and diagnostics; send that back.
-2. **Continue on xialong.** The open turn is sent as the last assistant message for the model to carry on, as CharacterRoom does inside NovelAI. Whether the endpoint continues it or starts a new turn needs one try.
-3. **The General rules on GLM-4.6, DeepSeek and an OpenRouter model.** Check that replies end with an Emotion line and stay on the character's side.
+1. **An open turn on xialong.** Continue, a plan's think block, and the primer of a diary, feeling or plan are each sent as the last assistant message for the model to carry on, as CharacterRoom does inside NovelAI. Whether the endpoint continues it or starts a new turn needs one try of each. If a Reflect comes back empty, What gets sent on its card shows the request.
+2. **The General rules on GLM-4.6, DeepSeek and an OpenRouter model.** Check that replies end with an Emotion line and stay on the character's side.
+
+## How the Phase B parts reach each model
+
+| | Xialong (AetherRoom) | Every other model (General) |
+| --- | --- | --- |
+| Time apart, the schedule, the mood | CharacterRoom's own entries (`Time Apart`, `Current Events`, `X's Mood`), placed by its kernel before the style line | The same words, as lines in the moment |
+| A set's member in use | A brain named `Set: Member`, as CharacterRoom writes it | A line on the character or scenario |
+| Diary and feelings | Keyed entries, `Type: diary entry` and `Type: emotional memory` | Lines in the moment, under the character's name |
+| Plans | `<think>` on the reply, exactly as CharacterRoom does | A note in the moment, never a thinking block |
+| Reflect, Process, Plan | CharacterRoom's prompts and budgets (250, 250 and 300 tokens): the sheet, the story, the shape, the style, a primer | The same shape and style, asked as a note and started on `Title:` |
+
+The plan countdown for other models is held to the kernel's by a test.
+
+## From a CharacterRoom card
+
+Beyond the card itself, the import reads what CharacterRoom adds under `cr`:
+- `sets` become sets on the record, with each version's lock as a bond condition;
+- `schedLinks` and `lineHome` are folded into the schedule's events, so an event knows which outfit and which room go with it;
+- the card's relationship, style and response length become the defaults of a new chat.
+
+Not read yet: image prompts and tags, bubble colours, Home's needs and actions.
 
 ## Errata
 
-Her record (`src/errata.ts`) follows `docs/mascot-record.md` section by section. Her card is in the owner's CharacterVault and not in this repository, so her greeting and five example chats are drafts written on the mapping's titles. Replace them with the vault card's text, in the Studio or in that file.
+Her record (`src/errata.ts`) is the owner's card, *Errata - Inkwyrm* v1, laid out by reach as `docs/mascot-record.md` maps it. A browser that took the earlier draft gets the real one the next time Chat opens; anything else added to her world is left alone.
 
 ## Develop
 
@@ -81,6 +115,16 @@ npm run dev:chat
 Open `http://localhost:5178/chat/`. The first command installs, the second starts the adventure's API (the relay), the third starts Chat.
 
 ## Changelog
+
+### 0.2.0 - Phase B, and a screen for reading - 2026-11-10
+
+- **Time:** real or story time per chat, moved by hand or by a step with each reply, rewound when the latest reply is deleted; Time Apart; the schedule in context (Current Events) and as a status line in the header.
+- **Sets that choose themselves:** an outfit or a scenario's room follows the schedule event that links it, unless the chat pins one. Locked ones wait for the relationship.
+- **Memory:** diary and feelings recalled by key, plans that count down, and the nine moods, each reaching xialong in CharacterRoom's own form and other models as notes in the moment.
+- **Reflect, Process and Plan** use CharacterRoom's prompts and budgets, and show what they will send before sending it.
+- **The chat screen** was rebuilt for reading: a header that tucks away, controls that hide until a message is touched, a large portrait beside the chat on a wide screen, a page layout without bubbles, and pictures in messages.
+- **Card import** reads CharacterRoom's sets, schedule links and chat defaults.
+- **Errata** carries her real card.
 
 ### 0.1.0 - Phase A - 2026-11-09
 

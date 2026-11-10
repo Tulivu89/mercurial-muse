@@ -3,17 +3,22 @@ import { XIALONG, profileFor } from '../../core/chat/index.js';
 import type { Connection } from '../../kit/src/connection';
 
 export type TextSize = 'small' | 'medium' | 'large';
+// Bubbles, or a page: no bubbles, the full width for prose.
+export type Layout = 'bubbles' | 'page';
 export interface Settings {
   // The context window in tokens; 0 means sized to the model.
   contextTokens: number;
   replyTokens: number;
   temperature: number;
   textSize: TextSize;
+  layout: Layout;
+  // On a wide screen, the character's portrait in a column beside the chat.
+  rail: boolean;
   userName: string;
 }
 
 const KEY = 'inkwyrm.chat.settings';
-export const DEFAULT_SETTINGS: Settings = { contextTokens: 0, replyTokens: 1000, temperature: 0.8, textSize: 'medium', userName: '' };
+export const DEFAULT_SETTINGS: Settings = { contextTokens: 0, replyTokens: 1000, temperature: 0.8, textSize: 'medium', layout: 'bubbles', rail: true, userName: '' };
 
 export function readSettings(): Settings {
   try {
@@ -24,6 +29,8 @@ export function readSettings(): Settings {
       replyTokens: number(stored.replyTokens, DEFAULT_SETTINGS.replyTokens, 64, 8192),
       temperature: number(stored.temperature, DEFAULT_SETTINGS.temperature, 0, 2),
       textSize: stored.textSize === 'small' || stored.textSize === 'large' ? stored.textSize : 'medium',
+      layout: stored.layout === 'page' ? 'page' : 'bubbles',
+      rail: stored.rail !== false,
       userName: typeof stored.userName === 'string' ? stored.userName.slice(0, 120) : '',
     };
   } catch {

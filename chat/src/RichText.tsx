@@ -1,9 +1,11 @@
 // The house format, drawn: *narration* in italic grey ink, speech plain, (thoughts) set apart,
 // [notes] outside the story. Blank lines between paragraphs are added here, at display time, and
-// never asked of the model.
+// never asked of the model. A picture written the way shared cards write one, ![](address),
+// is shown under the words it came with.
 import { Fragment, type ReactNode } from 'react';
 
 const TOKEN = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|\([^()\n]+\)|\[[^[\]\n]+\])/g;
+const IMAGE = /!\[([^\]\n]*)\]\(\s*((?:https?:\/\/|data:image\/)[^)\s]+)\s*\)/g;
 
 function inline(text: string): ReactNode[] {
   return text.split(TOKEN).filter(Boolean).map((piece, index) => {
@@ -16,6 +18,12 @@ function inline(text: string): ReactNode[] {
 }
 
 export function RichText({ text }: { text: string }) {
-  const lines = text.split('\n').map((line) => line.trim()).filter(Boolean);
-  return <>{lines.map((line, index) => <p key={index}>{inline(line)}</p>)}</>;
+  const out: ReactNode[] = [];
+  text.split('\n').forEach((raw, row) => {
+    const images = [...raw.matchAll(IMAGE)];
+    const line = raw.replace(IMAGE, '').trim();
+    if (line) out.push(<p key={`p${row}`}>{inline(line)}</p>);
+    images.forEach((image, at) => out.push(<img key={`i${row}-${at}`} className="picture" src={image[2]} alt={image[1] ?? ''} loading="lazy" referrerPolicy="no-referrer" />));
+  });
+  return <>{out}</>;
 }

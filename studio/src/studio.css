@@ -45,3 +45,20 @@
 
 /* In context now */
 .context h2 { font-family: var(--display); font-weight: 600; font-size: 22px; }
+
+/* The week view: a strip a day, each event where it falls. */
+.schedule { display: flex; flex-direction: column; gap: 10px; }
+.week { display: flex; flex-direction: column; gap: 3px; }
+.strip, .ruler { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 8px; width: 100%; padding: 3px 6px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--text); text-align: left; min-height: 28px; }
+.strip.on { background: var(--raised); border-color: var(--rule); }
+.strip-day { font-size: 13px; font-weight: 700; color: var(--text-2); }
+.band { position: relative; display: block; border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); overflow: hidden; }
+.tick { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--rule); }
+.block-bar { position: absolute; height: 10px; border-radius: 2px; background: var(--blue); min-width: 3px; }
+.block-bar.gated { background: var(--seal); }
+.ruler .band { border: 0; background: none; height: 16px; overflow: visible; }
+.ruler .band span { position: absolute; font-size: 11px; color: var(--text-2); }
+.line-row { justify-content: flex-start; gap: 12px; border-color: var(--rule); }
+.line-row b { flex: none; font-size: 13px; }
+.line-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--read); }
+.row.between { justify-content: space-between; }

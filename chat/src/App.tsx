@@ -7,7 +7,7 @@ import { useTheme } from '../../kit/src/theme';
 import { downloadJson, imageDataUrl, newId, readFileBytes, readJsonFile } from '../../kit/src/util';
 import { listWorlds, putWorld } from '../../kit/src/worlds';
 import { ChatView } from './ChatView';
-import { HOUSE_WORLD_ID, houseWorld } from './errata';
+import { HOUSE_VERSION, HOUSE_WORLD_ID, houseWorld, refreshHouse } from './errata';
 import { Home, type Status } from './Home';
 import { SettingsView } from './SettingsView';
 import { readSettings, writeSettings, type Settings } from './settings';
@@ -68,14 +68,20 @@ export function App() {
       try {
         let list = await listWorlds();
         // Errata comes with the site. She is put in once; delete her world and she stays gone.
-        let seeded = false;
-        try { seeded = localStorage.getItem(SEEDED_KEY) === '1'; } catch { /* storage blocked */ }
-        if (!seeded && !list.some((world) => world.id === HOUSE_WORLD_ID)) {
+        let seeded = 0;
+        try { seeded = Number(localStorage.getItem(SEEDED_KEY)) || 0; } catch { /* storage blocked */ }
+        const stored = list.find((world) => world.id === HOUSE_WORLD_ID);
+        if (!seeded && !stored) {
           const house = houseWorld(Date.now());
           await putWorld(house);
           list = [...list, house];
+        } else if (seeded < HOUSE_VERSION && stored) {
+          // Her bundled record has changed since this browser took it.
+          const house = refreshHouse(stored, Date.now());
+          await putWorld(house);
+          list = list.map((world) => (world.id === HOUSE_WORLD_ID ? house : world));
         }
-        try { localStorage.setItem(SEEDED_KEY, '1'); } catch { /* storage blocked */ }
+        try { localStorage.setItem(SEEDED_KEY, String(HOUSE_VERSION)); } catch { /* storage blocked */ }
         setWorlds(list);
       } catch (error) {
         // No storage at all: Errata still works for this visit.

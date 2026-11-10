@@ -125,7 +125,7 @@ describe('CharacterRoom cards', () => {
     if (!read.ok) throw new Error(read.errors.join(' '));
     const record = recordById(read.result.world, read.result.recordId)!;
     expect(record).toMatchObject({ gender: 'female', keys: ['Mimi'], line: 'A dock clerk.' });
-    expect(record.schedule!.Daily).toEqual([{ id: expect.any(String), startTime: 1380, endTime: 120, text: 'Asleep.', requiredIntimacy: 'none' }]);
+    expect(record.schedule!.Daily).toEqual([{ id: 'd', startTime: 1380, endTime: 120, text: 'Asleep.', requiredIntimacy: 'none', sets: {}, rooms: {} }]);
     expect(record.schedule!.Monday).toEqual([]);
     expect(read.result.images).toEqual({ avatar: 'data:image/png;base64,AAAA', emotions: { happy: 'data:image/png;base64,BBBB' } });
     expect(record.sections.find((section) => section.title === 'Water')).toMatchObject({ reach: 'when', when: 'bond-romantic' });
