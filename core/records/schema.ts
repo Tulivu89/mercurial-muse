@@ -1,6 +1,8 @@
 // The record model (docs/records.md): a world holds records, and every block of text in a record
 // says when it reaches the model. Pure data and validation: no DOM, no network, no storage.
 import { z } from 'zod';
+import { recordRulesSchema } from '../rules/record-rules.js';
+import { worldRulesSchema } from '../rules/world-rules.js';
 
 export const WORLD_FORMAT = 'studio-world/1';
 
@@ -136,6 +138,9 @@ export const recordSchema = z.object({
   // Characters, for chat only.
   greetings: z.array(greetingSchema).max(20).default([]),
   examples: z.array(exampleChatSchema).max(30).default([]),
+  // The rules: only what the author set here. Everything else is worked out from the record's
+  // kind, its tier, its groups and the world's ruleset (core/rules, rulesFor).
+  rules: recordRulesSchema.optional(),
 });
 export type StoryRecord = z.infer<typeof recordSchema>;
 
@@ -152,6 +157,8 @@ export const worldSchema = z.object({
   tone: shortText(200).default(''),
   conditions: z.array(conditionSchema).max(200).default([]),
   records: z.array(recordSchema).max(5000).default([]),
+  // The world's own rules: only what it changes from the standard ruleset (core/rules).
+  rules: worldRulesSchema.optional(),
   updatedAt: z.number().int().nonnegative().default(0),
 }).superRefine((world, context) => {
   const ids = new Set<string>();
