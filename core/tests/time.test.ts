@@ -60,7 +60,7 @@ describe('importing what CharacterRoom adds to a card', () => {
     expect(mira.sourceId).toBe('card-mira');
     expect(mira.chatDefaults).toEqual({ relationship: 'close', style: 'novel', responseLength: 'long' });
     expect(mira.sets).toEqual([{ id: 'sOutfits', title: 'Clothes', reach: 'here', active: 'o1', members: [
-      { id: 'o1', name: 'Work', text: 'An apron.', lock: null }, { id: 'o2', name: 'Pajamas', text: 'Flannel.', lock: null }, { id: 'o3', name: 'Coat', text: 'A long coat.', lock: null },
+      { id: 'o1', name: 'Work', text: 'An apron.', lock: null, layers: [] }, { id: 'o2', name: 'Pajamas', text: 'Flannel.', lock: null, layers: [] }, { id: 'o3', name: 'Coat', text: 'A long coat.', lock: null, layers: [] },
     ] }]);
     expect(mira.schedule!.Daily![0]).toMatchObject({ id: 'd1', sets: { sOutfits: 'o2' }, rooms: { 'card-cafe': 'vLoft' } });
     expect(mira.schedule!.Friday![1]).toMatchObject({ id: 'f2', sets: {}, rooms: {} });

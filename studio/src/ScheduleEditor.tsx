@@ -35,7 +35,7 @@ export function ScheduleEditor({ record, world, onChange }: { record: StoryRecor
   const save = (next: Schedule) => onChange(Object.values(next).some((list) => list.length) ? next : null);
   const patch = (eventId: string, change: Partial<ScheduleEvent>) => save({ ...week, [day]: (week[day] ?? []).map((event) => (event.id === eventId ? { ...event, ...change } : event)) });
   const add = (startTime: number, endTime: number) => {
-    const fresh: ScheduleEvent = { id: newId(), startTime, endTime, text: '', requiredIntimacy: 'none', sets: {}, rooms: {} };
+    const fresh: ScheduleEvent = { id: newId(), startTime, endTime, text: '', requiredIntimacy: 'none', sets: {}, rooms: {}, spots: {}, needs: {} };
     save({ ...week, [day]: [...(week[day] ?? []), fresh] });
     setOpenId(fresh.id);
   };

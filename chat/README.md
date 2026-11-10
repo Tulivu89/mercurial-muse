@@ -2,7 +2,7 @@
 
 Inkwyrm's chat side, at `/chat/` on the site: CharacterRoom, rebuilt as a web app on the shared core. Characters, personas and scenarios are records from the Studio's worlds. A chat is an instance and never writes to them. The plan is `docs/chat-brief.md`.
 
-## What it does (0.2.0, Phases A and B)
+## What it does (0.3.0: Phases A and B, and Home)
 
 - **Home:** recent chats on top, then every character in the Studio's worlds. Errata, the house muse, comes bundled.
 - **Import** onto the character list:
@@ -29,6 +29,14 @@ Inkwyrm's chat side, at `/chat/` on the site: CharacterRoom, rebuilt as a web ap
   - plans (Plan, or your own): limited to a few turns or ongoing, counting down by your messages;
   - moods: the character's last few emotions, or time away, put them in one of nine states of mind;
   - each generation shows what it will send and what it costs before it is sent.
+- **Home** (0.3.0), beside Chats: a place with everyone in it.
+  - Pick a scenario with rooms. Each room is a picture; each character who lives there is drawn in the room and at the spot their schedule puts them, with layers (lantern light, steam) over or under them, and a little movement.
+  - Tap a character to see what they are doing, how their needs stand, and what you can do for them. Actions move needs and a bond; a cooldown or the relationship can hold one back.
+  - Their day is theirs, not a chat's: one clock, one relationship and one set of needs per character on this device, read by Home and by every chat with them.
+  - Nothing runs while you are away. Where they are and how they are is worked out from the clock whenever you look, and While you were away replays what the gap held.
+  - Needs stand still until you choose to keep them. Once kept, chat is told how they stand, as CharacterRoom's Needs entry.
+  - Arrange is where a room gets its picture and layers, and a figure its spot, size and picture. Pictures are uploaded; a cut-out with a clear background sits best.
+  - A room locked behind a relationship hides whoever is in it until you reach it.
 - **Under the hood** (the token count in the header): the exact request for the last reply and what came back; In context now, by reach; Memory; Time; and this chat's settings, sets and lore switches.
 - **Settings:** the connection (the site's own, shared with the adventure), the model and how it is sent, the context window, reply length and temperature, paper or night, text size, bubbles or a page, and an avatar plus 24 emotion portraits per character, where a partial set works.
 - **Files:** a chat exports and imports as `<name>.chat.json`; Back up everything makes one file of every world, chat and portrait in this browser.
@@ -61,7 +69,9 @@ When a chat outgrows the window, the oldest messages leave a piece at a time and
 
 ## Not yet
 
-- **Phase C:** posts, dice and sheets, small games, Stage mode, bubble styling, the emoji set, Imitate, the farewell on delete.
+- **Socials:** posts about the chat or the character's day, with comments, and a one-press narration of the away replay. Next.
+- Dice, sheets and games are no part of Chat (the owner's decision, Nov 10). Stage mode, bubble styling, the emoji set, Imitate and the farewell on delete wait.
+- In Home: a place's atmosphere lines (lamps lit at dusk), characters from more than one world in one place, and generating pictures.
 - Group chat stays pinned (`docs/records.md`). Image generation is roadmap step 7.
 
 ## To check with a real key
@@ -90,7 +100,9 @@ Beyond the card itself, the import reads what CharacterRoom adds under `cr`:
 - `schedLinks` and `lineHome` are folded into the schedule's events, so an event knows which outfit and which room go with it;
 - the card's relationship, style and response length become the defaults of a new chat.
 
-Not read yet: image prompts and tags, bubble colours, Home's needs and actions.
+- `lineHome`, `homeIdle`, `pics`, `needs`, `homeActions`, `lineNeeds` and `bond` become Home's parts of the record: where she stands for each event, her figures, her needs and what can be done for her; a room's `layers` come in with the scenario.
+
+Not read yet: image prompts and tags, bubble colours, a place's atmosphere lines. The pictures themselves are not in a card file; upload them in Home's Arrange.
 
 ## Errata
 
@@ -115,6 +127,13 @@ npm run dev:chat
 Open `http://localhost:5178/chat/`. The first command installs, the second starts the adventure's API (the relay), the third starts Chat.
 
 ## Changelog
+
+### 0.3.0 - Home - 2026-11-10
+
+- **Home:** a scenario's rooms as pictures with layers and movement, characters placed by their schedule, needs, actions, a bond, and a replay of the time away.
+- **A character's day is the character's:** the clock, the relationship and set pins moved from each chat to one life per character, which Home and every chat with them share. Chats from before carry on from their own settings.
+- **Needs in context,** once kept, as CharacterRoom's Needs entry for Xialong and a line in the moment for other models.
+- **Card import** reads CharacterRoom's Home data.
 
 ### 0.2.0 - Phase B, and a screen for reading - 2026-11-10
 

@@ -235,7 +235,7 @@ function SetCard({ set, conditions, onChange, onRemove }: { set: RecordSet; cond
       ))}
       <div className="row">
         <button type="button" className="btn small quiet" onClick={() => {
-          const fresh = { id: newId(), name: '', text: '', lock: null };
+          const fresh = { id: newId(), name: '', text: '', lock: null, layers: [] };
           onChange({ ...set, members: [...set.members, fresh], active: set.active ?? fresh.id });
         }}>Add one</button>
       </div>

@@ -59,6 +59,34 @@ export const sectionSchema = z.object({
 });
 export type Section = z.infer<typeof sectionSchema>;
 
+// Where a figure stands in a room's picture, as fractions of the picture: x of its width, y of
+// its height, and the figure's own width as a share of the room's. `pic` names one of the
+// character's figures.
+export const spotSchema = z.object({ x: z.number().min(0).max(1).default(0.5), y: z.number().min(0).max(1).default(0.62), scale: z.number().min(0.02).max(2).default(0.3), pic: shortText(80).default('') });
+export type Spot = z.infer<typeof spotSchema>;
+export const placedSchema = spotSchema.extend({ room: shortText(80).default('') });
+export type Placed = z.infer<typeof placedSchema>;
+
+// A picture laid over or under a room's figures: lantern light, steam, rain on the glass.
+export const LAYER_MOTIONS = ['none', 'drift', 'sway', 'flicker', 'pulse', 'rise'] as const;
+export const LAYER_BLENDS = ['normal', 'multiply', 'screen', 'overlay', 'soft-light', 'lighten', 'darken'] as const;
+export const layerSchema = z.object({
+  id,
+  name: shortText(80).default(''),
+  // Drawn over the figures, or between them and the room.
+  above: z.boolean().default(true),
+  // Stretched over the whole room, or placed like a figure.
+  fill: z.boolean().default(false),
+  x: z.number().min(0).max(1).default(0.5),
+  y: z.number().min(0).max(1).default(0.5),
+  scale: z.number().min(0.02).max(4).default(1),
+  opacity: z.number().min(0).max(1).default(1),
+  blend: z.enum(LAYER_BLENDS).catch('normal').default('normal'),
+  shown: z.boolean().default(true),
+  motion: z.enum(LAYER_MOTIONS).catch('none').default('none'),
+});
+export type Layer = z.infer<typeof layerSchema>;
+
 // A set: several entries, one in use at a time (outfits, a scenario's locations, versions).
 export const setSchema = z.object({
   id,
@@ -72,6 +100,8 @@ export const setSchema = z.object({
     // A condition that must hold before the player can pick this one by hand (a place she takes
     // you to only once you're close). A schedule can still put her there.
     lock: id.nullable().default(null),
+    // Home: pictures laid over this place.
+    layers: z.array(layerSchema).max(12).default([]),
   })).max(60).default([]),
 });
 export type RecordSet = z.infer<typeof setSchema>;
@@ -106,6 +136,10 @@ export const scheduleEventSchema = z.object({
   // Where it happens in a scenario: the member of that scenario's set, by the scenario's id, or
   // by the id its card had where it came from.
   rooms: z.record(id, id).default({}),
+  // Home: where they stand in that room, by the same scenario id.
+  spots: z.record(id, spotSchema).default({}),
+  // Home: what this does to their needs while it is on, a change an hour by need id.
+  needs: z.record(id, z.number().min(-1000).max(1000)).default({}),
 });
 export type ScheduleEvent = z.infer<typeof scheduleEventSchema>;
 export const scheduleSchema = z.record(z.string().max(20), z.array(scheduleEventSchema).max(200));
@@ -133,6 +167,21 @@ export const recordSchema = z.object({
   schedule: scheduleSchema.nullable().default(null),
   // What a new chat with this character starts set to. Empty means the app's own default.
   chatDefaults: z.object({ relationship: shortText(40).default(''), style: shortText(40).default(''), responseLength: shortText(40).default('') }).nullable().default(null),
+  // Home (CharacterRoom's Tamagotchi mode). Figures are named pictures of the character doing
+  // something; the pictures themselves are kept by Chat. Idle is where they are in a scenario
+  // when nothing is scheduled.
+  figures: z.array(z.object({ id, name: shortText(80).default('') })).max(40).default([]),
+  idle: z.record(id, placedSchema).default({}),
+  // A need falls by `decay` an hour unless a schedule event says otherwise; at `low` or under,
+  // the figure shows `lowEmotion` and the model is told `note`.
+  needs: z.array(z.object({ id, name: shortText(60), max: z.number().min(1).max(100000).default(100), decay: z.number().min(0).max(1000).default(4), low: z.number().min(0).default(25), lowEmotion: shortText(40).default(''), note: shortText(400).default('') })).max(12).default([]),
+  homeActions: z.array(z.object({
+    id, name: shortText(60), effects: z.record(id, z.number()).default({}), say: shortText(600).default(''),
+    // The relationship it needs, hours before it can be done again, and what it does to the bond.
+    level: shortText(40).default(''), cooldown: z.number().min(0).max(10000).default(0), bond: z.number().default(0),
+  })).max(30).default([]),
+  // A track that rises while every need is kept at `upAt` percent or more, and falls while needs are low.
+  bond: z.object({ name: shortText(60).default('Bond'), max: z.number().min(1).default(100), up: z.number().default(4), down: z.number().default(4), upAt: z.number().min(0).max(100).default(60), downWhen: z.enum(['all', 'any']).catch('all').default('all') }).nullable().default(null),
   // The id this had on the card it was imported from, so links between cards still meet.
   sourceId: shortText(80).default(''),
   // Characters, for chat only.

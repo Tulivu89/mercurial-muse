@@ -7,4 +7,5 @@ export * from './sheet.js';
 export * from './general.js';
 export * from './moment.js';
 export * from './build.js';
+export * from './home.js';
 export * as aetherroom from './aetherroom.js';

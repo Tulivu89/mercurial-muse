@@ -66,6 +66,7 @@ export const ERRATA: StoryRecord = {
   schedule: null,
   chatDefaults: { relationship: 'stranger', style: 'roleplay', responseLength: 'medium' },
   sourceId: '',
+  figures: [], idle: {}, needs: [], homeActions: [], bond: null,
   sections: [
     section('personality', 'Personality', 'here', PERSONALITY),
     section('appearance', 'Appearance', 'here', APPEARANCE),
@@ -77,7 +78,7 @@ export const ERRATA: StoryRecord = {
   ],
   sets: [{
     id: 'errata-outfits', title: 'Outfits', reach: 'here', active: 'errata-outfit-default',
-    members: [{ id: 'errata-outfit-default', name: 'Default', lock: null, text: 'A loose cropped black tee slipping off one shoulder, a brick-red plaid pleated miniskirt, black thighhighs, no shoes. Silver hoops and studs, thin silver rings and bracelets. A pen behind her ear.' }],
+    members: [{ id: 'errata-outfit-default', name: 'Default', lock: null, layers: [], text: 'A loose cropped black tee slipping off one shoulder, a brick-red plaid pleated miniskirt, black thighhighs, no shoes. Silver hoops and studs, thin silver rings and bracelets. A pen behind her ear.' }],
   }],
   greetings: [{
     id: 'errata-greeting',
@@ -122,7 +123,7 @@ export const ERRATA: StoryRecord = {
 export function houseWorld(now: number): World {
   const species: StoryRecord = {
     id: SPECIES_ID, kind: 'group', groupKind: 'species', name: 'Inkwyrm (ink dragon)', keys: ['inkwyrm', 'ink dragon'], line: '', pronouns: '', gender: '', tags: [],
-    groupIds: [], notes: '', parentId: null, schedule: null, chatDefaults: null, sourceId: '', sections: [], sets: [], greetings: [], examples: [],
+    groupIds: [], notes: '', parentId: null, schedule: null, chatDefaults: null, sourceId: '', figures: [], idle: {}, needs: [], homeActions: [], bond: null, sections: [], sets: [], greetings: [], examples: [],
   };
   return {
     format: WORLD_FORMAT, id: HOUSE_WORLD_ID, name: 'Inkwyrm', premise: '', genre: '', tone: '',

@@ -49,7 +49,7 @@ describe('the world view', () => {
     fireEvent.click(within(schedule).getByRole('button', { name: 'Night' }));
     const changed = onChange.mock.calls.at(-1)?.[0] as World;
     const events = changed.records.find((record) => record.id === 'ada')!.schedule!.Friday!;
-    expect(events).toMatchObject([{ startTime: 1320, endTime: 360, requiredIntimacy: 'none', sets: {}, rooms: {} }]);
+    expect(events).toMatchObject([{ startTime: 1320, endTime: 360, requiredIntimacy: 'none', sets: {}, rooms: {}, spots: {}, needs: {} }]);
     rerender(<WorldView world={changed} onChange={onChange} onDelete={() => {}} onStatus={() => {}} status={null} />);
     // It wraps past midnight, so it is drawn as two pieces.
     expect(screen.getByRole('region', { name: 'Schedule' }).querySelectorAll('.strip.on .block-bar')).toHaveLength(2);
