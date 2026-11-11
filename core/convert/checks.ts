@@ -100,6 +100,23 @@ export function checkWorld(world: World, days = 40): Problem[] {
     }
   }
 
+  // A thread's milestones point at states, people and places that exist.
+  for (const thread of world.records.filter((record) => record.kind === 'thread')) {
+    for (const milestone of thread.rules?.thread?.milestones ?? []) {
+      const say = (text: string) => add(thread, `The milestone "${milestone.text}" ${text}`);
+      if (milestone.targetId !== undefined && !byId.has(milestone.targetId)) say(`turns on something that is gone: ${nameOf(milestone.targetId)}.`);
+      if (milestone.fromDay !== undefined && milestone.byDay !== undefined && milestone.byDay < milestone.fromDay) say('would be missed before it could be reached.');
+      for (const test of milestone.when) {
+        if (!states.has(test.stateId)) say(`waits on a state that is gone: "${test.stateId}".`);
+        else {
+          const scope = states.get(test.stateId)!.scope;
+          const fits = test.characterId === 'world' ? scope === 'world' : test.characterId ? stateValue(test.characterId, thread, test.stateId) !== null : scope === 'char' || scope === 'protagonist';
+          if (!fits) say(`waits on ${states.get(test.stateId)!.name}, which ${test.characterId === 'world' ? 'is not a world state' : `${test.characterId ? nameOf(test.characterId) : 'the player'} doesn't hold`}.`);
+        }
+      }
+    }
+  }
+
   // Every route connects.
   for (const route of world.routes ?? []) {
     for (const end of [route.from, route.to]) {

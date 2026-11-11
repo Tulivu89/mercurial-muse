@@ -8,6 +8,26 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.25.0 - Threads - 2026-11-11
+
+- **Threads with milestones** (Character Engine's): a module's new `threads` list. A thread asks
+  five questions for its author (pressure, objective, opposition, cost, consequence) and has
+  milestones in order. A milestone is reached when its state conditions hold on or after its
+  first day, and missed once its last day is over. The rules check at the end of every turn that
+  moves the world, pay its experience by the rule, and keep it among what was earned, so undo
+  takes it back. A milestone with no condition is the player's to mark.
+- **The narrator hears one beat:** the first open milestone of the thread the player follows,
+  in the lorebook section after you. Never the questions, the other threads or the experience.
+- **The Journal lists the threads**, each with its milestones reached, next, missed or yours to
+  mark, **Follow this thread** and **Mark reached**. You › Journal shows the one followed.
+- **Saves** gain `thread` (the one followed); older saves follow the first with anything left.
+- **Bogwater 0.2.0:** its five threads from the module plan, with the 90 experience the plan
+  sets: still free when the patrol leaves (day 4), through Orlo's day at the dock (day 12), the
+  Pact's claim ended, Corran found out, the war started or stopped, tamecap to Morwen by day 8,
+  Lowri's fate, a barrel run, Edric's strongbox and the bend fence ruling. The scene actions that
+  paid experience for these no longer do; the milestones pay instead, in the same turn.
+- The guide's Growth chapter says where milestones come from.
+
 ## 0.24.1 - Routes shared - 2026-11-10
 
 - The route schema and its requirements move to `core/rules/ruleset.ts`, where the Studio now

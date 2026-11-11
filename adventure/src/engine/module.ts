@@ -8,6 +8,7 @@
 //             (distanceKm, terrain, routeClass) and is part of the Orbis proposal.
 //   ruleset   The state catalog, the calendar and travel pricing; from v0.2, dice.
 //   scenario  Where and when play starts, and who is present.
+//   threads   What is pushing the story, with milestones the rules see reached (0.25.0).
 //
 // Play never writes to a module. Current values live in the save.
 
@@ -17,6 +18,7 @@ import { withStandard } from './standard';
 import {
   AREA_KINDS, LADDER, PLACE_KINDS, TIERS, WORK_PREFIX, difficultySchema, routeSchema, rulesetSchema,
 } from '../../../core/rules/ruleset';
+import { threadSchema } from '../../../core/rules/threads';
 
 // The ruleset's own shapes live in core/rules since 0.23.0; they are part of this module's surface as before.
 export * from '../../../core/rules/ruleset';
@@ -228,6 +230,7 @@ export const moduleSchema = z.object({
   items: z.array(itemSchema).max(5000).default([]),
   ruleset: rulesetSchema.default({ states: [], travel: { walkKph: 4, tiers: [] }, actions: [], approaches: [], deeds: [], follow: [], goods: [] }),
   scenario: scenarioSchema,
+  threads: z.array(threadSchema).max(200).default([]),
 }).superRefine((module, context) => {
   const issue = (path: (string | number)[], message: string) => context.addIssue({ code: 'custom', path, message });
 
@@ -397,6 +400,26 @@ export const moduleSchema = z.object({
         if (!goodIds.has(effect.goodId)) issue([...path, 'effects', effectIndex, 'goodId'], `Unknown good "${effect.goodId}".`);
         if (effect.add === undefined || effect.set !== undefined || effect.characterId !== undefined) issue([...path, 'effects', effectIndex], 'Goods are added to or taken from your pack.');
       } else if ((effect.set === undefined) === (effect.add === undefined)) issue([...path, 'effects', effectIndex], 'An effect either sets a value or adds to it.');
+    });
+  });
+
+  // A milestone's conditions are on the player, a named person, or the world; what it turns on
+  // is a place, a person or a thing in the module.
+  unique(module.threads.map((thread) => thread.id), ['threads']);
+  const itemIds = new Set(module.items.map((item) => item.id));
+  module.threads.forEach((thread, index) => {
+    unique(thread.milestones.map((milestone) => milestone.id), ['threads', index, 'milestones']);
+    thread.milestones.forEach((milestone, milestoneIndex) => {
+      const path = ['threads', index, 'milestones', milestoneIndex];
+      if (milestone.targetId !== undefined && !places.has(milestone.targetId) && !characterIds.has(milestone.targetId) && !itemIds.has(milestone.targetId)) issue([...path, 'targetId'], `Unknown place, person or thing "${milestone.targetId}".`);
+      if (milestone.fromDay !== undefined && milestone.byDay !== undefined && milestone.byDay < milestone.fromDay) issue([...path, 'byDay'], 'It would be missed before it could be reached.');
+      milestone.when.forEach((condition, conditionIndex) => {
+        const state = states.get(condition.stateId);
+        const fits = !condition.characterId || condition.characterId === module.scenario.playerCharacterId ? playerState(state)
+          : condition.characterId === WORLD_OWNER ? state?.scope === 'world'
+            : Boolean(state && characterIds.has(condition.characterId) && appliesTo(state, 'character', false));
+        if (!fits) issue([...path, 'when', conditionIndex, 'stateId'], `"${condition.stateId}" is not a state ${condition.characterId ?? "the player's character"} holds.`);
+      });
     });
   });
 

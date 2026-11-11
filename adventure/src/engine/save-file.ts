@@ -90,6 +90,8 @@ export const saveSchema = z.object({
   local: z.array(localRecordSchema).max(5000).default([]),
   options: optionsSchema.default(optionsSchema.parse({})),
   seed: z.number().int().nonnegative().default(0),
+  // Added in 0.25. A thread that is not in the module is passed over, not refused.
+  thread: id.nullable().default(null),
 });
 
 // Problems that make a save unplayable with this module, as readable lines.

@@ -6,6 +6,7 @@
 
 import { z } from 'zod';
 import { LADDER, PLACE_KINDS, TIERS, goodSchema, levelSchema } from './ruleset.js';
+import { threadRulesSchema } from './threads.js';
 
 const id = z.string().min(1).max(200);
 const numbers = z.record(id, z.number().int());
@@ -63,6 +64,8 @@ export const recordRulesSchema = z.object({
   good: goodRulesSchema.optional(),
   // Groups: what members get unless they set their own.
   members: memberRulesSchema.optional(),
+  // Threads: their kind and milestones.
+  thread: threadRulesSchema.optional(),
 });
 export type RecordRules = z.infer<typeof recordRulesSchema>;
 

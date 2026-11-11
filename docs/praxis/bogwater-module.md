@@ -587,7 +587,8 @@ Built in [PR #22](https://github.com/HowlingWhispers/HW-Praxis/pull/22) as Praxi
 - [ ] Partitions in the engine. Rooms are child places with free hops for now, which plays the same.
 - [ ] Calendar events. Sitting day and boat day are each person's own schedule rule; one event record would carry everyone.
 - [ ] Weather that shuts routes. Fog and floods are in the descriptions only.
-- [ ] Milestones without a scene action: still free at the end of day 3, the dock standoff, the bend fence ruling. Orlo putting the claim back to Owed when he sees the runaway alive.
+- [x] Milestones without a scene action (0.25.0, module 0.2.0): the five threads with all ten milestones, paying the 90 experience above. Still free and the dock standoff go by the day; the bend fence ruling, Lowri hunted and Edric's strongbox are the player's to mark.
+- [ ] Orlo putting the claim back to Owed when he sees the runaway alive.
 - [ ] Rumours: one line per thread that the taproom passes on.
 - [ ] Retire the Port Covenant test module once Bogwater's tests cover what its tests do.
 

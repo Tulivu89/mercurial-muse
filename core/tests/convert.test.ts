@@ -56,6 +56,17 @@ describe('an adventure module as a Studio world', () => {
     expect(out).toMatchObject({ name: 'Someone else', tier: 'nemesis' });
   });
 
+  it('turns threads into thread records: the five questions as sections for the author, the kind and milestones as rules', () => {
+    const source = (raw.threads as Loose[])[2]!;
+    const record = world.records.find((entry) => entry.id === source.id)!;
+    expect(record.kind).toBe('thread');
+    expect(record.sections.map((section) => [section.title, section.reach, section.text])).toEqual(
+      ['pressure', 'objective', 'opposition', 'cost', 'consequence'].map((question) => [question.charAt(0).toUpperCase() + question.slice(1), 'never', source[question]]),
+    );
+    // A milestone with no condition gets an empty list of them.
+    expect(record.rules?.thread).toEqual({ kind: source.kind, milestones: (source.milestones as Loose[]).map((milestone) => ({ when: [], ...milestone })) });
+  });
+
   it('refuses what is not a module, or one with a ruleset all its own', () => {
     expect(moduleToWorld({ format: 'studio-world/1' }, 1)).toEqual({ ok: false, errors: ['This is not an adventure module.'] });
     const alone = moduleToWorld({ ...raw, ruleset: { ...raw.ruleset, extends: undefined } }, 1);
@@ -83,6 +94,27 @@ describe('a Studio world as a module', () => {
     expect(module.scenario).toMatchObject({ startPlaceId: 'dock', playerCharacterId: 'sam', startAt: 480 });
     expect(module.world.identity.description).toBe('A harbour town.');
     expect(notes).toEqual(['Play starts at The dock, the first place in the world.']);
+  });
+});
+
+describe('threads made in the Studio', () => {
+  it('go out with their milestones, or with their next beat as the one milestone, or not at all', () => {
+    const beat = (text: string) => [{ id: 'b', title: 'Next beat', reach: 'always', text }, { id: 'p', title: 'Pressure', reach: 'never', text: 'The tide is turning.' }];
+    const made = parseWorld({
+      format: 'studio-world/1', id: 'w', name: 'Low Tide',
+      records: [
+        { id: 'dock', kind: 'place', name: 'The dock' },
+        { id: 'debt', kind: 'thread', name: 'The debt', sections: beat('Pay the harbourmaster before the tide.') },
+        { id: 'feud', kind: 'thread', name: 'The feud', sections: beat(''), rules: { thread: { kind: 'reckoning', milestones: [{ id: 'm', text: 'Name who cut the nets.', when: [{ stateId: 'coin', atLeast: 3 }], experience: 10 }] } } },
+        { id: 'idle', kind: 'thread', name: 'Nothing yet', sections: beat('') },
+      ],
+    });
+    if (!made.ok) throw new Error(made.errors.join('\n'));
+    const { module, notes } = worldToModule(made.world) as { module: Loose; notes: string[] };
+    expect(module.threads.map((thread: Loose) => thread.id)).toEqual(['debt', 'feud']);
+    expect(module.threads[0]).toMatchObject({ kind: 'custom', pressure: 'The tide is turning.', milestones: [{ id: 'next-beat', text: 'Pay the harbourmaster before the tide.', when: [], experience: 0 }] });
+    expect(module.threads[1]).toMatchObject({ kind: 'reckoning', milestones: [{ id: 'm', text: 'Name who cut the nets.', experience: 10 }] });
+    expect(notes).toContain('Nothing yet has no milestones or next beat, so it stays in the Studio.');
   });
 });
 
@@ -153,6 +185,7 @@ describe('checks', () => {
         ...['Ada', 'Bo', 'Cy', 'Di', 'Ed'].map((name) => ({ id: name.toLowerCase(), kind: 'character', name, schedule: { Daily: [event('e', 'bar')] } })),
         { id: 'fy', kind: 'character', name: 'Fy', schedule: { Daily: [event('e', 'gone'), event('f', 'coast')] }, rules: { states: { luck: 2 }, sells: ['ghost'] },
           sections: [{ id: 's', title: 'Secret', reach: 'when', text: 'She knows.' }] },
+        { id: 'feud', kind: 'thread', name: 'The feud', rules: { thread: { milestones: [{ id: 'm', text: 'Settle it.', targetId: 'gone', fromDay: 5, byDay: 2, when: [{ stateId: 'nothing' }, { stateId: 'health', characterId: 'world' }] }] } } },
       ],
     });
     if (!made.ok) throw new Error(made.errors.join('\n'));
@@ -161,6 +194,10 @@ describe('checks', () => {
       'Fy: The section "Secret" is When, with no condition to wait on.',
       'Fy: Sets "luck", which it doesn\'t hold.',
       'Fy: Sells or carries something that is gone: "ghost".',
+      'The feud: The milestone "Settle it." turns on something that is gone: "gone".',
+      'The feud: The milestone "Settle it." would be missed before it could be reached.',
+      'The feud: The milestone "Settle it." waits on a state that is gone: "nothing".',
+      'The feud: The milestone "Settle it." waits on Health, which is not a world state.',
       'Low Tide: A route ends at a place that is gone: "nowhere".',
       'Fy: A stop on Daily is at a place that is gone: "gone".',
       'Fy: A stop on Daily is at The coast, a region, not somewhere to be.',

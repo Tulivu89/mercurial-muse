@@ -2,7 +2,7 @@
 
 Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the record model (`docs/records.md`), and see exactly what each part sends the model.
 
-## What it does (0.5.0)
+## What it does (0.6.0)
 
 - **Worlds** in this browser's storage, with a premise, genre, tone and shared conditions.
 - **Records of every kind:** characters, places, groups, items, lore, threads, scenarios and personas.
@@ -27,6 +27,7 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - **One schedule model.** The week view's events are also the adventure's day. An event with a place puts the person there; a condition that holds makes a day that replaces the ordinary one. A module's day plans come in as events and go back out as the same plans.
   - **On World › Rules:** the calendar (week, months, the times of day the narrator hears), walking pace, scene actions (where offered, who must be there, what must hold, opening days and hours, what changes, the player's line and what the narrator shows), and a world's own goods.
   - **Checks**, beside Rules: every stop is a real place; no place holds more than four people at the four times of day over forty days; every When has its condition; every route ends somewhere; nothing a rule points at is gone. Each finding opens the record it is about.
+- **Threads that reach the adventure** (0.6.0). A thread's page has its kind (Character Engine's nine, or Custom) and its milestones under **In the adventure**: the beat as the narrator hears it, what it turns on, the states it waits on, its first and last day, and the experience it pays. The five questions stay sections, for the author. A thread with no milestones goes to the adventure with its Next beat as the one milestone, for the player to mark. Checks finds a milestone that waits on a state that is gone, or turns on something that is.
 - **Genre:** the purse's words are the Coin state's bands and the catalog's names are editable, so a modern world's hundred *could buy a car*.
 - **In context now:** put people and a place in the scene, type what was just said, tick what holds, and see what the world would send, with a rough token count. From 0.3.0 it shows the sentence of every state that is off its resting band, under the record it belongs to, as the narrator would read it.
 - **Files:** a world exports as `<name>.world.json` (`studio-world/1`) and opens again. Cards import into the open world (0.1.1):
@@ -42,17 +43,17 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 | --- | --- | --- |
 | S1 | Rules on every record: `core/rules/`, World › Rules, the Rules panel, state sentences in In context now. | Built, 0.3.0. |
 | S2 | Bogwater and Port Covenant into the Studio and back out as modules (`core/convert/`); Play in the adventure; Chat with. | Built, 0.4.0. |
-| S3 | Routes, scene actions, the calendar and world states, goods, one schedule model with Chat, and Checks. | Built, 0.5.0, but for threads with milestones. |
+| S3 | Routes, scene actions, the calendar and world states, goods, one schedule model with Chat, and Checks. | Built, 0.5.0; threads with milestones in 0.6.0. |
 
 ## Not yet
 
-- Threads with milestones in the adventure, and an editor for relationships between two people (a module's come through unchanged).
-- Maps. A plan is wanted; nothing is decided.
+- An editor for relationships between two people (a module's come through unchanged).
+- Maps. Nothing is decided; `docs/maps-brief.md` asks for proposals.
 - Chat reading an event's condition: until it does, a day that waits on one shows in Chat as part of every day.
 - A world checked by the adventure's own loader before it is played: Checks covers what the brief lists, and anything else the adventure refuses is said on its start screen.
 - Where a place or a group starts its states reaching the adventure.
 - On World › Rules: taking an approach away (the four can be renamed and re-costed, and a fifth added with its rating state), the fight and follow rules, craft's steps, and what a hop into a room costs.
-- Generate buttons, guided builders and images.
+- The helper (a chat that writes a field as a draft), generate buttons, guided builders and images (`docs/studio-brief.md`, *The helper*).
 
 The shared look, world storage and fields moved to `kit/` in 0.1.1, for Chat to use too.
 

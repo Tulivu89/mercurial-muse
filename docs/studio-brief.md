@@ -13,7 +13,7 @@ Read this whole page before writing code. Where it decides something, build that
 
 ## Where it stands (Nov 10, 2026): start here
 
-All three phases are built: Studio 0.5.0, adventure 0.24.1. `studio/README.md` lists what the Studio does and what it doesn't yet. The owner's answers to the early questions: group defaults in S1, the Rules panel folded with a summary, the order as written. The owner does not test each phase, so several can go in one turn.
+All three phases are built, and threads with milestones after them: Studio 0.6.0, adventure 0.25.0. `studio/README.md` lists what the Studio does and what it doesn't yet. The owner's answers to the early questions: group defaults in S1, the Rules panel folded with a summary, the order as written. The owner does not test each phase, so several can go in one turn.
 
 **What a new session should know**
 - `core/rules/` holds the rules. Read a record's rules through `rulesFor(world, record)`, never from its `rules` block. A world's `rules` block and a record's hold only what was changed.
@@ -22,16 +22,40 @@ All three phases are built: Studio 0.5.0, adventure 0.24.1. `studio/README.md` l
 - The adventure still loads modules. Play in the adventure converts the world first.
 
 **Left from this brief**
-1. Threads with milestones in the adventure. The engine has no threads yet, so this is engine work first.
+1. ~~Threads with milestones in the adventure.~~ Built Nov 11: `core/rules/threads.ts`, the module's `threads`, the engine's `threads.ts`, the Journal, and the thread page's **In the adventure**.
 2. An editor for relationships between two people, with their bond kinds. They come through from a module unchanged.
 3. Chat reading a schedule event's `when`, and the address `/chat/#/with/<world id>/<record id>` for Chat with. Both are for the Chat session.
 4. On World › Rules: the fight and follow rules, craft's steps, what a hop into a room costs, and taking an approach away.
 5. Where a place or a group starts its states reaching the adventure.
 
-**Asked for, not planned**
-- Maps. The owner wants a plan. Nothing is decided: what a map is for (travel, authoring routes, showing the player where they are), where it lives (the Studio, the adventure, both), and whether it is drawn from places and routes or from a picture with places pinned on it.
+**Asked for, on the plan**
+- **Maps.** Nothing is decided. `docs/maps-brief.md` is a hand-off the owner gives to several models for proposals: the jobs a map could do, the constraints, what exists, and Character Engine's circle map and hex map. When the owner picks a direction, it becomes a phase here.
+- **The helper,** for writing fields. Below, under *The helper*.
 
 **Then, as the brief already says:** the owner's own setting built in the Studio; the adventure rebuilt to read records directly (roadmap step 6), when `core/convert/` and `carried` retire; generate buttons and guided builders.
+
+## The helper
+
+Asked for on Nov 11. A record in the Studio has many fields and few of them are obvious: a section's reach, a set's entries, a schedule, a scene action. A blank field asks the author to do all the thinking at once. The helper is a chat beside the record that does that thinking with them, then writes into a field.
+
+**How it goes**
+1. The author opens the helper on a record, or on one field of it.
+2. They talk it through: who she is, what the place is for, what the thread's pressure is. The helper asks questions and suggests.
+3. The author picks a field (or the helper names one) and taps **Write it**. The helper writes that field from the conversation, in the field's own shape: a section's text, a line, a list of keys, a set's entries, a schedule's events.
+4. The result lands as a **draft** beside the field, never over it. The author keeps it, edits it, asks again, or throws it away.
+
+**Decided by what came before**
+- **The model never writes a record.** It proposes; the author applies. This is Orbis's Coda rule (write access was a flag only the user could set) and the records' own rule.
+- **One conversation per record,** kept with the world, editable on both sides, because the conversation is the prompt and a bad reply left in it steers every later call (Character Engine's Build).
+- **Each field is its own call,** reading the conversation, the record as it stands, the world's premise, genre and tone, and the record's neighbours by their lines. The field's call says the field's shape and length. Names get a call of their own, with the world's existing names listed so they don't repeat (Character Engine's name call).
+- **The world's voice.** Every call carries the writing rules: pulp-voice, plain names, no glossary words, a species in one or two traits. Records in the world are its examples.
+- **The player's own model and key,** through the relay, in the model's own prompt format, like Chat's side generations. Budgeted, started by the author, and showing what it will send.
+- **Generate buttons are the helper with no conversation:** one tap on a field writes a draft from the record and the world alone.
+
+**Questions for the owner, before it's built**
+1. A chat panel beside the record (wide screens) and a sheet over it (phones), or a full page of its own?
+2. Should the helper also propose new records (a place a character mentions, a person a thread needs), as Coda's sort mode did, or only fill fields on the record it's open on?
+3. Guided builders (Character Engine's Wizard): a fixed question set per kind, or the helper asking its own questions from a list the author can edit?
 
 ## A second session is working beside you
 

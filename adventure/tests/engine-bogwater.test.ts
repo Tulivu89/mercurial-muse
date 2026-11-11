@@ -89,7 +89,9 @@ describe('Bogwater', () => {
     expect(sceneActionsFor(module, save).map((action) => action.id)).toContain('expose-corran');
     const done = must(act(module, save, 't1', { type: 'scene', actionId: 'expose-corran' })).save;
     expect(value(done, 'the-spark', WORLD_OWNER)).toBe(1);
-    expect(value(done, 'experience', 'the-runaway')).toBe(15);
+    // Both of the spark's milestones: Corran found out (the Leverage on him), and the war stopped.
+    expect(value(done, 'experience', 'the-runaway')).toBe(20);
+    expect(done.earned).toEqual(expect.arrayContaining(['milestone:the-spark:corran-found-out', 'milestone:the-spark:war-settled']));
     expect(sceneActionsFor(module, done).map((action) => action.id)).not.toContain('expose-corran');
   });
 

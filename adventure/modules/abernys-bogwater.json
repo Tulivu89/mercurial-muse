@@ -2,7 +2,7 @@
   "format": "adventure-module/1",
   "id": "abernys-bogwater",
   "name": "Abernys: Bogwater",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "notes": "Built from Praxis — Bogwater Module Plan and the Abernys docs (Fenmire, the Woed, Cairn Maw, Port Covenant). Owner material: Fenmire, Bogwater, the Council of Crones, the bog-keeper, witchcraft, the Woed, tamecap and Rabitis, and the roles of Nest, Morwen, Cadfan and Meurig (spelled Meyrick here, a proposal). Everything marked canonStatus \"draft\" is a suggestion for the owner. Day 1 is day 243 of the default calendar, Friday 1 September. Rooms are child places with free hops, standing in for partitions until Praxis has them. Thread outcomes are states: the-spark (world), ink-claim and ink-mark (the runaway), rabitis (Lowri), and schedules wait on them.",
   "source": {
     "kind": "local"
@@ -3517,10 +3517,6 @@
             "stateId": "the-spark",
             "characterId": "world",
             "set": 1
-          },
-          {
-            "stateId": "experience",
-            "add": 15
           }
         ],
         "input": "I tell Meyrick what Corran has been doing out at Grey Water.",
@@ -3555,10 +3551,6 @@
             "stateId": "the-spark",
             "characterId": "world",
             "set": 2
-          },
-          {
-            "stateId": "experience",
-            "add": 15
           }
         ],
         "input": "I tell Nest the patrol won't stop at me, and Ellis should go now.",
@@ -3629,10 +3621,6 @@
             "stateId": "rabitis",
             "characterId": "lowri",
             "set": 1000
-          },
-          {
-            "stateId": "experience",
-            "add": 10
           }
         ],
         "input": "I give Morwen the tamecap.",
@@ -3738,10 +3726,6 @@
           {
             "stateId": "body",
             "set": 0
-          },
-          {
-            "stateId": "experience",
-            "add": 20
           }
         ],
         "input": "I ask Meyrick to burn the drowned man under my name and send word to the patrol.",
@@ -3776,10 +3760,6 @@
           {
             "stateId": "ink-claim",
             "set": 1
-          },
-          {
-            "stateId": "experience",
-            "add": 20
           }
         ],
         "input": "I ask Edric what it would cost to buy out a Port Covenant indenture.",
@@ -3845,10 +3825,6 @@
           {
             "stateId": "barrels-run",
             "set": 1
-          },
-          {
-            "stateId": "experience",
-            "add": 5
           }
         ],
         "input": "I offer to load Cadfan's barrels.",
@@ -3986,5 +3962,164 @@
       "long-fence-crew"
     ],
     "opening": "*The net comes up out of the black water all at once, and you come up with it. Eels slide over your arms and down your collar, cold and thick and still fighting, and the cord bites into the backs of your knees. A lantern swings out on a pole and stops a hand from your face.*\n\n*Three salamanders crouch on the plank walk along the top of the fence, black hides beaded with wet, orange blotches gone dull in the lantern light. The nearest has an eel spear across his knees. Its barbs are close enough to count.*\n\n*The one holding the lantern leans closer.* That's no eel.\n\nIt's in our net. *The one with the spear leans out and turns your wrist over with the butt of it, so the light falls on the ink.* Colony.\n\n*Far back across the fen, toward the causeway, a horn blows twice. All three of them look that way. Then they look back at you.*"
-  }
+  },
+  "threads": [
+    {
+      "id": "the-ink",
+      "name": "The ink",
+      "kind": "debt",
+      "pressure": "Port Covenant wants its runaway back. The patrol that chased them into the net camps at Grey Water, and Bastien Orlo is coming down with the Arbiters' copy of the contract.",
+      "objective": "The Pact's claim on the runaway ended: bought out on paper, or closed on the Pact's books with a body to show for it.",
+      "opposition": "Orlo and the patrol behind him, and a fen that hasn't decided whether the runaway is worth a fight. A reward at the dock makes that choice easy for some.",
+      "cost": "Coin the runaway doesn't have, a drowned man's body from Cadfan's smokehouse, or a place in an eel barrel on the Low Road.",
+      "consequence": "Free of the Pact, the runaway can stay in the fen or leave it. Handed over, they go out in chains along the causeway. If the fen fights for them, the landing burns and Port Covenant has its excuse.",
+      "milestones": [
+        {
+          "id": "still-free",
+          "text": "Stay in the fen and out of the patrol's hands until it leaves to fetch Orlo.",
+          "targetId": "grey-water",
+          "fromDay": 246,
+          "experience": 5
+        },
+        {
+          "id": "the-standoff",
+          "text": "Get through Orlo's day at the dock, when he offers a reward and has the place searched.",
+          "targetId": "landing-dock",
+          "fromDay": 254,
+          "experience": 10
+        },
+        {
+          "id": "claim-ended",
+          "text": "End the Pact's claim: buy out the contract, or give the Pact a body and burn off the ink.",
+          "targetId": "bastien-orlo",
+          "when": [
+            {
+              "stateId": "ink-claim",
+              "atLeast": 1
+            }
+          ],
+          "experience": 20
+        }
+      ]
+    },
+    {
+      "id": "the-spark",
+      "name": "The spark",
+      "kind": "mystery",
+      "pressure": "Corran, envoy from Clan Aurochs, wants the host gathered, and nothing would gather it faster than a colony patrol killing fen folk on fen ground. A runaway the patrol wants is the best bait he's been handed.",
+      "objective": "Corran's game known for what it is, and the war he wants started or stopped.",
+      "opposition": "Corran, who buys drinks and tells Reyne whatever brings the patrol down on Nest's island. Ellis and the young men of Nest's family, who want the patrol bloodied.",
+      "cost": "Meyrick's trust, if the runaway brings him a story they can't prove. Nest's, if they stand in Ellis's way.",
+      "consequence": "Exposed, Corran drinks alone and leaves on sitting day. Left alone, the patrol lands on Nest's island on the night of day 13, Ellis's crew is waiting, and the Crones vote fighters to the host.",
+      "milestones": [
+        {
+          "id": "corran-found-out",
+          "text": "Find out what Corran is really doing in the fen.",
+          "targetId": "corran",
+          "when": [
+            {
+              "stateId": "leverage",
+              "characterId": "corran",
+              "atLeast": 1
+            }
+          ],
+          "experience": 5
+        },
+        {
+          "id": "war-settled",
+          "text": "Take what you know of Corran to Meyrick before the patrol lands on Nest's island, or let Ellis have his war.",
+          "targetId": "meyrick",
+          "when": [
+            {
+              "stateId": "the-spark",
+              "characterId": "world",
+              "atLeast": 1
+            }
+          ],
+          "experience": 15
+        }
+      ]
+    },
+    {
+      "id": "tamecap",
+      "name": "Tamecap",
+      "kind": "errand",
+      "pressure": "Morwen's ward, Lowri, is turning. Rabitis takes the afflicted feral, and tamecap from the Woed cures it only early. Morwen keeps the girl barred in the back room and can't leave her.",
+      "objective": "Tamecap from the Woed's edge in Morwen's hand while it can still work.",
+      "opposition": "Distance, fog on the path to the Woed's edge, and a fen that blames Morwen for every dead goose. No fen family will run a witch's errand.",
+      "cost": "Most of a day there and back, a flatboat or a hard walk, and being seen doing a witch's work.",
+      "consequence": "Cured, Lowri mends and Morwen burns off the ink as payment. Too late, Lowri gets out on a storm night, a crew at the traps is hurt, and on sitting day the Crones try Morwen.",
+      "milestones": [
+        {
+          "id": "tamecap-delivered",
+          "text": "Bring tamecap from the Woed's edge to Morwen while it can still cure Lowri.",
+          "targetId": "morwen",
+          "when": [
+            {
+              "stateId": "rabitis",
+              "characterId": "lowri",
+              "atLeast": 100
+            }
+          ],
+          "byDay": 250,
+          "experience": 10
+        },
+        {
+          "id": "lowri-settled",
+          "text": "See Lowri's fate settled, cured or hunted down.",
+          "targetId": "lowri",
+          "experience": 10
+        }
+      ]
+    },
+    {
+      "id": "the-barrels",
+      "name": "The barrels",
+      "kind": "concealment",
+      "pressure": "Cadfan runs runaways to Caerwyn in eel barrels for the Low Road, which sometimes sells its passengers on. The patrol has started stopping boats on the channel.",
+      "objective": "A barrel load past the patrol, and Edric's strongbox in the right hands.",
+      "opposition": "The patrol on the channel, opening barrels on day 6. Edric, the great house's buyer, who wants eyes on the fen and doesn't mind whose.",
+      "cost": "A night on the water with something to hide, and Cadfan's trust or Edric's coin, rarely both.",
+      "consequence": "Whatever is behind Cadfan's curtain comes out when Orlo has the dock searched on day 11, unless someone has made it safe first.",
+      "milestones": [
+        {
+          "id": "barrels-past",
+          "text": "Run one of Cadfan's barrel loads past the patrol on the channel.",
+          "targetId": "cadfan",
+          "when": [
+            {
+              "stateId": "barrels-run",
+              "atLeast": 1
+            }
+          ],
+          "experience": 5
+        },
+        {
+          "id": "strongbox",
+          "text": "Take Edric's strongbox, or keep it safe from the searchers.",
+          "targetId": "edric",
+          "experience": 5
+        }
+      ]
+    },
+    {
+      "id": "the-bend-fence",
+      "name": "The bend fence",
+      "kind": "custom",
+      "pressure": "Nest's family and Tegan's both claim the bend fence, and it comes before the Crones every autumn.",
+      "objective": "The Crones' ruling going the way the runaway wants.",
+      "opposition": "Whichever family loses, and the Crone who speaks for it.",
+      "cost": "A favour owed to one family, and a grudge from the other.",
+      "consequence": "A lever on either Crone, and cover for anything done at the traps after dark.",
+      "milestones": [
+        {
+          "id": "the-ruling",
+          "text": "See the Crones rule on the bend fence your way on sitting day.",
+          "targetId": "traps-bend-fence",
+          "byDay": 256,
+          "experience": 5
+        }
+      ]
+    }
+  ]
 }

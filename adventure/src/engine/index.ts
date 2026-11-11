@@ -20,3 +20,4 @@ export * from './follow';
 export * from './growth';
 export * from './trade';
 export * from './craft';
+export * from './threads';

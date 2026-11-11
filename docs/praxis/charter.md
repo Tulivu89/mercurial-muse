@@ -148,6 +148,7 @@ Saves are `praxis-save/1`, exports `praxis-export/1` (a save with its module), a
 | Nov 10, 2026 | 0.23.0 and Studio 0.3.0 opened: the first phase of `docs/studio-brief.md`. The state primitive, the clock, the standard ruleset and the ruleset's schemas move to `core/rules/`, re-exported by the engine with no change in play. The Studio gains a Rules page for the world and a Rules panel on every character, place, item and group, read through `rulesFor(world, record)`. |
 | Nov 10, 2026 | 0.24.0 and Studio 0.4.0 added to the same pull request: the brief's second phase. `core/convert/` turns modules into Studio worlds and back; Bogwater and Port Covenant round-trip to the same modules, and the suite runs a second time on the round-tripped ones. The Studio gets Play in the adventure, module export and import, and Chat with; the start screen lists worlds sent from the Studio. |
 | Nov 10, 2026 | Studio 0.5.0 and 0.24.1 opened: the brief's third phase. Schedule events gain a place and a condition and convert to day plans and back; routes become a typed part of a world; the Studio writes routes, scene actions, the calendar, goods and the scenario's start, and checks a world before it is played. |
+| Nov 11, 2026 | 0.25.0 and Studio 0.6.0 opened: threads with milestones (Character Engine's), reached by the rules or marked by hand, paying experience, with the followed thread's next beat sent to the narrator; the Journal lists them; Bogwater 0.2.0 has its five. `docs/maps-brief.md` asks other models for map proposals, and the Studio brief plans the helper for writing fields. |
 
 **v0.1 still to do:** branches (keeping alternate continuations rather than only replacing the latest).
 
@@ -165,7 +166,7 @@ Saves are `praxis-save/1`, exports `praxis-export/1` (a save with its module), a
    - end the Pact's claim one way: the buyout, the drowned man, or the Low Road.
 3. The checks from 0.16 to 0.19, on Port Covenant before it retires: quiet moves and a fight that ends; earning and spending experience; trade at the Tarred Rope (buy, haggle with Pell, take from Garrick or the dock toughs once they are down, bribe the gate guard); making lockpicks; hiring Garrick, buying Wren's contract, and following Tomas through his day.
 4. Balance from play: the numbers in *Growth, Challenge and Economy* are first guesses.
-5. What Bogwater asks of the engine, listed on its tab under Where it stands: partitions; calendar events that call people by group; weather that shuts routes; milestones without a scene action; rumour lines on world states. Then the coverage audit, and Port Covenant retires.
+5. What Bogwater asks of the engine, listed on its tab under Where it stands: partitions; calendar events that call people by group; weather that shuts routes; rumour lines on world states. (Milestones without a scene action came with threads in 0.25.0.) Then the coverage audit, and Port Covenant retires.
 6. Still open from the growth proposal:
    - item wear and mending;
    - knacks;
