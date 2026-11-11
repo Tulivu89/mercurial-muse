@@ -47,12 +47,12 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 ## Not yet
 
 - Threads with milestones in the adventure, and an editor for relationships between two people (a module's come through unchanged).
-- Maps. A plan is wanted; nothing is decided.
+- Maps. Nothing is decided; `docs/maps-brief.md` asks for proposals.
 - Chat reading an event's condition: until it does, a day that waits on one shows in Chat as part of every day.
 - A world checked by the adventure's own loader before it is played: Checks covers what the brief lists, and anything else the adventure refuses is said on its start screen.
 - Where a place or a group starts its states reaching the adventure.
 - On World › Rules: taking an approach away (the four can be renamed and re-costed, and a fifth added with its rating state), the fight and follow rules, craft's steps, and what a hop into a room costs.
-- Generate buttons, guided builders and images.
+- The helper (a chat that writes a field as a draft), generate buttons, guided builders and images (`docs/studio-brief.md`, *The helper*).
 
 The shared look, world storage and fields moved to `kit/` in 0.1.1, for Chat to use too.
 
