@@ -94,7 +94,7 @@ async function relay<T>(path: string, provider: string, init: RequestInit = {}):
   const body = await response.json().catch(() => null) as { error?: unknown; diagnostics?: unknown } | null;
   if (!response.ok) {
     const diagnostics = body?.diagnostics && typeof body.diagnostics === 'object' ? body.diagnostics as Diagnostics : null;
-    const message = typeof body?.error === 'string' ? body.error : body === null ? `The Praxis server answered ${response.status} with something that was not JSON. Is the API deployed?` : `Narration failed (${response.status}).`;
+    const message = typeof body?.error === 'string' ? body.error : body === null ? `The Inkwyrm server answered ${response.status} with something that was not JSON. Is the API deployed?` : `Narration failed (${response.status}).`;
     throw new NarrationError(message, diagnostics, response.status);
   }
   return body as T;

@@ -6,18 +6,15 @@ import { formatMinutes } from '../../core/chat/time.js';
 import { AREA_KINDS, DEFAULT_CALENDAR, THREAD_KINDS, rulesetOf, type Milestone, type Route, type ScheduleWhen, type ThreadRules } from '../../core/rules/index.js';
 import { newId } from '../../kit/src/util';
 import { Num, OptNum, Rule, StatePick, Words } from './rules/bits';
+import { RecordMulti, RecordPick, WhosePick, pickOptions } from './RecordPick';
 
 type Raw = Record<string, unknown>;
 
+// Somewhere a person can stand: any place but a region and larger.
+const standable = (record: StoryRecord) => !AREA_KINDS.includes(record.rules?.placeKind ?? 'other');
+
 function PlacePick({ world, value, onChange, label, none }: { world: World; value: string; onChange: (value: string) => void; label: string; none: string }) {
-  const places = world.records.filter((record) => record.kind === 'place' && !AREA_KINDS.includes(record.rules?.placeKind ?? 'other'));
-  return (
-    <select className="input pick" aria-label={label} value={value} onChange={(event) => onChange(event.target.value)}>
-      <option value="">{none}</option>
-      {value && !places.some((place) => place.id === value) && <option value={value}>Gone: {value}</option>}
-      {places.map((place) => <option key={place.id} value={place.id}>{place.name}</option>)}
-    </select>
-  );
+  return <RecordPick world={world} label={label} kinds={['place']} only={standable} none={none} value={value} onChange={onChange} className="pick" />;
 }
 
 export function InTheAdventure({ world, record, onChange, onWorld }: { world: World; record: StoryRecord; onChange: (record: StoryRecord) => void; onWorld?: (world: World) => void }) {
@@ -50,24 +47,19 @@ export function InTheAdventure({ world, record, onChange, onWorld }: { world: Wo
       </>
     );
   } else if (record.kind === 'item') {
-    const people = world.records.filter((entry) => entry.kind === 'character' || entry.kind === 'persona');
     body = (
       <>
         <Rule label="Lies at" hint="The place it is found in.">
           <PlacePick world={world} label="Lies at" none="Nowhere set" value={text('locationId')} onChange={(value) => carry('locationId', value)} />
         </Rule>
         <Rule label="Carried by">
-          <select className="input pick" aria-label="Carried by" value={text('heldBy')} onChange={(event) => carry('heldBy', event.target.value)}>
-            <option value="">Nobody</option>
-            {people.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}
-          </select>
+          <RecordPick world={world} label="Carried by" kinds={['character', 'persona']} none="Nobody" value={text('heldBy')} onChange={(value) => carry('heldBy', value)} className="pick" />
         </Rule>
       </>
     );
   } else if (record.kind === 'scenario') {
     const startAt = typeof carried.startAt === 'number' ? carried.startAt : 480;
     const present = Array.isArray(carried.presentCharacterIds) ? carried.presentCharacterIds as string[] : [];
-    const people = world.records.filter((entry) => entry.kind === 'character');
     body = (
       <>
         <Rule label="Play starts at" hint="Left empty, the first place in the world.">
@@ -81,11 +73,7 @@ export function InTheAdventure({ world, record, onChange, onWorld }: { world: Wo
         </Rule>
         <fieldset className="goods">
           <legend className="rule-label">Who is there<small>Everyone else is where their day puts them.</small></legend>
-          <div className="checks">
-            {people.map((person) => (
-              <label key={person.id}><input type="checkbox" checked={present.includes(person.id)} onChange={(event) => carry('presentCharacterIds', event.target.checked ? [...present, person.id] : present.filter((id) => id !== person.id))} />{person.name}</label>
-            ))}
-          </div>
+          <RecordMulti world={world} label="Who is there" kinds={['character']} values={present} empty="Nobody but the player." onChange={(ids) => carry('presentCharacterIds', ids)} />
         </fieldset>
       </>
     );
@@ -152,19 +140,23 @@ function WhenPick({ world, when, label, onChange }: { world: World; when: Schedu
       </div>
       <div className="row">
         <label className="field"><span>While a state of</span>
-          <select aria-label={`${label}: whose state`} value={when?.state ? whose || 'self' : ''} onChange={(event) => {
+          <select aria-label={`${label}: whose state`} value={when?.state ? (whose === 'world' ? 'world' : whose ? 'person' : 'self') : ''} onChange={(event) => {
             const who = event.target.value;
             if (!who) { set({ state: undefined }); return; }
+            const person = who === 'person' ? pickOptions(world, ['character', 'persona'])[0]?.id : undefined;
             const scope = who === 'world' ? ['world'] : ['char', 'npc'];
             const stateId = ruleset.states.find((def) => scope.includes(def.scope))?.id ?? 'health';
-            set({ state: { stateId, atLeast: 1, ...(who === 'self' ? {} : { characterId: who }) } });
+            set({ state: { stateId, atLeast: 1, ...(who === 'world' ? { characterId: 'world' } : person ? { characterId: person } : {}) } });
           }}>
             <option value="">Nothing</option>
             <option value="self">Their own</option>
             <option value="world">The world&rsquo;s</option>
-            {world.records.filter((entry) => entry.kind === 'persona' || entry.kind === 'character').map((person) => <option key={person.id} value={person.id}>{person.name}&rsquo;s</option>)}
+            <option value="person">Someone else&rsquo;s</option>
           </select>
         </label>
+        {when?.state && whose && whose !== 'world' && (
+          <label className="field"><span>Whose</span><RecordPick world={world} label={`${label}: whose state`} kinds={['character', 'persona']} value={whose} onChange={(characterId) => set({ state: { ...when.state!, characterId: characterId || undefined } })} /></label>
+        )}
         {when?.state && (
           <>
             <label className="field"><span>State</span><StatePick ruleset={ruleset} label={`${label}: state`} value={when.state.stateId} only={(def) => (whose === 'world' ? def.scope === 'world' : ['char', 'npc', 'protagonist'].includes(def.scope))} onChange={(stateId) => set({ state: { ...when.state!, stateId } })} /></label>
@@ -193,10 +185,7 @@ function Routes({ world, place, onWorld }: { world: World; place: StoryRecord; o
           <div key={route.id} className="stop">
             <div className="row">
               <label className="field grow"><span>To</span>
-                <select value={far} onChange={(event) => change(route.id, route.from === place.id ? { to: event.target.value } : { from: event.target.value })}>
-                  {!others.some((other) => other.id === far) && <option value={far}>Gone: {far}</option>}
-                  {others.map((other) => <option key={other.id} value={other.id}>{other.name}</option>)}
-                </select>
+                <RecordPick world={world} label={`A route from ${place.name}: to`} kinds={['place']} only={(other) => other.id !== place.id && standable(other)} value={far} onChange={(id) => { if (id) change(route.id, route.from === place.id ? { to: id } : { from: id }); }} />
               </label>
               <label className="field"><span>Kilometres</span>
                 <input className="input num" type="number" min={0} step="0.1" aria-label={`Kilometres to ${far}`} value={route.distanceKm} onChange={(event) => { const km = Number(event.target.value); if (event.target.value !== '' && km >= 0) change(route.id, { distanceKm: km }); }} />
@@ -248,8 +237,6 @@ function Milestones({ world, record, onChange }: { world: World; record: StoryRe
   };
   const change = (id: string, patch: Partial<Milestone>) => put({ milestones: milestones.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry)) });
   const kind = THREAD_KINDS.find((entry) => entry.id === (own.kind ?? 'custom')) ?? THREAD_KINDS[THREAD_KINDS.length - 1]!;
-  const people = world.records.filter((entry) => entry.kind === 'persona' || entry.kind === 'character');
-  const targets = world.records.filter((entry) => entry.kind === 'place' || entry.kind === 'character' || entry.kind === 'item');
   return (
     <>
       <Rule label="Kind" hint={kind.blurb}>
@@ -272,11 +259,7 @@ function Milestones({ world, record, onChange }: { world: World; record: StoryRe
             <Beat label={`${label}: the beat`} value={milestone.text} onChange={(text) => change(milestone.id, { text })} />
             <div className="row">
               <label className="field grow"><span>Turns on</span>
-                <select aria-label={`${label}: turns on`} value={milestone.targetId ?? ''} onChange={(event) => change(milestone.id, { targetId: event.target.value || undefined })}>
-                  <option value="">Nothing in particular</option>
-                  {milestone.targetId && !targets.some((entry) => entry.id === milestone.targetId) && <option value={milestone.targetId}>Gone: {milestone.targetId}</option>}
-                  {targets.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}
-                </select>
+                <RecordPick world={world} label={`${label}: turns on`} kinds={['place', 'character', 'item']} none="Nothing in particular" value={milestone.targetId ?? ''} onChange={(id) => change(milestone.id, { targetId: id || undefined })} />
               </label>
               <label className="field"><span>From day</span><OptNum label={`${label}: from day`} min={1} value={milestone.fromDay === undefined ? undefined : milestone.fromDay + 1} onChange={(value) => change(milestone.id, { fromDay: value === undefined ? undefined : value - 1 })} /></label>
               <label className="field"><span>Missed after day</span><OptNum label={`${label}: missed after day`} min={1} value={milestone.byDay === undefined ? undefined : milestone.byDay + 1} onChange={(value) => change(milestone.id, { byDay: value === undefined ? undefined : value - 1 })} /></label>
@@ -285,11 +268,7 @@ function Milestones({ world, record, onChange }: { world: World; record: StoryRe
             {milestone.when.map((test, at) => (
               <div key={at} className="row">
                 <span className="hint">When</span>
-                <select className="input pick" aria-label={`${label}: whose state`} value={test.characterId ?? ''} onChange={(event) => editTest(at, { characterId: event.target.value || undefined })}>
-                  <option value="">The player&rsquo;s</option>
-                  <option value="world">The world&rsquo;s</option>
-                  {people.filter((person) => person.kind === 'character').map((person) => <option key={person.id} value={person.id}>{person.name}&rsquo;s</option>)}
-                </select>
+                <WhosePick world={world} label={`${label}: whose state`} value={test.characterId} onChange={(characterId) => editTest(at, { characterId })} />
                 <StatePick ruleset={ruleset} label={`${label}: state`} value={test.stateId} only={(def) => (test.characterId === 'world' ? def.scope === 'world' : test.characterId ? ['char', 'npc'].includes(def.scope) : ['char', 'protagonist'].includes(def.scope))} onChange={(stateId) => editTest(at, { stateId })} />
                 <span className="hint">at least</span>
                 <OptNum label={`${label}: at least`} value={test.atLeast} onChange={(atLeast) => editTest(at, { atLeast })} />

@@ -35,7 +35,7 @@ function find(providers: ProviderInfo[], id: string | undefined): ProviderInfo |
 
 const unknownProvider = (id: string | undefined): RelayResult => ({
   status: 400,
-  body: { error: id === CUSTOM_PROVIDER ? 'Your own server is called from the browser, not through Praxis.' : `Praxis doesn't relay to "${id ?? ''}".` },
+  body: { error: id === CUSTOM_PROVIDER ? 'Your own server is called from the browser, not through the Inkwyrm server.' : `The Inkwyrm server doesn't relay to "${id ?? ''}".` },
 });
 const missingKey = (provider: ProviderInfo): RelayResult => ({ status: 401, body: { error: `Connect ${provider.name} with your ${provider.keyLabel} first.` } });
 

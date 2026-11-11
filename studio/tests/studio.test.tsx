@@ -154,7 +154,10 @@ describe('what the adventure needs', () => {
     fireEvent.click(rail().getByRole('button', { name: 'Ada Moss' }));
     fireEvent.click(within(screen.getByRole('region', { name: 'Schedule' })).getByRole('button', { name: 'Night' }));
     again();
-    fireEvent.change(screen.getByLabelText(/^\w+ [\d:]+.*: where$/), { target: { value: 'booth' } });
+    // The picker: a button, then a sheet to search and choose from.
+    fireEvent.click(screen.getByRole('button', { name: /^\w+ [\d:]+.*: where: No place$/ }));
+    fireEvent.change(screen.getByRole('searchbox', { name: /: where: search$/ }), { target: { value: 'boo' } });
+    fireEvent.click(screen.getByRole('option', { name: /Booth B/ }));
     again();
     fireEvent.change(screen.getByLabelText(/^\w+ [\d:]+.*: weekday$/), { target: { value: '5' } });
     expect(Object.values(get().records.find((record) => record.id === 'ada')!.schedule!).flat()[0]).toMatchObject({ startTime: 1320, place: 'booth', when: { weekday: 5 } });
@@ -190,10 +193,50 @@ describe('what the adventure needs', () => {
     again();
     fireEvent.change(screen.getByLabelText('Action name'), { target: { value: 'Work a shift' } });
     again();
-    fireEvent.click(within(screen.getByRole('group', { name: /Offered at/ })).getByLabelText('Booth B'));
+    fireEvent.click(within(screen.getByRole('group', { name: /offered at/i })).getByRole('button', { name: 'Add' }));
+    fireEvent.click(screen.getByRole('option', { name: /Booth B/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(get().rules?.actions).toMatchObject([{ name: 'Work a shift', placeIds: ['booth'], effects: [{ stateId: 'coin', add: 1 }] }]);
     again();
     fireEvent.change(screen.getByLabelText('The days of the week'), { target: { value: 'Oneday, Twoday, Restday' } });
     expect(get().rules?.calendar?.dayNames).toEqual(['Oneday', 'Twoday', 'Restday']);
+  });
+});
+
+describe('a world with many records', () => {
+  const crowd = (): World => {
+    const base = world();
+    const rooms = ['Zinc room', 'The archive', 'Back room', 'attic'].map((name, index) => ({ ...base.records.find((record) => record.id === 'booth')!, id: `room-${index}`, name, parentId: 'booth' }));
+    return { ...base, records: [...base.records, ...rooms] };
+  };
+
+  it('lists each kind A to Z, folds a kind, and finds a record by name', () => {
+    window.localStorage.clear();
+    render(<WorldView world={crowd()} onChange={() => {}} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    const rail = within(screen.getByRole('navigation', { name: 'Low Tide: records' }));
+    const places = within(rail.getByRole('region', { name: 'Places' }));
+    // "The" doesn't count, and case doesn't either.
+    expect(places.getAllByRole('button').map((button) => button.textContent).filter((name) => name !== 'Add')).toEqual(['▾Places5', 'Booth B', 'The archive', 'attic', 'Back room', 'Zinc room']);
+    fireEvent.click(places.getByRole('button', { name: /Places/ }));
+    expect(places.queryByRole('button', { name: 'Zinc room' })).toBeNull();
+    fireEvent.change(rail.getByRole('searchbox', { name: 'Find a record' }), { target: { value: 'room' } });
+    const found = within(rail.getByRole('region', { name: 'Found' }));
+    expect(found.getAllByRole('button').map((button) => button.textContent)).toEqual(['Back roomPlace · in Booth B', 'Zinc roomPlace · in Booth B']);
+  });
+
+  it('picks a place from a sheet that searches, shows where each place is, and says when nothing matches', () => {
+    window.localStorage.clear();
+    let current = crowd();
+    render(<WorldView world={current} onChange={(next) => { current = next; }} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Low Tide: records' })).getByRole('button', { name: 'Zinc room' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Inside: Booth B' }));
+    const sheet = within(screen.getByRole('dialog', { name: 'Inside' }));
+    expect(sheet.getByRole('option', { name: /The archive in Booth B/ })).toBeInTheDocument();
+    fireEvent.change(sheet.getByRole('searchbox'), { target: { value: 'nothing like it' } });
+    expect(sheet.getByText('Nothing called that.')).toBeInTheDocument();
+    fireEvent.change(sheet.getByRole('searchbox'), { target: { value: 'arch' } });
+    fireEvent.keyDown(sheet.getByRole('searchbox'), { key: 'Enter' });
+    expect(current.records.find((record) => record.id === 'room-0')!.parentId).toBe('room-1');
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

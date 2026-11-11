@@ -1,6 +1,7 @@
 // The parts of World › Rules an adventure needs written: the calendar, travel, and scene actions.
 import type { World } from '../../../core/records/index.js';
 import { DEFAULT_CALENDAR, type Calendar, type Ruleset, type SceneAction, type WorldRules } from '../../../core/rules/index.js';
+import { RecordMulti, WhosePick } from '../RecordPick';
 import { newId } from '../../../kit/src/util';
 import { Num, OptNum, Origin, PutBack, Rule, StatePick, Words } from './bits';
 
@@ -60,20 +61,10 @@ const blank = (): SceneAction => ({ id: `action-${newId().slice(0, 8)}`, name: '
 // coin, a hire, a signature.
 export function SceneActionsPart({ world, rules, ruleset, put }: { world: World; rules: WorldRules | undefined; ruleset: Ruleset; put: Put }) {
   const actions = rules?.actions ?? [];
-  const places = world.records.filter((record) => record.kind === 'place');
-  const people = world.records.filter((record) => record.kind === 'character');
   const everyone = world.records.filter((record) => record.kind === 'character' || record.kind === 'persona');
   const dayNames = (rules?.calendar ?? DEFAULT_CALENDAR).dayNames;
   const change = (id: string, patch: Partial<SceneAction>) => put({ actions: actions.map((action) => (action.id === id ? { ...action, ...patch } : action)) });
-  const toggle = (list: string[], id: string, on: boolean) => (on ? [...list, id] : list.filter((entry) => entry !== id));
   const fits = (who: string | undefined) => (def: { scope: string }) => (who === 'world' ? def.scope === 'world' : who ? ['char', 'npc'].includes(def.scope) : ['char', 'protagonist'].includes(def.scope));
-  const Whose = ({ value, onChange, label }: { value: string | undefined; onChange: (value: string | undefined) => void; label: string }) => (
-    <select className="input pick" aria-label={label} value={value ?? ''} onChange={(event) => onChange(event.target.value || undefined)}>
-      <option value="">The player&rsquo;s</option>
-      <option value="world">The world&rsquo;s</option>
-      {people.map((person) => <option key={person.id} value={person.id}>{person.name}&rsquo;s</option>)}
-    </select>
-  );
   return (
     <section className="rules-part" aria-label="Scene actions">
       <h2 className="sub">Scene actions</h2>
@@ -86,18 +77,18 @@ export function SceneActionsPart({ world, rules, ruleset, put }: { world: World;
             <label className="field grow"><span>Name</span><Words label="Action name" value={action.name} max={120} onChange={(name) => change(action.id, { name })} /></label>
             <label className="field grow"><span>What it does, for the player</span><Words label={`${action.name}: what it does`} value={action.summary} max={400} allowEmpty onChange={(summary) => change(action.id, { summary })} /></label>
           </div>
-          <fieldset className="goods"><legend className="rule-label">Offered at<small>None ticked means anywhere.</small></legend>
-            <div className="checks">{places.map((place) => <label key={place.id}><input type="checkbox" checked={action.placeIds.includes(place.id)} onChange={(event) => change(action.id, { placeIds: toggle(action.placeIds, place.id, event.target.checked) })} />{place.name}</label>)}</div>
-          </fieldset>
-          <fieldset className="goods"><legend className="rule-label">Who must be there</legend>
-            <div className="checks">{people.map((person) => <label key={person.id}><input type="checkbox" checked={action.present.includes(person.id)} onChange={(event) => change(action.id, { present: toggle(action.present, person.id, event.target.checked) })} />{person.name}</label>)}</div>
-          </fieldset>
+          <div className="field"><span className="rule-label">Offered at<small>None means anywhere.</small></span>
+            <RecordMulti world={world} label={`${action.name}: offered at`} kinds={['place']} values={action.placeIds} empty="Anywhere." onChange={(placeIds) => change(action.id, { placeIds })} />
+          </div>
+          <div className="field"><span className="rule-label">Who must be there</span>
+            <RecordMulti world={world} label={`${action.name}: who must be there`} kinds={['character']} values={action.present} empty="Nobody in particular." onChange={(present) => change(action.id, { present })} />
+          </div>
           <span className="rule-label">What must hold</span>
           {action.when.map((condition, index) => {
             const edit = (patch: Partial<typeof condition>) => change(action.id, { when: action.when.map((entry, at) => (at === index ? { ...entry, ...patch } : entry)) });
             return (
               <div key={index} className="row">
-                <Whose label={`${action.name}: condition ${index + 1}, whose state`} value={condition.characterId} onChange={(characterId) => edit({ characterId, stateId: ruleset.states.find(fits(characterId))?.id ?? condition.stateId })} />
+                <WhosePick world={world} label={`${action.name}: condition ${index + 1}, whose state`} value={condition.characterId} onChange={(characterId) => edit({ characterId, stateId: ruleset.states.find(fits(characterId))?.id ?? condition.stateId })} />
                 <StatePick ruleset={ruleset} label={`${action.name}: condition ${index + 1}, state`} value={condition.stateId} only={fits(condition.characterId)} onChange={(stateId) => edit({ stateId })} />
                 <span className="hint">at least</span><OptNum label={`${action.name}: condition ${index + 1}, at least`} value={condition.atLeast} onChange={(atLeast) => edit({ atLeast })} />
                 <span className="hint">at most</span><OptNum label={`${action.name}: condition ${index + 1}, at most`} value={condition.atMost} onChange={(atMost) => edit({ atMost })} />
@@ -129,7 +120,7 @@ export function SceneActionsPart({ world, rules, ruleset, put }: { world: World;
                   </>
                 ) : (
                   <>
-                    <Whose label={`${action.name}: effect ${index + 1}, whose state`} value={effect.characterId} onChange={(characterId) => edit({ ...effect, characterId, stateId: ruleset.states.find(fits(characterId))?.id ?? effect.stateId })} />
+                    <WhosePick world={world} label={`${action.name}: effect ${index + 1}, whose state`} value={effect.characterId} onChange={(characterId) => edit({ ...effect, characterId, stateId: ruleset.states.find(fits(characterId))?.id ?? effect.stateId })} />
                     <StatePick ruleset={ruleset} label={`${action.name}: effect ${index + 1}, state`} value={effect.stateId ?? ''} only={fits(effect.characterId)} onChange={(stateId) => edit({ ...effect, stateId })} />
                     <select className="input pick" aria-label={`${action.name}: effect ${index + 1}, how`} value={effect.set !== undefined ? 'set' : 'add'} onChange={(event) => edit({ stateId: effect.stateId, characterId: effect.characterId, ...(event.target.value === 'set' ? { set: amount } : { add: amount }) })}>
                       <option value="add">changes by</option>

@@ -6,6 +6,7 @@ import { KeysField, NameField } from '../../kit/src/Fields';
 import { newId } from '../../kit/src/util';
 import { ScheduleEditor } from './ScheduleEditor';
 import { RulesPanel } from './RulesPanel';
+import { RecordMulti, RecordPick } from './RecordPick';
 
 type Change = (record: StoryRecord) => void;
 
@@ -19,9 +20,20 @@ const move = <T,>(list: T[], from: number, to: number): T[] => {
 
 export function RecordEditor({ world, record, onChange, onDelete, onWorld }: { world: World; record: StoryRecord; onChange: Change; onDelete: () => void; onWorld?: (world: World) => void }) {
   const update = (patch: Partial<StoryRecord>) => onChange({ ...record, ...patch });
-  const groups = world.records.filter((entry) => entry.kind === 'group' && entry.id !== record.id);
-  const places = world.records.filter((entry) => entry.kind === 'place' && !wouldLoop(world, record.id, entry.id));
+  const hasGroups = world.records.some((entry) => entry.kind === 'group' && entry.id !== record.id);
   const isPerson = record.kind === 'character' || record.kind === 'persona';
+  // The parts of the page, for the jump bar. Rules for anything the rules act on; the adventure's
+  // own panel for threads and scenarios; nothing for lore.
+  const rulesLabel = ['character', 'persona', 'place', 'item', 'group'].includes(record.kind) ? 'Rules' : record.kind === 'thread' || record.kind === 'scenario' ? 'In the adventure' : null;
+  const parts: [string, string][] = [
+    ['part-basics', 'Basics'],
+    ...(rulesLabel ? [['part-rules', rulesLabel] as [string, string]] : []),
+    ['part-sections', `Sections ${record.sections.length}`],
+    ['part-sets', `Sets ${record.sets.length}`],
+    ...(record.kind === 'character' ? [['part-schedule', 'Schedule'], ['part-chat', 'Chat']] as [string, string][] : []),
+    ['part-notes', 'Notes'],
+  ];
+  const jump = (id: string) => document.getElementById(id)?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
 
   return (
     <>
@@ -33,6 +45,11 @@ export function RecordEditor({ world, record, onChange, onDelete, onWorld }: { w
         </span>
       </div>
 
+      <nav className="jump" aria-label={`Parts of ${record.name}`}>
+        {parts.map(([id, label]) => <button key={id} type="button" className="btn small quiet" onClick={() => jump(id)}>{label}</button>)}
+      </nav>
+
+      <div id="part-basics" className="part-anchor" />
       <NameField label="Name" value={record.name} onChange={(name) => update({ name })} />
       <KeysField label="Keys: other names that bring it into the story" value={record.keys} placeholder="Nicknames, titles, short names, separated by commas" onChange={(keys) => update({ keys })} />
       <label className="field">
@@ -54,13 +71,10 @@ export function RecordEditor({ world, record, onChange, onDelete, onWorld }: { w
           </label>
         )}
         {record.kind === 'place' && (
-          <label className="field grow">
+          <div className="field grow">
             <span>Inside</span>
-            <select value={record.parentId ?? ''} onChange={(event) => update({ parentId: event.target.value || null })}>
-              <option value="">Nowhere: it's a top-level place</option>
-              {places.map((place) => <option key={place.id} value={place.id}>{place.name}</option>)}
-            </select>
-          </label>
+            <RecordPick world={world} label="Inside" kinds={['place']} only={(entry) => !wouldLoop(world, record.id, entry.id)} none="Nowhere: it's a top-level place" value={record.parentId ?? ''} onChange={(id) => update({ parentId: id || null })} />
+          </div>
         )}
         {record.kind === 'group' && (
           <label className="field grow">
@@ -72,27 +86,17 @@ export function RecordEditor({ world, record, onChange, onDelete, onWorld }: { w
         )}
       </div>
 
-      {record.kind !== 'group' && groups.length > 0 && (
-        <fieldset className="card" style={{ margin: 0 }}>
-          <legend className="sub">Belongs to</legend>
-          <div className="checks">
-            {groups.map((group) => (
-              <label key={group.id}>
-                <input
-                  type="checkbox"
-                  checked={record.groupIds.includes(group.id)}
-                  onChange={(event) => update({ groupIds: event.target.checked ? [...record.groupIds, group.id] : record.groupIds.filter((id) => id !== group.id) })}
-                />
-                {group.name}{group.groupKind !== 'other' ? ` (${group.groupKind})` : ''}
-              </label>
-            ))}
-          </div>
-        </fieldset>
+      {record.kind !== 'group' && hasGroups && (
+        <div className="field">
+          <span>Belongs to</span>
+          <RecordMulti world={world} label="Belongs to" kinds={['group']} only={(entry) => entry.id !== record.id} values={record.groupIds} empty="No groups." onChange={(groupIds) => update({ groupIds })} />
+        </div>
       )}
 
+      <div id="part-rules" className="part-anchor" />
       <RulesPanel world={world} record={record} onChange={onChange} onWorld={onWorld} />
 
-      <h2 className="sub">Sections</h2>
+      <h2 className="sub part-anchor" id="part-sections">Sections</h2>
       {record.sections.map((section, index) => (
         <SectionCard
           key={section.id}
@@ -110,7 +114,7 @@ export function RecordEditor({ world, record, onChange, onDelete, onWorld }: { w
         <button type="button" className="btn small" onClick={() => update({ sections: [...record.sections, newSection(newId(), 'New section', 'named')] })}>Add a section</button>
       </div>
 
-      <h2 className="sub">Sets: one in use at a time</h2>
+      <h2 className="sub part-anchor" id="part-sets">Sets: one in use at a time</h2>
       {record.sets.map((set) => (
         <SetCard
           key={set.id}
@@ -126,14 +130,15 @@ export function RecordEditor({ world, record, onChange, onDelete, onWorld }: { w
 
       {record.kind === 'character' && (
         <>
-          <h2 className="sub">Schedule</h2>
+          <h2 className="sub part-anchor" id="part-schedule">Schedule</h2>
           <ScheduleEditor record={record} world={world} onChange={(schedule) => update({ schedule })} />
         </>
       )}
 
+      {record.kind === 'character' && <div id="part-chat" className="part-anchor" />}
       {record.kind === 'character' && <ChatParts record={record} update={update} />}
 
-      <label className="field">
+      <label className="field part-anchor" id="part-notes">
         <span>Notes · Never sent</span>
         <textarea rows={3} maxLength={20000} value={record.notes} placeholder="Reminders for yourself. The model never sees these." onChange={(event) => update({ notes: event.target.value })} />
       </label>

@@ -105,7 +105,7 @@ export function SettingsSection({ api }: { api: PlayApi }) {
                 ? <Seg<NarrationMode> label="Send requests as" value={connection.mode} options={[['prompt', 'One prompt'], ['chat', 'Chat messages']]} onPick={(mode) => { saveMode(connection.provider, mode); api.setConnection({ ...connection, mode }); }} />
                 : <span className="meta">Chat messages: {provider.name} takes no single prompts.</span>}
               <span className="meta" style={{ lineHeight: 1.45 }}>
-                One prompt, in the model’s own format, lets Praxis write the start of each reply for the model to continue, which keeps it closest to the rules.
+                One prompt, in the model’s own format, lets the adventure write the start of each reply for the model to continue, which keeps it closest to the rules.
                 {provider.chatPrefill === 'assistant' ? ' Chat messages carry that start too, with this provider.' : ' Chat messages can only ask for it.'}
               </span>
             </div>
@@ -243,7 +243,7 @@ export function SettingsSection({ api }: { api: PlayApi }) {
       </div>
 
       <button type="button" className="btn wide" style={{ marginTop: 18 }} onClick={api.leave}>Leave for the title screen</button>
-      <p className="version">Praxis {__PRAXIS_VERSION__} · {api.module.name} {api.module.version}</p>
+      <p className="version">Inkwyrm adventure {__PRAXIS_VERSION__} · {api.module.name} {api.module.version}</p>
     </>
   );
 }

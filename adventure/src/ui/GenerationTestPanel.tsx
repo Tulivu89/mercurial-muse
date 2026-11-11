@@ -111,7 +111,7 @@ export function GenerationTestPanel({ api, headRef, onBack }: { api: PlayApi; he
       </div>
       <div className="panel-body">
         <p className="meta" style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--text-2)' }}>
-          Measures whether the provider reuses a long prompt it has just read, and whether switching models loses that. The answer decides how Praxis can afford extra calls, such as the journal’s and the evaluator’s. It makes {plan.length} short replies on your key and takes a few minutes. Stay on this page while it runs.
+          Measures whether the provider reuses a long prompt it has just read, and whether switching models loses that. The answer decides how the adventure can afford extra calls, such as the journal’s and the evaluator’s. It makes {plan.length} short replies on your key and takes a few minutes. Stay on this page while it runs.
         </p>
 
         {!connection.connected ? (

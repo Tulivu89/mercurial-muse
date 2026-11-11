@@ -15,6 +15,7 @@ The site is **Inkwyrm** (`docs/brand.md`: the name, the Wet Ink look and its tok
 - `studio/` is the Studio, served at `/studio/`: worlds and characters in the record model, with the rules on every record (`docs/studio-brief.md`; its phases are in `studio/README.md`).
 - `chat/` is Chat, served at `/chat/`: CharacterRoom on the site (`docs/chat-brief.md`). Its phases and changelog are in `chat/README.md`.
 - One npm install at the root (workspaces). Orbis and Ember are gone from the tree; their code is in the history.
+- `docs/bids/` holds questions put to several models: a brief, Claude's own proposal where it could win (written before any bid is read, never revised), the bids, and the decision. Its README says how a bid runs.
 - `docs/abernys/` is the setting, all the user's own. `docs/praxis/` holds the design docs, including the Bogwater test module's plan and full design.
 
 ## Working with the user

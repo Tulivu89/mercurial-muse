@@ -134,8 +134,8 @@ export function ConnectForm({ connection, onChange }: { connection: Connection; 
       </div>
       <p className="meta" style={{ lineHeight: 1.45 }}>
         {custom
-          ? 'A server you run, such as koboldcpp, llama.cpp, LM Studio, Ollama, TabbyAPI or vLLM. Praxis calls it from this browser, so it has to allow requests from this site (CORS). From an https page, plain http works only for localhost.'
-          : `Narration uses your own ${provider.name} account. Your key goes with each request and is never stored on the Praxis server.${provider.keyNote ? ` Find it ${provider.keyNote.charAt(0).toLowerCase()}${provider.keyNote.slice(1)}` : ''}`}
+          ? 'A server you run, such as koboldcpp, llama.cpp, LM Studio, Ollama, TabbyAPI or vLLM. The adventure calls it from this browser, so it has to allow requests from this site (CORS). From an https page, plain http works only for localhost.'
+          : `Narration uses your own ${provider.name} account. Your key goes with each request and is never stored on the Inkwyrm server.${provider.keyNote ? ` Find it ${provider.keyNote.charAt(0).toLowerCase()}${provider.keyNote.slice(1)}` : ''}`}
       </p>
       {custom && (
         <div>

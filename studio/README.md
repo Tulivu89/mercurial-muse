@@ -2,7 +2,7 @@
 
 Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the record model (`docs/records.md`), and see exactly what each part sends the model.
 
-## What it does (0.6.0)
+## What it does (0.7.0)
 
 - **Worlds** in this browser's storage, with a premise, genre, tone and shared conditions.
 - **Records of every kind:** characters, places, groups, items, lore, threads, scenarios and personas.
@@ -28,6 +28,10 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - **On World › Rules:** the calendar (week, months, the times of day the narrator hears), walking pace, scene actions (where offered, who must be there, what must hold, opening days and hours, what changes, the player's line and what the narrator shows), and a world's own goods.
   - **Checks**, beside Rules: every stop is a real place; no place holds more than four people at the four times of day over forty days; every When has its condition; every route ends somewhere; nothing a rule points at is gone. Each finding opens the record it is about.
 - **Threads that reach the adventure** (0.6.0). A thread's page has its kind (Character Engine's nine, or Custom) and its milestones under **In the adventure**: the beat as the narrator hears it, what it turns on, the states it waits on, its first and last day, and the experience it pays. The five questions stay sections, for the author. A thread with no milestones goes to the adventure with its Next beat as the one milestone, for the player to mark. Checks finds a milestone that waits on a state that is gone, or turns on something that is.
+- **Big worlds** (0.7.0):
+  - **One picker** for every choice of a record (where someone lives, who carries a thing, a place's parent, a group, a milestone's target, who must be there). It opens a sheet with a search box, the records picked lately in this world, then every record by kind, A to Z; a place shows what it's inside. Lists of records (groups, who is there, where an action is offered, In context now's scene) are chips with Add.
+  - **The list** has Find (by name, or by the place something is in), A to Z or as added, and kinds that fold, remembered per world in this browser. On a wide screen it scrolls on its own.
+  - **A jump bar** at the top of a record's page reaches its parts: basics, rules, sections, sets, schedule, chat, notes.
 - **Genre:** the purse's words are the Coin state's bands and the catalog's names are editable, so a modern world's hundred *could buy a car*.
 - **In context now:** put people and a place in the scene, type what was just said, tick what holds, and see what the world would send, with a rough token count. From 0.3.0 it shows the sentence of every state that is off its resting band, under the record it belongs to, as the narrator would read it.
 - **Files:** a world exports as `<name>.world.json` (`studio-world/1`) and opens again. Cards import into the open world (0.1.1):
@@ -48,7 +52,7 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 ## Not yet
 
 - An editor for relationships between two people (a module's come through unchanged).
-- Maps. Nothing is decided; `docs/maps-brief.md` asks for proposals.
+- Maps. The plan from four bids is `docs/bids/maps/decision.md`, waiting on the owner.
 - Chat reading an event's condition: until it does, a day that waits on one shows in Chat as part of every day.
 - A world checked by the adventure's own loader before it is played: Checks covers what the brief lists, and anything else the adventure refuses is said on its start screen.
 - Where a place or a group starts its states reaching the adventure.
