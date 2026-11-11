@@ -23,14 +23,15 @@ All three phases are built, and threads with milestones after them: Studio 0.6.0
 
 **Left from this brief**
 1. ~~Threads with milestones in the adventure.~~ Built Nov 11: `core/rules/threads.ts`, the module's `threads`, the engine's `threads.ts`, the Journal, and the thread page's **In the adventure**.
-2. An editor for relationships between two people, with their bond kinds. They come through from a module unchanged.
+2. Relationships, narrowed by the owner on Nov 11: only the player's relationship with a character needs depth (a "with the player" panel: the starting bond and its kind, for the adventure and Chat's Home). Ties between two characters stay in their sections. A module's relationships come through unchanged.
 3. Chat reading a schedule event's `when`, and the address `/chat/#/with/<world id>/<record id>` for Chat with. Both are for the Chat session.
 4. On World › Rules: the fight and follow rules, craft's steps, what a hop into a room costs, and taking an approach away.
 5. Where a place or a group starts its states reaching the adventure.
 
 **Asked for, on the plan**
-- **Maps.** Nothing is decided. `docs/maps-brief.md` is a hand-off the owner gives to several models for proposals: the jobs a map could do, the constraints, what exists, and Character Engine's circle map and hex map. When the owner picks a direction, it becomes a phase here.
-- **The helper,** for writing fields. Below, under *The helper*.
+- **Maps.** Four bids came in (`docs/bids/maps/`), and `docs/bids/maps/decision.md` is the plan from them: sheets per containing place, laid out from the tree and the routes, pins only when dragged, hexes later from the same centres, never pricing travel. Once the owner approves, its phases M1 to M5 are this brief's next.
+- **The helper,** for writing fields. Below, under *The helper*; out for bid as the worldbuilding tools (`docs/bids/worldbuilding/`), with the owner's Nov 11 answers in its brief.
+- **The Studio's look and layout** for big worlds: out for bid (`docs/bids/ui/`). Studio 0.7.0 did the plain fixes first: one searchable picker, Find and order in the list, a jump bar.
 
 **Then, as the brief already says:** the owner's own setting built in the Studio; the adventure rebuilt to read records directly (roadmap step 6), when `core/convert/` and `carried` retire; generate buttons and guided builders.
 
@@ -52,10 +53,12 @@ Asked for on Nov 11. A record in the Studio has many fields and few of them are 
 - **The player's own model and key,** through the relay, in the model's own prompt format, like Chat's side generations. Budgeted, started by the author, and showing what it will send.
 - **Generate buttons are the helper with no conversation:** one tap on a field writes a draft from the record and the world alone.
 
-**Questions for the owner, before it's built**
-1. A chat panel beside the record (wide screens) and a sheet over it (phones), or a full page of its own?
-2. Should the helper also propose new records (a place a character mentions, a person a thread needs), as Coda's sort mode did, or only fill fields on the record it's open on?
-3. Guided builders (Character Engine's Wizard): a fixed question set per kind, or the helper asking its own questions from a list the author can edit?
+**The owner's answers (Nov 11)**
+1. The helper's voice is Errata, toned down: her name and a light touch, never her full persona, so it doesn't cost the helper's quality.
+2. Yes to new records: a workshop chat at the world's level talks through the bigger setting and proposes records, limited by what the player's model can hold.
+3. Questions are offered, and every author can change them: everyone has their own template.
+
+Where it goes from here is the worldbuilding bid (`docs/bids/worldbuilding/`): the brief, Claude's own proposal written before the bids, then the decision.
 
 ## A second session is working beside you
 
