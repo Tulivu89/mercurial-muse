@@ -1,9 +1,9 @@
 // Where a record stands in the adventure: where someone lives and spends each part of their
 // day, where a thing lies, where play starts, and the ways out of a place.
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { ScheduleEvent, StoryRecord, World } from '../../core/records/index.js';
 import { formatMinutes } from '../../core/chat/time.js';
-import { AREA_KINDS, DEFAULT_CALENDAR, rulesetOf, type Route, type ScheduleWhen } from '../../core/rules/index.js';
+import { AREA_KINDS, DEFAULT_CALENDAR, THREAD_KINDS, rulesetOf, type Milestone, type Route, type ScheduleWhen, type ThreadRules } from '../../core/rules/index.js';
 import { newId } from '../../kit/src/util';
 import { Num, OptNum, Rule, StatePick, Words } from './rules/bits';
 
@@ -89,6 +89,8 @@ export function InTheAdventure({ world, record, onChange, onWorld }: { world: Wo
         </fieldset>
       </>
     );
+  } else if (record.kind === 'thread') {
+    body = <Milestones world={world} record={record} onChange={onChange} />;
   } else if (record.kind === 'place' && onWorld) {
     body = <Routes world={world} place={record} onWorld={onWorld} />;
   }
@@ -110,6 +112,11 @@ function summary(world: World, record: StoryRecord): string {
   }
   if (record.kind === 'item') return carried.heldBy ? `Carried by ${name(carried.heldBy)}.` : carried.locationId ? `Lies at ${name(carried.locationId)}.` : 'Not placed anywhere.';
   if (record.kind === 'scenario') return carried.startPlaceId ? `Play starts at ${name(carried.startPlaceId)}.` : 'Play starts at the first place.';
+  if (record.kind === 'thread') {
+    const milestones = record.rules?.thread?.milestones ?? [];
+    const experience = milestones.reduce((sum, milestone) => sum + milestone.experience, 0);
+    return milestones.length ? `${milestones.length} ${milestones.length === 1 ? 'milestone' : 'milestones'}${experience ? `, ${experience} experience` : ''}.` : 'No milestones: its next beat goes as one, for the player to mark.';
+  }
   const routes = (world.routes ?? []).filter((route) => route.from === record.id || route.to === record.id);
   return routes.length ? `${routes.length} ${routes.length === 1 ? 'way' : 'ways'} out: ${routes.map((route) => name(route.from === record.id ? route.to : route.from)).join(', ')}.` : 'No routes. Places inside one another need none.';
 }
@@ -223,5 +230,94 @@ function Routes({ world, place, onWorld }: { world: World; place: StoryRecord; o
         <button type="button" className="btn small" disabled={!others.length} onClick={() => put([...routes, { id: `route-${newId().slice(0, 8)}`, from: place.id, to: others[0]!.id, distanceKm: 1, terrain: '', routeClass: '', requires: [] }])}>Add a route from here</button>
       </div>
     </>
+  );
+}
+
+// A thread's kind and milestones. The rules see a milestone reached when its conditions hold, on
+// or after its first day, and miss it once its last day is over. The narrator hears only the next
+// beat of the thread the player follows.
+function Milestones({ world, record, onChange }: { world: World; record: StoryRecord; onChange: (record: StoryRecord) => void }) {
+  const ruleset = rulesetOf(world);
+  const own: ThreadRules = record.rules?.thread ?? {};
+  const milestones = own.milestones ?? [];
+  const put = (patch: Partial<ThreadRules>) => {
+    const next = Object.fromEntries(Object.entries({ ...own, ...patch }).filter(([, value]) => value !== undefined && !(Array.isArray(value) && !value.length))) as ThreadRules;
+    const { thread: _was, ...rest } = record.rules ?? {};
+    const rules = Object.keys(next).length ? { ...rest, thread: next } : rest;
+    onChange({ ...record, rules: Object.keys(rules).length ? rules : undefined });
+  };
+  const change = (id: string, patch: Partial<Milestone>) => put({ milestones: milestones.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry)) });
+  const kind = THREAD_KINDS.find((entry) => entry.id === (own.kind ?? 'custom')) ?? THREAD_KINDS[THREAD_KINDS.length - 1]!;
+  const people = world.records.filter((entry) => entry.kind === 'persona' || entry.kind === 'character');
+  const targets = world.records.filter((entry) => entry.kind === 'place' || entry.kind === 'character' || entry.kind === 'item');
+  return (
+    <>
+      <Rule label="Kind" hint={kind.blurb}>
+        <select className="input pick" aria-label="Kind of thread" value={kind.id} onChange={(event) => put({ kind: event.target.value === 'custom' ? undefined : event.target.value })}>
+          {THREAD_KINDS.map((entry) => <option key={entry.id} value={entry.id}>{entry.label}</option>)}
+        </select>
+      </Rule>
+      <p className="hint">Milestones are the next things the story can reach, in order. The narrator hears only the first one still open, of the thread the player follows. A milestone is reached when its conditions hold, and pays its experience; one with no condition is for the player to mark. Days are the calendar&rsquo;s, as on the scenario.</p>
+      {milestones.length === 0 && <p className="empty">None yet. Without them, the Next beat section goes to the adventure as the one milestone, for the player to mark.</p>}
+      {milestones.map((milestone, index) => {
+        const label = `Milestone ${index + 1}`;
+        const editTest = (at: number, patch: Partial<Milestone['when'][number]>) => change(milestone.id, { when: milestone.when.map((test, where) => (where === at ? { ...test, ...patch } : test)) });
+        return (
+          <div key={milestone.id} className="stop">
+            <div className="row">
+              <span className="rule-label grow">{label}</span>
+              {index > 0 && <button type="button" className="icon-btn" aria-label={`Move ${label.toLowerCase()} up`} onClick={() => { const next = [...milestones]; [next[index - 1], next[index]] = [next[index]!, next[index - 1]!]; put({ milestones: next }); }}>↑</button>}
+              <button type="button" className="icon-btn" aria-label={`Remove ${label.toLowerCase()}`} onClick={() => put({ milestones: milestones.filter((entry) => entry.id !== milestone.id) })}>×</button>
+            </div>
+            <Beat label={`${label}: the beat`} value={milestone.text} onChange={(text) => change(milestone.id, { text })} />
+            <div className="row">
+              <label className="field grow"><span>Turns on</span>
+                <select aria-label={`${label}: turns on`} value={milestone.targetId ?? ''} onChange={(event) => change(milestone.id, { targetId: event.target.value || undefined })}>
+                  <option value="">Nothing in particular</option>
+                  {milestone.targetId && !targets.some((entry) => entry.id === milestone.targetId) && <option value={milestone.targetId}>Gone: {milestone.targetId}</option>}
+                  {targets.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}
+                </select>
+              </label>
+              <label className="field"><span>From day</span><OptNum label={`${label}: from day`} min={1} value={milestone.fromDay === undefined ? undefined : milestone.fromDay + 1} onChange={(value) => change(milestone.id, { fromDay: value === undefined ? undefined : value - 1 })} /></label>
+              <label className="field"><span>Missed after day</span><OptNum label={`${label}: missed after day`} min={1} value={milestone.byDay === undefined ? undefined : milestone.byDay + 1} onChange={(value) => change(milestone.id, { byDay: value === undefined ? undefined : value - 1 })} /></label>
+              <label className="field"><span>Experience</span><Num label={`${label}: experience`} min={0} max={1000} value={milestone.experience} onChange={(experience) => change(milestone.id, { experience })} /></label>
+            </div>
+            {milestone.when.map((test, at) => (
+              <div key={at} className="row">
+                <span className="hint">When</span>
+                <select className="input pick" aria-label={`${label}: whose state`} value={test.characterId ?? ''} onChange={(event) => editTest(at, { characterId: event.target.value || undefined })}>
+                  <option value="">The player&rsquo;s</option>
+                  <option value="world">The world&rsquo;s</option>
+                  {people.filter((person) => person.kind === 'character').map((person) => <option key={person.id} value={person.id}>{person.name}&rsquo;s</option>)}
+                </select>
+                <StatePick ruleset={ruleset} label={`${label}: state`} value={test.stateId} only={(def) => (test.characterId === 'world' ? def.scope === 'world' : test.characterId ? ['char', 'npc'].includes(def.scope) : ['char', 'protagonist'].includes(def.scope))} onChange={(stateId) => editTest(at, { stateId })} />
+                <span className="hint">at least</span>
+                <OptNum label={`${label}: at least`} value={test.atLeast} onChange={(atLeast) => editTest(at, { atLeast })} />
+                <span className="hint">at most</span>
+                <OptNum label={`${label}: at most`} value={test.atMost} onChange={(atMost) => editTest(at, { atMost })} />
+                <button type="button" className="icon-btn" aria-label={`${label}: remove this condition`} onClick={() => change(milestone.id, { when: milestone.when.filter((_, where) => where !== at) })}>×</button>
+              </div>
+            ))}
+            <div className="row"><button type="button" className="btn small quiet" onClick={() => change(milestone.id, { when: [...milestone.when, { stateId: ruleset.states.find((def) => def.scope === 'protagonist' || def.scope === 'char')?.id ?? 'health', atLeast: 1 }] })}>It waits on a state</button></div>
+          </div>
+        );
+      })}
+      <div className="row">
+        <button type="button" className="btn small" onClick={() => put({ milestones: [...milestones, { id: `milestone-${newId().slice(0, 8)}`, text: 'What happens next.', when: [], experience: 5 }] })}>Add a milestone</button>
+      </div>
+    </>
+  );
+}
+
+// A milestone's beat: a sentence or two, as the narrator will hear it. Never left empty.
+function Beat({ value, onChange, label }: { value: string; onChange: (value: string) => void; label: string }) {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => setDraft(value), [value]);
+  return (
+    <textarea
+      className="input" rows={2} aria-label={label} value={draft} maxLength={400} placeholder="Bring tamecap from the Woed's edge to Morwen while it can still cure Lowri."
+      onChange={(event) => { setDraft(event.target.value); if (event.target.value.trim()) onChange(event.target.value); }}
+      onBlur={() => { if (!draft.trim()) setDraft(value); }}
+    />
   );
 }

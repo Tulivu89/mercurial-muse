@@ -9,3 +9,4 @@ export * from './world-rules.js';
 export * from './record-rules.js';
 export * from './for.js';
 export * from './context.js';
+export * from './threads.js';

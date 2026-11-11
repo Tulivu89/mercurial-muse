@@ -9,7 +9,7 @@
 //               the land's top regions)
 //   system      The lorebook section, slowest first:                  when a journal entry is
 //                 the story so far (the journal)                       kept, or the scene
-//                 you, and your own notes                              changes: you travel,
+//                 you, your notes, the thread you follow               changes: you travel,
 //                 where you are: the place, its history, the ways on   someone comes or goes,
 //                 who is present and what they are doing               or something new is
 //                 what lies between the people here                    named
@@ -51,6 +51,7 @@ import { playerOf, placeOf, thingsAt, thingsHeldBy, type Save, type Turn } from 
 import { packWords } from './trade';
 import { worksOf } from './craft';
 import { capital, definite, listOf as list, midSentence, pronounsOf, sentence } from './words';
+import { followedThread } from './threads';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -288,6 +289,9 @@ export function loreFor(module: PraxisModule, save: Save, turn: Turn): string {
   for (const memory of world.world.memories.filter((entry) => entry.origin === 'local')) {
     out.push(note(`Your note, ${memory.title}${memory.description ? `: ${memory.description.trim()}` : ''}`));
   }
+  // The thread you follow: its next beat only, never its milestones or what they pay.
+  const followed = followedThread(world, save);
+  if (followed) out.push(note(`What you are after, ${followed.thread.name}: ${sentence(followed.beat.text)}`));
 
   // Where you are, while you are there: the place, the places it lies in below the land's
   // top levels, its history, what is lying here, and the ways on.

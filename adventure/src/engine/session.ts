@@ -122,6 +122,8 @@ export interface Save extends WorldState {
   options: Options;
   // Fixes this save's random difficulties, so a door that rolled Hard stays Hard.
   seed: number;
+  // The thread the player follows, or null for the first with anything left. See threads.ts.
+  thread: string | null;
 }
 
 export type ActionResult =
@@ -200,6 +202,7 @@ export function startSave(module: PraxisModule, seed = 0): Save {
     local: [],
     options: { ...DEFAULT_OPTIONS },
     seed: Math.abs(Math.round(seed)) % 2 ** 31,
+    thread: null,
   };
 }
 

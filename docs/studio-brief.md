@@ -13,7 +13,7 @@ Read this whole page before writing code. Where it decides something, build that
 
 ## Where it stands (Nov 10, 2026): start here
 
-All three phases are built: Studio 0.5.0, adventure 0.24.1. `studio/README.md` lists what the Studio does and what it doesn't yet. The owner's answers to the early questions: group defaults in S1, the Rules panel folded with a summary, the order as written. The owner does not test each phase, so several can go in one turn.
+All three phases are built, and threads with milestones after them: Studio 0.6.0, adventure 0.25.0. `studio/README.md` lists what the Studio does and what it doesn't yet. The owner's answers to the early questions: group defaults in S1, the Rules panel folded with a summary, the order as written. The owner does not test each phase, so several can go in one turn.
 
 **What a new session should know**
 - `core/rules/` holds the rules. Read a record's rules through `rulesFor(world, record)`, never from its `rules` block. A world's `rules` block and a record's hold only what was changed.
@@ -22,7 +22,7 @@ All three phases are built: Studio 0.5.0, adventure 0.24.1. `studio/README.md` l
 - The adventure still loads modules. Play in the adventure converts the world first.
 
 **Left from this brief**
-1. Threads with milestones in the adventure. The engine has no threads yet, so this is engine work first.
+1. ~~Threads with milestones in the adventure.~~ Built Nov 11: `core/rules/threads.ts`, the module's `threads`, the engine's `threads.ts`, the Journal, and the thread page's **In the adventure**.
 2. An editor for relationships between two people, with their bond kinds. They come through from a module unchanged.
 3. Chat reading a schedule event's `when`, and the address `/chat/#/with/<world id>/<record id>` for Chat with. Both are for the Chat session.
 4. On World › Rules: the fight and follow rules, craft's steps, what a hop into a room costs, and taking an approach away.

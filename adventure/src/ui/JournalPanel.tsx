@@ -1,8 +1,8 @@
 // The journal: the story so far. Review suggestions, write anything, edit, archive, compress.
 import { useEffect, useState, type RefObject } from 'react';
 import {
-  activeEntries, addEntry, archivedEntries, calendarOf, datePhrase, discardPending, editEntry, journalTokens, keepPending, removeEntry, setArchived, stamp,
-  type JournalEntry,
+  activeEntries, addEntry, archivedEntries, calendarOf, datePhrase, dayOf, discardPending, editEntry, followThread, journalTokens, keepPending, markMilestone, removeEntry,
+  setArchived, stamp, threadsOf, type JournalEntry, type ThreadView,
 } from '../engine';
 import type { PlayApi } from './Play';
 import { ArchiveIcon, BackIcon, CloseIcon, PenIcon } from './icons';
@@ -50,6 +50,8 @@ export function JournalPanel({ api, headRef, onBack }: { api: PlayApi; headRef: 
             {active.length} {active.length === 1 ? 'entry' : 'entries'} · about {used.toLocaleString('en-US')} of {save.options.journalTokens.toLocaleString('en-US')} tokens
           </p>
         </div>
+
+        <Threads api={api} />
 
         {pending ? (
           <div className="card pad" style={{ background: 'var(--surface-2)', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -136,5 +138,60 @@ export function JournalPanel({ api, headRef, onBack }: { api: PlayApi; headRef: 
         )}
       </div>
     </div>
+  );
+}
+
+// The threads: the one you follow, whose next beat the narrator hears, and the rest. A milestone
+// the rules can't see is yours to mark.
+function Threads({ api }: { api: PlayApi }) {
+  const { save, world, module } = api;
+  const threads = threadsOf(world, save);
+  if (!threads.length) return null;
+  const firstDay = dayOf(world.scenario.startAt);
+  const day = (absolute: number) => `day ${absolute - firstDay + 1}`;
+  const follow = (view: ThreadView) => {
+    const result = followThread(module, save, view.thread.id);
+    if (result.ok) api.commit(result.save, `Following ${view.thread.name}. The narrator hears its next beat.`); else api.notify(result.reason);
+  };
+  return (
+    <section>
+      <p className="label" style={{ marginBottom: 8 }}>Threads</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {threads.map((view) => {
+          const next = view.milestones.find((entry) => entry.next);
+          return (
+            <details key={view.thread.id} className="card clip" open={view.followed}>
+              <summary className="row" style={{ minHeight: 56 }}>
+                <span className="row-text">
+                  <span className="name">{view.thread.name}{view.followed && <span className="tag yours" style={{ marginLeft: 8 }}>Following</span>}</span>
+                  <span className="meta">{view.done ? 'Nothing left to reach.' : next?.milestone.text}</span>
+                </span>
+              </summary>
+              <div className="pad" style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '0 16px 14px' }}>
+                {view.thread.objective && <p className="meta" style={{ color: 'var(--text-2)' }}>{view.thread.objective}</p>}
+                <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {view.milestones.map(({ milestone, status, next: isNext, byHand }) => (
+                    <li key={milestone.id} style={{ color: status === 'open' ? 'var(--text)' : 'var(--text-3)', textDecoration: status === 'missed' ? 'line-through' : undefined }}>
+                      <span>{milestone.text}</span>
+                      <span className="meta">
+                        {status === 'reached' ? ' · Reached' : status === 'missed' ? ' · Missed' : `${isNext ? ' · Next' : ''}${milestone.byDay !== undefined ? ` · by the end of ${day(milestone.byDay)}` : ''}${byHand ? ' · yours to mark' : ''}`}
+                        {milestone.experience > 0 && ` · ${milestone.experience} experience`}
+                      </span>
+                      {status === 'open' && (
+                        <button type="button" className="btn quiet small" style={{ marginLeft: 4 }} onClick={() => {
+                          const result = markMilestone(module, save, view.thread.id, milestone.id);
+                          if (result.ok) api.commit(result.save, milestone.experience ? `Reached. ${milestone.experience} experience.` : 'Reached.'); else api.notify(result.reason);
+                        }}>Mark reached</button>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+                {!view.followed && !view.done && <div><button type="button" className="btn small" onClick={() => follow(view)}>Follow this thread</button></div>}
+              </div>
+            </details>
+          );
+        })}
+      </div>
+    </section>
   );
 }

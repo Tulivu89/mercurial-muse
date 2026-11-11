@@ -27,7 +27,7 @@ export const TEMPLATES: Record<RecordKind, Template[]> = {
     { title: 'Entry', reach: 'named', hint: 'A custom, a rumour, a piece of history, a rule of the world.' },
   ],
   thread: [
-    { title: 'Next beat', reach: 'always', hint: 'One line: the one thing that should happen next.' },
+    { title: 'Next beat', reach: 'always', hint: 'One line: the one thing that should happen next. With no milestones, the adventure plays this as the thread\'s one milestone.' },
     { title: 'Pressure', reach: 'never', hint: 'Why now?' },
     { title: 'Objective', reach: 'never', hint: 'What would have to happen for this to be over?' },
     { title: 'Opposition', reach: 'never', hint: 'What resists, and what does it do about it?' },

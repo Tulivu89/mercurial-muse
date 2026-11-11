@@ -98,7 +98,7 @@ const CHAPTERS: { id: Chapter; title: string; summary: string; body: ReactNode }
           <li><b>Overcoming</b> someone the first time you bring them to an end with a roll: a minion 1, a rival 4, a nemesis 10. A gang is worth one minion for each of them.</li>
           <li><b>Obstacles:</b> a lock, a door or a barred way, 1, or 2 if it was Hard or worse.</li>
           <li><b>Lessons:</b> 1 for failing against a rival or nemesis, at most once a scene.</li>
-          <li><b>Milestones</b> the module sets, such as signing the Covenant.</li>
+          <li><b>Milestones</b> on the module&rsquo;s threads, listed in the Journal: reached when the rules see them happen, or marked by your hand when they can&rsquo;t. Some are missed if their day passes. A scene action can pay too, such as signing the Covenant.</li>
         </ul>
         <p>Succeeding without a roll earns nothing: that is your choice, not a deed.</p>
         <p>Spend it in You › Growth. Raising an approach costs ten times the new rating, up to 4. Each step up a charge ladder adds the next charge and costs five times it: Practiced 10, Trained 15, Expert 20, Master 25. The narrator never hears about experience.</p>

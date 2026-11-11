@@ -17,6 +17,7 @@ import { STANDARD_RULESET_ID } from '../rules/standard.js';
 import { BLOCKS, rulesetOf, worldRulesSchema } from '../rules/world-rules.js';
 import { DEFAULT_CALENDAR } from '../rules/clock.js';
 import { eventsFromPlans, plansFromEvents, sameDays, type PlanSchedule } from './schedule.js';
+import { THREAD_QUESTIONS, type Milestone } from '../rules/threads.js';
 
 export const MODULE_FORMAT = 'adventure-module/1';
 const MODULE_FORMATS = [MODULE_FORMAT, 'praxis-module/1'];
@@ -122,6 +123,18 @@ export function moduleToWorld(raw: unknown, now: number): ImportResult {
       carried: split(item, ['id', 'name', 'description', 'difficulty']).rest,
     }));
   }
+  // A thread's five questions are its sections, for the author only; its kind and milestones are
+  // its rules.
+  for (const thread of list(module.threads)) {
+    const kind = text(thread.kind);
+    const milestones = list(thread.milestones);
+    const rules = { ...(kind && kind !== 'custom' ? { kind } : {}), ...(milestones.length ? { milestones: milestones as unknown as Milestone[] } : {}) };
+    records.push(record('thread', text(thread.id), text(thread.name), {
+      sections: THREAD_QUESTIONS.map((question) => section(question, question.charAt(0).toUpperCase() + question.slice(1), 'never', thread[question])),
+      rules: Object.keys(rules).length ? { thread: rules } : undefined,
+      carried: split(thread, ['id', 'name', 'kind', 'milestones', ...THREAD_QUESTIONS]).rest,
+    }));
+  }
   const taken = new Set(records.map((entry) => entry.id));
   let scenarioId = 'scenario';
   while (taken.has(scenarioId)) scenarioId = `${scenarioId}-start`;
@@ -170,7 +183,7 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
 
   // A module field's text: the section made from it, or the section an author would have
   // written it in. Other sections the narrator may read go after it.
-  const mappedIds = new Set(['m-entry', 'm-atmosphere', 'm-appearance', 'm-personality', 'm-speech', 'm-description', 'm-opening']);
+  const mappedIds = new Set(['m-entry', 'm-atmosphere', 'm-appearance', 'm-personality', 'm-speech', 'm-description', 'm-opening', ...THREAD_QUESTIONS.map((question) => `m-${question}`)]);
   const find = (entry: StoryRecord, id: string, titles: string[]) =>
     entry.sections.find((part) => part.id === `m-${id}`) ?? entry.sections.find((part) => !mappedIds.has(part.id) && titles.includes(part.title.trim().toLowerCase()));
   const body = (entry: StoryRecord, id: string, titles: string[], alsoRest = false) => {
@@ -270,10 +283,26 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
   else if (startPlaceId !== start.startPlaceId) notes.push(`Play starts at ${byId.get(startPlaceId)?.name}, the first place in the world.`);
   const present = strings(start.presentCharacterIds).filter((id) => id !== playerId && people.some((person) => person.id === id));
 
-  for (const [kind, why] of [['thread', 'Threads'], ['scenario', '']] as const) {
-    const count = of(kind).length - (kind === 'scenario' ? 1 : 0);
-    if (count > 0) notes.push(kind === 'thread' ? `${why} don't reach the adventure yet (${count}).` : `Only the first scenario starts the game (${count} more).`);
-  }
+  const moreScenarios = of('scenario').length - 1;
+  if (moreScenarios > 0) notes.push(`Only the first scenario starts the game (${moreScenarios} more).`);
+
+  // Threads: the five questions from their sections, and the milestones. A thread made in the
+  // Studio with none still reaches the adventure through its Next beat, as one milestone the
+  // player marks.
+  const threads = of('thread').flatMap((thread) => {
+    const authored = thread.rules?.thread?.milestones ?? [];
+    const beat = body(thread, 'next-beat', ['next beat']).trim().slice(0, 400);
+    const milestones = authored.length ? authored : beat ? [{ id: 'next-beat', text: beat, when: [], experience: 0 }] : [];
+    if (!milestones.length) {
+      notes.push(`${thread.name} has no milestones or next beat, so it stays in the Studio.`);
+      return [];
+    }
+    return [{
+      ...extra(thread), id: thread.id, name: thread.name, kind: thread.rules?.thread?.kind ?? 'custom',
+      ...Object.fromEntries(THREAD_QUESTIONS.map((question) => [question, body(thread, question, [question]).slice(0, 2000)])),
+      milestones,
+    }];
+  });
   if (world.records.some((entry) => (entry.kind === 'place' || entry.kind === 'group') && (entry.rules?.states || entry.rules?.maxima))) notes.push('Where a place or a group starts its states stays in the Studio for now; the adventure starts them at rest.');
 
   const identity = { ...(isObject(carriedWorld.identity) ? carriedWorld.identity : {}), ...optional({ description: world.premise, genre: world.genre, tone: world.tone }) };
@@ -294,6 +323,7 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
     relationships: Array.isArray(carried.relationships) ? carried.relationships : [],
     items,
     ruleset: outRuleset,
+    ...(threads.length ? { threads } : {}),
     scenario: {
       ...start,
       title: scenarioRecord?.name ?? world.name,

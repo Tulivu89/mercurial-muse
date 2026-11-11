@@ -18,6 +18,7 @@ import { restEffects, settleCheck, type CheckChoice, type Target } from './check
 import { followSchedules } from './schedule';
 import { followingAs } from './follow';
 import { buy, countDown, loot, openNow, renewArmour, sell, useGood } from './trade';
+import { reachMilestones } from './threads';
 import { playerOf, travel, wait, type ActionResult, type CheckRecord, type LedgerEntry, type Save, type Turn, type WorldState } from './session';
 
 export type TurnResult =
@@ -132,8 +133,11 @@ function passTime(world: PraxisModule, before: Save, settled: Save, settledEntri
   const counted = countDown(world, settled, before.clock, settled.clock);
   const after = counted.save;
   const entries = [...settledEntries, ...counted.entries];
-  const followed = followSchedules(world, after, before.clock, after.clock, { hold });
-  if (!followed.entries.length) return { save: followed.save, entries, directive };
+  const scheduled = followSchedules(world, after, before.clock, after.clock, { hold });
+  // Milestones last, so they see the world the turn left: who is where, and what changed.
+  const reached = reachMilestones(world, scheduled.save);
+  const followed = { ...scheduled, save: reached.save, entries: [...scheduled.entries, ...reached.entries] };
+  if (!scheduled.entries.length) return { save: followed.save, entries: [...entries, ...reached.entries], directive };
   const playerId = playerOf(world);
   const stayed = before.positions[playerId] === after.positions[playerId];
   const places = atlasOf(world).places;

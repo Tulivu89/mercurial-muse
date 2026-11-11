@@ -1,6 +1,6 @@
 // You: condition, the journal, approaches, momentum, standing, bonds and what you carry.
 import { useState } from 'react';
-import { DIFFICULTY_NAMES, LADDER_NAMES, activeEntries, capital, coinOf, durationWords, makeables, worksOf, band, carried as carriedGoods, chargesOf, discardPending, forYou, goodsPhrase, growthFor, keepPending, playerOf, read, thingsHeldBy, toYou, type StateDef } from '../engine';
+import { DIFFICULTY_NAMES, LADDER_NAMES, activeEntries, capital, coinOf, durationWords, makeables, worksOf, band, carried as carriedGoods, chargesOf, discardPending, followedThread, forYou, goodsPhrase, growthFor, keepPending, playerOf, read, thingsHeldBy, toYou, type StateDef } from '../engine';
 import type { PlayApi } from './Play';
 import { ChevronRight, PenIcon } from './icons';
 import { DraftTag, Pips, StateBar, bandForYou, characterStates, goodWords, initials, newId } from './shared';
@@ -279,10 +279,20 @@ function JournalSummary({ api }: { api: PlayApi }) {
   const { save, journalBusy } = api;
   const pending = save.journal.pending;
   const recent = activeEntries(save.journal).slice(-2).reverse();
+  const followed = followedThread(api.world, save);
   return (
     <>
       <div className="sub"><p className="label">Journal</p><button type="button" className="link" onClick={() => api.open('journal')}>Open the journal</button></div>
       <div className="card clip">
+        {followed && (
+          <button type="button" className="lr" style={{ alignItems: 'flex-start', borderBottom: '1px solid var(--line)' }} onClick={() => api.open('journal')}>
+            <span className="grow" style={{ textAlign: 'left' }}>
+              <span className="entry-head"><span className="tag yours">Following</span><span className="meta">{followed.thread.name}</span></span>
+              <span className="entry-text" style={{ display: 'block', color: 'var(--text-2)' }}>{followed.beat.text}</span>
+            </span>
+            <ChevronRight />
+          </button>
+        )}
         {pending && (
           <div style={{ padding: '14px 16px', background: 'var(--surface-2)', borderBottom: '1px solid var(--line)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
