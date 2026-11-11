@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { KIND_NAMES, type World } from '../../core/records/index.js';
+import { type RecordKind, type World } from '../../core/records/index.js';
 import { contextWithRules, ruledText } from '../../core/rules/index.js';
+import { RecordMulti } from './RecordPick';
 
 const WHY: Record<string, string> = { always: 'Always', here: 'Here', named: 'Named', when: 'When', line: 'Line' };
-const HERE_KINDS = new Set(['character', 'place', 'item', 'persona', 'scenario']);
+const HERE_KINDS = new Set<RecordKind>(['character', 'place', 'item', 'persona', 'scenario']);
 
 // What this world would send the model right now, worked out from each part's reach.
 export function ContextPanel({ world, focusId }: { world: World; focusId: string | null }) {
@@ -39,15 +40,8 @@ export function ContextPanel({ world, focusId }: { world: World; focusId: string
 
       <fieldset className="card" style={{ margin: 0 }}>
         <legend className="sub">Here in the scene</legend>
-        {candidates.length === 0 && <p className="empty">Add a place or a character first.</p>}
-        <div className="checks">
-          {candidates.map((record) => (
-            <label key={record.id}>
-              <input type="checkbox" checked={present.includes(record.id)} onChange={(event) => setHereIds((ids) => (event.target.checked ? [...ids, record.id] : ids.filter((id) => id !== record.id)))} />
-              {record.name} <span className="hint">{KIND_NAMES[record.kind].one.toLowerCase()}</span>
-            </label>
-          ))}
-        </div>
+        {candidates.length === 0 ? <p className="empty">Add a place or a character first.</p>
+          : <RecordMulti world={world} label="Here in the scene" kinds={[...HERE_KINDS]} values={present} empty="Nobody and nowhere yet." onChange={setHereIds} />}
       </fieldset>
 
       <label className="field">

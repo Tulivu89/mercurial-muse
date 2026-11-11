@@ -8,6 +8,13 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.25.1 - Inkwyrm - 2026-11-11
+
+- Players read Inkwyrm where they read Praxis: the page title, the loading line, the start
+  screen's wordmark, the version line, the guide, the connection notes and the relay's errors.
+  Code names, browser storage (`praxis` database, `praxis.*` settings) and file formats keep
+  theirs, so nothing a player has is lost.
+
 ## 0.25.0 - Threads - 2026-11-11
 
 - **Threads with milestones** (Character Engine's): a module's new `threads` list. A thread asks

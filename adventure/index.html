@@ -7,11 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap" />
-    <title>Praxis</title>
+    <title>Inkwyrm: Adventure</title>
   </head>
   <body>
     <div id="root">
-      <p id="boot" style="font:16px/1.5 system-ui,sans-serif;color:#8d96a5;padding:24px">Loading Praxis…</p>
+      <p id="boot" style="font:16px/1.5 system-ui,sans-serif;color:#8d96a5;padding:24px">Loading Inkwyrm…</p>
     </div>
     <script>
       // If the app fails before it can draw, say why instead of showing a blank page.
@@ -19,11 +19,11 @@
         var boot = document.getElementById('boot');
         if (!boot) return;
         boot.style.color = '#e58a7f';
-        boot.textContent = 'Praxis could not start: ' + (event.message || 'a script failed to load') + (event.filename ? ' (' + event.filename + ')' : '');
+        boot.textContent = 'Inkwyrm could not start: ' + (event.message || 'a script failed to load') + (event.filename ? ' (' + event.filename + ')' : '');
       }, true);
       setTimeout(function () {
         var boot = document.getElementById('boot');
-        if (boot && boot.textContent === 'Loading Praxis…') boot.textContent = 'Praxis is taking a long time to start. If this stays, the app script did not load.';
+        if (boot && boot.textContent === 'Loading Inkwyrm…') boot.textContent = 'Inkwyrm is taking a long time to start. If this stays, the app script did not load.';
       }, 10000);
     </script>
     <script type="module" src="/src/main.tsx"></script>

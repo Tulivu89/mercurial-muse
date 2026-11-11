@@ -33,9 +33,9 @@ const CHAPTERS: { id: Chapter; title: string; summary: string; body: ReactNode }
     id: 'journal', title: 'The journal', summary: 'How the story so far is kept',
     body: (
       <>
-        <p>The narrator reads as much recent story as fits its window. When the story outgrows that, the oldest piece leaves all at once. Just before it does, Praxis suggests a short journal entry recording it.</p>
+        <p>The narrator reads as much recent story as fits its window. When the story outgrows that, the oldest piece leaves all at once. Just before it does, the adventure suggests a short journal entry recording it.</p>
         <p>Keep it, edit it or discard it: nothing joins the journal on its own. You can also write anything you want remembered. Every entry goes to the narrator with every turn.</p>
-        <p>When the journal passes its budget, Praxis suggests combining the oldest entries into one shorter entry. The originals are archived: kept, never sent.</p>
+        <p>When the journal passes its budget, the adventure suggests combining the oldest entries into one shorter entry. The originals are archived: kept, never sent.</p>
       </>
     ),
   },
@@ -212,7 +212,7 @@ export function GuidePanel({ headRef, onBack }: { headRef: RefObject<HTMLDivElem
     <div className="guide">
       <div className="panel-head" ref={headRef} tabIndex={-1}>
         <button type="button" className="btn quiet" onClick={onBack} style={{ paddingLeft: 4 }}><BackIcon />Menu</button>
-        <h1>How Praxis plays</h1>
+        <h1>How the adventure plays</h1>
         <span className="spacer" />
       </div>
       <p className="meta" style={{ padding: '16px 18px 14px', fontSize: 14, lineHeight: 1.45, color: 'var(--text-2)', borderBottom: '1px solid var(--line)' }}>

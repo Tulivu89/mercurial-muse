@@ -136,8 +136,8 @@ export function App() {
     <main className="home">
       <header className="home-head">
         <div>
-          <h1 className="wordmark">Praxis</h1>
-          <p className="tagline">A roleplay where the story is yours and the facts are kept.</p>
+          <h1 className="wordmark">Inkwyrm</h1>
+          <p className="tagline">Adventure: a roleplay where the story is yours and the facts are kept.</p>
         </div>
       </header>
 

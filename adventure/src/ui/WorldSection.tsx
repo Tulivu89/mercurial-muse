@@ -159,7 +159,7 @@ export function WorldSection({ api, query, setQuery }: { api: PlayApi; query: st
       <button type="button" className="card lr" style={{ borderTop: '1px solid var(--line)', marginBottom: 14 }} onClick={() => api.open('guide')}>
         <BookIcon />
         <span className="grow">
-          <span className="name" style={{ display: 'block' }}>How Praxis plays</span>
+          <span className="name" style={{ display: 'block' }}>How the adventure plays</span>
           <span className="meta" style={{ display: 'block', marginTop: 2 }}>Turns, approaches, checks and dice, condition, the journal</span>
         </span>
         <ChevronRight />
