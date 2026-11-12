@@ -15,6 +15,7 @@
     "build": "npm run build -w adventure && npm run build -w studio && npm run build -w chat",
     "dev:all": "npm run dev:all -w adventure",
     "dev:studio": "npm run dev -w studio",
-    "dev:chat": "npm run dev -w chat"
+    "dev:chat": "npm run dev -w chat",
+    "prompts:live": "npm run prompts:live -w studio"
   }
 }

@@ -9,6 +9,9 @@ import {
 import { KeysField, NameField } from '../../kit/src/Fields';
 import { newId } from '../../kit/src/util';
 import { RecordMulti, RecordPick, withinOf } from './RecordPick';
+import { DraftButton, DraftsFor, NameIdeas, draftWaiting } from './Drafting';
+import { useAuthor } from './author/context';
+import { useDrafts, type DraftsApi } from './author/useDrafts';
 
 type Change = (record: StoryRecord) => void;
 
@@ -28,6 +31,8 @@ const firstWords = (text: string) => text.trim().replace(/\s+/g, ' ').slice(0, 1
 
 export function RecordEditor({ world, record, onChange, onDelete, doors }: { world: World; record: StoryRecord; onChange: Change; onDelete: () => void; doors?: ReactNode }) {
   const update = (patch: Partial<StoryRecord>) => onChange({ ...record, ...patch });
+  const author = useAuthor();
+  const drafts = useDrafts(world, record, author);
   const hasGroups = world.records.some((entry) => entry.kind === 'group' && entry.id !== record.id);
   const isPerson = record.kind === 'character' || record.kind === 'persona';
   const [open, setOpen] = useState<Set<string>>(() => new Set(LEFT_OPEN.get(record.id)));
@@ -63,11 +68,14 @@ export function RecordEditor({ world, record, onChange, onDelete, doors }: { wor
       <details className="card fold names" open={untouched || undefined}>
         <summary><b>Names and keys</b> <span className="hint">{record.keys.length ? record.keys.join(', ') : 'The name, other names, and the line'}</span></summary>
         <NameField label="Name" value={record.name} onChange={(name) => update({ name })} />
+        {untouched && <NameIdeas world={world} record={record} onPick={(name) => update({ name })} />}
         <KeysField label="Keys: other names that bring it into the story" value={record.keys} placeholder="Nicknames, titles, short names, separated by commas" onChange={(keys) => update({ keys })} />
         <label className="field">
           <span>Line: who or what this is to a stranger, in one sentence</span>
           <textarea rows={2} maxLength={400} value={record.line} onChange={(event) => update({ line: event.target.value })} />
         </label>
+        <DraftButton world={world} record={record} target={{ field: 'line' }} api={drafts} label="the line" />
+        <DraftsFor world={world} record={record} target={{ field: 'line' }} api={drafts} onChange={onChange} label="Line" />
         <div className="row">
           {isPerson && (
             <label className="field grow">
@@ -117,6 +125,8 @@ export function RecordEditor({ world, record, onChange, onDelete, doors }: { wor
           world={world}
           record={record}
           section={section}
+          drafts={drafts}
+          onRecord={onChange}
           onChange={(next) => update({ sections: record.sections.map((existing) => (existing.id === section.id ? next : existing)) })}
           onMove={(by) => update({ sections: move(record.sections, index, index + by) })}
           onRemove={() => update({ sections: record.sections.filter((existing) => existing.id !== section.id) })}
@@ -125,7 +135,7 @@ export function RecordEditor({ world, record, onChange, onDelete, doors }: { wor
           last={index === record.sections.length - 1}
         />
       ) : (
-        <FoldRow key={section.id} title={section.title || 'Untitled'} reach={section.reach} says={firstWords(section.text)} onOpen={() => fold(section.id, true)} />
+        <FoldRow key={section.id} title={section.title || 'Untitled'} reach={section.reach} says={firstWords(section.text)} waiting={draftWaiting(drafts, { field: 'section', sectionId: section.id })} onOpen={() => fold(section.id, true)} />
       )))}
 
       <div className="row between">
@@ -160,21 +170,24 @@ export function RecordEditor({ world, record, onChange, onDelete, doors }: { wor
 }
 
 // A section or a set, folded: its title, when it reaches the model, and its first words.
-function FoldRow({ title, reach, says, empty = 'Empty', onOpen }: { title: string; reach: Section['reach']; says: string; empty?: string; onOpen: () => void }) {
+function FoldRow({ title, reach, says, empty = 'Empty', waiting = false, onOpen }: { title: string; reach: Section['reach']; says: string; empty?: string; waiting?: boolean; onOpen: () => void }) {
   return (
     <button type="button" className={`fold-row ${reach}`} aria-expanded={false} aria-label={`${title}, ${REACH_NAMES[reach]}: open to write`} onClick={onOpen}>
       <span className="fold-title">{title}</span>
       <span className={`chip ${reach}`}>{REACH_NAMES[reach]}</span>
       <span className={`fold-says${says ? '' : ' none'}`}>{says || empty}</span>
+      {waiting && <span className="chip draft-chip">Draft waiting</span>}
       <span className="chev" aria-hidden="true">▸</span>
     </button>
   );
 }
 
-function SectionCard({ world, record, section, onChange, onMove, onRemove, onFold, first, last }: {
+function SectionCard({ world, record, section, drafts, onRecord, onChange, onMove, onRemove, onFold, first, last }: {
   world: World;
   record: StoryRecord;
   section: Section;
+  drafts: DraftsApi;
+  onRecord: (record: StoryRecord) => void;
   onChange: (section: Section) => void;
   onMove: (by: number) => void;
   onRemove: () => void;
@@ -216,6 +229,8 @@ function SectionCard({ world, record, section, onChange, onMove, onRemove, onFol
       )}
       <label className="sr" htmlFor={`${id}-text`}>{section.title} text</label>
       <textarea id={`${id}-text`} maxLength={20000} value={section.text} placeholder={hint || 'Plain, concrete prose. The model copies its voice.'} onChange={(event) => onChange({ ...section, text: event.target.value })} />
+      <DraftButton world={world} record={record} target={{ field: 'section', sectionId: section.id }} api={drafts} label={section.title || 'this section'} />
+      <DraftsFor world={world} record={record} target={{ field: 'section', sectionId: section.id }} api={drafts} onChange={onRecord} label={section.title || 'This section'} />
       <div className="row">
         <button type="button" className="btn small quiet" disabled={first} onClick={() => onMove(-1)}>Move up</button>
         <button type="button" className="btn small quiet" disabled={last} onClick={() => onMove(1)}>Move down</button>

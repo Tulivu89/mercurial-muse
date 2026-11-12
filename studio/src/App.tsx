@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { KIND_NAMES, RECORD_KINDS, newWorld, parseWorld, type World } from '../../core/records/index.js';
 import { InkMark } from '../../kit/src/Mark';
 import { Sheet } from '../../kit/src/Sheet';
@@ -11,14 +11,21 @@ import { NOWHERE, navigate, useRoute } from './route';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
 import { ago, newId, readJsonFile } from '../../kit/src/util';
 import { isModule, moduleToWorld } from '../../core/convert/index.js';
+import { AuthorProvider, authorFor } from './author/context';
+import type { Generate } from './author/run';
 
-export function App() {
+// `generate` stands in for the model in tests.
+export function App({ generate }: { generate?: Generate } = {}) {
   const [worlds, setWorlds] = useState<World[] | null>(null);
   // Which world is open is in the address (route.ts), so Back leaves a world the way it came in.
   const route = useRoute();
   const [status, setStatus] = useState<{ text: string; bad?: boolean } | null>(null);
   const [theme, setTheme] = useTheme();
   const [settings, setSettings] = useState(false);
+  // One connection for the Studio: Settings changes it, and every Draft button calls through it.
+  const [connection, setConnection] = useState<Connection>(initialConnection);
+  useEffect(() => { void reconnect(connection).then(setConnection).catch(() => undefined); }, []);
+  const author = useMemo(() => authorFor(connection, () => setSettings(true), generate), [connection, generate]);
   const pending = useRef(new Map<string, World>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -66,21 +73,19 @@ export function App() {
   };
 
   return (
-    <>
+    <AuthorProvider value={author}>
       <SiteHeader side="studio" homeLabel="Inkwyrm Studio, your worlds" onHome={() => { flush(); navigate(NOWHERE); }} onSettings={() => setSettings(true)} />
       {open
         ? <WorldView key={open.id} world={open} onChange={save} onDelete={() => void remove(open)} onStatus={setStatus} status={status} />
         : <Home worlds={worlds} status={status} onOpen={(id) => { setStatus(null); navigate({ ...NOWHERE, worldId: id }); }} onCreate={(world) => { save(world); navigate({ ...NOWHERE, worldId: world.id, page: world.records.length ? null : 'about' }); }} onStatus={setStatus} />}
-      {settings && <Settings theme={theme} onTheme={setTheme} onClose={() => setSettings(false)} />}
-    </>
+      {settings && <Settings theme={theme} onTheme={setTheme} connection={connection} onConnection={setConnection} onClose={() => setSettings(false)} />}
+    </AuthorProvider>
   );
 }
 
 // One Settings for the site: the look, and the model key that Chat and the adventure already
 // share (kit/src/connection.ts).
-function Settings({ theme, onTheme, onClose }: { theme: Theme; onTheme: (theme: Theme) => void; onClose: () => void }) {
-  const [connection, setConnection] = useState<Connection>(initialConnection);
-  useEffect(() => { void reconnect(connection).then(setConnection).catch(() => undefined); }, []);
+function Settings({ theme, onTheme, connection, onConnection, onClose }: { theme: Theme; onTheme: (theme: Theme) => void; connection: Connection; onConnection: (connection: Connection) => void; onClose: () => void }) {
   return (
     <Sheet title="Settings" onClose={onClose}>
       <label className="field">
@@ -90,8 +95,8 @@ function Settings({ theme, onTheme, onClose }: { theme: Theme; onTheme: (theme: 
         </select>
       </label>
       <h3 className="sub">Your model</h3>
-      <p className="hint">One key for the adventure, Chat and the Studio. It is kept on this device if you ask, and goes with each request; the site&rsquo;s server never stores it. The Studio calls no model yet, so this is here for the other two.</p>
-      <ConnectForm connection={connection} onChange={setConnection} />
+      <p className="hint">One key for the adventure, Chat and the Studio. It is kept on this device if you ask, and goes with each request; the site&rsquo;s server never stores it. In the Studio it writes drafts: nothing it writes changes a record until you keep it.</p>
+      <ConnectForm connection={connection} onChange={onConnection} />
     </Sheet>
   );
 }

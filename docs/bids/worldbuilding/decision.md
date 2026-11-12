@@ -1,6 +1,6 @@
 # Worldbuilding tools: the plan
 
-Nov 12, 2026, revised the same day · @AmbiProp · Claude's informed proposal, written after reading both bids and its own, then revised after reading Story Engine 0.15 and *Prompt Engineering Principles*. **Approved by the owner on Nov 12**, with every suggestion under *For the owner* taken except the second: talks get an export of their own. W1 is being built.
+Nov 12, 2026, revised the same day · @AmbiProp · Claude's informed proposal, written after reading both bids and its own, then revised after reading Story Engine 0.15 and *Prompt Engineering Principles*. **Approved by the owner on Nov 12**, with every suggestion under *For the owner* taken except the second: talks get an export of their own. W1 was built the same day (Studio 0.12.0).
 
 The brief is `brief.md`. Claude's own proposal, written before any bid was read, is `claude.md`. The bids are `chatgpt.md` and `gemini-3-8-worldbuilding.md`. ChatGPT says it read the repository's code but not the other proposal. Where it agrees with `claude.md`, that counts as two separate votes.
 
