@@ -1,6 +1,6 @@
 # Maps: the plan
 
-Nov 11, 2026, revised three times on Nov 12 · @AmbiProp · Claude's informed proposal from the four bids, revised at the owner's word. For the owner to approve or veto.
+Nov 11, 2026, revised three times on Nov 12 · @AmbiProp · Claude's informed proposal from the four bids, revised at the owner's word. **Approved by the owner on Nov 12, with the suggestions under Open items. M1 built the same day (Studio 0.9.0).**
 
 The brief is `brief.md` in this folder; the bids are `chatgpt.md`, `deepseek.md`, `gemini-3-8-flash.md` and `grok.md`. Each bid has two parts: the proposal the brief asked for, and an answer to the owner's follow-up about a literal map made from the record with the least input. The bids arrived before any plan was written, so there is no uninformed proposal from Claude for maps.
 
@@ -150,7 +150,7 @@ Routes (`world.routes`, `distanceKm`, walking pace and depth tiers) leave the re
 | Phase | What | Shippable alone because |
 | --- | --- | --- |
 | P0 | The prototype, two versions. Done Nov 12. | The owner can try it before anything is built. |
-| M1 | `core/map/`: the sheet generator, crossing and journey times, with tests. Circles and ground in `kit/`, with the icon sprite and the circle rules. The Studio's Map page, read-only, showing each trip's time. The levels on World › Rules. | The author sees the world's shape and its distances. Play is untouched. |
+| M1 | `core/map/`: the sheet generator, crossing and journey times, with tests. Circles and ground in `kit/`, with the icon sprite and the circle rules. The Studio's Map page, read-only, showing each trip's time. The levels on World › Rules. | Built Nov 12, Studio 0.9.0. |
 | M2 | The adventure travels by levels and the map: journeys up, across and down; a place's crossing requirement; routes and their fields retire. The test modules' routes are traced into roads, as the prototype's button does, and their tests check the new times. The Map section draws circles in place of the spokes. | Every world plays with no routes. |
 | M3 | Refining the ground in the Studio: Move, Bigger, Smaller, Paint, Road, One cell, Keep, Reroll, Reset, Add a place. Stale centres and claims on Checks. | Authors shape distances by placing and painting. |
 | M4 | Icons by choice and by genre set; colour paint, which never makes a rule; words that wrap on circles. | The map reads like the world's own. |

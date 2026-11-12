@@ -213,3 +213,16 @@
 /* Find and the order, at the top of a level of the list. */
 .find { display: flex; gap: 6px; }
 .find input { flex: 1 1 auto; min-width: 0; }
+
+/* The map page (MapPage.tsx); the map itself is kit/src/map.css. */
+.map-bar { justify-content: space-between; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 999px; padding: 2px; background: var(--surface); }
+.seg button { border: 0; background: transparent; color: var(--text-2); font-weight: 700; font-size: 14px; min-height: 36px; padding: 0 14px; border-radius: 999px; }
+.seg button[aria-pressed='true'] { background: var(--text); color: var(--ground); }
+.legs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.legs li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 7px 10px; border-radius: 6px; background: var(--ground); font-size: 14px; }
+.legs li.free { color: var(--text-2); }
+.legs li.across { box-shadow: inset 3px 0 0 var(--blue); }
+.legs .t { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.legs .n { grid-column: 1 / -1; color: var(--text-2); font-size: 13px; }
+.times .num { font-variant-numeric: tabular-nums; white-space: nowrap; }

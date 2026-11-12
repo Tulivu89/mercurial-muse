@@ -159,6 +159,7 @@ export function WorldList({ world, route, go, prefs, onPrefs, flagged, checks, c
   if (!route.kind) {
     const lately = prefs.lately.map((id) => world.records.find((record) => record.id === id)).filter((record): record is StoryRecord => Boolean(record));
     const changed = changedCount(world.rules);
+    const places = world.records.filter((record) => record.kind === 'place').length;
     body = (
       <>
         <h2 className="rail-title">{world.name}</h2>
@@ -198,6 +199,10 @@ export function WorldList({ world, route, go, prefs, onPrefs, flagged, checks, c
               <button type="button" className="item" aria-current={(!route.rec && route.page === 'rules') || undefined} onClick={() => go({ page: 'rules', rec: null, door: null, part: null })}>
                 <span className="item-name">Rules</span>
                 <small>{changed ? `${changed} changed` : 'Standard'}</small>
+              </button>
+              <button type="button" className="item" aria-current={(!route.rec && route.page === 'map') || undefined} onClick={() => go({ page: 'map', rec: null, door: null, sheet: null })}>
+                <span className="item-name">Map</span>
+                <small>{places ? `${places} ${places === 1 ? 'place' : 'places'}, laid out` : 'No places yet'}</small>
               </button>
               <button type="button" className="item" aria-current={(!route.rec && route.page === 'checks') || undefined} onClick={() => go({ page: 'checks', rec: null, door: null })}>
                 <span className="item-name">Checks</span>
@@ -241,6 +246,7 @@ export function WorldList({ world, route, go, prefs, onPrefs, flagged, checks, c
           <h2 className="rail-title">{inside ? inside.name : names.many} <small>{inside ? `${entries.length} inside` : total}</small></h2>
           <span className="row">
             {inside && <button type="button" className="btn small quiet" aria-current={route.rec === inside.id || undefined} onClick={() => open(inside.id)}>Open</button>}
+            {inside && entries.length > 0 && <button type="button" className="btn small quiet" aria-current={(route.page === 'map' && route.sheet === inside.id) || undefined} onClick={() => go({ page: 'map', rec: null, door: null, sheet: inside.id })}>Map</button>}
             <button type="button" className="btn small quiet" onClick={() => onAdd(kind, inside?.id ?? null)} aria-label={inside ? `Add a place inside ${inside.name}` : `Add ${aOrAn(names.one)}`}>Add</button>
           </span>
         </div>

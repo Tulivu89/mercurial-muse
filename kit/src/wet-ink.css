@@ -3,6 +3,7 @@
    the model will read, Atkinson Hyperlegible Next for the interface. */
 
 @import './ink.css';
+@import './map.css';
 
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--ground); color: var(--text); font: 16px/1.5 var(--ui); -webkit-text-size-adjust: 100%; }
