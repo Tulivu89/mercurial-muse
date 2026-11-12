@@ -153,15 +153,27 @@ Routes (`world.routes`, `distanceKm`, walking pace and depth tiers) leave the re
 | M1 | `core/map/`: the sheet generator, crossing and journey times, with tests. Circles and ground in `kit/`, with the icon sprite and the circle rules. The Studio's Map page, read-only, showing each trip's time. The levels on World › Rules. | Built Nov 12, Studio 0.9.0. |
 | M2 | The adventure travels by levels and the map: journeys up, across and down; a place's crossing requirement; routes and their fields retire. The test modules' routes are traced into roads, as the prototype's button does, and their tests check the new times. The Map section draws circles in place of the spokes. | Built Nov 12, adventure 0.27.0 and Studio 0.10.0. |
 | M3 | Refining the ground in the Studio: Move, Bigger, Smaller, Paint, Road, One cell, Keep, Reroll, Reset, Add a place. Stale centres and claims on Checks. | Built Nov 12, Studio 0.11.0. |
-| M4 | Icons by choice and by genre set; colour paint, which never makes a rule; words that wrap on circles. | The map reads like the world's own. |
+| M4 | Icons by choice and by genre set; colour paint, which never makes a rule; words that wrap on circles. | Built Nov 12, Studio 0.12.0 and adventure 0.27.1. |
 | M5 | A picture under a sheet. | Floor plans, deck plans, the owner's own maps. |
 
-## Open items, with suggestions
+## Where it stands (Nov 12, after M4)
+
+Built: everything above but M5. Travel needs no routes, the map lays itself out with no setup, an author can refine it by hand, and play shows it.
+
+Left, in order:
+1. **M5, a picture under a sheet.** The last planned phase.
+2. **Ways of travel and conditions** (a horse, a flatboat, fog, a flood) multiplying a leg or closing it, by rules. It needs a brief of its own, and it carries the open items on road kinds and vehicles.
+3. **The player's own marks** on the map, kept in the save.
+4. **Fog and hidden places,** once a world wants exploration. The map shows everything until then.
+5. **Water as hard ground:** today a lake's cells cost what dry land does unless the lake carries a crossing rule. Suggest a per-kind or per-cell cost when ways of travel come.
+6. **A passage** (two places and a time) for links no map can show, only if a world asks for one.
+7. **Smaller things seen in testing:** a sheet laid out from far-apart old routes, like Fenmire, comes out large, with its places small on the ground (Move and Bigger fix it by hand); a name at the edge of the screen can be clipped.
+
 
 1. **How fast a road is.** *Suggest:* one number per world, 40% of a cell for now. Kinds of road (track, highway, rail) come with ways of travel, as factors on road cells.
-2. **Water and hard ground.** A lake's cells cost the same as dry land today. *Suggest:* a place's crossing requirement also applies to walking across its cells. Without a boat, the walk goes around Grey Water; with one, straight across. It's one rule, and it reuses requirements. Build it in M2 with crossing.
+2. **Water and hard ground.** Built in M2 as suggested: a place's crossing rule also applies to walking across its cells, so without a boat the walk goes around. A lake with no crossing rule still costs what dry land does.
 3. **Links no map can show** (a portal, a secret tunnel, a lift between decks on different sheets). *Suggest:* drop routes now. If a world needs one, a *passage* (two places and a time) comes back as the one exception, and nothing else.
 4. **Hidden places** (Character Engine's hidden kind: secret rooms, holding cells). *Suggest:* wait for fog. Until then a secret place is a place, drawn like any other.
 5. **Vehicles** (Character Engine's vehicle kind: a ship whose cabins travel with it). *Suggest:* with ways of travel, since a vehicle is a place that is also a way.
-6. **Icon sets.** *Suggest:* draw the old set first (about thirty icons), then modern, then far. A place's own pick and a world's set come in M4.
+6. **Icon sets.** Built in M4: three sets and the icons any world can use, about thirty in all, with a place's own pick. More drawings can be added to `kit/src/map-icons.ts` at any time; a key is never renamed.
 7. **Bogwater.** *Suggest:* keep it as the test world until a replacement exists, with its routes traced into roads in M2. Nothing in the plan depends on it.

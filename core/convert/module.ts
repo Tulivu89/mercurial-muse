@@ -78,8 +78,8 @@ export function moduleToWorld(raw: unknown, now: number): ImportResult {
     records.push(record('place', text(place.id), text(place.name), {
       parentId: text(place.parentLocationId) || null,
       sections: [section('entry', 'Entry', 'here', place.description), section('atmosphere', 'Atmosphere', 'here', '')],
-      rules: rulesFrom({ placeKind: kind && kind !== 'other' ? kind : undefined, difficulty: place.difficulty, crossing: Array.isArray(place.crossing) && place.crossing.length ? place.crossing : undefined }, ['placeKind', 'difficulty', 'crossing']),
-      carried: split(place, ['id', 'name', 'description', 'kind', 'parentLocationId', 'difficulty', 'crossing']).rest,
+      rules: rulesFrom({ placeKind: kind && kind !== 'other' ? kind : undefined, difficulty: place.difficulty, crossing: Array.isArray(place.crossing) && place.crossing.length ? place.crossing : undefined, icon: text(place.icon) || undefined }, ['placeKind', 'difficulty', 'crossing', 'icon']),
+      carried: split(place, ['id', 'name', 'description', 'kind', 'parentLocationId', 'difficulty', 'crossing', 'icon']).rest,
     }));
   }
   const groups: [string, GroupKind][] = [['species', 'species'], ['factions', 'faction'], ['societies', 'other'], ['families', 'family']];
@@ -198,7 +198,7 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
   const places = of('place').map((place) => ({
     ...extra(place), id: place.id, name: place.name, description: body(place, 'entry', ['entry'], true),
     kind: place.rules?.placeKind ?? 'other', parentLocationId: place.parentId && byId.get(place.parentId)?.kind === 'place' ? place.parentId : null,
-    ...optional({ difficulty: place.rules?.difficulty, crossing: place.rules?.crossing?.length ? place.rules.crossing : undefined }),
+    ...optional({ difficulty: place.rules?.difficulty, crossing: place.rules?.crossing?.length ? place.rules.crossing : undefined, icon: place.rules?.icon }),
   }));
 
   const groupEntry = (group: StoryRecord) => ({ ...extra(group), id: group.id, name: group.name, description: body(group, 'entry', ['entry'], true) });
