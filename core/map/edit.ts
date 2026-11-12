@@ -19,7 +19,7 @@ export function withSheet(map: WorldMap | undefined, sheetId: string, edits: She
   const sheets = { ...(map?.sheets ?? {}) };
   const kept = edits && clean(edits);
   if (kept) sheets[sheetId] = kept; else delete sheets[sheetId];
-  return Object.keys(sheets).length ? { v: map?.v ?? MAP_VERSION, sheets } : undefined;
+  return Object.keys(sheets).length || map?.icons ? { v: map?.v ?? MAP_VERSION, ...(map?.icons ? { icons: map.icons } : {}), ...(Object.keys(sheets).length ? { sheets } : {}) } : undefined;
 }
 
 const editsOf = (map: WorldMap | undefined, sheetId: string): SheetEdits => map?.sheets?.[sheetId] ?? {};
@@ -95,6 +95,39 @@ export function road(map: WorldMap | undefined, sheet: Sheet, [q, r]: Cell, lay:
   const roads = new Set(edits.roads ?? []);
   if (lay) roads.add(cellKey(q, r)); else roads.delete(cellKey(q, r));
   return withSheet(settled, sheet.id, { ...edits, roads: [...roads].sort() });
+}
+
+// Colour painted on cells, or taken off (null): one cell, seven, or Fill over the patch of the same
+// colour. A look, never a rule.
+export function colour(map: WorldMap | undefined, sheet: Sheet, [q, r]: Cell, value: number | null, brush: Brush): WorldMap | undefined {
+  if (!inDisc(q, r, sheet.radius)) return map;
+  const edits = editsOf(map, sheet.id);
+  const paint = { ...(edits.paint ?? {}) };
+  const set = (key: string) => { if (value === null) delete paint[key]; else paint[key] = value; };
+  if (brush === 0) {
+    const start = cellKey(q, r), from = sheet.paint.get(start) ?? null, owner = sheet.owner.get(start)?.id ?? '';
+    const seen = new Set([start]), todo: Cell[] = [[q, r]];
+    while (todo.length) {
+      const [cq, cr] = todo.pop()!;
+      set(cellKey(cq, cr));
+      for (const [dq, dr] of DIRS) {
+        const nq = cq + dq, nr = cr + dr, key = cellKey(nq, nr);
+        if (seen.has(key) || !inDisc(nq, nr, sheet.radius) || (sheet.paint.get(key) ?? null) !== from || (sheet.owner.get(key)?.id ?? '') !== owner) continue;
+        seen.add(key); todo.push([nq, nr]);
+      }
+    }
+  } else {
+    const reach: Cell[] = brush === 1 ? [[q, r]] : [[q, r], ...DIRS.map(([dq, dr]) => [q + dq, r + dr] as Cell)];
+    for (const [cq, cr] of reach) if (inDisc(cq, cr, sheet.radius)) set(cellKey(cq, cr));
+  }
+  return withSheet(map, sheet.id, { ...edits, paint });
+}
+
+// The world's icon set, to suit its genre; undefined puts back the old one.
+export function iconSet(map: WorldMap | undefined, set: 'old' | 'modern' | 'far' | undefined): WorldMap | undefined {
+  const next: WorldMap = { ...(map ?? {}), icons: set === 'old' ? undefined : set };
+  if (next.icons === undefined) delete next.icons;
+  return next.sheets || next.icons ? { v: next.v ?? MAP_VERSION, ...next } : undefined;
 }
 
 // What a cell is worth on this sheet, in minutes; undefined puts the level's back.

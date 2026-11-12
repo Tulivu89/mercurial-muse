@@ -16,7 +16,7 @@ export const MAP_VERSION = 1;
 // The sheet that holds a world's top places when there is more than one.
 export const TOP = '#top';
 
-export interface MapPlace { id: string; name: string; kind: PlaceKind; parentId: string | null }
+export interface MapPlace { id: string; name: string; kind: PlaceKind; parentId: string | null; icon?: string }
 export interface PlaceMap {
   name: string;
   places: ReadonlyMap<string, MapPlace>;
@@ -32,11 +32,11 @@ const WATERY: readonly string[] = ['wilderness', 'lake', 'river', 'sea or ocean'
 // The places of a world as the map reads them: a kind for each, a parent that is a real place,
 // and no loops. A place inside one that is gone, or inside itself, counts as a top place.
 export function placeMap(world: Pick<World, 'name' | 'records'>): PlaceMap {
-  return placeMapFrom(world.name, world.records.filter((record) => record.kind === 'place').map((place) => ({ id: place.id, name: place.name, kind: place.rules?.placeKind, parentId: place.parentId })));
+  return placeMapFrom(world.name, world.records.filter((record) => record.kind === 'place').map((place) => ({ id: place.id, name: place.name, kind: place.rules?.placeKind, parentId: place.parentId, icon: place.rules?.icon })));
 }
 
 // The same from any list of places, such as an adventure module's.
-export function placeMapFrom(name: string, raw: readonly { id: string; name: string; kind?: unknown; parentId: string | null }[]): PlaceMap {
+export function placeMapFrom(name: string, raw: readonly { id: string; name: string; kind?: unknown; parentId: string | null; icon?: unknown }[]): PlaceMap {
   const ids = new Set(raw.map((place) => place.id));
   const parentOf = new Map(raw.map((place) => [place.id, place.parentId && ids.has(place.parentId) && place.parentId !== place.id ? place.parentId : null]));
   for (const place of raw) {
@@ -47,7 +47,7 @@ export function placeMapFrom(name: string, raw: readonly { id: string; name: str
     }
   }
   const kindOf = (value: unknown): PlaceKind => ((PLACE_KINDS as readonly string[]).includes(value as string) ? (value as PlaceKind) : 'other');
-  const places = new Map<string, MapPlace>(raw.map((place) => [place.id, { id: place.id, name: place.name, kind: kindOf(place.kind), parentId: parentOf.get(place.id) ?? null }]));
+  const places = new Map<string, MapPlace>(raw.map((place) => [place.id, { id: place.id, name: place.name, kind: kindOf(place.kind), parentId: parentOf.get(place.id) ?? null, ...(typeof place.icon === 'string' && place.icon ? { icon: place.icon } : {}) }]));
   const roots = [...places.values()].filter((place) => !place.parentId);
   let root: string | null = roots.length === 1 ? roots[0]!.id : null;
   if (roots.length > 1) {
@@ -125,6 +125,8 @@ export interface Sheet {
   owner: ReadonlyMap<string, Blob>;
   cells: Cell[];
   roads: ReadonlySet<string>;
+  // Colour painted on cells, by palette index. A look, never a rule.
+  paint: ReadonlyMap<string, number>;
 }
 
 // How many cells a place takes before anyone changes it: one for a place that holds nothing,
@@ -256,7 +258,8 @@ export function sheetOf(map: PlaceMap, id: string, edits: SheetEdits = {}): Shee
     blob.cy = round(sy / blob.cells.length);
   }
   const roads = new Set((edits.roads ?? []).filter((key) => { const [q, r] = unKey(key); return Number.isFinite(q) && Number.isFinite(r) && inDisc(q, r, radius); }));
-  return { id, radius, bordered, area, blobs, byId, owner, cells, roads };
+  const paint = new Map(Object.entries(edits.paint ?? {}).filter(([key]) => { const [q, r] = unKey(key); return inDisc(q, r, radius); }));
+  return { id, radius, bordered, area, blobs, byId, owner, cells, roads, paint };
 }
 const round = (value: number) => Math.round(value * 10000) / 10000;
 
