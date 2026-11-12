@@ -8,6 +8,7 @@ import { SourceTag, describeEntry } from './shared';
 import { saveFormat, saveMode, saveModel, type FormatChoice, type NarrationMode } from './narration';
 import { FORMAT_IDS, FORMAT_NAMES, guessFormat } from '../../../core/narration/formats';
 import { downloadJson, fileSafe } from './files';
+import { THEME_NAMES, type Theme } from '../../../kit/src/theme';
 
 function Seg<T extends string | number>({ label, value, options, onPick }: { label: string; value: T; options: [T, string][]; onPick: (value: T) => void }) {
   return (
@@ -170,6 +171,11 @@ export function SettingsSection({ api }: { api: PlayApi }) {
       <div className="sub"><p className="label">Reading</p></div>
       <div className="card">
         <div className="lr stack">
+          <span className="name">Look</span>
+          <Seg<Theme> label="Look" value={api.theme} options={[['paper', THEME_NAMES.paper], ['night', THEME_NAMES.night], ['auto', THEME_NAMES.auto]]} onPick={api.setTheme} />
+          <span className="meta" style={{ lineHeight: 1.45 }}>Paper by day, ink by night. The same choice holds in Chat and the Studio.</span>
+        </div>
+        <div className="lr stack">
           <span className="name">Text size</span>
           <Seg label="Text size" value={prefs.textSize} options={[['small', 'Smaller'], ['standard', 'Standard'], ['large', 'Larger']]} onPick={(textSize) => api.setPrefs({ textSize })} />
         </div>
@@ -242,7 +248,12 @@ export function SettingsSection({ api }: { api: PlayApi }) {
         </button>
       </div>
 
-      <button type="button" className="btn wide" style={{ marginTop: 18 }} onClick={api.leave}>Leave for the title screen</button>
+      <div className="sub"><p className="label">Leave</p><span className="meta">your game is saved as you go</span></div>
+      <div className="card clip">
+        <button type="button" className="lr" onClick={api.leave}><span className="name grow">Your adventures</span><span className="meta">the title screen</span><ChevronRight /></button>
+        <a className="lr" href="/chat/"><span className="name grow">Chat</span><span className="meta">talk with a character</span><ChevronRight /></a>
+        <a className="lr" href="/studio/"><span className="name grow">Studio</span><span className="meta">make worlds and characters</span><ChevronRight /></a>
+      </div>
       <p className="version">Inkwyrm adventure {__PRAXIS_VERSION__} · {api.module.name} {api.module.version}</p>
     </>
   );

@@ -49,13 +49,13 @@ export function MapSection({ api }: { api: PlayApi }) {
       <div className="map" role="group" aria-label="Ways out from here">
         <svg aria-hidden="true" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
           {nodes.map(({ exit, x, y }) => (
-            <line key={exit.place.id} x1={CX} y1={CY} x2={x} y2={y} stroke={exit.blocked ? '#e8907e' : '#4a5160'} strokeWidth={2} strokeDasharray={exit.blocked ? '5 5' : undefined} vectorEffect="non-scaling-stroke" />
+            <line key={exit.place.id} x1={CX} y1={CY} x2={x} y2={y} style={{ stroke: exit.blocked ? 'var(--seal)' : 'var(--text-2)' }} strokeWidth={2} strokeDasharray={exit.blocked ? '5 5' : undefined} vectorEffect="non-scaling-stroke" />
           ))}
         </svg>
         {nodes.map(({ exit, x, y }) => (
-          <span key={`pin-${exit.place.id}`} aria-hidden="true" style={{ position: 'absolute', left: pct(x, W), top: pct(y, H), width: 12, height: 12, margin: '-6px 0 0 -6px', borderRadius: '50%', background: exit.blocked ? '#151922' : 'var(--text)', boxShadow: exit.blocked ? '0 0 0 2px #e8907e' : '0 0 0 3px #12161e' }} />
+          <span key={`pin-${exit.place.id}`} aria-hidden="true" style={{ position: 'absolute', left: pct(x, W), top: pct(y, H), width: 12, height: 12, margin: '-6px 0 0 -6px', borderRadius: '50%', background: exit.blocked ? 'var(--raised)' : 'var(--text)', boxShadow: exit.blocked ? '0 0 0 2px var(--seal)' : '0 0 0 3px var(--surface)' }} />
         ))}
-        <span aria-hidden="true" style={{ position: 'absolute', left: pct(CX, W), top: pct(CY, H), width: 18, height: 18, margin: '-9px 0 0 -9px', borderRadius: '50%', background: 'var(--you)', boxShadow: '0 0 0 4px #12161e, 0 0 0 6px var(--you-line)' }} />
+        <span aria-hidden="true" style={{ position: 'absolute', left: pct(CX, W), top: pct(CY, H), width: 18, height: 18, margin: '-9px 0 0 -9px', borderRadius: '50%', background: 'var(--you)', boxShadow: '0 0 0 4px var(--surface), 0 0 0 6px var(--you-line)' }} />
         <span className="node here" style={{ left: pct(CX, W), top: `calc(${pct(CY, H)} + 14px)` }}>{scene.place.name}<span className="t">you are here</span></span>
         {nodes.map(({ exit, x, y }) => (
           <button

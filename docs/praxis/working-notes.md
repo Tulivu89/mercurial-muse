@@ -13,7 +13,7 @@ Read *Praxis — Charter* first: it holds every decision and the progress table.
 - Compliance is measured, not guessed: Settings › What the narrator was sent › "Try this turn 5 more times" lists every reply, and Copy all / Save as a file exports them with the context. Ask the owner for that file when a ruling is ignored.
 - The evaluator is the last piece of v0.3. It waits on the owner's generation test results (Settings › Testing › Generation test, then **Copy the results**). It should also let free text propose a check rather than the player always choosing one.
 - Still open from earlier releases: transcript branches; NPC opposition dice (every check is Average until characters carry approach ratings).
-- The layout: one scroll, the story, the prompt at its end, the menu under the prompt. No header bar and no menu button; the owner was explicit about this. The design canvas (artifact *Praxis play screen*) still shows the older overlay menu; the app is the source of truth.
+- The layout: one scroll, the story, the prompt at its end, the menu under the prompt. No header bar and no menu button; the owner was explicit about this. The design canvas (artifact *Praxis play screen*) still shows the older overlay menu; the app is the source of truth. Since 0.26.0 the adventure wears Wet Ink: `src/ui/app.css` sits on the tokens in `kit/src/ink.css`, and a colour set in a component is a token (`var(--seal)`), never a hex. The dice keep their own colours.
 
 ## Working with the owner
 

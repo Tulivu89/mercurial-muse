@@ -101,7 +101,7 @@ export function Menu({ api, section, setSection, worldQuery, setWorldQuery }: {
         <YouSection api={api} />
       </Accordion>
 
-      <Accordion anchor={sectionAnchor('map')} title="Map" open={section === 'map'} onToggle={toggle('map')} summary={<>{scene.exits.length} ways out{closed ? ` · ${closed} closed` : ''}</>}>
+      <Accordion anchor={sectionAnchor('map')} title="Map" open={section === 'map'} onToggle={toggle('map')} summary={<>{scene.exits.length} {scene.exits.length === 1 ? 'way' : 'ways'} out{closed ? ` · ${closed} closed` : ''}</>}>
         <MapSection api={api} />
       </Accordion>
 

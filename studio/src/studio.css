@@ -9,28 +9,89 @@
 .world-card h2 { font-family: var(--display); font-weight: 600; font-size: 24px; }
 .world-card p { color: var(--text-2); font-size: 15px; }
 
-/* World: three columns, stacking on a phone */
-.world { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px; padding: 16px clamp(12px, 2.4vw, 28px) 48px; }
-.rail { flex: 1 1 240px; max-width: 100%; display: flex; flex-direction: column; gap: 18px; }
-.editor { flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
-.context { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding: 18px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
-.back { display: none; }
+/* A world: the list, a page and a door (WorldView.tsx). A phone shows one at a time; from 900 px
+   the list sits beside the page; from 1200 px a door sits beside both. */
+.world { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 20px; max-width: 760px; margin: 0 auto; padding: 16px clamp(12px, 2.4vw, 28px) 64px; }
+.rail, .editor, .door-pane { min-width: 0; display: flex; flex-direction: column; }
+.rail { gap: 14px; }
+.editor, .door-pane { gap: 16px; container-type: inline-size; }
+.door-pane > [hidden] { display: none; }
+.world .editor, .world .door-pane { display: none; }
+.world.at-page .rail, .world.at-door .rail { display: none; }
+.world.at-page .editor, .world.at-door .door-pane { display: flex; }
+.wide-only { display: none; }
 @media (min-width: 900px) {
-  .context { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
+  .world { grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); max-width: 1120px; }
+  .world .rail, .world.at-page .rail, .world.at-door .rail { display: flex; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; padding-right: 4px; }
+  .world .editor { display: flex; }
+  .world.at-door .editor { display: none; }
+  .editor > .back { display: none; }
 }
-@media (max-width: 899px) {
-  .world.open .rail { display: none; }
-  .world.open .back { display: inline-flex; }
+@media (min-width: 1200px) {
+  .world { grid-template-columns: minmax(240px, 290px) minmax(0, 1fr) minmax(340px, 0.8fr); max-width: 1500px; }
+  .world .editor, .world.at-door .editor, .world .door-pane { display: flex; }
+  .door-pane { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; padding: 16px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+  .below-wide { display: none !important; }
+  .wide-only { display: inline; }
+}
+.back, .up { align-self: flex-start; }
+
+/* The list (WorldList.tsx): one level at a time, the line on every row. */
+.rail-title { font-family: var(--display); font-weight: 600; font-size: 26px; letter-spacing: -0.01em; line-height: 1.15; }
+.rail-title small { font-family: var(--ui); font-size: 13px; font-weight: 400; letter-spacing: 0; color: var(--text-2); margin-left: 4px; }
+.rail-label { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); padding: 0 2px 2px; }
+.kind { display: flex; flex-direction: column; }
+.kind-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.row-pair { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--rule); }
+.row-pair .item { border-bottom: 0; }
+.row-pair > .btn { flex: none; }
+.item { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex: 1 1 auto; width: 100%; min-width: 0; text-align: left; min-height: 48px; padding: 7px 8px; border: 0; border-bottom: 1px solid var(--rule); border-radius: 6px 6px 0 0; background: transparent; color: var(--text); }
+.item:hover { background: var(--surface); }
+.item[aria-current='true'] { background: var(--raised); box-shadow: inset 3px 0 0 var(--text); }
+.item-text { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
+.item-name { font-weight: 700; overflow-wrap: anywhere; }
+.item small { font-size: 13px; color: var(--text-2); font-weight: 400; }
+.item-text small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.item > small { flex: none; max-width: 55%; text-align: right; }
+.item .flag { flex: none; padding: 1px 6px; border: 1px solid var(--rule); border-radius: 4px; font-size: 12px; }
+.chev { flex: none; color: var(--text-2); }
+.lately .chips { gap: 6px; }
+.lately .btn[aria-current='true'] { border-color: var(--text); }
+.trail { font-size: 13px; color: var(--text-2); }
+.trail button { min-height: 32px; padding: 0 2px; border: 0; background: none; color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; }
+.into { white-space: nowrap; }
+
+/* A record's page (RecordEditor.tsx): who it is, its doors, then the writing. */
+.identity { font-family: var(--read); font-size: 17px; line-height: 1.5; }
+.card.names { padding-top: 6px; padding-bottom: 6px; }
+.card.names > summary { align-items: center; min-height: 44px; }
+.card.names > summary b { font-size: 15px; }
+.card.names[open] { padding-bottom: 14px; }
+.doors { display: flex; flex-direction: column; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.door { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'label chev' 'says chev'; align-items: center; gap: 0 10px; width: 100%; min-height: 56px; padding: 8px 14px; border: 0; border-top: 1px solid var(--rule); background: transparent; color: var(--text); text-align: left; }
+.door:first-child { border-top: 0; }
+.door:hover { background: var(--raised); }
+.door[aria-current='true'] { background: var(--raised); box-shadow: inset 3px 0 0 var(--text); }
+.door-label { grid-area: label; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); }
+.door-says { grid-area: says; font-family: var(--read); font-size: 15px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.door .chev { grid-area: chev; }
+.door-head { display: flex; flex-direction: column; gap: 10px; }
+.door-title { font-family: var(--display); font-weight: 600; font-size: clamp(24px, 3.4vw, 30px); letter-spacing: -0.01em; line-height: 1.1; }
+.door-title small { display: block; font-family: var(--ui); font-size: 13px; font-weight: 400; letter-spacing: 0; color: var(--text-2); margin-top: 2px; }
+.door-pane .lede { font-family: var(--read); font-size: 16px; color: var(--text-2); }
+.door-pane .rules { display: flex; flex-direction: column; gap: 10px; }
+@media (min-width: 1200px) {
+  .door-pane .context { padding: 0; border: 0; background: none; }
+  .door-head { flex-direction: row-reverse; align-items: flex-start; justify-content: space-between; }
 }
 
-.rail h2 { font-family: var(--display); font-weight: 600; font-size: 26px; letter-spacing: -0.01em; }
-.kind { display: flex; flex-direction: column; gap: 2px; }
-.kind-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.kind-head h3 { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); }
-.item { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; min-height: 40px; padding: 6px 10px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--text); }
-.item:hover { background: var(--surface); }
-.item[aria-current='true'] { background: var(--raised); border-color: var(--rule); font-weight: 700; }
-.item small { font-size: 12px; color: var(--text-2); font-weight: 400; }
+/* A section or a set, folded to one row: its title, its reach, its first words. */
+.fold-row { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: 8px; width: 100%; min-height: 48px; padding: 6px 12px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); color: var(--text); text-align: left; }
+.fold-row:hover { background: var(--raised); }
+.fold-row.never { border-style: dashed; }
+.fold-title { font-weight: 700; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fold-says { font-family: var(--read); font-size: 15px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fold-says.none { font-family: var(--ui); font-size: 13px; }
 
 .editor h1 { font-family: var(--display); font-weight: 600; font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.02em; line-height: 1.05; }
 .card.never { border-style: dashed; }
@@ -44,6 +105,7 @@
 @media (max-width: 599px) { .message { grid-template-columns: minmax(0, 1fr) 40px; } .message select { grid-column: 1 / -1; } }
 
 /* In context now */
+.context { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .context h2 { font-family: var(--display); font-weight: 600; font-size: 22px; }
 
 /* The week view: a strip a day, each event where it falls. */
@@ -79,11 +141,11 @@
 .rule-control { grid-area: control; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; min-width: 0; }
 .rule-source { grid-area: source; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; min-height: 0; }
 .rule-source:empty { display: none; }
-@media (min-width: 700px) {
+@container (min-width: 640px) {
   .rule { grid-template-columns: minmax(160px, 1fr) auto minmax(150px, auto); grid-template-areas: 'label control source'; }
 }
 .rule-pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 20px; }
-@media (min-width: 700px) {
+@container (min-width: 640px) {
   .rule-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rule-pair .rule { grid-template-columns: minmax(70px, 1fr) auto; grid-template-areas: 'label control' 'source source'; }
 }
@@ -131,19 +193,13 @@
 .more.when { border-top: 0; }
 .more.when > summary { font-weight: 400; color: var(--text-2); }
 
-/* The record picker (RecordPick.tsx): a button, then a sheet with a search box. A sheet from the
-   bottom on a phone, a box in the middle on a wide screen. */
+/* The record picker (RecordPick.tsx): a button, then a sheet (kit/src/Sheet.tsx) with a search
+   box and the records under it. */
 .pick-button { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; padding: 6px 10px; text-align: left; cursor: pointer; }
 .pick-button small, .pick-row small { color: var(--text-2); font-size: 12px; font-weight: 400; }
 .input.pick.pick-button { width: auto; min-width: 12em; }
-.pick-shade { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; background: rgb(0 0 0 / 0.35); }
-.pick-sheet { display: flex; flex-direction: column; gap: 10px; width: 100%; max-height: 82vh; padding: 14px 16px 16px; background: var(--ground); border: 1px solid var(--rule); border-radius: 12px 12px 0 0; box-shadow: 0 -8px 30px rgb(0 0 0 / 0.25); }
-@media (min-width: 700px) {
-  .pick-shade { align-items: center; }
-  .pick-sheet { max-width: 480px; max-height: 70vh; border-radius: 12px; }
-}
-.pick-head { display: flex; align-items: center; gap: 8px; }
 .pick-list { overflow-y: auto; min-height: 120px; overscroll-behavior: contain; }
+.sheet:has(.pick-list) { overflow: hidden; }
 .pick-group { position: sticky; top: 0; padding: 8px 10px 4px; background: var(--ground); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); }
 .pick-row { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
 .pick-row.active { background: var(--raised); }
@@ -154,16 +210,6 @@
 .chips .chip { gap: 4px; border: 1px solid var(--rule); font-weight: 400; font-size: 14px; padding: 2px 4px 2px 8px; white-space: normal; }
 .chip-x { min-width: 28px; min-height: 28px; border: 0; background: transparent; color: var(--text-2); font-size: 16px; cursor: pointer; }
 
-/* The record list: find, order, and kinds that fold. On a wide screen it scrolls on its own. */
+/* Find and the order, at the top of a level of the list. */
 .find { display: flex; gap: 6px; }
 .find input { flex: 1 1 auto; min-width: 0; }
-.kind-fold { display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 4px; border: 0; background: transparent; color: var(--text-2); cursor: pointer; }
-.kind-fold small { font-size: 12px; color: var(--text-2); }
-@media (min-width: 900px) {
-  .rail { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; padding-right: 4px; }
-}
-
-/* The jump bar on a record's page: its parts, one tap away, and kept in view. */
-.jump { position: sticky; top: 0; z-index: 5; display: flex; gap: 6px; overflow-x: auto; padding: 8px 0; background: var(--ground); border-bottom: 1px solid var(--rule); scrollbar-width: none; }
-.jump .btn { flex: none; }
-.part-anchor { scroll-margin-top: 64px; }

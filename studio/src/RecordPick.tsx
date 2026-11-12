@@ -5,6 +5,7 @@
 // told apart. RecordMulti is the same sheet for a list: the choices as chips, and Add.
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { KIND_NAMES, RECORD_KINDS, type RecordKind, type StoryRecord, type World } from '../../core/records/index.js';
+import { Sheet } from '../../kit/src/Sheet';
 
 export interface PickOption {
   id: string;
@@ -114,41 +115,35 @@ function PickerSheet({ world, title, options, chosen, multi, none, onPick, onClo
   };
 
   return (
-    <div className="pick-shade" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <div className="pick-sheet" role="dialog" aria-modal="true" aria-label={title} onKeyDown={keys}>
-        <div className="pick-head">
-          <b className="grow">{title}</b>
-          <button type="button" className="btn small" onClick={onClose}>{multi ? 'Done' : 'Close'}</button>
-        </div>
-        <input
-          ref={search} className="input" type="search" placeholder={`Search ${options.length} by name`} aria-label={`${title}: search`}
-          aria-controls="pick-list" aria-activedescendant={rows.length ? `pick-row-${active}` : undefined} value={query} onChange={(event) => { setQuery(event.target.value); setActive(0); }}
-        />
-        <div className="pick-list" id="pick-list" role="listbox" aria-multiselectable={multi} ref={list}>
-          {rows.length === 0 && <p className="empty">Nothing called that.</p>}
-          {rows.map((row, index) => {
-            const heading = row.group && row.group !== rows[index - 1]?.group ? <p className="pick-group">{row.group}</p> : null;
-            const picked = row.option ? chosen.includes(row.option.id) : !chosen.length;
-            return (
-              <div key={`${row.group}-${row.option?.id ?? 'none'}`}>
-                {heading}
-                <div
-                  id={`pick-row-${index}`} data-row={index} role="option" aria-selected={picked} className={`pick-row${index === active ? ' active' : ''}`}
-                  onMouseMove={() => setActive(index)} onClick={() => pick(row)}
-                >
-                  <span className="pick-tick" aria-hidden="true">{picked ? '✓' : ''}</span>
-                  <span className="grow">
-                    {row.option ? row.option.name : none}
-                    {row.option?.within && <small> in {row.option.within}</small>}
-                  </span>
-                  {query && row.option && <small className="pick-kind">{KIND_NAMES[row.option.kind].one}</small>}
-                </div>
+    <Sheet title={title} onClose={onClose} closeLabel={multi ? 'Done' : 'Close'} onKeyDown={keys}>
+      <input
+        ref={search} className="input" type="search" placeholder={`Search ${options.length} by name`} aria-label={`${title}: search`}
+        aria-controls="pick-list" aria-activedescendant={rows.length ? `pick-row-${active}` : undefined} value={query} onChange={(event) => { setQuery(event.target.value); setActive(0); }}
+      />
+      <div className="pick-list" id="pick-list" role="listbox" aria-multiselectable={multi} ref={list}>
+        {rows.length === 0 && <p className="empty">Nothing called that.</p>}
+        {rows.map((row, index) => {
+          const heading = row.group && row.group !== rows[index - 1]?.group ? <p className="pick-group">{row.group}</p> : null;
+          const picked = row.option ? chosen.includes(row.option.id) : !chosen.length;
+          return (
+            <div key={`${row.group}-${row.option?.id ?? 'none'}`}>
+              {heading}
+              <div
+                id={`pick-row-${index}`} data-row={index} role="option" aria-selected={picked} className={`pick-row${index === active ? ' active' : ''}`}
+                onMouseMove={() => setActive(index)} onClick={() => pick(row)}
+              >
+                <span className="pick-tick" aria-hidden="true">{picked ? '✓' : ''}</span>
+                <span className="grow">
+                  {row.option ? row.option.name : none}
+                  {row.option?.within && <small> in {row.option.within}</small>}
+                </span>
+                {query && row.option && <small className="pick-kind">{KIND_NAMES[row.option.kind].one}</small>}
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
-    </div>
+    </Sheet>
   );
 }
 

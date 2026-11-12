@@ -274,7 +274,7 @@ export function CheckPanel({ api, owner, headRef, onCancel }: { api: PlayApi; ow
               </p>
               {!noRoll && <>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, paddingTop: 12, borderTop: '1px solid var(--line)' }}>
-                <span style={{ font: '600 40px/1 var(--mono)' }}>{percent(plan.odds.success)}</span>
+                <span style={{ font: '600 40px/1 var(--display)' }}>{percent(plan.odds.success)}</span>
                 <span style={{ fontSize: 15, color: 'var(--text-2)' }}>chance to succeed</span>
               </div>
               <div className="two">
@@ -301,12 +301,12 @@ export function CheckPanel({ api, owner, headRef, onCancel }: { api: PlayApi; ow
           {alwaysSucceed ? (
             <>
               <button type="button" className="btn" style={{ flex: 1, minHeight: 52 }} disabled={busy || !plan?.ok} onClick={() => settle(true)}>Roll anyway</button>
-              <button type="button" className="btn primary" style={{ flex: 1, minHeight: 52 }} disabled={busy || !plan?.ok} onClick={() => settle(false)}>Succeed</button>
+              <button type="button" className="btn seal" style={{ flex: 1, minHeight: 52 }} disabled={busy || !plan?.ok} onClick={() => settle(false)}>Succeed</button>
             </>
           ) : (
             <>
               <button type="button" className="btn" style={{ flex: 1, minHeight: 52 }} disabled={busy || !plan?.ok} onClick={() => settle(false)}>Succeed, no roll</button>
-              <button type="button" className="btn primary" style={{ flex: 1, minHeight: 52 }} disabled={busy || !plan?.ok} onClick={() => settle(true)}>{noRoll ? 'Pay them' : 'Roll'}</button>
+              <button type="button" className="btn seal" style={{ flex: 1, minHeight: 52 }} disabled={busy || !plan?.ok} onClick={() => settle(true)}>{noRoll ? 'Pay them' : 'Roll'}</button>
             </>
           )}
         </div>

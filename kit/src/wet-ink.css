@@ -2,36 +2,7 @@
    thing to press, blue-black for the second colour. Fraunces for display, Literata for anything
    the model will read, Atkinson Hyperlegible Next for the interface. */
 
-:root {
-  --ground: #F3EEE4;
-  --surface: #FBF8F2;
-  --raised: #FFFFFF;
-  --text: #1D1B17;
-  --text-2: #5E574C;
-  --rule: #D9D0C0;
-  --seal: #B23A26;
-  --on-seal: #FFF8F0;
-  --blue: #2F4A6B;
-  --on-blue: #F3F6FA;
-  --display: 'Fraunces', Georgia, serif;
-  --read: 'Literata', Georgia, 'Times New Roman', serif;
-  --ui: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  color-scheme: light;
-}
-
-:root[data-theme='night'] {
-  --ground: #16130F;
-  --surface: #201C16;
-  --raised: #2A251D;
-  --text: #EDE5D6;
-  --text-2: #A89E8D;
-  --rule: #3A342B;
-  --seal: #E46A4E;
-  --on-seal: #1A100B;
-  --blue: #8FB1D9;
-  --on-blue: #0F1620;
-  color-scheme: dark;
-}
+@import './ink.css';
 
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--ground); color: var(--text); font: 16px/1.5 var(--ui); -webkit-text-size-adjust: 100%; }
@@ -41,14 +12,6 @@ button { cursor: pointer; }
 a { color: var(--blue); }
 :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-
-/* Bar */
-.bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 10px clamp(12px, 3vw, 28px); background: var(--surface); border-bottom: 1px solid var(--rule); }
-.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); background: none; border: 0; padding: 4px 0; min-height: 44px; }
-.wordmark { font-family: var(--display); font-weight: 600; font-size: 24px; letter-spacing: -0.02em; line-height: 1; }
-.wordmark em { font-weight: 500; }
-.side { font-size: 14px; font-weight: 700; color: var(--text-2); border-left: 1px solid var(--rule); padding-left: 10px; }
-.bar-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 
 /* Controls */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 16px; border-radius: 6px; border: 1px solid var(--text); background: transparent; color: var(--text); font-weight: 700; text-decoration: none; }
@@ -92,42 +55,13 @@ a { color: var(--blue); }
 .part { font-family: var(--read); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
 .part b { font-family: var(--ui); font-size: 12px; color: var(--text-2); font-weight: 700; margin-right: 4px; }
 
-
-/* The marks (Mark.tsx): wet lacquer, black by day and bone at night. The interface stays flat;
-   only the marks carry shading and shine (docs/brand.md). */
-@property --mk-gleam { syntax: '<number>'; inherits: true; initial-value: 1; }
-@property --reveal { syntax: '<percentage>'; inherits: false; initial-value: 114%; }
-:root {
-  --mk-0: #383430; --mk-1: #1C1A18; --mk-2: #080706; --mk-3: #000000;
-  --mk-shine: #FFFFFF; --mk-shine-a: 1; --mk-rim: #000000; --mk-rim-a: 0;
-  --mk-shadow: #000000; --mk-shadow-a: 0.22; --mk-cut: #EDE5D6; --mk-cut-a: 0; --mk-gleam: 1;
+/* A sheet (Sheet.tsx): up from the bottom on a phone, a box in the middle on a wide screen. */
+.sheet-shade { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; background: rgb(0 0 0 / 0.35); }
+.sheet { display: flex; flex-direction: column; gap: 10px; width: 100%; max-height: 86dvh; padding: 14px 16px calc(16px + env(safe-area-inset-bottom)); overflow-y: auto; background: var(--ground); border: 1px solid var(--rule); border-radius: 10px 10px 0 0; }
+.sheet:focus { outline: none; }
+@media (min-width: 700px) {
+  .sheet-shade { align-items: center; }
+  .sheet { max-width: 480px; max-height: 76vh; border-radius: 10px; }
 }
-:root[data-theme='night'] {
-  --mk-0: #FFFFFF; --mk-1: #EDE5D6; --mk-2: #CDC2AF; --mk-3: #8F8471; --mk-shadow-a: 0.55;
-}
-svg.mk { overflow: visible; flex: none; }
-
-/* Settle: a mark drops in, stretched as it falls, squashed as it lands, and its shine comes on
-   as it settles. Words are written on, left to right, with a soft wet edge. */
-.mk.land { animation: mk-drop 900ms cubic-bezier(.32, 0, .2, 1) both, mk-gleam 1100ms ease-out both; transform-origin: 50% 94%; }
-@keyframes mk-drop {
-  0% { transform: translateY(-130%) scale(.84, 1.18); opacity: 0; }
-  30% { opacity: 1; }
-  56% { transform: translateY(0) scale(.9, 1.12); }
-  68% { transform: translateY(0) scale(1.12, .86); }
-  82% { transform: scale(.97, 1.03); }
-  100% { transform: none; opacity: 1; }
-}
-@keyframes mk-gleam { 0%, 62% { --mk-gleam: 0; } 100% { --mk-gleam: 1; } }
-.ink-write {
-  -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--reveal) - 14%), transparent var(--reveal));
-  mask-image: linear-gradient(90deg, #000 calc(var(--reveal) - 14%), transparent var(--reveal));
-  animation: ink-write 1000ms 120ms cubic-bezier(.4, 0, .2, 1) both;
-}
-@keyframes ink-write { from { --reveal: 0%; } to { --reveal: 114%; } }
-.ink-settle { animation: ink-settle 280ms ease-out both; }
-@keyframes ink-settle { from { opacity: 0; filter: blur(4px); transform: translateY(6px); } to { opacity: 1; filter: none; transform: none; } }
-@media (prefers-reduced-motion: reduce) {
-  .mk.land, .ink-write, .ink-settle { animation: none; }
-  .ink-write { -webkit-mask-image: none; mask-image: none; }
-}
+.sheet-head { display: flex; align-items: center; gap: 8px; }
+.sheet-head b { font-family: var(--display); font-weight: 600; font-size: 20px; }

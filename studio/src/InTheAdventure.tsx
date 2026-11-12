@@ -27,26 +27,7 @@ export function InTheAdventure({ world, record, onChange, onWorld }: { world: Wo
   const text = (key: string) => (typeof carried[key] === 'string' ? carried[key] as string : '');
   let body: ReactNode = null;
 
-  if (record.kind === 'character') {
-    const days = Object.entries(record.schedule ?? {}).filter(([, events]) => events.length);
-    const change = (day: string, id: string, patch: Partial<ScheduleEvent>) => onChange({ ...record, schedule: { ...record.schedule, [day]: record.schedule![day]!.map((event) => (event.id === id ? { ...event, ...patch } : event)) } });
-    body = (
-      <>
-        <Rule label="Lives at" hint="Where they are when their day says nothing.">
-          <PlacePick world={world} label="Lives at" none="Nowhere set" value={text('homeLocationId')} onChange={(value) => carry('homeLocationId', value)} />
-        </Rule>
-        <p className="hint">Their day is the schedule below. Give an event a place and they are there in the adventure while it is on; an event with no place moves nobody. Keep to the four times of day, and no more than four people in a place at once.</p>
-        {days.length === 0 && <p className="empty">No events yet. Add them in the Schedule below, then come back to say where each one is.</p>}
-        {days.map(([day, events]) => events.map((event) => (
-          <div key={`${day}-${event.id}`} className="stop">
-            <span className="rule-label">{day === 'Daily' ? 'Every day' : day}, from {formatMinutes(event.startTime)}<small>{event.text || 'Nothing written.'}</small></span>
-            <PlacePick world={world} label={`${day} ${formatMinutes(event.startTime)}: where`} none="No place" value={event.place ?? ''} onChange={(value) => change(day, event.id, { place: value || undefined })} />
-            <WhenPick world={world} when={event.when} label={`${day} ${formatMinutes(event.startTime)}`} onChange={(when) => change(day, event.id, { when })} />
-          </div>
-        )))}
-      </>
-    );
-  } else if (record.kind === 'item') {
+  if (record.kind === 'item') {
     body = (
       <>
         <Rule label="Lies at" hint="The place it is found in.">
@@ -84,19 +65,61 @@ export function InTheAdventure({ world, record, onChange, onWorld }: { world: Wo
   }
   if (!body) return null;
   return (
-    <details className="card rules">
-      <summary><span className="rules-title">In the adventure</span><span className="rules-summary">{summary(world, record)}</span></summary>
+    <section className="rules" aria-label="In the adventure">
+      <p className="lede">{adventureSummary(world, record)}</p>
       {body}
-    </details>
+    </section>
   );
 }
 
-function summary(world: World, record: StoryRecord): string {
+// Which kinds have a part in the adventure beyond their rules. A character's is their day.
+export const hasAdventure = (record: StoryRecord) => ['item', 'scenario', 'thread', 'place'].includes(record.kind);
+
+// A character's day, for the Day door: where they live, and for each event of the week, the place
+// it happens and what it waits on. The week itself is the schedule, drawn between the two.
+export function LivesAt({ world, record, onChange }: { world: World; record: StoryRecord; onChange: (record: StoryRecord) => void }) {
+  const carried = (record.carried ?? {}) as Raw;
+  const home = typeof carried.homeLocationId === 'string' ? carried.homeLocationId : '';
+  const set = (value: string) => {
+    const next = { ...carried };
+    if (value) next.homeLocationId = value; else delete next.homeLocationId;
+    onChange({ ...record, carried: Object.keys(next).length ? next : undefined });
+  };
+  return (
+    <Rule label="Lives at" hint="Where they are when their day says nothing.">
+      <PlacePick world={world} label="Lives at" none="Nowhere set" value={home} onChange={set} />
+    </Rule>
+  );
+}
+
+export function DayStops({ world, record, onChange }: { world: World; record: StoryRecord; onChange: (record: StoryRecord) => void }) {
+  const days = Object.entries(record.schedule ?? {}).filter(([, events]) => events.length);
+  const change = (day: string, id: string, patch: Partial<ScheduleEvent>) => onChange({ ...record, schedule: { ...record.schedule, [day]: record.schedule![day]!.map((event) => (event.id === id ? { ...event, ...patch } : event)) } });
+  return (
+    <section className="stack" aria-label="Where each part of the day happens">
+      <h3 className="sub">Where each part of the day happens</h3>
+      <p className="hint">Give an event a place and they are there in the adventure while it is on; an event with no place moves nobody. Keep to the four times of day, and no more than four people in a place at once.</p>
+      {days.length === 0 && <p className="empty">No events yet. Add them to the week above, then say here where each one is.</p>}
+      {days.map(([day, events]) => events.map((event) => (
+        <div key={`${day}-${event.id}`} className="stop">
+          <span className="rule-label">{day === 'Daily' ? 'Every day' : day}, from {formatMinutes(event.startTime)}<small>{event.text || 'Nothing written.'}</small></span>
+          <PlacePick world={world} label={`${day} ${formatMinutes(event.startTime)}: where`} none="No place" value={event.place ?? ''} onChange={(value) => change(day, event.id, { place: value || undefined })} />
+          <WhenPick world={world} when={event.when} label={`${day} ${formatMinutes(event.startTime)}`} onChange={(when) => change(day, event.id, { when })} />
+        </div>
+      )))}
+    </section>
+  );
+}
+
+export function adventureSummary(world: World, record: StoryRecord): string {
   const carried = (record.carried ?? {}) as Raw;
   const name = (id: unknown) => world.records.find((entry) => entry.id === id)?.name ?? 'somewhere gone';
   if (record.kind === 'character') {
-    const stops = Object.values(record.schedule ?? {}).flat().filter((event) => event.place).length;
-    return `${carried.homeLocationId ? `Lives at ${name(carried.homeLocationId)}` : 'No home set'} · ${stops ? `${stops} ${stops === 1 ? 'stop' : 'stops'} in their day` : 'stays put'}.`;
+    const events = Object.values(record.schedule ?? {}).flat();
+    const stops = events.filter((event) => event.place).length;
+    const home = carried.homeLocationId ? `Lives at ${name(carried.homeLocationId)}` : 'No home set';
+    if (!events.length) return `${home} · nothing planned yet.`;
+    return `${home} · ${stops ? `${stops} ${stops === 1 ? 'stop' : 'stops'} in their day` : `${events.length} ${events.length === 1 ? 'event' : 'events'} in the week, none at a place`}.`;
   }
   if (record.kind === 'item') return carried.heldBy ? `Carried by ${name(carried.heldBy)}.` : carried.locationId ? `Lies at ${name(carried.locationId)}.` : 'Not placed anywhere.';
   if (record.kind === 'scenario') return carried.startPlaceId ? `Play starts at ${name(carried.startPlaceId)}.` : 'Play starts at the first place.';

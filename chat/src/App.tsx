@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { EMOTIONS, careAt, lifeKey, lifeNow, needsText, newChat, newLife, readChatFile, type Chat, type Life } from '../../core/chat/index.js';
 import { importCardFile, newWorld, recordById, type StoryRecord, type World } from '../../core/records/index.js';
 import { initialConnection, reconnect, type Connection } from '../../kit/src/connection';
-import { Drop, Wordmark } from '../../kit/src/Mark';
+import { SiteHeader } from '../../kit/src/SiteHeader';
 import { useTheme } from '../../kit/src/theme';
 import { downloadJson, imageDataUrl, newId, readFileBytes, readJsonFile } from '../../kit/src/util';
 import { listWorlds, putWorld } from '../../kit/src/worlds';
@@ -258,20 +258,12 @@ export function App() {
 
   return (
     <>
-      <header className="bar">
-        <button type="button" className="brand" onClick={() => go({ name: 'home' })} aria-label="Inkwyrm Chat, your chats">
-          <Drop size={34} chat />
-          <Wordmark />
-          <span className="side">Chat</span>
-        </button>
-        <div className="bar-actions">
-          <button type="button" className="btn quiet" aria-current={view.name === 'home'} onClick={() => go({ name: 'home' })}>Chats</button>
-          <button type="button" className="btn quiet" aria-current={view.name === 'house'} onClick={() => go({ name: 'house' })}>Home</button>
-          <button type="button" className="btn quiet" aria-current={view.name === 'settings'} onClick={() => go(view.name === 'settings' ? { name: 'home' } : { name: 'settings' })}>{view.name === 'settings' ? 'Done' : 'Settings'}</button>
-          <a className="btn quiet" href="/studio/">Studio</a>
-          <a className="btn quiet" href="/">Adventure</a>
-        </div>
-      </header>
+      <SiteHeader side="chat" homeLabel="Inkwyrm Chat, your chats" onHome={() => go({ name: 'home' })} onSettings={() => go(view.name === 'settings' ? { name: 'home' } : { name: 'settings' })} />
+      <nav className="local-nav" aria-label="Chat">
+        <button type="button" aria-current={view.name === 'home' || undefined} onClick={() => go({ name: 'home' })}>Chats</button>
+        <button type="button" aria-current={view.name === 'house' || undefined} onClick={() => go({ name: 'house' })}>Home</button>
+        {view.name === 'settings' && <button type="button" aria-current="true" onClick={() => go({ name: 'home' })}>Settings · Done</button>}
+      </nav>
       {view.name === 'house' ? (
         <House
           worlds={worlds ?? []} chats={chats ?? []} portraits={portraits} lives={lives} userName={settings.userName}

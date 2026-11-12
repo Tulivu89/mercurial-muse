@@ -263,8 +263,15 @@ export function DetailsPanel({ chat, onChange, scene, world, charName, onDelete 
   const lore = world ? lorePool(world) : [];
   const owners = scene ? [scene.character, scene.persona, scene.scenario].filter(Boolean) : [];
   const tier = (lock: string | null) => BOND_CONDITIONS.find((condition) => condition.id === lock)?.tier;
+  // The character is a record in one of the Studio's worlds; a chat never writes to it.
+  const source = world?.id === chat.worldId && world.records.some((record) => record.id === chat.characterId);
   return (
     <>
+      {source && (
+        <p className="hint">
+          <a href={`/studio/#/w/${encodeURIComponent(chat.worldId)}?rec=${encodeURIComponent(chat.characterId)}`}>Edit {charName} in the Studio</a>. What you change there reaches the next reply; what has been said stays as it was.
+        </p>
+      )}
       <div className="row">
         <label className="field grow"><span>Relationship</span>
           <select value={chat.relationship} onChange={(event) => onChange({ ...chat, relationship: event.target.value as Chat['relationship'] })}>{RELATIONSHIPS.map((value) => <option key={value} value={value}>{capital(value)}</option>)}</select>

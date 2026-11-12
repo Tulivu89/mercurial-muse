@@ -128,6 +128,11 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.3.1 - The site's header - 2026-11-12
+
+- **One header for the site** (`kit/src/SiteHeader.tsx`): the bubble, the three sides with Chat underlined, and a gear for Settings. Chats and Home sit under it as Chat's own two places. On a phone the header no longer wraps onto a second row.
+- **Edit in the Studio:** a chat's details link to the character's record, which opens there on its own page.
+
 ### 0.3.0 - Home - 2026-11-10
 
 - **Home:** a scenario's rooms as pictures with layers and movement, characters placed by their schedule, needs, actions, a bond, and a replay of the time away.

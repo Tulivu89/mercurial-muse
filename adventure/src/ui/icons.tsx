@@ -33,7 +33,7 @@ export const CloseIcon = () => <Icon size={18}><path d="M6 6l12 12M18 6 6 18" />
 export const ArchiveIcon = () => <Icon size={18}><rect x="3" y="4" width="18" height="5" rx="1" /><path d="M5 9v10h14V9M10 13h4" /></Icon>;
 export const Diamond = ({ color, filled, size = 11 }: { color: string; filled: boolean; size?: number }) => (
   <svg aria-hidden="true" width={size} height={size} viewBox="0 0 12 12">
-    {filled ? <path d="M6 1 11 6 6 11 1 6z" fill={color} /> : <path d="M6 1.7 10.3 6 6 10.3 1.7 6z" fill="none" stroke="#4a5160" />}
+    {filled ? <path d="M6 1 11 6 6 11 1 6z" style={{ fill: color }} /> : <path d="M6 1.7 10.3 6 6 10.3 1.7 6z" fill="none" style={{ stroke: 'var(--text-2)' }} />}
   </svg>
 );
 export const DiamondIcon = () => <Icon size={16} width={1.8}><path d="M12 3 21 12 12 21 3 12z" /></Icon>;
