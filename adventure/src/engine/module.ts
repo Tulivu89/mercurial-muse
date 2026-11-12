@@ -3,10 +3,10 @@
 //   world     Orbis record shapes, with Orbis field names and IDs. Orbis documents are
 //             free-form JSON, so every record keeps fields this schema does not name; a
 //             later Orbis loader then replaces a file read rather than a translation.
-//             `routes` is the one Praxis addition: Orbis records a place's distance from a
-//             hub, not the roads between places. It uses Orbis's own travel vocabulary
-//             (distanceKm, terrain, routeClass) and is part of the Orbis proposal.
-//   ruleset   The state catalog, the calendar and travel pricing; from v0.2, dice.
+//             A place can say what crossing to or from it asks (`crossing`). Routes retired
+//             in 0.27.0: travel comes from the levels and the map (docs/bids/maps/decision.md).
+//   ruleset   The state catalog, the calendar and travel by level; from v0.2, dice.
+//   map       What an author changed on each sheet of the map, roads included (core/map).
 //   scenario  Where and when play starts, and who is present.
 //   threads   What is pushing the story, with milestones the rules see reached (0.25.0).
 //
@@ -16,8 +16,9 @@ import { z } from 'zod';
 import { appliesTo, forOwner, WORLD_OWNER, type StateDef } from './state';
 import { withStandard } from './standard';
 import {
-  AREA_KINDS, LADDER, PLACE_KINDS, TIERS, WORK_PREFIX, difficultySchema, routeSchema, rulesetSchema,
+  AREA_KINDS, LADDER, PLACE_KINDS, TIERS, WORK_PREFIX, difficultySchema, requirementSchema, rulesetSchema,
 } from '../../../core/rules/ruleset';
+import { mapSchema } from '../../../core/map/schema';
 import { threadSchema } from '../../../core/rules/threads';
 
 // The ruleset's own shapes live in core/rules since 0.23.0; they are part of this module's surface as before.
@@ -48,6 +49,9 @@ export const placeSchema = z.object({
   kind: z.enum(PLACE_KINDS).default('other'),
   parentLocationId: id.nullable().default(null),
   difficulty: difficultySchema,
+  // What crossing to or from this place asks of a traveller: a boat for an island. A requirement
+  // whose `toward` is this place applies only on the way in.
+  crossing: z.array(requirementSchema).max(8).default([]),
 }).passthrough();
 
 // Species, factions, societies and families: the Orbis editor asks only for these two fields.
@@ -193,7 +197,6 @@ export const worldSchema = z.object({
   rules: z.record(z.string(), z.unknown()).default({}),
   timeWeather: z.record(z.string(), z.unknown()).default({}),
   places: z.array(placeSchema).max(5000).default([]),
-  routes: z.array(routeSchema).max(10_000).default([]),
   species: z.array(worldEntrySchema).max(500).default([]),
   factions: z.array(worldEntrySchema).max(500).default([]),
   societies: z.array(worldEntrySchema).max(500).default([]),
@@ -228,7 +231,8 @@ export const moduleSchema = z.object({
   characters: z.array(characterSchema).max(5000).default([]),
   relationships: z.array(relationshipSchema).max(5000).default([]),
   items: z.array(itemSchema).max(5000).default([]),
-  ruleset: rulesetSchema.default({ states: [], travel: { walkKph: 4, tiers: [] }, actions: [], approaches: [], deeds: [], follow: [], goods: [] }),
+  ruleset: rulesetSchema.default({ states: [], actions: [], approaches: [], deeds: [], follow: [], goods: [] }),
+  map: mapSchema.optional(),
   scenario: scenarioSchema,
   threads: z.array(threadSchema).max(200).default([]),
 }).superRefine((module, context) => {
@@ -249,7 +253,6 @@ export const moduleSchema = z.object({
   const characterState = (state: StateDef | undefined) => Boolean(state && (appliesTo(state, 'character', true) || appliesTo(state, 'character', false)));
 
   unique(module.world.places.map((place) => place.id), ['world', 'places']);
-  unique(module.world.routes.map((route) => route.id), ['world', 'routes']);
   unique(module.characters.map((character) => character.id), ['characters']);
   unique(module.ruleset.states.map((state) => state.id), ['ruleset', 'states']);
 
@@ -273,21 +276,12 @@ export const moduleSchema = z.object({
     }
   });
 
-  module.world.routes.forEach((route, index) => {
-    for (const end of ['from', 'to'] as const) {
-      const placeId = route[end];
-      if (!places.has(placeId)) issue(['world', 'routes', index, end], `Unknown place "${placeId}".`);
-      else if (isArea(placeId)) issue(['world', 'routes', index, end], `"${placeId}" is an area, not somewhere a route can end.`);
-    }
-    if (route.from === route.to) issue(['world', 'routes', index, 'to'], 'A route needs two different places.');
-    route.requires.forEach((requirement, requirementIndex) => {
-      const path = ['world', 'routes', index, 'requires', requirementIndex];
-      if (!characterState(states.get(requirement.stateId))) {
-        issue([...path, 'stateId'], `"${requirement.stateId}" is not a state a character holds.`);
-      }
-      if (requirement.toward !== undefined && requirement.toward !== route.from && requirement.toward !== route.to) {
-        issue([...path, 'toward'], `"${requirement.toward}" is not an end of this route.`);
-      }
+  // What crossing to or from a place asks waits on a state a traveller holds.
+  module.world.places.forEach((place, index) => {
+    place.crossing.forEach((requirement, requirementIndex) => {
+      const path = ['world', 'places', index, 'crossing', requirementIndex];
+      if (!characterState(states.get(requirement.stateId))) issue([...path, 'stateId'], `"${requirement.stateId}" is not a state a character holds.`);
+      if (requirement.toward !== undefined && requirement.toward !== place.id) issue([...path, 'toward'], `"${requirement.toward}" is not this place; a crossing rule can apply only on the way in to it.`);
     });
   });
 

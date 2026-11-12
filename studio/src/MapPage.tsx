@@ -11,7 +11,7 @@ import type { Route } from './route';
 
 export function MapPage({ world, route, go }: { world: World; route: Route; go: (patch: Partial<Route>) => void }) {
   const map = useMemo(() => placeMap(world), [world.records, world.name]);
-  const atlas = useMemo(() => atlasOf(map), [map]);
+  const atlas = useMemo(() => atlasOf(map, world.map?.sheets), [map, world.map]);
   const circles = useMemo(() => circlesOf(atlas), [atlas]);
   const travel = useMemo(() => travelOf(atlas, world.rules?.levels), [atlas, world.rules?.levels]);
   const standable = useMemo(() => [...map.places.values()].filter((place) => place.id !== TOP && !isArea(place.kind)), [map]);

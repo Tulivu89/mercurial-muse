@@ -6,6 +6,9 @@
 
 import type { World } from '../records/index.js';
 import { AREA_KINDS, PLACE_KINDS, type PlaceKind } from '../rules/index.js';
+import type { SheetEdits } from './schema.js';
+
+export type { SheetEdits } from './schema.js';
 
 // The generator's version. A world keeps the version its layout was made with, so a later
 // generator can't quietly move a place and change a journey.
@@ -29,7 +32,11 @@ const WATERY: readonly string[] = ['wilderness', 'lake', 'river', 'sea or ocean'
 // The places of a world as the map reads them: a kind for each, a parent that is a real place,
 // and no loops. A place inside one that is gone, or inside itself, counts as a top place.
 export function placeMap(world: Pick<World, 'name' | 'records'>): PlaceMap {
-  const raw = world.records.filter((record) => record.kind === 'place');
+  return placeMapFrom(world.name, world.records.filter((record) => record.kind === 'place').map((place) => ({ id: place.id, name: place.name, kind: place.rules?.placeKind, parentId: place.parentId })));
+}
+
+// The same from any list of places, such as an adventure module's.
+export function placeMapFrom(name: string, raw: readonly { id: string; name: string; kind?: unknown; parentId: string | null }[]): PlaceMap {
   const ids = new Set(raw.map((place) => place.id));
   const parentOf = new Map(raw.map((place) => [place.id, place.parentId && ids.has(place.parentId) && place.parentId !== place.id ? place.parentId : null]));
   for (const place of raw) {
@@ -40,11 +47,11 @@ export function placeMap(world: Pick<World, 'name' | 'records'>): PlaceMap {
     }
   }
   const kindOf = (value: unknown): PlaceKind => ((PLACE_KINDS as readonly string[]).includes(value as string) ? (value as PlaceKind) : 'other');
-  const places = new Map<string, MapPlace>(raw.map((place) => [place.id, { id: place.id, name: place.name, kind: kindOf(place.rules?.placeKind), parentId: parentOf.get(place.id) ?? null }]));
+  const places = new Map<string, MapPlace>(raw.map((place) => [place.id, { id: place.id, name: place.name, kind: kindOf(place.kind), parentId: parentOf.get(place.id) ?? null }]));
   const roots = [...places.values()].filter((place) => !place.parentId);
   let root: string | null = roots.length === 1 ? roots[0]!.id : null;
   if (roots.length > 1) {
-    places.set(TOP, { id: TOP, name: world.name, kind: 'continent', parentId: null });
+    places.set(TOP, { id: TOP, name, kind: 'continent', parentId: null });
     for (const place of roots) places.set(place.id, { ...place, parentId: TOP });
     root = TOP;
   }
@@ -60,7 +67,7 @@ export function placeMap(world: Pick<World, 'name' | 'records'>): PlaceMap {
     return n;
   };
   for (const id of places.keys()) count(id);
-  return { name: world.name, places, children, root, holds };
+  return { name, places, children, root, holds };
 }
 
 export const childrenOf = (map: PlaceMap, id: string) => map.children.get(id) ?? [];
@@ -94,17 +101,6 @@ function fnv(text: string): number {
   return h >>> 0;
 }
 const unit = (seed: string, text: string) => fnv(`${seed}|${text}`) / 4294967296;
-
-// What an author changed on one sheet. Every field is optional; an untouched sheet has none.
-export interface SheetEdits {
-  seed?: number;
-  cellMinutes?: number;
-  radius?: number;
-  centres?: Record<string, { q: number; r: number }>;
-  sizes?: Record<string, number>;
-  claims?: Record<string, string>;
-  roads?: string[];
-}
 
 export interface Blob {
   id: string;
@@ -267,12 +263,14 @@ const round = (value: number) => Math.round(value * 10000) / 10000;
 // Every sheet of a world, laid out once and kept until the world changes.
 export interface Atlas {
   map: PlaceMap;
+  edits: Readonly<Record<string, SheetEdits>>;
   sheet: (id: string) => Sheet;
 }
-export function atlasOf(map: PlaceMap, edits: Record<string, SheetEdits> = {}): Atlas {
+export function atlasOf(map: PlaceMap, edits: Readonly<Record<string, SheetEdits>> = {}): Atlas {
   const sheets = new Map<string, Sheet>();
   return {
     map,
+    edits,
     sheet: (id) => {
       let found = sheets.get(id);
       if (!found) { found = sheetOf(map, id, edits[id]); sheets.set(id, found); }

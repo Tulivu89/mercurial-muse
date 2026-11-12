@@ -6,66 +6,79 @@ const module = abernys();
 const player = 'traveller';
 const unsigned: StateValues = {};
 const signed: StateValues = { traveller: { 'signed-covenant': 1 } };
+const kinds = (result: ReturnType<typeof findPath>) => (result.ok ? result.legs.map((leg) => leg.kind) : []);
 
 describe('the Abernys module', () => {
   it('loads without errors', () => {
     const result = loadModule(abernysRaw);
     expect(result.ok ? [] : result.errors).toEqual([]);
   });
+
+  it('reads a module from before maps, and drops its routes', () => {
+    const old = structuredClone(abernysRaw) as Record<string, any>;
+    old.world.routes = [{ id: 'r', from: 'pc-landward-gate', to: 'caerwyn', distanceKm: 64 }];
+    old.ruleset.travel = { walkKph: 4, tiers: [] };
+    const result = loadModule(old);
+    expect(result.ok).toBe(true);
+    expect(result.ok && 'routes' in result.module.world).toBe(false);
+  });
 });
 
 describe('the atlas', () => {
-  it('measures depth from the island', () => {
+  it('measures depth from the top place', () => {
     const { depth } = atlasOf(module);
     expect(depth.get('abernys')).toBe(0);
     expect(depth.get('port-covenant')).toBe(2);
     expect(depth.get('pc-harbour')).toBe(3);
   });
 
-  it('prices hops inside a place by tier and routes by distance', () => {
+  it("prices a step inside by the holding place's level, and a crossing by the map", () => {
+    // Port Covenant is a settlement, and this module makes stepping inside one take ten minutes.
     const fromTown = exitsFrom(module, signed, player, 'port-covenant');
     expect(fromTown.find((exit) => exit.place.id === 'pc-harbour')?.edge.minutes).toBe(10);
-    const fromGate = exitsFrom(module, signed, player, 'pc-landward-gate');
-    // 64 km at 4 km/h.
-    expect(fromGate.find((exit) => exit.place.id === 'caerwyn')?.edge.minutes).toBe(960);
+    const toCaerwyn = findPath(module, signed, player, 'pc-landward-gate', 'caerwyn');
+    expect(kinds(toCaerwyn)).toEqual(['out', 'across']);
+    const across = toCaerwyn.ok ? toCaerwyn.legs[1]! : null;
+    expect(across?.kind === 'across' && across.sheet).toBe('abernys');
+    expect(toCaerwyn.ok && toCaerwyn.minutes).toBe(Math.round(toCaerwyn.ok ? toCaerwyn.legs.reduce((sum, leg) => sum + leg.minutes, 0) : 0));
   });
 
-  it('never walks through an area', () => {
+  it('never stops in an area', () => {
     const fromGate = exitsFrom(module, signed, player, 'pc-landward-gate').map((exit) => exit.place.id);
     expect(fromGate).not.toContain('nospier-point');
+    expect(fromGate).toContain('port-covenant');
     const result = findPath(module, signed, player, 'pc-landward-gate', 'fenmire');
     expect(result.ok).toBe(false);
   });
 });
 
-describe('gated routes', () => {
-  it('keep an unsigned player out of the port, with the route\'s own reason', () => {
-    const result = findPath(module, unsigned, player, 'pc-landward-gate', 'pc-harbour');
-    expect(result).toEqual({ ok: false, reason: 'No one enters the port without signing the Covenant.' });
+describe('crossing rules', () => {
+  it("keep an unsigned player out of the port, with the place's own reason", () => {
+    expect(findPath(module, unsigned, player, 'pc-landward-gate', 'pc-harbour')).toEqual({ ok: false, reason: 'No one enters the port without signing the Covenant.' });
   });
 
-  it('let a signed player in by the quickest way', () => {
+  it('let a signed player in: across to the town, then in', () => {
     const result = findPath(module, signed, player, 'pc-landward-gate', 'pc-harbour');
-    expect(result.ok && result.minutes).toBe(13);
-    expect(result.ok && result.steps.map((step) => step.to)).toEqual(['port-covenant', 'pc-harbour']);
+    expect(kinds(result)).toEqual(['across', 'in']);
   });
 
-  it('only apply toward the place they guard', () => {
-    const result = findPath(module, unsigned, player, 'pc-harbour', 'pc-landward-gate');
-    expect(result.ok).toBe(true);
+  it('apply only on the way in', () => {
+    expect(findPath(module, unsigned, player, 'pc-harbour', 'pc-landward-gate').ok).toBe(true);
+    expect(findPath(module, unsigned, player, 'pc-harbour', 'pc-registry').ok).toBe(true);
   });
 
-  it('show up on the exit list', () => {
+  it('show up on the list of ways out', () => {
     const gate = exitsFrom(module, unsigned, player, 'pc-landward-gate').find((exit) => exit.place.id === 'port-covenant');
     expect(gate?.blocked).toBe('No one enters the port without signing the Covenant.');
   });
 });
 
 describe('journeys', () => {
-  it('take the quickest open way across routes', () => {
+  it('climb, cross and come down, along the old roads', () => {
     const result = findPath(module, signed, player, 'pc-harbour', 'bogwater');
-    // Harbour to town 10, town to gate 3, gate to Bogwater 330.
-    expect(result.ok && result.minutes).toBe(343);
+    expect(kinds(result)).toEqual(['out', 'out', 'across', 'in']);
+    const across = result.ok ? result.legs[2]! : null;
+    expect(across?.kind === 'across' && across.onRoad).toBeGreaterThan(0);
   });
 
   it('list every destination except areas and the current place', () => {
@@ -75,7 +88,7 @@ describe('journeys', () => {
     expect(ids).not.toContain('abernys');
   });
 
-  it('explain a destination with no way to it', () => {
+  it("join a world's top places through the world's own sheet", () => {
     const island = loadModule({
       format: 'praxis-module/1', id: 'x', name: 'x', version: '1', source: { kind: 'local' },
       world: { id: 'w', name: 'w', places: [{ id: 'a', name: 'A', kind: 'town' }, { id: 'b', name: 'B', kind: 'town' }] },
@@ -83,6 +96,7 @@ describe('journeys', () => {
       scenario: { title: 't', startPlaceId: 'a', playerCharacterId: 'p' },
     });
     if (!island.ok) throw new Error(island.errors.join('\n'));
-    expect(findPath(island.module, {}, 'p', 'a', 'b')).toEqual({ ok: false, reason: 'There is no known way from here to B.' });
+    const result = findPath(island.module, {}, 'p', 'a', 'b');
+    expect(kinds(result)).toEqual(['across']);
   });
 });

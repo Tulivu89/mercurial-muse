@@ -29,7 +29,7 @@ const PARTS: { id: string; name: string; says: string; changed: (rules: Rules) =
   { id: 'growth', name: 'Growth', says: 'What earns experience and what it buys.', changed: (rules) => Object.keys(rules.growth ?? {}).length },
   { id: 'trade', name: 'Trade and making', says: 'Bribes, purses, selling back and making things.', changed: (rules) => Object.keys(rules.trade ?? {}).length + Object.keys(rules.craft ?? {}).length },
   { id: 'goods', name: 'Goods', says: 'What anyone can sell, and what each is worth.', changed: (rules) => rules.goods.length },
-  { id: 'calendar', name: 'The calendar and travel', says: 'The week, the months, the times of day, walking pace.', changed: (rules) => (rules.calendar ? 1 : 0) + (rules.travel ? 1 : 0) },
+  { id: 'calendar', name: 'The calendar', says: 'The week, the months, the times of day.', changed: (rules) => (rules.calendar ? 1 : 0) },
   { id: 'travel', name: 'Travel by level', says: 'A typical trip across a land, a region, a settlement or a building, and what a road saves.', changed: (rules) => levelsChanged(rules.levels) },
   { id: 'actions', name: 'Scene actions', says: 'What a player can do at a place by its own button.', changed: (rules) => rules.actions.length },
 ];
@@ -101,7 +101,7 @@ export function WorldRules({ world, onChange, part: asked = null, onPart = () =>
             );
           })}
         </nav>
-        <p className="hint">Fixed for now: a fight is over when someone is down or yields to Force and no one else here is still in it, and the place settles to uneasy. Someone travels with you as a companion by your bond, as your captive once they are down, or because you won them over. Routes are on each place&rsquo;s page, under In the adventure.</p>
+        <p className="hint">Fixed for now: a fight is over when someone is down or yields to Force and no one else here is still in it, and the place settles to uneasy. Someone travels with you as a companion by your bond, as your captive once they are down, or because you won them over. What a place asks of a traveller is on its page, under In the adventure; how long a journey takes is the map&rsquo;s, by the levels under Travel by level.</p>
       </>
     );
   }

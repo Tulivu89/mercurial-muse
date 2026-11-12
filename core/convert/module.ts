@@ -3,7 +3,7 @@
 //
 // A module's text becomes lines and sections, its links become groups and parents, its numbers
 // become rules blocks, and its ruleset becomes the world's own rules. What the record model has
-// no place for yet (routes, relationships, a day's stops, where an item lies, the scenario's
+// no place for yet (relationships, a day's stops, where an item lies, the scenario's
 // start) is carried in the module's own names and goes back out unchanged.
 //
 // The module is handled as plain data: the adventure checks it when it loads it.
@@ -78,8 +78,8 @@ export function moduleToWorld(raw: unknown, now: number): ImportResult {
     records.push(record('place', text(place.id), text(place.name), {
       parentId: text(place.parentLocationId) || null,
       sections: [section('entry', 'Entry', 'here', place.description), section('atmosphere', 'Atmosphere', 'here', '')],
-      rules: rulesFrom({ placeKind: kind && kind !== 'other' ? kind : undefined, difficulty: place.difficulty }, ['placeKind', 'difficulty']),
-      carried: split(place, ['id', 'name', 'description', 'kind', 'parentLocationId', 'difficulty']).rest,
+      rules: rulesFrom({ placeKind: kind && kind !== 'other' ? kind : undefined, difficulty: place.difficulty, crossing: Array.isArray(place.crossing) && place.crossing.length ? place.crossing : undefined }, ['placeKind', 'difficulty', 'crossing']),
+      carried: split(place, ['id', 'name', 'description', 'kind', 'parentLocationId', 'difficulty', 'crossing']).rest,
     }));
   }
   const groups: [string, GroupKind][] = [['species', 'species'], ['factions', 'faction'], ['societies', 'other'], ['families', 'family']];
@@ -154,7 +154,7 @@ export function moduleToWorld(raw: unknown, now: number): ImportResult {
   const built = {
     format: WORLD_FORMAT, id: text(module.id), name: text(module.name), premise, genre, tone, conditions: [], records, updatedAt: now,
     rules: rules.data,
-    routes: world.routes ?? [],
+    ...(isObject(module.map) ? { map: module.map } : {}),
     carried: {
       id: module.id, version: module.version, notes: module.notes, source: module.source,
       world: { ...split(world, collections).rest, identity: split(identity, mapped).rest ?? {} },
@@ -198,7 +198,7 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
   const places = of('place').map((place) => ({
     ...extra(place), id: place.id, name: place.name, description: body(place, 'entry', ['entry'], true),
     kind: place.rules?.placeKind ?? 'other', parentLocationId: place.parentId && byId.get(place.parentId)?.kind === 'place' ? place.parentId : null,
-    ...optional({ difficulty: place.rules?.difficulty }),
+    ...optional({ difficulty: place.rules?.difficulty, crossing: place.rules?.crossing?.length ? place.rules.crossing : undefined }),
   }));
 
   const groupEntry = (group: StoryRecord) => ({ ...extra(group), id: group.id, name: group.name, description: body(group, 'entry', ['entry'], true) });
@@ -266,10 +266,9 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
   const own = world.rules;
   const outRuleset: Raw = {
     extends: STANDARD_RULESET_ID,
-    travel: own?.travel ?? { walkKph: 4, tiers: [] },
     states: own?.states ?? [],
     actions: own?.actions ?? [],
-    ...optional({ approaches: own?.approaches.length ? own.approaches : undefined, deeds: own?.deeds.length ? own.deeds : undefined, calendar: own?.calendar }),
+    ...optional({ approaches: own?.approaches.length ? own.approaches : undefined, deeds: own?.deeds.length ? own.deeds : undefined, calendar: own?.calendar, levels: own?.levels }),
     follow: own?.follow ?? [],
     goods: [...(own?.goods ?? []), ...itemGoods],
     // A module replaces these blocks whole, so a changed one goes out in full.
@@ -315,7 +314,7 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
     source: isObject(carried.source) ? carried.source : { kind: 'local' },
     world: {
       id: world.id, name: world.name, ...carriedWorld, identity,
-      places, routes: world.routes ?? (Array.isArray(carried.routes) ? carried.routes : []),
+      places,
       species: groupsOf('species'), factions: groupsOf('faction'), societies: groupsOf('other', 'crew', 'profession'), families: groupsOf('family'),
       memories: of('lore').map((lore) => ({ ...extra(lore), id: lore.id, title: lore.name, description: body(lore, 'entry', ['entry'], true) })),
     },
@@ -323,6 +322,7 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
     relationships: Array.isArray(carried.relationships) ? carried.relationships : [],
     items,
     ruleset: outRuleset,
+    ...(world.map ? { map: world.map } : {}),
     ...(threads.length ? { threads } : {}),
     scenario: {
       ...start,

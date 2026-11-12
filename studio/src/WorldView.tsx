@@ -121,7 +121,7 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
         {page === 'checks' && (
           <>
             <h1 className="ink-write">Checks</h1>
-            <p className="lede">What would trip the adventure or lose the narrator, found before anyone plays: stops that are not real places, more than four people in one place over forty days, a When with no condition, routes that end nowhere, and rules that point at something gone.</p>
+            <p className="lede">What would trip the adventure or lose the narrator, found before anyone plays: stops that are not real places, more than four people in one place over forty days, a When with no condition, and rules that point at something gone.</p>
             {problems.length === 0 && <p className="status" role="status">All clear.</p>}
             {problems.map((problem, index) => (
               <div key={index} className="card">

@@ -102,6 +102,7 @@ export function playable(module: PraxisModule, local: readonly LocalRecord[]): P
     kind: record.kind ?? 'other',
     parentLocationId: record.parentLocationId ?? null,
     difficulty: record.difficulty,
+    crossing: [],
     origin: 'local',
   }));
   const things: Item[] = of('thing').map((record) => ({

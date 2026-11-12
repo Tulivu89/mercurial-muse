@@ -2,7 +2,7 @@
   "format": "adventure-module/1",
   "id": "abernys-bogwater",
   "name": "Abernys: Bogwater",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "notes": "Built from Praxis — Bogwater Module Plan and the Abernys docs (Fenmire, the Woed, Cairn Maw, Port Covenant). Owner material: Fenmire, Bogwater, the Council of Crones, the bog-keeper, witchcraft, the Woed, tamecap and Rabitis, and the roles of Nest, Morwen, Cadfan and Meurig (spelled Meyrick here, a proposal). Everything marked canonStatus \"draft\" is a suggestion for the owner. Day 1 is day 243 of the default calendar, Friday 1 September. Rooms are child places with free hops, standing in for partitions until Praxis has them. Thread outcomes are states: the-spark (world), ink-claim and ink-mark (the runaway), rabitis (Lowri), and schedules wait on them.",
   "source": {
     "kind": "local"
@@ -155,7 +155,15 @@
         "kind": "village",
         "parentLocationId": "fenmire",
         "description": "A salamander family's island of firm ground, ringed with sharpened stakes: a longhouse, smoking racks, and flatboats tied up three deep. Nobody lands uninvited, and killing a trespasser here is no crime.",
-        "canonStatus": "draft"
+        "canonStatus": "draft",
+        "crossing": [
+          {
+            "stateId": "afloat",
+            "atLeast": 1,
+            "toward": "nests-island",
+            "reason": "Nest's island can only be reached by water. You need a flatboat, or Gethin and his."
+          }
+        ]
       },
       {
         "id": "nests-jetty",
@@ -334,88 +342,6 @@
         "kind": "wilderness",
         "parentLocationId": "cairn-maw",
         "description": "Clan Aurochs's chalk downs, running south toward Port Covenant."
-      }
-    ],
-    "routes": [
-      {
-        "id": "bogwater-to-fen",
-        "from": "bogwater",
-        "to": "the-fen",
-        "distanceKm": 0.7,
-        "terrain": "plank walks off the back of Bogwater into the reeds",
-        "routeClass": "local",
-        "canonStatus": "draft"
-      },
-      {
-        "id": "bogwater-to-traps",
-        "from": "bogwater",
-        "to": "eel-traps",
-        "distanceKm": 1.3,
-        "terrain": "the plank walk along the channel",
-        "routeClass": "local",
-        "canonStatus": "draft"
-      },
-      {
-        "id": "bogwater-to-nests-island",
-        "from": "bogwater",
-        "to": "nests-island",
-        "distanceKm": 1.3,
-        "terrain": "open water; no causeway reaches it",
-        "routeClass": "water",
-        "canonStatus": "draft",
-        "requires": [
-          {
-            "stateId": "afloat",
-            "atLeast": 1,
-            "toward": "nests-island",
-            "reason": "Nest's island can only be reached by water. You need a flatboat, or Gethin and his."
-          }
-        ]
-      },
-      {
-        "id": "bogwater-to-morwens-island",
-        "from": "bogwater",
-        "to": "morwens-island",
-        "distanceKm": 3,
-        "terrain": "a causeway only Morwen keeps up, which fog closes",
-        "routeClass": "trail",
-        "canonStatus": "draft"
-      },
-      {
-        "id": "fen-to-grey-water",
-        "from": "the-fen",
-        "to": "grey-water",
-        "distanceKm": 6,
-        "terrain": "the old causeway out of the fen",
-        "routeClass": "trail",
-        "canonStatus": "draft"
-      },
-      {
-        "id": "bogwater-to-woeds-edge",
-        "from": "bogwater",
-        "to": "woeds-edge",
-        "distanceKm": 16,
-        "terrain": "upstream through the reeds on a foot path the fog closes",
-        "routeClass": "trail",
-        "canonStatus": "draft"
-      },
-      {
-        "id": "traps-to-caerwyn",
-        "from": "eel-traps",
-        "to": "caerwyn",
-        "distanceKm": 48,
-        "terrain": "down the channel to the Afon, then downriver",
-        "routeClass": "water",
-        "canonStatus": "draft"
-      },
-      {
-        "id": "grey-water-to-port-covenant",
-        "from": "grey-water",
-        "to": "port-covenant",
-        "distanceKm": 22,
-        "terrain": "the old causeway, then the headland road to Nospier Point",
-        "routeClass": "trail",
-        "canonStatus": "draft"
       }
     ],
     "species": [
@@ -2846,10 +2772,6 @@
   ],
   "ruleset": {
     "extends": "four-approaches/1",
-    "travel": {
-      "walkKph": 4,
-      "tiers": []
-    },
     "states": [
       {
         "id": "bond-kin",
@@ -4121,5 +4043,139 @@
         }
       ]
     }
-  ]
+  ],
+  "map": {
+    "v": 1,
+    "sheets": {
+      "fenmire": {
+        "centres": {
+          "bogwater": {
+            "q": -6,
+            "r": 5
+          },
+          "eel-traps": {
+            "q": -2,
+            "r": 2
+          },
+          "far-islands": {
+            "q": 2,
+            "r": -6
+          },
+          "grey-water": {
+            "q": -8,
+            "r": -2
+          },
+          "morwens-island": {
+            "q": -2,
+            "r": -2
+          },
+          "nests-island": {
+            "q": -4,
+            "r": 1
+          },
+          "the-fen": {
+            "q": -3,
+            "r": 6
+          },
+          "woeds-edge": {
+            "q": 22,
+            "r": -5
+          }
+        },
+        "radius": 22,
+        "roads": [
+          "-1,0",
+          "-2,-1",
+          "-2,-2",
+          "-2,0",
+          "-2,1",
+          "-2,2",
+          "-3,2",
+          "-3,6",
+          "-4,1",
+          "-4,3",
+          "-4,4",
+          "-4,5",
+          "-4,6",
+          "-5,2",
+          "-5,3",
+          "-5,4",
+          "-5,6",
+          "-6,3",
+          "-6,4",
+          "-6,5",
+          "-6,6",
+          "-7,3",
+          "-8,-1",
+          "-8,-2",
+          "-8,0",
+          "-8,1",
+          "-8,2",
+          "-8,3",
+          "0,-1",
+          "1,-2",
+          "10,-5",
+          "11,-5",
+          "12,-5",
+          "13,-5",
+          "14,-5",
+          "15,-5",
+          "16,-5",
+          "17,-5",
+          "18,-5",
+          "19,-5",
+          "2,-3",
+          "20,-5",
+          "21,-5",
+          "22,-5",
+          "3,-4",
+          "4,-5",
+          "5,-5",
+          "6,-5",
+          "7,-5",
+          "8,-5",
+          "9,-5"
+        ],
+        "cellMinutes": 15
+      },
+      "abernys": {
+        "centres": {
+          "caerwyn": {
+            "q": -6,
+            "r": 2
+          },
+          "cairn-maw": {
+            "q": 2,
+            "r": 1
+          },
+          "fenmire": {
+            "q": 1,
+            "r": -3
+          },
+          "port-covenant": {
+            "q": -3,
+            "r": -1
+          },
+          "the-woed": {
+            "q": 5,
+            "r": 1
+          }
+        },
+        "radius": 9,
+        "roads": [
+          "-1,-1",
+          "-2,-1",
+          "-2,0",
+          "-3,-1",
+          "-3,1",
+          "-4,2",
+          "-5,2",
+          "-6,2",
+          "0,-2",
+          "1,-3"
+        ],
+        "cellMinutes": 240
+      }
+    }
+  }
 }
