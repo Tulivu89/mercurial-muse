@@ -92,3 +92,42 @@ a { color: var(--blue); }
 .part { font-family: var(--read); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
 .part b { font-family: var(--ui); font-size: 12px; color: var(--text-2); font-weight: 700; margin-right: 4px; }
 
+
+/* The marks (Mark.tsx): wet lacquer, black by day and bone at night. The interface stays flat;
+   only the marks carry shading and shine (docs/brand.md). */
+@property --mk-gleam { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --reveal { syntax: '<percentage>'; inherits: false; initial-value: 114%; }
+:root {
+  --mk-0: #383430; --mk-1: #1C1A18; --mk-2: #080706; --mk-3: #000000;
+  --mk-shine: #FFFFFF; --mk-shine-a: 1; --mk-rim: #000000; --mk-rim-a: 0;
+  --mk-shadow: #000000; --mk-shadow-a: 0.22; --mk-cut: #EDE5D6; --mk-cut-a: 0; --mk-gleam: 1;
+}
+:root[data-theme='night'] {
+  --mk-0: #FFFFFF; --mk-1: #EDE5D6; --mk-2: #CDC2AF; --mk-3: #8F8471; --mk-shadow-a: 0.55;
+}
+svg.mk { overflow: visible; flex: none; }
+
+/* Settle: a mark drops in, stretched as it falls, squashed as it lands, and its shine comes on
+   as it settles. Words are written on, left to right, with a soft wet edge. */
+.mk.land { animation: mk-drop 900ms cubic-bezier(.32, 0, .2, 1) both, mk-gleam 1100ms ease-out both; transform-origin: 50% 94%; }
+@keyframes mk-drop {
+  0% { transform: translateY(-130%) scale(.84, 1.18); opacity: 0; }
+  30% { opacity: 1; }
+  56% { transform: translateY(0) scale(.9, 1.12); }
+  68% { transform: translateY(0) scale(1.12, .86); }
+  82% { transform: scale(.97, 1.03); }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes mk-gleam { 0%, 62% { --mk-gleam: 0; } 100% { --mk-gleam: 1; } }
+.ink-write {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--reveal) - 14%), transparent var(--reveal));
+  mask-image: linear-gradient(90deg, #000 calc(var(--reveal) - 14%), transparent var(--reveal));
+  animation: ink-write 1000ms 120ms cubic-bezier(.4, 0, .2, 1) both;
+}
+@keyframes ink-write { from { --reveal: 0%; } to { --reveal: 114%; } }
+.ink-settle { animation: ink-settle 280ms ease-out both; }
+@keyframes ink-settle { from { opacity: 0; filter: blur(4px); transform: translateY(6px); } to { opacity: 1; filter: none; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .mk.land, .ink-write, .ink-settle { animation: none; }
+  .ink-write { -webkit-mask-image: none; mask-image: none; }
+}

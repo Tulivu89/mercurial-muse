@@ -38,7 +38,7 @@ export function RecordEditor({ world, record, onChange, onDelete, onWorld }: { w
   return (
     <>
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <h1>{record.name}</h1>
+        <h1 className="ink-write">{record.name}</h1>
         <span className="row">
           {record.kind === 'character' && <a className="btn small quiet" href={`/chat/#/with/${encodeURIComponent(world.id)}/${encodeURIComponent(record.id)}`}>Chat with {record.name}</a>}
           <span className="chip line">{KIND_NAMES[record.kind].one}</span>

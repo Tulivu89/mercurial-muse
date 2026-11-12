@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- True Speech Droplet Boundary Clip -->
+    <clipPath id="bubbleClip">
+      <path d="
+        M 240 68
+        C 152 68 80 140 80 228
+        C 80 316 152 388 240 388
+        C 256 388 274 384 290 376
+        C 320 386 352 402 388 418
+        C 374 384 366 352 370 322
+        C 373 300 398 268 398 228
+        C 398 140 328 68 240 68 Z
+      "/>
+    </clipPath>
+
+    <!-- Deep Wet Lacquer Droplet Gradient -->
+    <radialGradient id="inkBody" cx="38%" cy="32%" r="68%">
+      <stop offset="0%" stop-color="#3c3732"/>
+      <stop offset="28%" stop-color="#1e1b19"/>
+      <stop offset="65%" stop-color="#090807"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+
+    <!-- Primary Specular Ribbon Gradient -->
+    <linearGradient id="mainShine" x1="0%" y1="0%" x2="60%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.35"/>
+    </linearGradient>
+
+    <!-- Flanking Pill/Bubble Highlight Gradient -->
+    <linearGradient id="pillShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.4"/>
+    </linearGradient>
+
+    <!-- Counter-Shine Rim Gradient (Right side & Tail) -->
+    <linearGradient id="counterShineGrad" x1="50%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#FFFFFF" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.05"/>
+    </linearGradient>
+
+    <!-- Soft Ambient Dome Glow -->
+    <radialGradient id="domeGlow" cx="42%" cy="32%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="55%" stop-color="#FFFFFF" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient Ground Shadow -->
+  <ellipse cx="235" cy="465" rx="100" ry="12" fill="#000000" opacity="0.2"/>
+
+  <!-- ================= BASE BUBBLE SILHOUETTE ================= -->
+  <path d="
+    M 240 68
+    C 152 68 80 140 80 228
+    C 80 316 152 388 240 388
+    C 256 388 274 384 290 376
+    C 320 386 352 402 388 418
+    C 374 384 366 352 370 322
+    C 373 300 398 268 398 228
+    C 398 140 328 68 240 68 Z
+  " fill="url(#inkBody)"/>
+
+  <!-- ================= SHINE (HARD-CLIPPED WITHIN THE BLACK) ================= -->
+  <g clip-path="url(#bubbleClip)">
+    
+    <!-- 1. Soft Volumetric Dome Glow (Replaces the flat white space) -->
+    <circle cx="230" cy="210" r="140" fill="url(#domeGlow)"/>
+
+    <!-- 2. Counter-Shine on Opposite Side (Right edge curving into the tail) -->
+    <path d="
+      M 372 175
+      C 388 210 386 260 366 312
+      C 356 338 354 368 372 396
+    " fill="none" stroke="url(#counterShineGrad)" stroke-width="9" stroke-linecap="round"/>
+
+    <!-- Subtle Meniscus Counter-Reflection (Lower-Left edge bounce) -->
+    <path d="M 125 310 A 140 140 0 0 0 220 378" 
+          fill="none" 
+          stroke="#FFFFFF" 
+          stroke-width="3" 
+          stroke-linecap="round" 
+          opacity="0.12"/>
+
+    <!-- 3. Primary Curved Specular Ribbon (Upper-Left Crest) -->
+    <path d="
+      M 160 144
+      C 185 118 218 104 252 104
+    " fill="none" stroke="url(#mainShine)" stroke-width="15" stroke-linecap="round"/>
+
+    <!-- 4. Upper-Right Pill Bubble Highlight -->
+    <path d="
+      M 276 108
+      C 285 112 294 118 302 125
+    " fill="none" stroke="url(#pillShine)" stroke-width="12" stroke-linecap="round"/>
+
+    <!-- 5. Lower-Left Pill Bubble Highlight -->
+    <path d="
+      M 134 175
+      C 128 186 124 198 122 210
+    " fill="none" stroke="url(#pillShine)" stroke-width="12" stroke-linecap="round"/>
+
+  </g>
+</svg>
