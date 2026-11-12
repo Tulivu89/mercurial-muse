@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { World } from '../../core/records/index.js';
 import { NameField } from '../../kit/src/Fields';
-import { downloadJson, fileSafe, newId } from '../../kit/src/util';
+import { downloadJson, fileSafe, newId, readJsonFile } from '../../kit/src/util';
+import { exportTalks, importTalks } from './author/store';
 import { go } from './go';
 import { LAUNCH_KEY, readLaunches, withLaunch, worldToModule } from '../../core/convert/index.js';
 
@@ -33,6 +34,26 @@ export function WorldSettings({ world, onChange, onDelete }: { world: World; onC
     setNote(notes.length ? notes : ['Saved as a module the adventure opens under New game.']);
   };
   const going = worldToModule(world).notes;
+  const [talkNote, setTalkNote] = useState<{ text: string; bad?: boolean } | null>(null);
+  // Talks with Errata and the drafts waiting go in a file of their own (the owner's answer,
+  // Nov 12); the world's file never carries them.
+  const saveTalks = async () => {
+    const file = await exportTalks(world.id, world.name);
+    if (!file.talks.length && !file.drafts.length) { setTalkNote({ text: 'No talks or waiting drafts in this world yet.' }); return; }
+    downloadJson(`${fileSafe(world.name)}.talks.json`, file);
+    setTalkNote({ text: `Saved ${file.talks.length} talk${file.talks.length === 1 ? '' : 's'} and ${file.drafts.length} waiting draft${file.drafts.length === 1 ? '' : 's'}.` });
+  };
+  const openTalks = async (input: HTMLInputElement) => {
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    try {
+      const done = await importTalks(await readJsonFile(file), world.id);
+      setTalkNote(done.ok ? { text: `Brought back ${done.talks} talk${done.talks === 1 ? '' : 's'} and ${done.drafts} draft${done.drafts === 1 ? '' : 's'}. Any already here were kept as they were.` } : { text: done.reason, bad: true });
+    } catch (error) {
+      setTalkNote({ text: (error as Error).message, bad: true });
+    }
+  };
 
   return (
     <>
@@ -77,6 +98,19 @@ export function WorldSettings({ world, onChange, onDelete }: { world: World; onC
           <input id="new-condition" className="input grow" value={label} maxLength={120} placeholder="Such as: Night, Close friends, After the raid" onChange={(event) => setLabel(event.target.value)} />
           <button type="submit" className="btn small" disabled={!label.trim()}>Add</button>
         </form>
+      </section>
+
+      <section className="card" aria-label="Talks">
+        <h2 className="sub" style={{ marginTop: 0 }}>Talks with Errata</h2>
+        <p className="hint">Kept in this browser beside the world, with the drafts waiting under fields. The world&rsquo;s own file never carries them, so a shared world doesn&rsquo;t bring your working notes. Save them to keep a copy or move them to another device.</p>
+        <div className="row">
+          <button type="button" className="btn quiet" onClick={() => void saveTalks()}>Export talks</button>
+          <span className="btn quiet file-btn">
+            Open a talks file
+            <input type="file" accept="application/json,.json" aria-label="Open a talks file" onChange={(event) => void openTalks(event.target)} />
+          </span>
+        </div>
+        {talkNote && <p className={`status${talkNote.bad ? ' bad' : ''}`} role="status">{talkNote.text}</p>}
       </section>
 
       <div className="row">

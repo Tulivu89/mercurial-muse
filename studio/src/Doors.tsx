@@ -2,7 +2,7 @@
 // job is one row that says what is set there and opens onto it: the day, the rules, the
 // adventure's part, chat, and In context now. A door fills a phone and takes the right-hand
 // column on a wide screen, where the writing stays beside it.
-import { useId } from 'react';
+import { useId, type ReactNode } from 'react';
 import type { StoryRecord, World } from '../../core/records/index.js';
 import { ChatParts } from './ChatParts';
 import { ContextPanel, type Moment } from './ContextPanel';
@@ -15,7 +15,8 @@ export interface DoorInfo { id: Door; label: string; says: string }
 
 const count = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
-export function doorsFor(world: World, record: StoryRecord, moment: Moment): DoorInfo[] {
+// `errata`: what the Errata door's row says, or null where no helper is offered.
+export function doorsFor(world: World, record: StoryRecord, moment: Moment, errata: { label: string; says: string } | null = null): DoorInfo[] {
   const doors: DoorInfo[] = [];
   if (record.kind === 'character') doors.push({ id: 'day', label: 'Day', says: adventureSummary(world, record) });
   const rules = rulesSummary(world, record);
@@ -26,6 +27,7 @@ export function doorsFor(world: World, record: StoryRecord, moment: Moment): Doo
     const examples = record.examples.length;
     doors.push({ id: 'chat', label: 'Chat', says: greetings || examples ? `${count(greetings, 'greeting')} · ${count(examples, 'example chat')}.` : 'No greeting yet. A greeting is the first scene of a chat.' });
   }
+  if (errata) doors.push({ id: 'errata', label: errata.label, says: errata.says });
   doors.push({ id: 'context', label: 'In context now', says: moment.says });
   return doors;
 }
@@ -48,7 +50,7 @@ export function DoorRows({ record, doors, open, onOpen }: { record: StoryRecord;
 
 // What is behind a door. In context now stays drawn while another door is open, so the moment set
 // up in it is still there on the way back.
-export function DoorPane({ world, record, door, moment, backTo, onClose, onChange, onWorld }: {
+export function DoorPane({ world, record, door, moment, backTo, onClose, onChange, onWorld, errata }: {
   world: World;
   record: StoryRecord | undefined;
   door: Door | null;
@@ -58,9 +60,11 @@ export function DoorPane({ world, record, door, moment, backTo, onClose, onChang
   onClose: () => void;
   onChange: (record: StoryRecord) => void;
   onWorld: (world: World) => void;
+  // What is behind the Errata door, and its title.
+  errata?: { title: string; body: ReactNode };
 }) {
   const shown: Door = door && (door === 'context' || record) ? door : 'context';
-  const title = shown === 'day' ? 'Day' : shown === 'rules' ? 'Rules' : shown === 'adventure' ? 'In the adventure' : shown === 'chat' ? 'Chat' : '';
+  const title = shown === 'day' ? 'Day' : shown === 'rules' ? 'Rules' : shown === 'adventure' ? 'In the adventure' : shown === 'chat' ? 'Chat' : shown === 'errata' ? errata?.title ?? 'Errata' : '';
   return (
     <div className="door-pane">
       {shown === 'context'
@@ -84,6 +88,7 @@ export function DoorPane({ world, record, door, moment, backTo, onClose, onChang
           <DayStops world={world} record={record} onChange={onChange} />
         </>
       )}
+      {record && shown === 'errata' && errata?.body}
       {record && shown === 'rules' && <RulesPanel world={world} record={record} onChange={onChange} />}
       {record && shown === 'adventure' && <InTheAdventure world={world} record={record} onChange={onChange} onWorld={onWorld} />}
       {record && shown === 'chat' && (

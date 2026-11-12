@@ -12,7 +12,7 @@ export function liveModel(): LiveModel | null {
   const { PROMPTS_BASE: base, PROMPTS_MODEL: model, PROMPTS_MODE: mode, PROMPTS_RUNS: runs } = process.env;
   if (!base || !model) return null;
   const asPrompt = mode !== 'chat';
-  return { base: base.replace(/\/+$/, ''), model, mode: asPrompt ? 'prompt' : 'chat', runs: Math.max(1, Number(runs) || 20), prefill: asPrompt, label: `${model} (${asPrompt ? 'completions' : 'chat'})` };
+  return { base: base.replace(/\/+$/, ''), model, mode: asPrompt ? 'prompt' : 'chat', runs: Math.max(1, Number(runs) || 5), prefill: asPrompt, label: `${model} (${asPrompt ? 'completions' : 'chat'})` };
 }
 
 export function liveGenerate(live: LiveModel): Generate {
@@ -33,6 +33,7 @@ export function liveGenerate(live: LiveModel): Generate {
     });
     if (!response.ok) throw new Error(`${live.base} answered ${response.status}: ${(await response.text()).slice(0, 300)}`);
     const reply = readReply(await response.json());
+    if (process.env.PROMPTS_DEBUG) console.log('REPLY', JSON.stringify(reply.content));
     return { text: reply.content, model: reply.model ?? live.model };
   };
 }
