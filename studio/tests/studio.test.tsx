@@ -253,27 +253,26 @@ describe('what the adventure needs', () => {
     expect(screen.getAllByText(/1 stop in their day/)).toHaveLength(2);
   });
 
-  it('joins two places with a route, and finds one that ends nowhere', () => {
+  it('says what crossing to a place needs, and finds a rule that waits on a state that is gone', () => {
     const { get, again } = view();
     toKind('Places');
-    fireEvent.click(rail().getByRole('button', { name: 'Add a place' }));
-    again();
     fireEvent.click(rail().getByRole('button', { name: 'Booth B' }));
     door('In the adventure');
-    fireEvent.click(screen.getByRole('button', { name: 'Add a route from here' }));
-    expect(get().routes).toMatchObject([{ from: 'booth', distanceKm: 1, requires: [] }]);
+    fireEvent.click(screen.getByRole('button', { name: 'Crossing needs something' }));
+    expect(get().records.find((record) => record.id === 'booth')!.rules?.crossing).toMatchObject([{ stateId: 'coin', atLeast: 1, toward: 'booth' }]);
     again();
-    expect(screen.getAllByText(/1 way out: New place/)).toHaveLength(2);
+    expect(screen.getAllByText(/Crossing in here needs something/).length).toBeGreaterThan(0);
+    fireEvent.change(screen.getByRole('combobox', { name: 'Which way it is needed' }), { target: { value: 'both' } });
+    expect(get().records.find((record) => record.id === 'booth')!.rules?.crossing?.[0]?.toward).toBeUndefined();
     toWorld();
     expect(rail().getByRole('button', { name: /^Checks/ })).toHaveTextContent('All clear');
-    // The other end is deleted: the Checks page says so.
-    const far = get().routes![0]!.to;
-    const without = { ...get(), records: get().records.filter((record) => record.id !== far) };
-    render(<WorldView world={without} onChange={() => {}} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    // A state the rule waits on is gone: the Checks page says so.
+    const gone = { ...get(), records: get().records.map((record) => (record.id === 'booth' ? { ...record, rules: { crossing: [{ stateId: 'nothing-here', atLeast: 1, reason: 'No.' }] } } : record)) };
+    render(<WorldView world={gone} onChange={() => {}} onDelete={() => {}} onStatus={() => {}} status={null} />);
     const checks = rail().getByRole('button', { name: /^Checks/ });
     expect(checks).toHaveTextContent('1 to look at');
     fireEvent.click(checks);
-    expect(screen.getByText(/A route ends at a place that is gone/)).toBeInTheDocument();
+    expect(screen.getByText(/Crossing here needs a state that is gone/)).toBeInTheDocument();
   });
 
   it('marks the record a finding is about, in the list', () => {
@@ -299,7 +298,7 @@ describe('what the adventure needs', () => {
     expect(get().rules?.actions).toMatchObject([{ name: 'Work a shift', placeIds: ['booth'], effects: [{ stateId: 'coin', add: 1 }] }]);
     again();
     fireEvent.click(screen.getByRole('button', { name: '‹ Rules' }));
-    fireEvent.click(screen.getByRole('button', { name: /^The calendar and travel/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^The calendar/ }));
     fireEvent.change(screen.getByLabelText('The days of the week'), { target: { value: 'Oneday, Twoday, Restday' } });
     expect(get().rules?.calendar?.dayNames).toEqual(['Oneday', 'Twoday', 'Restday']);
   });

@@ -5,7 +5,7 @@
 // Pure data and validation: no DOM, no network, no storage.
 
 import { z } from 'zod';
-import { LADDER, PLACE_KINDS, TIERS, goodSchema, levelSchema } from './ruleset.js';
+import { LADDER, PLACE_KINDS, TIERS, goodSchema, levelSchema, requirementSchema } from './ruleset.js';
 import { threadRulesSchema } from './threads.js';
 
 const id = z.string().min(1).max(200);
@@ -60,6 +60,9 @@ export const recordRulesSchema = z.object({
   ...memberFields,
   // Places: what kind of place. Areas (regions and larger) hold places and are never stood in.
   placeKind: z.enum(PLACE_KINDS).optional(),
+  // Places: what crossing to or from it asks of a traveller (a boat for an island). A requirement
+  // whose `toward` is the place applies only on the way in.
+  crossing: z.array(requirementSchema).max(8).optional(),
   // Items.
   good: goodRulesSchema.optional(),
   // Groups: what members get unless they set their own.

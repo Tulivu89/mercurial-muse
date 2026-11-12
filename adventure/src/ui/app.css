@@ -4,6 +4,7 @@
    whatever the player did by their own hand, and the four approach colours, which are the rules'
    own and are darkened for paper as the marks are. */
 @import '../../../kit/src/ink.css';
+@import '../../../kit/src/map.css';
 
 :root {
   /* The names this stylesheet used before it shared the site's tokens. */
@@ -382,21 +383,13 @@ button.lr:hover:not(:disabled), a.lr:hover { background: var(--hover); }
 
 .appr-name { width: 74px; flex: none; font-size: 15px; font-weight: 700; }
 
-.map {
-  position: relative; height: 296px; overflow: hidden; border-radius: 10px;
-  border: 1px solid var(--line); background: var(--surface);
-}
-.map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.node {
-  position: absolute; transform: translate(-50%, 0);
-  display: flex; flex-direction: column; align-items: center; gap: 1px;
-  padding: 4px 7px; border: 0; border-radius: 6px; background: var(--raised);
-  color: var(--text); font: 600 13px/1.25 var(--ui); text-align: center; max-width: 140px;
-}
-.node .t { font: 400 12px/1.3 var(--ui); color: var(--text-3); font-variant-numeric: tabular-nums; }
-.node.here .t { color: var(--you); }
-.node.closed { color: var(--bad); }
-.node[aria-pressed='true'] { box-shadow: 0 0 0 1px var(--text); }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 999px; padding: 2px; background: var(--surface); }
+.seg button { border: 0; background: transparent; color: var(--text-2); font: 700 14px var(--ui); min-height: 36px; padding: 0 14px; border-radius: 999px; }
+.seg button[aria-pressed='true'] { background: var(--text); color: var(--ground); }
+.legs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.legs li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 7px 10px; border-radius: 6px; background: var(--ground); font-size: 14px; }
+.legs li.free { color: var(--text-2); }
+.legs .n { grid-column: 1 / -1; color: var(--text-2); font-size: 13px; }
 
 .fchip {
   display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px;

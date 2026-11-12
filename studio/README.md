@@ -2,7 +2,7 @@
 
 Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the record model (`docs/records.md`), and see exactly what each part sends the model.
 
-## What it does (0.9.0)
+## What it does (0.10.0)
 
 - **Worlds** in this browser's storage, with a premise, genre, tone and shared conditions.
 - **Records of every kind:** characters, places, groups, items, lore, threads, scenarios and personas.
@@ -23,9 +23,9 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - **Chat with**, on a character's page, opens Chat. The link is `/chat/#/with/<world id>/<record id>`; Chat opens its home on it until the Chat session reads that address.
 - **Adventure modules open as worlds** (0.4.0): **Open a world or module file**, or one tap for Abernys: Bogwater and Abernys: Port Covenant. Dossiers become lines and sections, species and factions become groups, tiers and difficulties become rules, and the module's ruleset becomes the world's own. A person's page says what came with them that has no editor yet: where they live and work, how many stops their day has. Those go back out unchanged.
 - **What the adventure needs** (0.5.0):
-  - **In the adventure**, a door on a thing, a place, a thread and a scenario; a person's part is their **Day** door: where they live, the week, and for each event of their schedule, the place they are and the condition it waits on (a weekday, a day of the month, a span of days, a state). A thing: where it lies or who carries it. A scenario: where and when play starts and who is there. A place: its routes, each with a distance, what the way is like and what it asks of a traveller.
+  - **In the adventure**, a door on a thing, a place, a thread and a scenario; a person's part is their **Day** door: where they live, the week, and for each event of their schedule, the place they are and the condition it waits on (a weekday, a day of the month, a span of days, a state). A thing: where it lies or who carries it. A scenario: where and when play starts and who is there. A place: what crossing to or from it asks of a traveller (0.10.0; routes before that), coming and going or only coming in.
   - **One schedule model.** The week view's events are also the adventure's day. An event with a place puts the person there; a condition that holds makes a day that replaces the ordinary one. A module's day plans come in as events and go back out as the same plans.
-  - **On World › Rules:** the calendar (week, months, the times of day the narrator hears), walking pace, scene actions (where offered, who must be there, what must hold, opening days and hours, what changes, the player's line and what the narrator shows), and a world's own goods.
+  - **On World › Rules:** the calendar (week, months, the times of day the narrator hears), scene actions (where offered, who must be there, what must hold, opening days and hours, what changes, the player's line and what the narrator shows), and a world's own goods.
   - **Checks**, beside Rules: every stop is a real place; no place holds more than four people at the four times of day over forty days; every When has its condition; every route ends somewhere; nothing a rule points at is gone. Each finding opens the record it is about.
 - **Threads that reach the adventure** (0.6.0). A thread's page has its kind (Character Engine's nine, or Custom) and its milestones under **In the adventure**: the beat as the narrator hears it, what it turns on, the states it waits on, its first and last day, and the experience it pays. The five questions stay sections, for the author. A thread with no milestones goes to the adventure with its Next beat as the one milestone, for the player to mark. Checks finds a milestone that waits on a state that is gone, or turns on something that is.
 - **Big worlds** (0.7.0):
@@ -46,7 +46,8 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - **Ground** shows one place's hexes. Areas are islands on land nobody stops on; a building's rooms share walls, with one cell for being inside but in no room; anywhere else the spare ground is the place itself. Its address is `page=map&sheet=<place>`.
   - **Times.** Pick a place to see how long it takes from the place you measure from, leg by leg: out of each place, across the map where both sit side by side (cells times what a cell is worth), and in again. A list gives every place, nearest first.
   - Read-only for now: moving, sizing, painting and roads are phase M3.
-- **Travel by level** (0.9.0), a part of World › Rules: a typical trip across a land, a region, open country, a settlement or a site, and a building, with what stepping inside one of its places costs, each in minutes, hours or days; and how much quicker a road is. Only the numbers a world changes are stored (`core/rules/levels.ts`). The adventure still travels by its routes until phase M2.
+- **Travel by level** (0.9.0), a part of World › Rules: a typical trip across a land, a region, open country, a settlement or a site, and a building, with what stepping inside one of its places costs, each in minutes, hours or days; and how much quicker a road is. Only the numbers a world changes are stored (`core/rules/levels.ts`).
+- **Routes retired** (0.10.0, phase M2): the adventure travels by the levels and the map, so a place's In the adventure door says only what crossing to or from it asks, and walking pace has left World › Rules. Checks finds a crossing rule that waits on a state that is gone. A module's routes are dropped when it opens.
 - **The marks** (0.7.1): the Studio's nib in the header and on the home page, in wet ink, black by day and bone at night (`kit/src/Mark.tsx`). It drops in when the Studio opens; page titles are written on and a new page settles in from a slight blur, all off with reduced motion. The tab shows the flat nib.
 - **Genre:** the purse's words are the Coin state's bands and the catalog's names are editable, so a modern world's hundred *could buy a car*.
 - **In context now:** put people and a place in the scene, type what was just said, tick what holds, and see what the world would send, with a rough token count. From 0.3.0 it shows the sentence of every state that is off its resting band, under the record it belongs to, as the narrator would read it.
@@ -65,11 +66,12 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 | S2 | Bogwater and Port Covenant into the Studio and back out as modules (`core/convert/`); Play in the adventure; Chat with. | Built, 0.4.0. |
 | S3 | Routes, scene actions, the calendar and world states, goods, one schedule model with Chat, and Checks. | Built, 0.5.0; threads with milestones in 0.6.0. |
 | M1 | Maps: `core/map/` (sheets, circles, journeys), the map in `kit/`, the Map page, and travel by level on World › Rules (`docs/bids/maps/decision.md`). | Built, 0.9.0. |
+| M2 | Routes retire: crossing rules on places, the adventure travelling by levels and the map. | Built, 0.10.0 (adventure 0.27.0). |
 
 ## Not yet
 
 - An editor for relationships between two people (a module's come through unchanged).
-- The rest of maps (`docs/bids/maps/decision.md`): the adventure travelling by levels and the map with routes retired (M2), refining the ground (M3), icons by choice (M4), a picture under a sheet (M5).
+- The rest of maps (`docs/bids/maps/decision.md`): refining the ground (M3), icons by choice (M4), a picture under a sheet (M5).
 - Pins in the list, the whole place tree as a second order, and a hand-off to the adventure that doesn't go through the browser's small store (a world of several hundred records could outgrow it): `docs/bids/ui/decision.md`.
 - Chat reading an event's condition: until it does, a day that waits on one shows in Chat as part of every day.
 - A world checked by the adventure's own loader before it is played: Checks covers what the brief lists, and anything else the adventure refuses is said on its start screen.

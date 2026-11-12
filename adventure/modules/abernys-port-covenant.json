@@ -2,7 +2,7 @@
   "format": "adventure-module/1",
   "id": "abernys-port-covenant",
   "name": "Abernys: Port Covenant",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "notes": "Built from the Abernys docs in the Howling Whispers dev project (region seed, Port Covenant, Fenmire, Cairn Maw). Anything marked canonStatus \"draft\" was invented to make the slice playable: every route distance, the district and building names, the gate staff and their Four Approaches tiers (the Arbiter a rival, the guard a minion), and the player character. Proposed names from the docs (the Governor, the High Arbiter, the garrison captain, Brond) are draft too. The calendar is the default real one until Abernys has its own. From 0.4.0, also draft: every dossier field (appearance, personality, speech), every schedule, the four bond kinds and their tiers, and the three relationships between the Governor, the High Arbiter, the garrison captain and the gate staff. The leverage between the Governor and the captain (she knows the last ship carried no orders) is from the societies doc. From 0.5.0 the ruleset extends the standard Four Approaches ruleset (four-approaches/1) for Leverage, Prepared, Integrity, Security, the person deed and the tiers; the tiers given to each character and the registry strongroom door are draft. From 0.6.0 the module takes the approach ratings, Health, Strain, Alert, the dice and rest from the standard ruleset instead of repeating them, and its opening and outcomes follow the house format: you, present tense, speech without quotation marks. From 0.7.0 each person carries pronouns, read from their own descriptions, so conditions read as she, he or they. Tiers alone now set Health and Strain, so a minion such as the gate guard falls to one success. From 0.8.0, to test schedules, followers and contracts, all draft: the Tarred Rope, an alehouse in the outer lanes, with its keeper Pell and Garrick Hale, a sellsword who can be hired; the Reddles, a fisherman and his harefolk wife with a home, a workplace and a family record; and the contract hall on the harbour, where Odile Fenn brokers indenture and Wren's contract can be bought. Coin, Bound by contract and In your pay are new states, with follow rules for the last two.",
   "source": {
     "kind": "local"
@@ -47,7 +47,15 @@
         "name": "Port Covenant",
         "kind": "town",
         "parentLocationId": "nospier-point",
-        "description": "The human colony inside its walls, where the Pact lives by the Covenant: everything is contracts and leverage, and nothing exists unless it is on paper. Most of the poor are indentured, which the Pact does not count as slavery because every party agreed."
+        "description": "The human colony inside its walls, where the Pact lives by the Covenant: everything is contracts and leverage, and nothing exists unless it is on paper. Most of the poor are indentured, which the Pact does not count as slavery because every party agreed.",
+        "crossing": [
+          {
+            "stateId": "signed-covenant",
+            "atLeast": 1,
+            "toward": "port-covenant",
+            "reason": "No one enters the port without signing the Covenant."
+          }
+        ]
       },
       {
         "id": "pc-harbour",
@@ -155,70 +163,6 @@
         "parentLocationId": "pc-harbour",
         "canonStatus": "draft",
         "description": "A long, tide-stained hall on the harbour where indenture contracts change hands. The contracts hang on a board by the door with their prices chalked beside them, and the people they bind wait on benches along the back wall. The Pact does not call it a slave market, because every party signed."
-      }
-    ],
-    "routes": [
-      {
-        "id": "gate-to-town",
-        "from": "pc-landward-gate",
-        "to": "port-covenant",
-        "distanceKm": 0.2,
-        "terrain": "the gate passage",
-        "routeClass": "gate",
-        "canonStatus": "draft",
-        "requires": [
-          {
-            "stateId": "signed-covenant",
-            "atLeast": 1,
-            "toward": "port-covenant",
-            "reason": "No one enters the port without signing the Covenant."
-          }
-        ]
-      },
-      {
-        "id": "gate-to-outside-walls",
-        "from": "pc-landward-gate",
-        "to": "pc-outside-walls",
-        "distanceKm": 0.5,
-        "terrain": "lanes along the outside of the wall",
-        "routeClass": "local",
-        "canonStatus": "draft"
-      },
-      {
-        "id": "gate-to-bogwater",
-        "from": "pc-landward-gate",
-        "to": "bogwater",
-        "distanceKm": 22,
-        "terrain": "headland road, then fen causeways known to locals and easy for strangers to lose",
-        "routeClass": "trail",
-        "canonStatus": "draft"
-      },
-      {
-        "id": "gate-to-aurochs-downs",
-        "from": "pc-landward-gate",
-        "to": "aurochs-downs",
-        "distanceKm": 26,
-        "terrain": "chalk track up the scarp onto the downs",
-        "routeClass": "upland-road",
-        "canonStatus": "draft"
-      },
-      {
-        "id": "gate-to-caerwyn",
-        "from": "pc-landward-gate",
-        "to": "caerwyn",
-        "distanceKm": 64,
-        "terrain": "the coast road north",
-        "routeClass": "road",
-        "canonStatus": "draft"
-      },
-      {
-        "id": "bogwater-to-caerwyn",
-        "from": "bogwater",
-        "to": "caerwyn",
-        "distanceKm": 48,
-        "terrain": "punt channels out of the fen, then the coast road; the fen traders' regular trek",
-        "routeClass": "trail",
-        "canonStatus": "draft"
       }
     ],
     "species": [
@@ -1078,15 +1022,6 @@
   ],
   "ruleset": {
     "extends": "four-approaches/1",
-    "travel": {
-      "walkKph": 4,
-      "tiers": [
-        {
-          "tier": 3,
-          "minutes": 10
-        }
-      ]
-    },
     "states": [
       {
         "id": "signed-covenant",
@@ -1520,7 +1455,12 @@
         "canonStatus": "draft",
         "fine": true
       }
-    ]
+    ],
+    "levels": {
+      "settlement": {
+        "step": 10
+      }
+    }
   },
   "scenario": {
     "title": "At the landward gate",
@@ -1532,5 +1472,83 @@
       "gate-guard"
     ],
     "opening": "*Fog lies over Nospier Point. The headland road ends at a wall of dressed stone and a gate standing half open, a garrison guard leaning in its shadow. Under the arch an Arbiter has laid out ink, a pen and a ledger on a narrow table, and doesn't look up.*\n\nName, and whether you can write it. *Her pen waits above the page.* No one goes through without signing."
+  },
+  "map": {
+    "v": 1,
+    "sheets": {
+      "nospier-point": {
+        "centres": {
+          "pc-landward-gate": {
+            "q": -3,
+            "r": 3
+          },
+          "pc-outside-walls": {
+            "q": 4,
+            "r": -2
+          },
+          "port-covenant": {
+            "q": -1,
+            "r": -1
+          }
+        },
+        "radius": 6,
+        "roads": [
+          "-1,-1",
+          "-1,1",
+          "-2,0",
+          "-2,2",
+          "-3,1",
+          "-3,2",
+          "-3,3",
+          "0,0",
+          "1,-1",
+          "2,-2",
+          "3,-2",
+          "4,-2"
+        ],
+        "cellMinutes": 3
+      },
+      "abernys": {
+        "centres": {
+          "caerwyn": {
+            "q": -6,
+            "r": 1
+          },
+          "cairn-maw": {
+            "q": 4,
+            "r": 0
+          },
+          "fenmire": {
+            "q": -1,
+            "r": 1
+          },
+          "nospier-point": {
+            "q": 3,
+            "r": -3
+          }
+        },
+        "radius": 8,
+        "roads": [
+          "-1,-1",
+          "-1,1",
+          "-2,0",
+          "-2,1",
+          "-3,1",
+          "-4,1",
+          "-5,1",
+          "-6,1",
+          "0,-1",
+          "0,0",
+          "1,-1",
+          "2,-2",
+          "3,-1",
+          "3,-2",
+          "3,-3",
+          "3,0",
+          "4,0"
+        ],
+        "cellMinutes": 240
+      }
+    }
   }
 }

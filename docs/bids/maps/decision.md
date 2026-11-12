@@ -151,7 +151,7 @@ Routes (`world.routes`, `distanceKm`, walking pace and depth tiers) leave the re
 | --- | --- | --- |
 | P0 | The prototype, two versions. Done Nov 12. | The owner can try it before anything is built. |
 | M1 | `core/map/`: the sheet generator, crossing and journey times, with tests. Circles and ground in `kit/`, with the icon sprite and the circle rules. The Studio's Map page, read-only, showing each trip's time. The levels on World › Rules. | Built Nov 12, Studio 0.9.0. |
-| M2 | The adventure travels by levels and the map: journeys up, across and down; a place's crossing requirement; routes and their fields retire. The test modules' routes are traced into roads, as the prototype's button does, and their tests check the new times. The Map section draws circles in place of the spokes. | Every world plays with no routes. |
+| M2 | The adventure travels by levels and the map: journeys up, across and down; a place's crossing requirement; routes and their fields retire. The test modules' routes are traced into roads, as the prototype's button does, and their tests check the new times. The Map section draws circles in place of the spokes. | Built Nov 12, adventure 0.27.0 and Studio 0.10.0. |
 | M3 | Refining the ground in the Studio: Move, Bigger, Smaller, Paint, Road, One cell, Keep, Reroll, Reset, Add a place. Stale centres and claims on Checks. | Authors shape distances by placing and painting. |
 | M4 | Icons by choice and by genre set; colour paint, which never makes a rule; words that wrap on circles. | The map reads like the world's own. |
 | M5 | A picture under a sheet. | Floor plans, deck plans, the owner's own maps. |

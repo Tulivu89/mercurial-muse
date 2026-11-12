@@ -152,7 +152,7 @@ Decided in `docs/studio-brief.md`, built in Studio 0.3.0 (`core/rules/`).
 
 A schedule event can name a **place** and a **condition** (`core/convert/schedule.ts`). With a place, the person is there in the adventure while the event is on; without one, it moves nobody and is for chat alone. A condition (a weekday, a day of the month, a span of days, a state at some value) makes a day that takes the ordinary day's place while it holds. The adventure's day plans and rules convert to these and back. Chat does not read conditions yet.
 
-A world's **routes** are its own list: two ends, a distance, what the way is like, and what it asks of a traveller.
+A world's **map** (`core/map/`, `docs/bids/maps/decision.md`) is laid out from its places; the world keeps only what an author changed on each sheet. Travel comes from the levels on its rules and the map. A place's rules can say what crossing to or from it asks of a traveller. Routes, the earlier way between places, retired in Studio 0.10.0.
 
 ## What a module carries
 

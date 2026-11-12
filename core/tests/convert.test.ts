@@ -174,13 +174,12 @@ describe('checks', () => {
     expect(checkWorld(imported.world)).toEqual([]);
   });
 
-  it('finds a crowd, a stop nowhere, a When with no condition, a route to nowhere and a rule pointing at nothing', () => {
+  it('finds a crowd, a stop nowhere, a When with no condition, a crossing on a lost state and a rule pointing at nothing', () => {
     const event = (id: string, place: string) => ({ id, startTime: 360, endTime: 360, text: '', place });
     const made = parseWorld({
       format: 'studio-world/1', id: 'w', name: 'Low Tide',
-      routes: [{ id: 'r1', from: 'bar', to: 'nowhere', distanceKm: 1 }],
       records: [
-        { id: 'bar', kind: 'place', name: 'The Anchor' },
+        { id: 'bar', kind: 'place', name: 'The Anchor', rules: { crossing: [{ stateId: 'pass', atLeast: 1, toward: 'bar', reason: 'Members only.' }] } },
         { id: 'coast', kind: 'place', name: 'The coast', rules: { placeKind: 'region' } },
         ...['Ada', 'Bo', 'Cy', 'Di', 'Ed'].map((name) => ({ id: name.toLowerCase(), kind: 'character', name, schedule: { Daily: [event('e', 'bar')] } })),
         { id: 'fy', kind: 'character', name: 'Fy', schedule: { Daily: [event('e', 'gone'), event('f', 'coast')] }, rules: { states: { luck: 2 }, sells: ['ghost'] },
@@ -198,7 +197,7 @@ describe('checks', () => {
       'The feud: The milestone "Settle it." would be missed before it could be reached.',
       'The feud: The milestone "Settle it." waits on a state that is gone: "nothing".',
       'The feud: The milestone "Settle it." waits on Health, which is not a world state.',
-      'Low Tide: A route ends at a place that is gone: "nowhere".',
+      'The Anchor: Crossing here needs a state that is gone: "pass".',
       'Fy: A stop on Daily is at a place that is gone: "gone".',
       'Fy: A stop on Daily is at The coast, a region, not somewhere to be.',
       'The Anchor: Holds 5 people at once on Sunday 06:00, day 1: Ada, Bo, Cy, Di, Ed. More than 4 is a crowd the narrator loses track of.',

@@ -117,14 +117,12 @@ export function checkWorld(world: World, days = 40): Problem[] {
     }
   }
 
-  // Every route connects.
-  for (const route of world.routes ?? []) {
-    for (const end of [route.from, route.to]) {
-      if (!isPlace(end)) add(null, `A route ends at a place that is gone: ${nameOf(end)}.`);
-      else if (isArea(end)) add(byId.get(end)!, 'A route ends here, but a region is not somewhere a road can end.');
+  // What crossing to or from a place asks waits on a state a traveller holds.
+  for (const place of world.records.filter((record) => record.kind === 'place')) {
+    for (const need of place.rules?.crossing ?? []) {
+      if (!states.has(need.stateId)) add(place, `Crossing here needs a state that is gone: "${need.stateId}".`);
+      if (need.toward !== undefined && need.toward !== place.id) add(place, `A crossing rule here applies only toward ${nameOf(need.toward)}, which is not this place.`);
     }
-    if (route.from === route.to) add(byId.get(route.from) ?? null, 'A route leads from here back to here.');
-    for (const need of route.requires) if (!states.has(need.stateId)) add(byId.get(route.from) ?? null, `The route to ${nameOf(route.to)} needs a state that is gone: "${need.stateId}".`);
   }
 
   // Every schedule stop is a real place, and people's days are worked out for the census.

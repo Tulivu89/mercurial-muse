@@ -109,10 +109,10 @@ describe('every record, four ways', () => {
 
   it('makes any world playable through the standard ruleset', () => {
     const raw = structuredClone(abernysRaw) as Record<string, any>;
-    raw.ruleset = { extends: 'four-approaches/1', travel: raw.ruleset.travel };
+    raw.ruleset = { extends: 'four-approaches/1', levels: raw.ruleset.levels };
     raw.relationships = [];
     raw.items = [];
-    for (const route of raw.world.routes) route.requires = [];
+    for (const place of raw.world.places) delete place.crossing;
     for (const character of raw.characters) delete character.tier;
     const loaded = loadModule(raw);
     if (!loaded.ok) throw new Error(loaded.errors.join('\n'));

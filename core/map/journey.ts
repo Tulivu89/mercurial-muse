@@ -18,24 +18,26 @@ export interface Travel {
   levels: Levels;
   // What a cell is worth on a sheet: its own, or a quarter of its level's typical trip.
   cellMinutes: (sheet: string) => number;
-  journey: (from: string, to: string) => Journey;
+  // `avoid` names places whose cells the walk may not cross (an island without a boat). The two
+  // ends of a crossing are never avoided.
+  journey: (from: string, to: string, avoid?: (placeId: string) => boolean) => Journey;
 }
 
-export function travelOf(atlas: Atlas, own: WorldLevels | null | undefined, cellMinutes: Record<string, number | undefined> = {}): Travel {
+export function travelOf(atlas: Atlas, own: WorldLevels | null | undefined): Travel {
   const levels = levelsOf(own);
   const { map } = atlas;
   const kindOf = (id: string) => map.places.get(id)!.kind;
-  const perCell = (sheet: string) => cellMinutes[sheet] ?? levels.times[LEVEL_OF[kindOf(sheet)]].across / CELLS_PER_TRIP;
+  const perCell = (sheet: string) => atlas.edits[sheet]?.cellMinutes ?? levels.times[LEVEL_OF[kindOf(sheet)]].across / CELLS_PER_TRIP;
   const step = (holder: string) => (isArea(kindOf(holder)) ? 0 : levels.times[LEVEL_OF[kindOf(holder)]].step);
   const walks = new Map<string, ReturnType<typeof cheapest>>();
-  const walkFrom = (sheet: Sheet, start: string) => {
-    const key = `${sheet.id}\u0000${start}`;
+  const walkFrom = (sheet: Sheet, start: string, closed: ReadonlySet<string>) => {
+    const key = `${sheet.id}\u0000${start}\u0000${[...closed].sort().join('\u0001')}`;
     let found = walks.get(key);
-    if (!found) { found = cheapest(sheet, start, levels.road); walks.set(key, found); }
+    if (!found) { found = cheapest(sheet, start, levels.road, closed); walks.set(key, found); }
     return found;
   };
 
-  const journey = (from: string, to: string): Journey => {
+  const journey = (from: string, to: string, avoid?: (placeId: string) => boolean): Journey => {
     if (from === to || !map.places.has(from) || !map.places.has(to)) return { minutes: from === to ? 0 : Infinity, legs: [] };
     const up = chainOf(map, from), down = chainOf(map, to), inDown = new Set(down);
     const meet = up.find((id) => inDown.has(id));
@@ -46,7 +48,8 @@ export function travelOf(atlas: Atlas, own: WorldLevels | null | undefined, cell
     if (iu > 0 && id > 0) {
       const sheet = atlas.sheet(meet), a = sheet.byId.get(up[iu - 1]!)!, b = sheet.byId.get(down[id - 1]!)!;
       const start = cellKey(a.centre[0], a.centre[1]), end = cellKey(b.centre[0], b.centre[1]);
-      const walk = walkFrom(sheet, start);
+      const closed = new Set(avoid ? sheet.blobs.filter((blob) => blob !== a && blob !== b && !blob.own && avoid(blob.id)).map((blob) => blob.id) : []);
+      const walk = walkFrom(sheet, start, closed);
       let steps = 0, onRoad = 0;
       for (let at = end; at !== start && walk.prev.has(at); at = walk.prev.get(at)!) {
         steps++;
@@ -63,7 +66,7 @@ export function travelOf(atlas: Atlas, own: WorldLevels | null | undefined, cell
 
 // The cheapest walk from one cell to every other on a sheet: a step costs a cell, or the road's
 // share of one between two road cells.
-function cheapest(sheet: Sheet, start: string, road: number): { dist: Map<string, number>; prev: Map<string, string> } {
+function cheapest(sheet: Sheet, start: string, road: number, closed: ReadonlySet<string> = new Set()): { dist: Map<string, number>; prev: Map<string, string> } {
   const dist = new Map<string, number>([[start, 0]]), prev = new Map<string, string>(), done = new Set<string>();
   const heap: [number, string][] = [[0, start]];
   const push = (item: [number, string]) => {
@@ -93,7 +96,10 @@ function cheapest(sheet: Sheet, start: string, road: number): { dist: Map<string
     for (const [dq, dr] of DIRS) {
       const nq = q + dq, nr = r + dr;
       if (!inDisc(nq, nr, sheet.radius)) continue;
-      const next = cellKey(nq, nr), cost = d + (sheet.roads.has(key) && sheet.roads.has(next) ? road : 1);
+      const next = cellKey(nq, nr);
+      const owner = sheet.owner.get(next);
+      if (owner && closed.has(owner.id)) continue;
+      const cost = d + (sheet.roads.has(key) && sheet.roads.has(next) ? road : 1);
       if (cost < (dist.get(next) ?? Infinity)) { dist.set(next, cost); prev.set(next, key); push([cost, next]); }
     }
   }

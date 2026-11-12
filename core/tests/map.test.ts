@@ -159,7 +159,7 @@ describe('journeys', () => {
     const sheet = atlas.sheet('fenmire');
     expect(across.kind === 'across' && across.cells).toBe(cellDistance(sheet.byId.get('eel-traps')!.centre, sheet.byId.get('bogwater')!.centre));
     expect(across.kind === 'across' && across.cellMinutes).toBe(STANDARD_LEVELS.region.across / 4);
-    const scaled = travelOf(atlas, undefined, { fenmire: 5 }).journey('eel-traps', 'bogwater');
+    const scaled = travelOf(atlasOf(map, { fenmire: { cellMinutes: 5 } }), undefined).journey('eel-traps', 'bogwater');
     expect(scaled.minutes * 12).toBe(trip.minutes);
   });
 
@@ -196,5 +196,19 @@ describe("a world's levels", () => {
     expect(rules?.levels).toEqual({ building: { across: 1 } });
     expect(changedCount(rules)).toBe(1);
     expect(pruneRules({ ...EMPTY_RULES, levels: { building: { across: 2 } } })).toBeUndefined();
+  });
+});
+
+describe('a walk that must go around', () => {
+  it('is never quicker for going around a place', () => {
+    const map = placeMap(bogwater), atlas = atlasOf(map), travel = travelOf(atlas, undefined);
+    const sheet = atlas.sheet('fenmire');
+    for (const middle of sheet.blobs) {
+      for (const [from, to] of [['eel-traps', 'woeds-edge'], ['the-fen', 'far-islands']] as const) {
+        if (middle.id === from || middle.id === to) continue;
+        const free = travel.journey(from, to), around = travel.journey(from, to, (id) => id === middle.id);
+        expect(around.minutes).toBeGreaterThanOrEqual(free.minutes);
+      }
+    }
   });
 });

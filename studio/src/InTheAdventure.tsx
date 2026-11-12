@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import type { ScheduleEvent, StoryRecord, World } from '../../core/records/index.js';
 import { formatMinutes } from '../../core/chat/time.js';
-import { AREA_KINDS, DEFAULT_CALENDAR, THREAD_KINDS, rulesetOf, type Milestone, type Route, type ScheduleWhen, type ThreadRules } from '../../core/rules/index.js';
+import { AREA_KINDS, DEFAULT_CALENDAR, THREAD_KINDS, rulesetOf, type Milestone, type Requirement, type ScheduleWhen, type ThreadRules } from '../../core/rules/index.js';
 import { newId } from '../../kit/src/util';
 import { Num, OptNum, Rule, StatePick, Words } from './rules/bits';
 import { RecordMulti, RecordPick, WhosePick, pickOptions } from './RecordPick';
@@ -60,8 +60,8 @@ export function InTheAdventure({ world, record, onChange, onWorld }: { world: Wo
     );
   } else if (record.kind === 'thread') {
     body = <Milestones world={world} record={record} onChange={onChange} />;
-  } else if (record.kind === 'place' && onWorld) {
-    body = <Routes world={world} place={record} onWorld={onWorld} />;
+  } else if (record.kind === 'place') {
+    body = <Crossing world={world} place={record} onChange={onChange} />;
   }
   if (!body) return null;
   return (
@@ -128,8 +128,8 @@ export function adventureSummary(world: World, record: StoryRecord): string {
     const experience = milestones.reduce((sum, milestone) => sum + milestone.experience, 0);
     return milestones.length ? `${milestones.length} ${milestones.length === 1 ? 'milestone' : 'milestones'}${experience ? `, ${experience} experience` : ''}.` : 'No milestones: its next beat goes as one, for the player to mark.';
   }
-  const routes = (world.routes ?? []).filter((route) => route.from === record.id || route.to === record.id);
-  return routes.length ? `${routes.length} ${routes.length === 1 ? 'way' : 'ways'} out: ${routes.map((route) => name(route.from === record.id ? route.to : route.from)).join(', ')}.` : 'No routes. Places inside one another need none.';
+  const crossing = record.rules?.crossing ?? [];
+  return crossing.length ? `Crossing ${crossing.some((need) => !need.toward) ? 'to or from here' : 'in here'} needs ${crossing.length === 1 ? 'something' : `${crossing.length} things`}.` : 'Anyone can come and go. The map says how long it takes.';
 }
 
 // The condition part of a day waits on. Empty means the ordinary day.
@@ -192,55 +192,36 @@ function WhenPick({ world, when, label, onChange }: { world: World; when: Schedu
   );
 }
 
-function Routes({ world, place, onWorld }: { world: World; place: StoryRecord; onWorld: (world: World) => void }) {
+// What crossing to or from a place asks of a traveller: a boat for an island, a signature at the
+// town gate (docs/bids/maps/decision.md). The map says how long a journey takes; this says who
+// may make it. A rule can apply both ways or only on the way in.
+function Crossing({ world, place, onChange }: { world: World; place: StoryRecord; onChange: (record: StoryRecord) => void }) {
   const ruleset = rulesetOf(world);
-  const routes = world.routes ?? [];
-  const mine = routes.filter((route) => route.from === place.id || route.to === place.id);
-  const put = (next: Route[]) => onWorld({ ...world, routes: next.length ? next : undefined });
-  const change = (id: string, patch: Partial<Route>) => put(routes.map((route) => (route.id === id ? { ...route, ...patch } : route)));
-  const others = world.records.filter((record) => record.kind === 'place' && record.id !== place.id && !AREA_KINDS.includes(record.rules?.placeKind ?? 'other'));
+  const needs = place.rules?.crossing ?? [];
+  const put = (next: Requirement[]) => {
+    const rules = { ...(place.rules ?? {}), crossing: next.length ? next : undefined };
+    if (!next.length) delete rules.crossing;
+    onChange({ ...place, rules: Object.keys(rules).length ? rules : undefined });
+  };
+  const edit = (index: number, patch: Partial<Requirement>) => put(needs.map((entry, at) => (at === index ? { ...entry, ...patch } : entry)));
   return (
     <>
-      <p className="hint">A route joins two places that are not inside one another. It costs its distance at walking pace, and can ask something of whoever takes it. Stepping into a room or out of a building needs no route.</p>
-      {mine.map((route) => {
-        const far = route.from === place.id ? route.to : route.from;
-        return (
-          <div key={route.id} className="stop">
-            <div className="row">
-              <label className="field grow"><span>To</span>
-                <RecordPick world={world} label={`A route from ${place.name}: to`} kinds={['place']} only={(other) => other.id !== place.id && standable(other)} value={far} onChange={(id) => { if (id) change(route.id, route.from === place.id ? { to: id } : { from: id }); }} />
-              </label>
-              <label className="field"><span>Kilometres</span>
-                <input className="input num" type="number" min={0} step="0.1" aria-label={`Kilometres to ${far}`} value={route.distanceKm} onChange={(event) => { const km = Number(event.target.value); if (event.target.value !== '' && km >= 0) change(route.id, { distanceKm: km }); }} />
-              </label>
-              <button type="button" className="icon-btn" aria-label={`Remove the route to ${far}`} onClick={() => put(routes.filter((entry) => entry.id !== route.id))}>×</button>
-            </div>
-            <label className="field"><span>What the way is like</span><Words label={`The way to ${far}`} value={route.terrain} max={200} allowEmpty placeholder="a causeway of split logs over the reeds" onChange={(terrain) => change(route.id, { terrain })} /></label>
-            {route.requires.map((need, index) => {
-              const edit = (patch: Partial<typeof need>) => change(route.id, { requires: route.requires.map((entry, at) => (at === index ? { ...entry, ...patch } : entry)) });
-              return (
-                <div key={index} className="row">
-                  <span className="hint">Needs</span>
-                  <StatePick ruleset={ruleset} label="State the route needs" value={need.stateId} only={(def) => def.scope === 'char' || def.scope === 'protagonist'} onChange={(stateId) => edit({ stateId })} />
-                  <span className="hint">at least</span>
-                  <Num label="At least" value={need.atLeast} onChange={(atLeast) => edit({ atLeast })} />
-                  <select className="input pick" aria-label="Which way it is needed" value={need.toward ?? ''} onChange={(event) => edit({ toward: event.target.value || undefined })}>
-                    <option value="">Both ways</option>
-                    <option value={route.to}>Going to {world.records.find((entry) => entry.id === route.to)?.name ?? route.to}</option>
-                    <option value={route.from}>Going to {world.records.find((entry) => entry.id === route.from)?.name ?? route.from}</option>
-                  </select>
-                  <Words label="What the player is told" value={need.reason} max={400} onChange={(reason) => edit({ reason })} />
-                  <button type="button" className="icon-btn" aria-label="Remove this need" onClick={() => change(route.id, { requires: route.requires.filter((_, at) => at !== index) })}>×</button>
-                </div>
-              );
-            })}
-            <div className="row"><button type="button" className="btn small quiet" onClick={() => change(route.id, { requires: [...route.requires, { stateId: 'coin', atLeast: 1, reason: 'You need a coin for the ferry.' }] })}>It needs something</button></div>
-          </div>
-        );
-      })}
-      <div className="row">
-        <button type="button" className="btn small" disabled={!others.length} onClick={() => put([...routes, { id: `route-${newId().slice(0, 8)}`, from: place.id, to: others[0]!.id, distanceKm: 1, terrain: '', routeClass: '', requires: [] }])}>Add a route from here</button>
-      </div>
+      <p className="hint">The map says how long it takes to get here (World › Map, and the levels on World › Rules). Here you can say what a traveller needs to come in, or to come and go: a boat for an island, a signature at a gate. It covers everything inside {place.name} too.</p>
+      {needs.map((need, index) => (
+        <div key={index} className="row">
+          <span className="hint">Needs</span>
+          <StatePick ruleset={ruleset} label="State crossing needs" value={need.stateId} only={(def) => def.scope === 'char' || def.scope === 'protagonist'} onChange={(stateId) => edit(index, { stateId })} />
+          <span className="hint">at least</span>
+          <Num label="At least" value={need.atLeast} onChange={(atLeast) => edit(index, { atLeast })} />
+          <select className="input pick" aria-label="Which way it is needed" value={need.toward ? 'in' : 'both'} onChange={(event) => edit(index, { toward: event.target.value === 'in' ? place.id : undefined })}>
+            <option value="both">Coming and going</option>
+            <option value="in">Only coming in</option>
+          </select>
+          <Words label="What the player is told" value={need.reason} max={400} onChange={(reason) => edit(index, { reason })} />
+          <button type="button" className="icon-btn" aria-label="Remove this need" onClick={() => put(needs.filter((_, at) => at !== index))}>×</button>
+        </div>
+      ))}
+      <div className="row"><button type="button" className="btn small" onClick={() => put([...needs, { stateId: 'coin', atLeast: 1, toward: place.id, reason: `You need a coin to get into ${place.name}.` }])}>Crossing needs something</button></div>
     </>
   );
 }

@@ -1,4 +1,4 @@
-// The parts of World › Rules an adventure needs written: the calendar, travel, and scene actions.
+// The parts of World › Rules an adventure needs written: the calendar, travel by level, and scene actions.
 import type { World } from '../../../core/records/index.js';
 import { DEFAULT_CALENDAR, LEVEL_NAMES, TRAVEL_LEVELS, levelsOf, pruneLevels, type Calendar, type Ruleset, type SceneAction, type TravelLevel, type WorldRules } from '../../../core/rules/index.js';
 import { RecordMulti, WhosePick } from '../RecordPick';
@@ -11,10 +11,9 @@ export function CalendarPart({ rules, ruleset, put }: { rules: WorldRules | unde
   const own = rules?.calendar;
   const calendar: Calendar = own ?? DEFAULT_CALENDAR;
   const set = (patch: Partial<Calendar>) => put({ calendar: { ...calendar, ...patch } });
-  const travel = ruleset.travel;
   return (
-    <section className="rules-part" aria-label="The calendar and travel">
-      <h2 className="sub">The calendar and travel</h2>
+    <section className="rules-part" aria-label="The calendar">
+      <h2 className="sub">The calendar</h2>
       <div className="row">
         <p className="hint grow">The real calendar until you write another. The narrator is told only the time of day, in the words below; days and dates are for you and the player.</p>
         <Origin source={own ? 'world' : 'standard'} />
@@ -48,9 +47,6 @@ export function CalendarPart({ rules, ruleset, put }: { rules: WorldRules | unde
         ))}
         <div className="row"><button type="button" className="btn small quiet" onClick={() => set({ bands: [...calendar.bands, { label: 'dusk', from: 17, to: 19 }] })}>Add a time of day</button></div>
       </details>
-      <Rule label="Walking pace" hint="Kilometres an hour along a route." source={rules?.travel ? 'world' : 'standard'} onPutBack={rules?.travel ? () => put({ travel: undefined }) : false}>
-        <Num label="Walking pace" value={travel.walkKph} min={1} max={100} onChange={(walkKph) => put({ travel: { ...travel, walkKph } })} />
-      </Rule>
     </section>
   );
 }

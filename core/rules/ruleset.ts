@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { calendarSchema } from './clock.js';
 import { stateDefSchema } from './state.js';
 import { STANDARD_RULESET_ID } from './standard.js';
+import { levelsSchema } from './levels.js';
 
 const id = z.string().min(1).max(200);
 const text = (max: number) => z.string().max(max);
@@ -31,20 +32,6 @@ export const TIERS = ['minion', 'rival', 'nemesis'] as const;
 export const WORK_PREFIX = 'work:';
 // A charge ladder, lowest first. Each step adds the next charge: raw (+1) to master (+1 to +5).
 export const LADDER = ['raw', 'practiced', 'trained', 'expert', 'master'] as const;
-
-// How long a hop between a place and the place inside it takes, by the depth of the inner
-// place (the island is 0). A tier with no row is free. No default numbers: there is no
-// honest guess at the scale of a world nobody has written yet.
-export const travelTierSchema = z.object({
-  tier: z.number().int().min(0).max(20),
-  minutes: z.number().int().min(0).max(100_000),
-});
-
-export const travelSchema = z.object({
-  // Orbis's own on-foot pace for its route estimates.
-  walkKph: z.number().positive().max(100).default(4),
-  tiers: z.array(travelTierSchema).max(21).default([]),
-});
 
 // Something the player can do at a place that the rules settle outright, such as signing
 // the Covenant at the gate. Offered while its conditions hold; resolving it writes its
@@ -264,7 +251,8 @@ export const rulesetSchema = z.object({
   states: z.array(stateDefSchema).max(500).default([]),
   // Absent means the real calendar (DEFAULT_CALENDAR).
   calendar: calendarSchema.optional(),
-  travel: travelSchema.default({ walkKph: 4, tiers: [] }),
+  // Travel by level: only the numbers the world changed (levels.ts).
+  levels: levelsSchema.optional(),
   actions: z.array(sceneActionSchema).max(1000).default([]),
   approaches: z.array(approachSchema).max(12).default([]),
   dice: diceSchema.optional(),
@@ -279,25 +267,17 @@ export const rulesetSchema = z.object({
   tiers: z.object({ minion: tierSchema.optional(), rival: tierSchema.optional(), nemesis: tierSchema.optional() }).optional(),
 });
 
-// A condition on the player's character for using a route.
+// A condition on the player's character for crossing to or from a place: a boat for an island,
+// a signature for the town gate (docs/bids/maps/decision.md).
 export const requirementSchema = z.object({
   stateId: id,
   atLeast: z.number().int(),
-  // When set, the condition applies only when travelling toward this end of the route.
+  // When set to the place itself, the condition applies only on the way in.
   toward: id.optional(),
   // What the player is told when the condition fails.
   reason: z.string().min(1).max(400),
 });
 
-export const routeSchema = z.object({
-  id,
-  from: id,
-  to: id,
-  distanceKm: z.number().min(0).max(10_000),
-  terrain: text(200).default(''),
-  routeClass: text(80).default(''),
-  requires: z.array(requirementSchema).max(8).default([]),
-}).passthrough();
 
 // When part of someone's day holds. Every field must match; an absent field matches anything.
 // Weekday, month and day of the month count from zero; fromDay and toDay are days since story
@@ -312,7 +292,7 @@ export const scheduleWhenSchema = z.object({
   state: z.object({ stateId: id, characterId: id.optional(), atLeast: z.number().int().optional(), atMost: z.number().int().optional() }).optional(),
 });
 export type ScheduleWhen = z.infer<typeof scheduleWhenSchema>;
-export type Route = z.infer<typeof routeSchema>;
+export type Requirement = z.infer<typeof requirementSchema>;
 
 export type Ruleset = z.infer<typeof rulesetSchema>;
 export type SceneAction = z.infer<typeof sceneActionSchema>;

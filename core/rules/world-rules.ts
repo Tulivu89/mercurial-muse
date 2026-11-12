@@ -13,7 +13,7 @@ import { levelsChanged, levelsSchema, pruneLevels } from './levels.js';
 import { STANDARD_RULESET, STANDARD_RULESET_ID, mergeBy } from './standard.js';
 import {
   TIERS, approachSchema, craftSchema, deedSchema, diceSchema, fightSchema, followRuleSchema, goodSchema, growthSchema, restSchema,
-  rulesetSchema, sceneActionSchema, tierSchema, tradeSchema, travelSchema,
+  rulesetSchema, sceneActionSchema, tierSchema, tradeSchema,
   type Approach, type Deed, type GoodDef, type Ruleset, type Tier, type TierRules,
 } from './ruleset.js';
 
@@ -48,7 +48,6 @@ export const worldRulesSchema = z.object({
   craft: sparse(craftSchema).optional(),
   // Absent means the real calendar.
   calendar: calendarSchema.optional(),
-  travel: travelSchema.optional(),
   // Travel by level: only the numbers the world changed (levels.ts).
   levels: levelsSchema.optional(),
   actions: z.array(sceneActionSchema).max(1000).default([]),
@@ -76,7 +75,7 @@ function merged(rules: WorldRules | null | undefined): Loose {
     tiers: { ...standard.tiers, ...own.tiers },
     dice: block('dice'), rest: block('rest'), fight: block('fight'), growth: block('growth'), trade: block('trade'), craft: block('craft'),
     calendar: own.calendar,
-    travel: own.travel ?? { walkKph: 4, tiers: [] },
+    levels: own.levels,
     actions: own.actions,
   };
 }
@@ -252,7 +251,7 @@ export function pruneRules(rules: WorldRules | null | undefined): WorldRules | u
     else delete (next as Loose)[block];
   }
   const empty = !next.states.length && !next.approaches.length && !next.deeds.length && !next.follow.length && !next.goods.length && !Object.keys(next.tiers).length
-    && BLOCKS.every((block) => !next[block]) && !next.calendar && !next.travel && !next.levels && !next.actions.length;
+    && BLOCKS.every((block) => !next[block]) && !next.calendar && !next.levels && !next.actions.length;
   return empty ? undefined : next;
 }
 
@@ -288,7 +287,7 @@ export const changeRules = {
 export function changedCount(rules: WorldRules | null | undefined): number {
   if (!rules) return 0;
   return rules.states.length + rules.approaches.length + rules.deeds.length + rules.follow.length + rules.goods.length + Object.keys(rules.tiers).length
-    + BLOCKS.reduce((sum, block) => sum + Object.keys((rules[block] ?? {}) as Loose).length, 0) + (rules.calendar ? 1 : 0) + (rules.travel ? 1 : 0) + levelsChanged(rules.levels) + rules.actions.length;
+    + BLOCKS.reduce((sum, block) => sum + Object.keys((rules[block] ?? {}) as Loose).length, 0) + (rules.calendar ? 1 : 0) + levelsChanged(rules.levels) + rules.actions.length;
 }
 
 // States an author can add in one tap, beyond the standard: a faction's standing and what it has

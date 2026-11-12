@@ -129,7 +129,7 @@ export function SceneSection({ api }: { api: PlayApi }) {
       <div className="card">
         {scene.exits.length === 0 && <div className="lr"><span className="meta">No known way out.</span></div>}
         {scene.exits.map((exit) => (
-          <div key={`${exit.edge.kind}:${exit.edge.routeId ?? exit.place.id}`} className="lr" style={exit.blocked ? { alignItems: 'flex-start' } : undefined}>
+          <div key={exit.place.id} className="lr" style={exit.blocked ? { alignItems: 'flex-start' } : undefined}>
             {exit.blocked && <span style={{ color: 'var(--bad)', marginTop: 2 }}><LockIcon size={18} /></span>}
             <span className="grow">
               <span className="name" style={{ display: 'block' }}>{exit.place.name}</span>

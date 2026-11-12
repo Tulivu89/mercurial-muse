@@ -3,7 +3,8 @@
 import { z } from 'zod';
 import { recordRulesSchema } from '../rules/record-rules.js';
 import { worldRulesSchema } from '../rules/world-rules.js';
-import { routeSchema, scheduleWhenSchema } from '../rules/ruleset.js';
+import { scheduleWhenSchema } from '../rules/ruleset.js';
+import { mapSchema } from '../map/schema.js';
 
 export const WORLD_FORMAT = 'studio-world/1';
 
@@ -219,9 +220,10 @@ export const worldSchema = z.object({
   records: z.array(recordSchema).max(5000).default([]),
   // The world's own rules: only what it changes from the standard ruleset (core/rules).
   rules: worldRulesSchema.optional(),
-  // The ways between places: two ends, a distance, and what a traveller needs to use one.
-  routes: z.array(routeSchema).max(10_000).optional(),
-  // The same for the world: the module's own id and version, its routes and relationships.
+  // The map: only what an author changed on each sheet (core/map). Absent, every sheet lays
+  // itself out from the place tree.
+  map: mapSchema.optional(),
+  // The same for the world: the module's own id and version and its relationships.
   carried: z.record(z.string().max(80), z.unknown()).optional(),
   updatedAt: z.number().int().nonnegative().default(0),
 }).superRefine((world, context) => {
