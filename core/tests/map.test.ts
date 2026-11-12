@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { moduleToWorld } from '../convert/index.js';
-import { TOP, atlasOf, cellDistance, cellKey, childrenOf, circlesOf, inDisc, placeMap, sheetOf, travelOf, type PlaceMap, type SheetEdits } from '../map/index.js';
+import { TOP, atlasOf, cellDistance, cellKey, cellWorth, childrenOf, circlesOf, inDisc, isArranged, keepLayout, moveTo, paint, placeMap, reroll, resetSheet, resize, road, sheetOf, staleMapData, travelOf, type PlaceMap, type SheetEdits, type WorldMap } from '../map/index.js';
 import { STANDARD_LEVELS, changedCount, levelsOf, pruneLevels, pruneRules, EMPTY_RULES } from '../rules/index.js';
 import type { World } from '../records/index.js';
 
@@ -210,5 +210,67 @@ describe('a walk that must go around', () => {
         expect(around.minutes).toBeGreaterThanOrEqual(free.minutes);
       }
     }
+  });
+});
+
+describe('refining the ground', () => {
+  const map = placeMap(bogwater);
+  const fresh = () => sheetOf(map, 'fenmire');
+  const after = (worldMap: WorldMap | undefined) => sheetOf(map, 'fenmire', worldMap?.sheets?.fenmire);
+
+  it('stores every centre at the first change, and nothing else moves after', () => {
+    const sheet = fresh();
+    const spot = sheet.cells.find(([q, r]) => !sheet.owner.has(cellKey(q, r)))!;
+    const moved = moveTo(undefined, sheet, 'grey-water', spot);
+    expect(moved?.v).toBe(1);
+    expect(Object.keys(moved!.sheets!.fenmire!.centres!).sort()).toEqual(sheet.blobs.map((blob) => blob.id).sort());
+    const next = after(moved);
+    expect(next.byId.get('grey-water')!.centre).toEqual(spot);
+    for (const blob of sheet.blobs) if (blob.id !== 'grey-water') expect(next.byId.get(blob.id)!.centre).toEqual(blob.centre);
+  });
+
+  it('makes a place bigger and smaller', () => {
+    const sheet = fresh(), before = sheet.byId.get('the-fen')!.cells.length;
+    const bigger = resize(undefined, sheet, 'the-fen', true);
+    expect(after(bigger).byId.get('the-fen')!.cells.length).toBeGreaterThan(before);
+    const smaller = resize(bigger, after(bigger), 'the-fen', false);
+    expect(smaller!.sheets!.fenmire!.sizes!['the-fen']).toBeLessThan(bigger!.sheets!.fenmire!.sizes!['the-fen']!);
+  });
+
+  it('paints a cell, seven, or a whole patch, and back to the ground', () => {
+    const sheet = fresh();
+    const ground = sheet.cells.find(([q, r]) => !sheet.owner.has(cellKey(q, r)))!;
+    const one = paint(undefined, sheet, ground, 'bogwater', 1);
+    expect(after(one).owner.get(cellKey(...ground))!.id).toBe('bogwater');
+    const seven = paint(undefined, sheet, ground, 'bogwater', 7);
+    expect(Object.keys(seven!.sheets!.fenmire!.claims!).length).toBeLessThanOrEqual(7);
+    const fill = paint(undefined, sheet, sheet.byId.get('the-fen')!.cells[1]!, '', 0);
+    const filled = after(fill).byId.get('the-fen')!;
+    expect(filled.cells).toEqual([filled.centre]);
+  });
+
+  it('lays and lifts road, and a road is quicker', () => {
+    const sheet = fresh();
+    let worldMap: WorldMap | undefined;
+    for (const [q, r] of sheet.cells) worldMap = road(worldMap, sheet, [q, r], true);
+    const paved = travelOf(atlasOf(map, worldMap!.sheets), undefined).journey('eel-traps', 'woeds-edge');
+    expect(paved.minutes).toBeLessThan(travelOf(atlasOf(map), undefined).journey('eel-traps', 'woeds-edge').minutes);
+    const lifted = road(worldMap, sheet, sheet.cells[0]!, false);
+    expect(lifted!.sheets!.fenmire!.roads!.length).toBe(sheet.cells.length - 1);
+  });
+
+  it('rerolls keeping what a cell is worth, resets to nothing, and drops an empty map', () => {
+    const worth = cellWorth(undefined, 'fenmire', 15);
+    expect(reroll(worth, 'fenmire')!.sheets!.fenmire).toEqual({ seed: 1, cellMinutes: 15 });
+    expect(resetSheet(worth, 'fenmire')).toBeUndefined();
+    expect(isArranged(keepLayout(undefined, fresh()), 'fenmire')).toBe(true);
+  });
+
+  it('finds map data that points at nothing', () => {
+    const kept = keepLayout(undefined, fresh());
+    expect(staleMapData(map, kept)).toEqual([]);
+    const moved = { ...bogwater, records: bogwater.records.map((record) => (record.id === 'grey-water' ? { ...record, parentId: 'the-fen' } : record)) };
+    expect(staleMapData(placeMap(moved), kept)[0]!.text).toMatch(/no longer inside it: Grey Water/);
+    expect(staleMapData(map, { sheets: { gone: { seed: 1 } } })[0]!.text).toMatch(/a place that is gone/);
   });
 });

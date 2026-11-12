@@ -117,7 +117,7 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
         {atPage && !(page === 'rules' && here.part) && <button type="button" className="btn small quiet back" onClick={() => go({ rec: null, page: null, door: null, part: null, sheet: null })}>‹ {listName}</button>}
         {page === 'about' && <WorldSettings world={world} onChange={onChange} onDelete={onDelete} />}
         {page === 'rules' && <WorldRules world={world} onChange={onChange} part={here.part} onPart={(part) => go({ part })} />}
-        {page === 'map' && <MapPage world={world} route={here} go={go} />}
+        {page === 'map' && <MapPage world={world} route={here} go={go} onChange={onChange} />}
         {page === 'checks' && (
           <>
             <h1 className="ink-write">Checks</h1>

@@ -2,7 +2,7 @@
 
 Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the record model (`docs/records.md`), and see exactly what each part sends the model.
 
-## What it does (0.10.0)
+## What it does (0.11.0)
 
 - **Worlds** in this browser's storage, with a premise, genre, tone and shared conditions.
 - **Records of every kind:** characters, places, groups, items, lore, threads, scenarios and personas.
@@ -45,7 +45,7 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - **Circles** draw every sheet at once, nested at the hexes' centres, so the map pinches from the whole world down to a room. They keep Character Engine's rules: names for the place in focus, what is in it, the places above it (dimmed) and the land's top places; rooms only once you look inside their building; a building at rest drawn as its icon; names placed largest first and dropped, never drawn over each other. One line icon per kind, about 1.4 KB for the set.
   - **Ground** shows one place's hexes. Areas are islands on land nobody stops on; a building's rooms share walls, with one cell for being inside but in no room; anywhere else the spare ground is the place itself. Its address is `page=map&sheet=<place>`.
   - **Times.** Pick a place to see how long it takes from the place you measure from, leg by leg: out of each place, across the map where both sit side by side (cells times what a cell is worth), and in again. A list gives every place, nearest first.
-  - Read-only for now: moving, sizing, painting and roads are phase M3.
+  - **Refining the ground** (0.11.0, phase M3). Choose a tool first, so a pan never paints: **Move** drags a place and its cells grow back around it; **Paint** gives cells to a chosen place or back to the ground, one cell, seven, or **Fill** for a whole patch; **Road** lays road cells, and starting on one takes it up. A picked place on the ground has **Bigger** and **Smaller**. The sheet has what one cell is worth (with Put back), **Keep this layout**, **Reroll**, **Reset this sheet** and **Add a place here**. The first change keeps every centre on that sheet, so a later place finds a gap and moves nobody. Only what changed is kept, on the world's `map` (`core/map/edit.ts`). Checks finds map data for a place that is gone or no longer inside that sheet's place.
 - **Travel by level** (0.9.0), a part of World › Rules: a typical trip across a land, a region, open country, a settlement or a site, and a building, with what stepping inside one of its places costs, each in minutes, hours or days; and how much quicker a road is. Only the numbers a world changes are stored (`core/rules/levels.ts`).
 - **Routes retired** (0.10.0, phase M2): the adventure travels by the levels and the map, so a place's In the adventure door says only what crossing to or from it asks, and walking pace has left World › Rules. Checks finds a crossing rule that waits on a state that is gone. A module's routes are dropped when it opens.
 - **The marks** (0.7.1): the Studio's nib in the header and on the home page, in wet ink, black by day and bone at night (`kit/src/Mark.tsx`). It drops in when the Studio opens; page titles are written on and a new page settles in from a slight blur, all off with reduced motion. The tab shows the flat nib.
@@ -67,11 +67,12 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 | S3 | Routes, scene actions, the calendar and world states, goods, one schedule model with Chat, and Checks. | Built, 0.5.0; threads with milestones in 0.6.0. |
 | M1 | Maps: `core/map/` (sheets, circles, journeys), the map in `kit/`, the Map page, and travel by level on World › Rules (`docs/bids/maps/decision.md`). | Built, 0.9.0. |
 | M2 | Routes retire: crossing rules on places, the adventure travelling by levels and the map. | Built, 0.10.0 (adventure 0.27.0). |
+| M3 | Refining the ground: move, bigger and smaller, paint, roads, what a cell is worth, keep, reroll, reset, add a place; stale map data on Checks. | Built, 0.11.0. |
 
 ## Not yet
 
 - An editor for relationships between two people (a module's come through unchanged).
-- The rest of maps (`docs/bids/maps/decision.md`): refining the ground (M3), icons by choice (M4), a picture under a sheet (M5).
+- The rest of maps (`docs/bids/maps/decision.md`): icons by choice and genre, colour paint and words that wrap on circles (M4); a picture under a sheet (M5).
 - Pins in the list, the whole place tree as a second order, and a hand-off to the adventure that doesn't go through the browser's small store (a world of several hundred records could outgrow it): `docs/bids/ui/decision.md`.
 - Chat reading an event's condition: until it does, a day that waits on one shows in Chat as part of every day.
 - A world checked by the adventure's own loader before it is played: Checks covers what the brief lists, and anything else the adventure refuses is said on its start screen.
