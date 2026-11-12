@@ -2,7 +2,7 @@
 
 Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the record model (`docs/records.md`), and see exactly what each part sends the model.
 
-## What it does (0.12.0)
+## What it does (0.13.0)
 
 - **Worlds** in this browser's storage, with a premise, genre, tone and shared conditions.
 - **Records of every kind:** characters, places, groups, items, lore, threads, scenarios and personas.
@@ -49,6 +49,17 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - **Icons and colour** (0.12.0, phase M4). A world picks icons to suit its genre: **Old**, **Modern** or **Far** (on the map's top row); every place shows its kind's icon from that set, and a picked place can choose any other in the card. The library is one line drawing per icon, a few kilobytes for all three sets (`kit/src/map-icons.ts`). **Colour** paints cells in six tints, one cell, seven or Fill; it is a look and never a rule. Long names on the circles wrap between words, never inside one.
 - **Travel by level** (0.9.0), a part of World › Rules: a typical trip across a land, a region, open country, a settlement or a site, and a building, with what stepping inside one of its places costs, each in minutes, hours or days; and how much quicker a road is. Only the numbers a world changes are stored (`core/rules/levels.ts`).
 - **Routes retired** (0.10.0, phase M2): the adventure travels by the levels and the map, so a place's In the adventure door says only what crossing to or from it asks, and walking pace has left World › Rules. Checks finds a crossing rule that waits on a state that is gone. A module's routes are dropped when it opens.
+- **Drafts** (0.13.0, phase W1 of `docs/bids/worldbuilding/decision.md`). The model writes drafts; the author keeps them. Nothing a model writes changes a record until **Keep**.
+  - **Draft** under the line and under every section, with what it costs before it's tapped (*About 640 tokens · 1 call, 2 if the first is sent back*). It writes that one field from the record and the world, in the field's shape: one sentence for the line, two to four for a Here section, one or two for Always.
+  - **The draft waits under its field** in blue-black, editable in place, with **Keep** and **Drop**. **Draft again** puts up to three side by side. Keep checks first that the field hasn't changed since the draft was made, and shows both if it has. **Undo** puts the old text back. A folded section reads *Draft waiting*.
+  - **A wrong answer goes back once with the fix:** two sentences in a line, too long a section, a reply cut off. A second failure comes back *Unfinished*, to edit before keeping. Decoration (a preface, the title, Markdown, quotes) is ignored, and a connection fault is never resent.
+  - **The model can ask** instead of inventing: a question under the field, with a box for the answer and **Draft with this**.
+  - **Never sections are Kept back.** A draft of a part the narrator reads sees the record's own Never sections and is told to show them only as something a person could notice. Another record's Never sections and every Notes field are never sent.
+  - **Name ideas** on a new record: six names, offered first, checked against every name and key in the world; one already used shows as *taken*.
+  - **What this sent** under every draft: each part with its tokens, what was left out to fit, the Never sections by title, and the messages themselves. The window is what the provider lists for the model, or 8,000 tokens.
+  - A few overused words are underlined for a second look; they never block anything.
+  - **Settings** holds one connection for the Studio, the same key Chat and the adventure use. Drafts are kept in this browser in their own store (`inkwyrm-author`), never in the world file.
+  - **Live prompt tests** (`studio/live/`, `npm run prompts:live`): each prompt runs twenty times on a real model with your own key, and the failing runs are counted against a one-line contract.
 - **The marks** (0.7.1): the Studio's nib in the header and on the home page, in wet ink, black by day and bone at night (`kit/src/Mark.tsx`). It drops in when the Studio opens; page titles are written on and a new page settles in from a slight blur, all off with reduced motion. The tab shows the flat nib.
 - **Genre:** the purse's words are the Coin state's bands and the catalog's names are editable, so a modern world's hundred *could buy a car*.
 - **In context now:** put people and a place in the scene, type what was just said, tick what holds, and see what the world would send, with a rough token count. From 0.3.0 it shows the sentence of every state that is off its resting band, under the record it belongs to, as the narrator would read it.
@@ -70,6 +81,7 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 | M2 | Routes retire: crossing rules on places, the adventure travelling by levels and the map. | Built, 0.10.0 (adventure 0.27.0). |
 | M3 | Refining the ground: move, bigger and smaller, paint, roads, what a cell is worth, keep, reroll, reset, add a place; stale map data on Checks. | Built, 0.11.0. |
 | M4 | Icon sets by genre and icons by choice, colour paint, names that wrap on circles. | Built, 0.12.0 (adventure 0.27.1). |
+| W1 | Drafts: the Draft button on the line and every section, names first, the draft card, one resend with the fix, Never sections kept back, What this sent, live prompt tests (`docs/bids/worldbuilding/decision.md`). | Built, 0.13.0. |
 
 ## Not yet
 
@@ -80,7 +92,7 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 - A world checked by the adventure's own loader before it is played: Checks covers what the brief lists, and anything else the adventure refuses is said on its start screen.
 - Where a place or a group starts its states reaching the adventure.
 - On World › Rules: taking an approach away (the four can be renamed and re-costed, and a fifth added with its rating state), the fight and follow rules, craft's steps, and what a hop into a room costs.
-- The helper (a chat that writes a field as a draft), generate buttons, guided builders and images (`docs/studio-brief.md`, *The helper*).
+- The rest of the helper (`docs/bids/worldbuilding/decision.md`): the Errata door with rounds to pick and Settled (W2), Try a scene (W3), the library of questions and templates (W4), the workshop and Check (W5), and drafts for keys, set entries, greetings and events (W6). Images.
 
 The shared look, world storage and fields moved to `kit/` in 0.1.1, for Chat to use too.
 

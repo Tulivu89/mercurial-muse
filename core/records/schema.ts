@@ -25,7 +25,7 @@ export const REACH_HINTS: Record<Reach, string> = {
   here: 'While this is in the scene.',
   named: 'When one of its keys comes up, until the scene moves on.',
   when: 'Only while a condition holds.',
-  never: 'Your notes. The model never sees them.',
+  never: 'Your notes. Never sent in play; the helper reads them on this record, and keeps them back.',
 };
 
 export const RECORD_KINDS = ['character', 'place', 'group', 'item', 'lore', 'thread', 'scenario', 'persona'] as const;

@@ -58,7 +58,16 @@ Asked for on Nov 11. A record in the Studio has many fields and few of them are 
 2. Yes to new records: a workshop chat at the world's level talks through the bigger setting and proposes records, limited by what the player's model can hold.
 3. Questions are offered, and every author can change them: everyone has their own template.
 
-Where it goes from here is the worldbuilding bid (`docs/bids/worldbuilding/`): the brief, Claude's own proposal written before the bids, then the decision.
+**Decided Nov 12** (`docs/bids/worldbuilding/decision.md`, approved by the owner). Its phases:
+
+| Phase | What |
+| --- | --- |
+| W1 | Generate buttons: **Draft** on the line and every section, names first, the draft card (Keep, Edit, Again, Drop, Undo), the stale check, one resend with the fix, `NEEDS:`, Never sections as Kept back, What this sends, and the live prompt test kit. |
+| W2 | The Errata door: rounds of answers to pick, the talk, Settled, the default questions, Write all empty, Plain voice, the helper model, and Export talks. |
+| W3 | Try a scene. |
+| W4 | The author's library of questions and templates, a world's pick, the form, the kit file. |
+| W5 | The workshop, on the world and on a place, with proposals and Check. |
+| W6 | More fields: keys, set entries, greetings, example messages, an event's words. |
 
 ## A second session is working beside you
 

@@ -226,3 +226,25 @@
 .legs .t { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
 .legs .n { grid-column: 1 / -1; color: var(--text-2); font-size: 13px; }
 .times .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Drafts (docs/bids/worldbuilding/decision.md, W1): the Draft button under a field, the drafts
+   waiting there, and What this sent. A draft sits in blue-black, apart from the field it may fill. */
+.draft-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.draft-bar .status { flex-basis: 100%; }
+.draft-stream { flex-basis: 100%; margin: 0; padding: 8px 12px; border-left: 3px solid var(--blue); color: var(--text-2); font-family: var(--read); white-space: pre-wrap; }
+.draft-card { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid var(--blue); border-left-width: 4px; border-radius: 10px; background: var(--raised); }
+.draft-card.needs { border-style: dashed; }
+.draft-card textarea { width: 100%; min-height: 64px; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--rule); background: var(--surface); color: var(--text); font-family: var(--read); line-height: 1.55; resize: vertical; }
+.draft-card p { margin: 0; }
+.draft-compare { display: flex; flex-direction: column; gap: 8px; }
+.draft-now { padding: 8px 12px; border: 1px solid var(--rule); border-radius: 6px; font-family: var(--read); white-space: pre-wrap; }
+.draft-undo { display: flex; align-items: center; gap: 8px; margin: 0; }
+mark.flag { background: transparent; color: inherit; text-decoration: underline wavy var(--seal); margin-right: 6px; }
+.chip.draft-chip { border: 1px solid var(--blue); color: var(--blue); }
+.name-ideas { display: flex; flex-direction: column; gap: 8px; }
+.name-ideas .chips { flex-wrap: wrap; gap: 6px; }
+.chip.taken { text-decoration: line-through; }
+details.sent > summary { cursor: pointer; color: var(--text-2); font-size: 14px; min-height: 32px; }
+.sent-parts { margin: 6px 0; padding-left: 18px; font-size: 14px; color: var(--text-2); }
+.sent-parts li.left { text-decoration: line-through; }
+details.sent pre.raw { margin: 0; font: 13px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; padding: 10px; border-radius: 6px; background: var(--ground); border: 1px solid var(--rule); max-height: 320px; overflow-y: auto; }
