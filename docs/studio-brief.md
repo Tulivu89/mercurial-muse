@@ -29,7 +29,7 @@ All three phases are built, and threads with milestones after them: Studio 0.6.0
 5. Where a place or a group starts its states reaching the adventure.
 
 **Asked for, on the plan**
-- **Maps.** Four bids came in (`docs/bids/maps/`), and `docs/bids/maps/decision.md` is the plan from them: sheets per containing place, laid out from the tree and the routes, pins only when dragged, hexes later from the same centres, never pricing travel. Once the owner approves, its phases M1 to M5 are this brief's next.
+- **Maps.** Four bids came in (`docs/bids/maps/`), and `docs/bids/maps/decision.md` is the plan from them, revised Nov 12 with the owner's changes: sheets per containing place, each a disc of hexes made from the tree and the routes; centres and cells stored only when the author drags or paints; routes in time rather than kilometres; a picture under a sheet later; never pricing travel. Once the owner approves, its phases T1 and M1 to M5 are this brief's next.
 - **The helper,** for writing fields. Below, under *The helper*; out for bid as the worldbuilding tools (`docs/bids/worldbuilding/`), with the owner's Nov 11 answers in its brief.
 - **The Studio's look and layout** for big worlds: decided from three bids and built in Studio 0.8.0 (`docs/bids/ui/decision.md`). The list goes one level at a time, a record's page is the writing with doors to its other jobs, and every page has an address. Studio 0.7.0 had done the plain fixes first: one searchable picker, Find and order in the list, and a jump bar that the doors replaced.
 
