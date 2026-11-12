@@ -1,12 +1,14 @@
+// A record's page (docs/bids/ui/decision.md). The page is the writing: the name and one line of
+// who this is, the doors to its other jobs, then sections, sets and notes. A section folds to one
+// row of its title, its reach and its first words until it is opened.
+import { useState, type ReactNode } from 'react';
 import {
   GROUP_KINDS, KIND_NAMES, REACHES, REACH_HINTS, REACH_NAMES, hintFor, newSection, wouldLoop,
-  type ExampleChat, type RecordSet, type Section, type StoryRecord, type World,
+  type RecordSet, type Section, type StoryRecord, type World,
 } from '../../core/records/index.js';
 import { KeysField, NameField } from '../../kit/src/Fields';
 import { newId } from '../../kit/src/util';
-import { ScheduleEditor } from './ScheduleEditor';
-import { RulesPanel } from './RulesPanel';
-import { RecordMulti, RecordPick } from './RecordPick';
+import { RecordMulti, RecordPick, withinOf } from './RecordPick';
 
 type Change = (record: StoryRecord) => void;
 
@@ -18,86 +20,98 @@ const move = <T,>(list: T[], from: number, to: number): T[] => {
   return next;
 };
 
-export function RecordEditor({ world, record, onChange, onDelete, onWorld }: { world: World; record: StoryRecord; onChange: Change; onDelete: () => void; onWorld?: (world: World) => void }) {
+// Which sections and sets were left open on each record, for as long as the Studio stays open, so
+// coming back to a record finds the part being written still open.
+const LEFT_OPEN = new Map<string, Set<string>>();
+
+const firstWords = (text: string) => text.trim().replace(/\s+/g, ' ').slice(0, 160);
+
+export function RecordEditor({ world, record, onChange, onDelete, doors }: { world: World; record: StoryRecord; onChange: Change; onDelete: () => void; doors?: ReactNode }) {
   const update = (patch: Partial<StoryRecord>) => onChange({ ...record, ...patch });
   const hasGroups = world.records.some((entry) => entry.kind === 'group' && entry.id !== record.id);
   const isPerson = record.kind === 'character' || record.kind === 'persona';
-  // The parts of the page, for the jump bar. Rules for anything the rules act on; the adventure's
-  // own panel for threads and scenarios; nothing for lore.
-  const rulesLabel = ['character', 'persona', 'place', 'item', 'group'].includes(record.kind) ? 'Rules' : record.kind === 'thread' || record.kind === 'scenario' ? 'In the adventure' : null;
-  const parts: [string, string][] = [
-    ['part-basics', 'Basics'],
-    ...(rulesLabel ? [['part-rules', rulesLabel] as [string, string]] : []),
-    ['part-sections', `Sections ${record.sections.length}`],
-    ['part-sets', `Sets ${record.sets.length}`],
-    ...(record.kind === 'character' ? [['part-schedule', 'Schedule'], ['part-chat', 'Chat']] as [string, string][] : []),
-    ['part-notes', 'Notes'],
-  ];
-  const jump = (id: string) => document.getElementById(id)?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+  const [open, setOpen] = useState<Set<string>>(() => new Set(LEFT_OPEN.get(record.id)));
+  const fold = (id: string, on: boolean) => {
+    const next = new Set(open);
+    if (on) next.add(id); else next.delete(id);
+    LEFT_OPEN.set(record.id, next);
+    setOpen(next);
+  };
+  // A record nobody has written in yet opens on its name.
+  const [untouched] = useState(() => !record.line && record.name.startsWith('New ') && record.sections.every((section) => !section.text));
+
+  const groups = record.groupIds.map((id) => world.records.find((entry) => entry.id === id)?.name).filter(Boolean);
+  const within = record.kind === 'place' ? withinOf(world, record, 3) : '';
+  const facts = [
+    isPerson && record.pronouns, isPerson && record.gender,
+    record.kind === 'group' && record.groupKind !== 'other' && record.groupKind,
+    within && `in ${within}`, ...groups,
+  ].filter(Boolean);
 
   return (
     <>
-      <div className="row" style={{ justifyContent: 'space-between' }}>
+      <div className="row between">
         <h1 className="ink-write">{record.name}</h1>
         <span className="row">
           {record.kind === 'character' && <a className="btn small quiet" href={`/chat/#/with/${encodeURIComponent(world.id)}/${encodeURIComponent(record.id)}`}>Chat with {record.name}</a>}
           <span className="chip line">{KIND_NAMES[record.kind].one}</span>
         </span>
       </div>
+      {record.line && <p className="identity">{record.line}</p>}
+      {facts.length > 0 && <p className="hint">{facts.join(' · ')}</p>}
 
-      <nav className="jump" aria-label={`Parts of ${record.name}`}>
-        {parts.map(([id, label]) => <button key={id} type="button" className="btn small quiet" onClick={() => jump(id)}>{label}</button>)}
-      </nav>
-
-      <div id="part-basics" className="part-anchor" />
-      <NameField label="Name" value={record.name} onChange={(name) => update({ name })} />
-      <KeysField label="Keys: other names that bring it into the story" value={record.keys} placeholder="Nicknames, titles, short names, separated by commas" onChange={(keys) => update({ keys })} />
-      <label className="field">
-        <span>Line: who or what this is to a stranger, in one sentence</span>
-        <textarea rows={2} maxLength={400} value={record.line} onChange={(event) => update({ line: event.target.value })} />
-      </label>
-
-      <div className="row">
-        {isPerson && (
-          <label className="field grow">
-            <span>Pronouns</span>
-            <input value={record.pronouns} maxLength={40} placeholder="she/her" onChange={(event) => update({ pronouns: event.target.value })} />
-          </label>
-        )}
-        {isPerson && (
-          <label className="field grow">
-            <span>Gender</span>
-            <input value={record.gender} maxLength={80} onChange={(event) => update({ gender: event.target.value })} />
-          </label>
-        )}
-        {record.kind === 'place' && (
-          <div className="field grow">
-            <span>Inside</span>
-            <RecordPick world={world} label="Inside" kinds={['place']} only={(entry) => !wouldLoop(world, record.id, entry.id)} none="Nowhere: it's a top-level place" value={record.parentId ?? ''} onChange={(id) => update({ parentId: id || null })} />
+      <details className="card fold names" open={untouched || undefined}>
+        <summary><b>Names and keys</b> <span className="hint">{record.keys.length ? record.keys.join(', ') : 'The name, other names, and the line'}</span></summary>
+        <NameField label="Name" value={record.name} onChange={(name) => update({ name })} />
+        <KeysField label="Keys: other names that bring it into the story" value={record.keys} placeholder="Nicknames, titles, short names, separated by commas" onChange={(keys) => update({ keys })} />
+        <label className="field">
+          <span>Line: who or what this is to a stranger, in one sentence</span>
+          <textarea rows={2} maxLength={400} value={record.line} onChange={(event) => update({ line: event.target.value })} />
+        </label>
+        <div className="row">
+          {isPerson && (
+            <label className="field grow">
+              <span>Pronouns</span>
+              <input value={record.pronouns} maxLength={40} placeholder="she/her" onChange={(event) => update({ pronouns: event.target.value })} />
+            </label>
+          )}
+          {isPerson && (
+            <label className="field grow">
+              <span>Gender</span>
+              <input value={record.gender} maxLength={80} onChange={(event) => update({ gender: event.target.value })} />
+            </label>
+          )}
+          {record.kind === 'place' && (
+            <div className="field grow">
+              <span>Inside</span>
+              <RecordPick world={world} label="Inside" kinds={['place']} only={(entry) => !wouldLoop(world, record.id, entry.id)} none="Nowhere: it's a top-level place" value={record.parentId ?? ''} onChange={(id) => update({ parentId: id || null })} />
+            </div>
+          )}
+          {record.kind === 'group' && (
+            <label className="field grow">
+              <span>Kind of group</span>
+              <select value={record.groupKind} onChange={(event) => update({ groupKind: event.target.value as StoryRecord['groupKind'] })}>
+                {GROUP_KINDS.map((kind) => <option key={kind} value={kind}>{kind[0].toUpperCase() + kind.slice(1)}</option>)}
+              </select>
+            </label>
+          )}
+        </div>
+        {record.kind !== 'group' && hasGroups && (
+          <div className="field">
+            <span>Belongs to</span>
+            <RecordMulti world={world} label="Belongs to" kinds={['group']} only={(entry) => entry.id !== record.id} values={record.groupIds} empty="No groups." onChange={(groupIds) => update({ groupIds })} />
           </div>
         )}
-        {record.kind === 'group' && (
-          <label className="field grow">
-            <span>Kind of group</span>
-            <select value={record.groupKind} onChange={(event) => update({ groupKind: event.target.value as StoryRecord['groupKind'] })}>
-              {GROUP_KINDS.map((kind) => <option key={kind} value={kind}>{kind[0].toUpperCase() + kind.slice(1)}</option>)}
-            </select>
-          </label>
-        )}
+      </details>
+
+      {doors}
+
+      <div className="row between">
+        <h2 className="sub">Sections</h2>
+        <button type="button" className="btn small quiet" onClick={() => { const fresh = newSection(newId(), 'New section', 'named'); update({ sections: [...record.sections, fresh] }); fold(fresh.id, true); }}>Add a section</button>
       </div>
-
-      {record.kind !== 'group' && hasGroups && (
-        <div className="field">
-          <span>Belongs to</span>
-          <RecordMulti world={world} label="Belongs to" kinds={['group']} only={(entry) => entry.id !== record.id} values={record.groupIds} empty="No groups." onChange={(groupIds) => update({ groupIds })} />
-        </div>
-      )}
-
-      <div id="part-rules" className="part-anchor" />
-      <RulesPanel world={world} record={record} onChange={onChange} onWorld={onWorld} />
-
-      <h2 className="sub part-anchor" id="part-sections">Sections</h2>
-      {record.sections.map((section, index) => (
+      {record.sections.length === 0 && <p className="empty">No sections yet.</p>}
+      {record.sections.map((section, index) => (open.has(section.id) ? (
         <SectionCard
           key={section.id}
           world={world}
@@ -106,39 +120,34 @@ export function RecordEditor({ world, record, onChange, onDelete, onWorld }: { w
           onChange={(next) => update({ sections: record.sections.map((existing) => (existing.id === section.id ? next : existing)) })}
           onMove={(by) => update({ sections: move(record.sections, index, index + by) })}
           onRemove={() => update({ sections: record.sections.filter((existing) => existing.id !== section.id) })}
+          onFold={() => fold(section.id, false)}
           first={index === 0}
           last={index === record.sections.length - 1}
         />
-      ))}
-      <div className="row">
-        <button type="button" className="btn small" onClick={() => update({ sections: [...record.sections, newSection(newId(), 'New section', 'named')] })}>Add a section</button>
-      </div>
+      ) : (
+        <FoldRow key={section.id} title={section.title || 'Untitled'} reach={section.reach} says={firstWords(section.text)} onOpen={() => fold(section.id, true)} />
+      )))}
 
-      <h2 className="sub part-anchor" id="part-sets">Sets: one in use at a time</h2>
-      {record.sets.map((set) => (
+      <div className="row between">
+        <h2 className="sub">Sets: one in use at a time</h2>
+        <button type="button" className="btn small quiet" onClick={() => { const fresh: RecordSet = { id: newId(), title: 'New set', reach: 'here', active: null, members: [] }; update({ sets: [...record.sets, fresh] }); fold(fresh.id, true); }}>Add a set</button>
+      </div>
+      {record.sets.length === 0 && <p className="empty">None. A set holds things only one of which is true at a time, such as outfits.</p>}
+      {record.sets.map((set) => (open.has(set.id) ? (
         <SetCard
           key={set.id}
           set={set}
           conditions={world.conditions}
           onChange={(next) => update({ sets: record.sets.map((existing) => (existing.id === set.id ? next : existing)) })}
           onRemove={() => update({ sets: record.sets.filter((existing) => existing.id !== set.id) })}
+          onFold={() => fold(set.id, false)}
         />
-      ))}
-      <div className="row">
-        <button type="button" className="btn small" onClick={() => update({ sets: [...record.sets, { id: newId(), title: 'New set', reach: 'here', active: null, members: [] }] })}>Add a set</button>
-      </div>
+      ) : (
+        <FoldRow key={set.id} title={set.title || 'Untitled'} reach={set.reach} empty="Nothing in it yet" onOpen={() => fold(set.id, true)}
+          says={set.members.length ? `In use: ${set.members.find((entry) => entry.id === set.active)?.name || 'none'} · ${set.members.length} in it` : ''} />
+      )))}
 
-      {record.kind === 'character' && (
-        <>
-          <h2 className="sub part-anchor" id="part-schedule">Schedule</h2>
-          <ScheduleEditor record={record} world={world} onChange={(schedule) => update({ schedule })} />
-        </>
-      )}
-
-      {record.kind === 'character' && <div id="part-chat" className="part-anchor" />}
-      {record.kind === 'character' && <ChatParts record={record} update={update} />}
-
-      <label className="field part-anchor" id="part-notes">
+      <label className="field">
         <span>Notes · Never sent</span>
         <textarea rows={3} maxLength={20000} value={record.notes} placeholder="Reminders for yourself. The model never sees these." onChange={(event) => update({ notes: event.target.value })} />
       </label>
@@ -150,13 +159,26 @@ export function RecordEditor({ world, record, onChange, onDelete, onWorld }: { w
   );
 }
 
-function SectionCard({ world, record, section, onChange, onMove, onRemove, first, last }: {
+// A section or a set, folded: its title, when it reaches the model, and its first words.
+function FoldRow({ title, reach, says, empty = 'Empty', onOpen }: { title: string; reach: Section['reach']; says: string; empty?: string; onOpen: () => void }) {
+  return (
+    <button type="button" className={`fold-row ${reach}`} aria-expanded={false} aria-label={`${title}, ${REACH_NAMES[reach]}: open to write`} onClick={onOpen}>
+      <span className="fold-title">{title}</span>
+      <span className={`chip ${reach}`}>{REACH_NAMES[reach]}</span>
+      <span className={`fold-says${says ? '' : ' none'}`}>{says || empty}</span>
+      <span className="chev" aria-hidden="true">▸</span>
+    </button>
+  );
+}
+
+function SectionCard({ world, record, section, onChange, onMove, onRemove, onFold, first, last }: {
   world: World;
   record: StoryRecord;
   section: Section;
   onChange: (section: Section) => void;
   onMove: (by: number) => void;
   onRemove: () => void;
+  onFold: () => void;
   first: boolean;
   last: boolean;
 }) {
@@ -165,15 +187,13 @@ function SectionCard({ world, record, section, onChange, onMove, onRemove, first
   return (
     <section className={`card ${section.reach}`} aria-labelledby={`${id}-title`}>
       <div className="card-head">
+        <button type="button" className="icon-btn" aria-expanded aria-label={`Fold ${section.title || 'this section'}`} onClick={onFold}>▾</button>
         <label className="sr" htmlFor={`${id}-title`}>Section title</label>
         <input id={`${id}-title`} className="title" value={section.title} maxLength={120} onChange={(event) => onChange({ ...section, title: event.target.value })} />
         <label className="sr" htmlFor={`${id}-reach`}>When it reaches the model</label>
         <select id={`${id}-reach`} value={section.reach} onChange={(event) => onChange({ ...section, reach: event.target.value as Section['reach'] })}>
           {REACHES.map((reach) => <option key={reach} value={reach}>{REACH_NAMES[reach]}</option>)}
         </select>
-        <button type="button" className="icon-btn" aria-label="Move up" disabled={first} onClick={() => onMove(-1)}>↑</button>
-        <button type="button" className="icon-btn" aria-label="Move down" disabled={last} onClick={() => onMove(1)}>↓</button>
-        <button type="button" className="icon-btn" aria-label={`Remove ${section.title || 'this section'}`} onClick={onRemove}>×</button>
       </div>
       <p className="hint">{REACH_HINTS[section.reach]}</p>
       {section.reach === 'when' && (
@@ -183,7 +203,7 @@ function SectionCard({ world, record, section, onChange, onMove, onRemove, first
             <option value="">Pick a condition</option>
             {world.conditions.map((condition) => <option key={condition.id} value={condition.id}>{condition.label}</option>)}
           </select>
-          {world.conditions.length === 0 && <span className="hint">This world has no conditions yet. Add them on the world's page.</span>}
+          {world.conditions.length === 0 && <span className="hint">This world has no conditions yet. Add them on the world's About page.</span>}
         </label>
       )}
       {(section.reach === 'named' || section.reach === 'when') && (
@@ -196,24 +216,29 @@ function SectionCard({ world, record, section, onChange, onMove, onRemove, first
       )}
       <label className="sr" htmlFor={`${id}-text`}>{section.title} text</label>
       <textarea id={`${id}-text`} maxLength={20000} value={section.text} placeholder={hint || 'Plain, concrete prose. The model copies its voice.'} onChange={(event) => onChange({ ...section, text: event.target.value })} />
+      <div className="row">
+        <button type="button" className="btn small quiet" disabled={first} onClick={() => onMove(-1)}>Move up</button>
+        <button type="button" className="btn small quiet" disabled={last} onClick={() => onMove(1)}>Move down</button>
+        <button type="button" className="btn small quiet" aria-label={`Remove ${section.title || 'this section'}`} onClick={onRemove}>Remove</button>
+      </div>
     </section>
   );
 }
 
-function SetCard({ set, conditions, onChange, onRemove }: { set: RecordSet; conditions: World['conditions']; onChange: (set: RecordSet) => void; onRemove: () => void }) {
+function SetCard({ set, conditions, onChange, onRemove, onFold }: { set: RecordSet; conditions: World['conditions']; onChange: (set: RecordSet) => void; onRemove: () => void; onFold: () => void }) {
   const id = `set-${set.id}`;
   const member = (memberId: string, patch: Partial<RecordSet['members'][number]>) =>
     onChange({ ...set, members: set.members.map((existing) => (existing.id === memberId ? { ...existing, ...patch } : existing)) });
   return (
     <section className="card" aria-labelledby={`${id}-title`}>
       <div className="card-head">
+        <button type="button" className="icon-btn" aria-expanded aria-label={`Fold ${set.title || 'this set'}`} onClick={onFold}>▾</button>
         <label className="sr" htmlFor={`${id}-title`}>Set title</label>
         <input id={`${id}-title`} className="title" value={set.title} maxLength={120} onChange={(event) => onChange({ ...set, title: event.target.value })} />
         <label className="sr" htmlFor={`${id}-reach`}>When the one in use reaches the model</label>
         <select id={`${id}-reach`} value={set.reach} onChange={(event) => onChange({ ...set, reach: event.target.value as RecordSet['reach'] })}>
           {REACHES.filter((reach) => reach !== 'when').map((reach) => <option key={reach} value={reach}>{REACH_NAMES[reach]}</option>)}
         </select>
-        <button type="button" className="icon-btn" aria-label={`Remove ${set.title || 'this set'}`} onClick={onRemove}>×</button>
       </div>
       <p className="hint">Only the one picked is sent. {REACH_HINTS[set.reach]}</p>
       {set.members.length === 0 && <p className="empty">Nothing in it yet.</p>}
@@ -243,60 +268,8 @@ function SetCard({ set, conditions, onChange, onRemove }: { set: RecordSet; cond
           const fresh = { id: newId(), name: '', text: '', lock: null, layers: [] };
           onChange({ ...set, members: [...set.members, fresh], active: set.active ?? fresh.id });
         }}>Add one</button>
+        <button type="button" className="btn small quiet" aria-label={`Remove ${set.title || 'this set'}`} onClick={onRemove}>Remove the set</button>
       </div>
     </section>
-  );
-}
-
-function ChatParts({ record, update }: { record: StoryRecord; update: (patch: Partial<StoryRecord>) => void }) {
-  const chat = (chatId: string, patch: Partial<ExampleChat>) =>
-    update({ examples: record.examples.map((existing) => (existing.id === chatId ? { ...existing, ...patch } : existing)) });
-  return (
-    <>
-      <h2 className="sub">Chat only: greetings and example chats</h2>
-      <p className="hint">The examples steer a character more than any section does. The adventure's narrator never gets them.</p>
-      {record.greetings.map((greeting, index) => (
-        <div key={greeting.id} className="card">
-          <div className="card-head">
-            <span className="label" style={{ flex: 1 }}>Greeting {index + 1}</span>
-            <button type="button" className="icon-btn" aria-label={`Remove greeting ${index + 1}`} onClick={() => update({ greetings: record.greetings.filter((existing) => existing.id !== greeting.id) })}>×</button>
-          </div>
-          <label className="sr" htmlFor={`greeting-${greeting.id}`}>Greeting {index + 1}</label>
-          <textarea id={`greeting-${greeting.id}`} maxLength={8000} value={greeting.text} placeholder="The first scene: where they are, what is in their hands, one line in their voice." onChange={(event) => update({ greetings: record.greetings.map((existing) => (existing.id === greeting.id ? { ...existing, text: event.target.value } : existing)) })} />
-        </div>
-      ))}
-      <div className="row">
-        <button type="button" className="btn small quiet" onClick={() => update({ greetings: [...record.greetings, { id: newId(), text: '', emotion: '' }] })}>Add a greeting</button>
-      </div>
-
-      {record.examples.map((example) => (
-        <details key={example.id} className="card">
-          <summary style={{ cursor: 'pointer', fontWeight: 700, minHeight: 32 }}>{example.name || 'Example'} <span className="hint">· {example.messages.length} messages</span></summary>
-          <div className="row">
-            <label className="field grow"><span>Name</span><input value={example.name} maxLength={120} onChange={(event) => chat(example.id, { name: event.target.value })} /></label>
-            <label className="field grow"><span>The other speaker</span><input value={example.userName} maxLength={60} onChange={(event) => chat(example.id, { userName: event.target.value })} /></label>
-          </div>
-          {example.messages.map((message, index) => (
-            <div key={index} className="message">
-              <label className="sr" htmlFor={`m-${example.id}-${index}-who`}>Who speaks</label>
-              <select id={`m-${example.id}-${index}-who`} className="input" value={message.fromCharacter ? 'character' : 'user'} onChange={(event) => chat(example.id, { messages: example.messages.map((existing, at) => (at === index ? { ...existing, fromCharacter: event.target.value === 'character' } : existing)) })}>
-                <option value="user">{example.userName || 'User'}</option>
-                <option value="character">{record.name}</option>
-              </select>
-              <label className="sr" htmlFor={`m-${example.id}-${index}-text`}>Message {index + 1}</label>
-              <textarea id={`m-${example.id}-${index}-text`} className="input" style={{ minHeight: 64 }} maxLength={8000} value={message.text} onChange={(event) => chat(example.id, { messages: example.messages.map((existing, at) => (at === index ? { ...existing, text: event.target.value } : existing)) })} />
-              <button type="button" className="icon-btn" aria-label={`Remove message ${index + 1}`} onClick={() => chat(example.id, { messages: example.messages.filter((_, at) => at !== index) })}>×</button>
-            </div>
-          ))}
-          <div className="row">
-            <button type="button" className="btn small quiet" onClick={() => chat(example.id, { messages: [...example.messages, { fromCharacter: example.messages.at(-1)?.fromCharacter === false, text: '', emotion: '' }] })}>Add a message</button>
-            <button type="button" className="btn small quiet" onClick={() => update({ examples: record.examples.filter((existing) => existing.id !== example.id) })}>Remove this example</button>
-          </div>
-        </details>
-      ))}
-      <div className="row">
-        <button type="button" className="btn small quiet" onClick={() => update({ examples: [...record.examples, { id: newId(), name: 'New example', userName: 'User', messages: [] }] })}>Add an example chat</button>
-      </div>
-    </>
   );
 }

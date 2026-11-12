@@ -1,5 +1,7 @@
 // World › Rules: the ruleset this world plays by, in plain words, with every part open to
 // change. What the world leaves alone comes from the standard, and each part says which it is.
+// The page opens on a list of its parts, each saying how much of it the world has changed; a
+// part opens on its own, and Only what's changed narrows both (docs/bids/ui/decision.md).
 import { useState, type ReactNode } from 'react';
 import type { World } from '../../core/records/index.js';
 import {
@@ -8,7 +10,7 @@ import {
   type Approach, type Block, type Cost, type Deed, type Ruleset, type StateDef, type Tier, type WorldRules as Rules,
 } from '../../core/rules/index.js';
 import { newId } from '../../kit/src/util';
-import { LevelPick, Num, OptNum, Origin, PutBack, Rule, StatePick, Words, plural } from './rules/bits';
+import { LevelPick, Num, OptNum, OnlyChanged, Origin, PutBack, Rule, StatePick, Words, plural } from './rules/bits';
 import { StateEditor } from './rules/StateEditor';
 import { approachWords, costWords, stateWords } from './rules/words';
 import { CalendarPart, SceneActionsPart } from './rules/WorldParts';
@@ -17,8 +19,27 @@ const WHO: Record<Cost['who'], string> = { player: 'You', place: 'The place', ta
 const fitsWho = (who: Cost['who'] | 'player' | 'place') => (def: StateDef) => (who === 'place' ? def.scope === 'place' : who === 'player' ? def.scope === 'char' || def.scope === 'protagonist' : ['char', 'npc', 'protagonist'].includes(def.scope));
 const DEED_KINDS: Record<Deed['kind'], string> = { person: 'a person', thing: 'a thing', place: 'a place' };
 
-export function WorldRules({ world, onChange }: { world: World; onChange: (world: World) => void }) {
+// The parts, in the order the page lists them, and how many things the world changed in each.
+const PARTS: { id: string; name: string; says: string; changed: (rules: Rules) => number }[] = [
+  { id: 'approaches', name: 'The approaches', says: 'What every check is made with, and what going wrong costs.', changed: (rules) => rules.approaches.length },
+  { id: 'states', name: 'States', says: 'Every number the rules keep, and the words the narrator reads.', changed: (rules) => rules.states.length },
+  { id: 'tiers', name: 'Tiers', says: 'How much of a match someone is.', changed: (rules) => Object.keys(rules.tiers).length },
+  { id: 'dice', name: 'The dice and rest', says: 'How hard, setbacks, pushing, and what a rest gives back.', changed: (rules) => Object.keys(rules.dice ?? {}).length + Object.keys(rules.rest ?? {}).length },
+  { id: 'deeds', name: 'Deeds', says: 'Acts that work or fail, with no state to wear down.', changed: (rules) => rules.deeds.length },
+  { id: 'growth', name: 'Growth', says: 'What earns experience and what it buys.', changed: (rules) => Object.keys(rules.growth ?? {}).length },
+  { id: 'trade', name: 'Trade and making', says: 'Bribes, purses, selling back and making things.', changed: (rules) => Object.keys(rules.trade ?? {}).length + Object.keys(rules.craft ?? {}).length },
+  { id: 'goods', name: 'Goods', says: 'What anyone can sell, and what each is worth.', changed: (rules) => rules.goods.length },
+  { id: 'calendar', name: 'The calendar and travel', says: 'The week, the months, the times of day, walking pace.', changed: (rules) => (rules.calendar ? 1 : 0) + (rules.travel ? 1 : 0) },
+  { id: 'actions', name: 'Scene actions', says: 'What a player can do at a place by its own button.', changed: (rules) => rules.actions.length },
+];
+
+export function WorldRules({ world, onChange, part: asked = null, onPart = () => {} }: { world: World; onChange: (world: World) => void; part?: string | null; onPart?: (part: string | null) => void }) {
   const [refused, setRefused] = useState<string[]>([]);
+  const [onlyChanged, setOnlyChanged] = useState(false);
+  const part = PARTS.find((entry) => entry.id === asked) ?? null;
+  const partChanged = (id: string) => (world.rules ? PARTS.find((entry) => entry.id === id)!.changed(world.rules) : 0);
+  // What Only what's changed keeps: anything the world made its own.
+  const kept = (origin: 'standard' | 'world') => !onlyChanged || origin === 'world';
   const rules = world.rules;
   const stored = readRuleset(rules);
   const ruleset = stored.ruleset;
@@ -45,21 +66,62 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
   const people = ruleset.states.filter((def) => def.scope === 'char' && def.bands.length > 0);
   const freeDeeds = (['person', 'thing', 'place'] as const).flatMap((kind) => ruleset.approaches.filter((approach) => !ruleset.deeds.some((deed) => deedKey(deed) === `${kind}:${approach.id}`)).map((approach) => ({ kind, approach })));
 
-  return (
+  const notices = (
     <>
-      <h1 className="ink-write">Rules</h1>
-      <p className="lede">{world.name} plays by the Four Approaches. Everything on this page is the standard until you change it, and every record that set nothing of its own follows what this page says.</p>
-      <div className="row">
-        <span className={`chip ${changed ? 'src-world' : 'src-standard'}`}>{changed ? `${plural(changed, 'part')} changed in this world` : 'All standard'}</span>
-        {changed > 0 && <button type="button" className="btn small quiet" onClick={() => { if (window.confirm(`Put every rule in ${world.name} back to the standard? What is set on single records stays.`)) apply(undefined); }}>Put everything back</button>}
-      </div>
       {stored.problems.length > 0 && <p className="status bad" role="status">These rules don&rsquo;t hold together, so the standard is in use until they do. {stored.problems.join(' ')}</p>}
       {refused.length > 0 && <p className="status bad" role="status">Not kept, because the rules would stop holding together. {refused.join(' ')}</p>}
+    </>
+  );
+  const filter = (
+    <label className="check"><input type="checkbox" checked={onlyChanged} onChange={(event) => setOnlyChanged(event.target.checked)} />Only what&rsquo;s changed</label>
+  );
 
+  if (!part) {
+    const shown = PARTS.filter((entry) => !onlyChanged || partChanged(entry.id) > 0);
+    return (
+      <>
+        <h1 className="ink-write">Rules</h1>
+        <p className="lede">{world.name} plays by the Four Approaches. Everything here is the standard until you change it, and every record that set nothing of its own follows what this page says.</p>
+        <div className="row">
+          <span className={`chip ${changed ? 'src-world' : 'src-standard'}`}>{changed ? `${plural(changed, 'part')} changed in this world` : 'All standard'}</span>
+          {changed > 0 && filter}
+          {changed > 0 && <button type="button" className="btn small quiet" onClick={() => { if (window.confirm(`Put every rule in ${world.name} back to the standard? What is set on single records stays.`)) apply(undefined); }}>Put everything back</button>}
+        </div>
+        {notices}
+        <nav className="kind" aria-label="The parts of the rules">
+          {shown.length === 0 && <p className="empty">Nothing is changed from the standard.</p>}
+          {shown.map((entry) => {
+            const count = partChanged(entry.id);
+            return (
+              <button key={entry.id} type="button" className="item" onClick={() => onPart(entry.id)}>
+                <span className="item-text"><span className="item-name">{entry.name}</span><small>{entry.says}</small></span>
+                <span className={`chip ${count ? 'src-world' : 'src-standard'}`}>{count ? `${count} changed` : 'standard'}</span>
+              </button>
+            );
+          })}
+        </nav>
+        <p className="hint">Fixed for now: a fight is over when someone is down or yields to Force and no one else here is still in it, and the place settles to uneasy. Someone travels with you as a companion by your bond, as your captive once they are down, or because you won them over. Routes are on each place&rsquo;s page, under In the adventure.</p>
+      </>
+    );
+  }
+
+  const here = partChanged(part.id);
+  return (
+    <OnlyChanged.Provider value={onlyChanged}>
+      <button type="button" className="btn small quiet up" onClick={() => onPart(null)}>‹ Rules</button>
+      <h1 className="ink-write">{part.name}</h1>
+      <div className="row">
+        <span className={`chip ${here ? 'src-world' : 'src-standard'}`}>{here ? `${here} changed in this world` : 'standard'}</span>
+        {filter}
+      </div>
+      {notices}
+      {onlyChanged && here === 0 && <p className="empty">Nothing in this part is changed from the standard.</p>}
+
+      {part.id === 'approaches' && (
       <section className="rules-part" aria-label="The approaches">
         <h2 className="sub">The approaches</h2>
         <p className="hint">Every check is made with one of these. Each owns the states it can move, so how a player acts decides what can change and what it costs.</p>
-        {ruleset.approaches.map((approach) => (
+        {ruleset.approaches.filter((approach) => kept(approachOrigin(rules, approach.id))).map((approach) => (
           <ApproachCard
             key={approach.id} approach={approach} ruleset={ruleset} origin={approachOrigin(rules, approach.id)}
             onChange={(next) => apply(changeRules.approach(rules, next))}
@@ -67,14 +129,16 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
           />
         ))}
       </section>
+      )}
 
+      {part.id === 'states' && (
       <section className="rules-part" aria-label="States">
         <h2 className="sub">States</h2>
         <p className="hint">Every value the rules keep is one bounded number. The narrator reads a state only through the words of its bands.</p>
-        {categories.map((category) => (
+        {categories.filter((category) => ruleset.states.some((def) => (def.category ?? 'Other') === category && kept(stateOrigin(rules, def.id)))).map((category) => (
           <div key={category} className="stack">
             <h3 className="category">{category}</h3>
-            {ruleset.states.filter((def) => (def.category ?? 'Other') === category).map((def) => {
+            {ruleset.states.filter((def) => (def.category ?? 'Other') === category && kept(stateOrigin(rules, def.id))).map((def) => {
               const origin = stateOrigin(rules, def.id);
               return (
                 <details key={def.id} className="card fold">
@@ -100,13 +164,17 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
           ))}
         </div>
       </section>
+      )}
 
+      {part.id === 'tiers' && (
       <section className="rules-part" aria-label="Tiers">
         <h2 className="sub">Tiers</h2>
         <p className="hint">How much of a match someone is. A tier sets how hard they are to act on and the most they have of each state, unless their own page says otherwise.</p>
-        {TIERS.map((tier) => <TierCard key={tier} tier={tier} ruleset={ruleset} people={people} origin={tierOrigin(rules, tier)} onChange={(value) => apply(changeRules.tier(rules, tier, value))} onPutBack={() => apply(changeRules.withoutTier(rules, tier))} />)}
+        {TIERS.filter((tier) => kept(tierOrigin(rules, tier))).map((tier) => <TierCard key={tier} tier={tier} ruleset={ruleset} people={people} origin={tierOrigin(rules, tier)} onChange={(value) => apply(changeRules.tier(rules, tier, value))} onPutBack={() => apply(changeRules.withoutTier(rules, tier))} />)}
       </section>
+      )}
 
+      {part.id === 'dice' && (
       <section className="rules-part" aria-label="The dice">
         <h2 className="sub">The dice</h2>
         <Rule label="How hard, when nothing else says" hint="The difficulty of anyone and anything with no tier and nothing set." source={from('dice', 'difficulty')} onPutBack={fieldBack('dice', 'difficulty')}>
@@ -118,6 +186,7 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
             <Num label="How much pushing costs" value={dice.push.add} onChange={(add) => field('dice', 'push', { ...dice.push, add })} />
           </Rule>
         )}
+        {kept(from('dice', 'setbacks')) && (
         <div className="card">
           <div className="card-head"><b className="grow">A setback die is added when</b><Origin source={from('dice', 'setbacks')} />{fieldBack('dice', 'setbacks') && <PutBack onClick={fieldBack('dice', 'setbacks') as () => void} />}</div>
           {dice.setbacks.map((setback, index) => {
@@ -148,9 +217,11 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
           })}
           <div className="row"><button type="button" className="btn small quiet" onClick={() => field('dice', 'setbacks', [...dice.setbacks, { stateId: 'health', who: 'player', atMost: 2, approaches: [], reason: 'You are badly hurt' }])}>Add a setback</button></div>
         </div>
+        )}
         <Rule label="A full rest takes" hint="Minutes. Waiting this long restores what is listed below." source={from('rest', 'minutes')} onPutBack={fieldBack('rest', 'minutes')}>
           <Num label="A full rest takes, in minutes" value={rest.minutes} min={1} onChange={(minutes) => field('rest', 'minutes', minutes)} />
         </Rule>
+        {kept(from('rest', 'effects')) && (
         <div className="card">
           <div className="card-head"><b className="grow">A full rest gives back</b><Origin source={from('rest', 'effects')} />{fieldBack('rest', 'effects') && <PutBack onClick={fieldBack('rest', 'effects') as () => void} />}</div>
           {rest.effects.map((effect, index) => {
@@ -172,12 +243,15 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
             <label className="check"><input type="checkbox" checked={rest.resetCharges} onChange={(event) => field('rest', 'resetCharges', event.target.checked)} />And every spent charge comes back</label>
           </div>
         </div>
+        )}
       </section>
+      )}
 
+      {part.id === 'deeds' && (
       <section className="rules-part" aria-label="Deeds">
         <h2 className="sub">Deeds</h2>
         <p className="hint">Acts with no state to wear down. They work or they fail, and fail at the approach&rsquo;s cost.</p>
-        {ruleset.deeds.map((deed) => {
+        {ruleset.deeds.filter((deed) => kept(deedOrigin(rules, deed))).map((deed) => {
           const origin = deedOrigin(rules, deed);
           const approach = ruleset.approaches.find((entry) => entry.id === deed.approach);
           return (
@@ -197,7 +271,9 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
           </label>
         )}
       </section>
+      )}
 
+      {part.id === 'growth' && (
       <section className="rules-part" aria-label="Growth">
         <h2 className="sub">Growth</h2>
         <p className="hint">Experience is earned from what the rules see, and spent on ratings and charges.</p>
@@ -212,7 +288,9 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
         <NumberRule label="The highest a rating goes" value={growth.ratingMax} min={1} max={10} block="growth" name="ratingMax" from={from} back={fieldBack} set={field} />
         <NumberRule label="A charge step costs" hint="Times the new top charge." value={growth.chargeCost} min={1} block="growth" name="chargeCost" from={from} back={fieldBack} set={field} />
       </section>
+      )}
 
+      {part.id === 'trade' && (
       <section className="rules-part" aria-label="Trade and making">
         <h2 className="sub">Trade and making</h2>
         <p className="hint">Prices go up in steps of ten, and the narrator reads only what the purse could buy. Change those words on the {ruleset.states.find((def) => def.id === trade.coin)?.name ?? 'purse'} state above, so a modern world&rsquo;s hundred buys a car, not a horse.</p>
@@ -232,11 +310,13 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
         </Rule>
         <p className="hint">How long making takes: {craft.steps.map((step) => `worth up to ${step.upTo}, ${plural(step.track, 'check')} of ${step.minutes >= 1440 ? plural(Math.round(step.minutes / 1440), 'day') : plural(Math.round(step.minutes / 60), 'hour')}`).join('; ')}.</p>
       </section>
+      )}
 
+      {part.id === 'goods' && (
       <section className="rules-part" aria-label="Goods">
         <h2 className="sub">Goods anyone can sell</h2>
         <p className="hint">A plain catalog every world starts with. Rename them to suit the world and add its own: each good does one job. An item you make in this world is a good too, and people can sell and carry it.</p>
-        {ruleset.goods.map((good) => {
+        {ruleset.goods.filter((good) => kept(goodOrigin(rules, good.id))).map((good) => {
           const origin = goodOrigin(rules, good.id);
           const does = good.kind === 'weapon' ? `weapon, harm ${good.harm ?? 0}` : good.kind === 'armour' ? `armour ${good.armour ?? 0}` : good.kind === 'help' ? `helps ${listOf((good.helps?.approaches ?? []).map((id) => ruleset.approaches.find((approach) => approach.id === id)?.name ?? id))}` : good.kind === 'use' ? 'used up when used' : 'goods';
           return (
@@ -256,17 +336,13 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
           );
         })}
       </section>
+      )}
 
-      <div className="row"><button type="button" className="btn small" onClick={() => apply(changeRules.good(rules, { id: `good-${newId().slice(0, 8)}`, name: 'a new thing', description: '', worth: 1, kind: 'goods', hidden: false, hinders: [], makeable: true, fine: false, restores: [] }))}>Add a good</button></div>
+      {part.id === 'goods' && <div className="row"><button type="button" className="btn small" onClick={() => apply(changeRules.good(rules, { id: `good-${newId().slice(0, 8)}`, name: 'a new thing', description: '', worth: 1, kind: 'goods', hidden: false, hinders: [], makeable: true, fine: false, restores: [] }))}>Add a good</button></div>}
 
-      <CalendarPart rules={rules} ruleset={ruleset} put={put} />
-      <SceneActionsPart world={world} rules={rules} ruleset={ruleset} put={put} />
-
-      <section className="rules-part" aria-label="Not yet changed from here">
-        <h2 className="sub">Fixed for now</h2>
-        <p className="hint">A fight is over when someone is down or yields to Force and no one else here is still in it, and the place settles to uneasy. Someone travels with you as a companion by your bond, as your captive once they are down, or because you won them over. These two come to this page later. Routes are on each place&rsquo;s page, under In the adventure.</p>
-      </section>
-    </>
+      {part.id === 'calendar' && <CalendarPart rules={rules} ruleset={ruleset} put={put} />}
+      {part.id === 'actions' && <SceneActionsPart world={world} rules={rules} ruleset={ruleset} put={put} />}
+    </OnlyChanged.Provider>
   );
 }
 

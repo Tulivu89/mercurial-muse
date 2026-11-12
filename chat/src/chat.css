@@ -1,6 +1,11 @@
 /* Chat's own layout, on the Wet Ink look in kit/src/wet-ink.css. Mobile first: one column, and
    the composer where the thumb is. */
 
+/* Chat's own two places, under the site's header. */
+.local-nav { display: flex; gap: 2px; padding: 0 clamp(10px, 3vw, 28px); border-bottom: 1px solid var(--rule); }
+.local-nav button { min-height: 44px; padding: 0 12px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--text-2); font-size: 15px; }
+.local-nav button[aria-current='true'] { color: var(--text); font-weight: 700; border-bottom-color: var(--text); }
+
 .home { max-width: 860px; margin: 0 auto; padding: clamp(16px, 4vw, 40px) clamp(12px, 3vw, 28px) 64px; display: flex; flex-direction: column; gap: 22px; }
 .home h1 { font-family: var(--display); font-weight: 600; font-size: clamp(30px, 5vw, 44px); letter-spacing: -0.02em; line-height: 1.05; }
 .home h2 { font-family: var(--display); font-weight: 600; font-size: 22px; }

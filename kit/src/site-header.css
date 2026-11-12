@@ -1,0 +1,17 @@
+/* The site's header (SiteHeader.tsx). Its names start with site- so it can sit in the adventure,
+   whose own stylesheet has a .bar and a .brand of its own. On the tokens of ink.css. */
+.site-bar { display: flex; align-items: center; gap: 4px 12px; padding: 4px clamp(10px, 3vw, 28px) 0; background: var(--surface); border-bottom: 1px solid var(--rule); font-family: var(--ui); }
+.site-brand { flex: none; display: inline-flex; align-items: center; gap: 10px; min-width: 44px; min-height: 48px; color: var(--text); text-decoration: none; }
+.site-wordmark { display: none; font-family: var(--display); font-weight: 600; font-size: 24px; letter-spacing: -0.02em; line-height: 1; }
+.site-wordmark em { font-weight: 500; }
+.site-switch { flex: 1; min-width: 0; display: flex; gap: 2px; align-self: stretch; }
+.site-switch a { display: inline-flex; align-items: center; min-height: 48px; padding: 0 10px; border-bottom: 2px solid transparent; color: var(--text-2); font-size: 15px; font-weight: 700; text-decoration: none; }
+.site-switch a:hover { color: var(--text); }
+.site-switch a[aria-current='page'] { color: var(--text); border-bottom-color: var(--seal); }
+.site-gear { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text-2); cursor: pointer; }
+.site-gear:hover { color: var(--text); }
+.site-bar :focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+@media (min-width: 620px) {
+  .site-wordmark { display: inline; }
+  .site-brand { margin-right: 8px; }
+}

@@ -1,5 +1,5 @@
 // Small pieces the Rules panel and the world's Rules page share.
-import { useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { DIFFICULTY_NAMES, sourceWords, type Level, type Ruleset, type Source, type StateDef } from '../../../core/rules/index.js';
 
 // Where a rule came from: the standard, the world, a tier, a group, or set here.
@@ -88,8 +88,14 @@ export function StatePick({ ruleset, value, onChange, label, only }: { ruleset: 
   );
 }
 
+// World › Rules can show only what the world changed. A row that is still the standard's then
+// leaves itself out.
+export const OnlyChanged = createContext(false);
+
 // One rule on a row: what it is, the control, where it came from, and the way back.
 export function Rule({ label, hint, children, source, onPutBack }: { label: string; hint?: string; children: ReactNode; source?: Source | 'standard' | 'world'; onPutBack?: (() => void) | false }) {
+  const onlyChanged = useContext(OnlyChanged);
+  if (onlyChanged && source === 'standard') return null;
   return (
     <div className="rule">
       <span className="rule-label">{label}{hint && <small>{hint}</small>}</span>

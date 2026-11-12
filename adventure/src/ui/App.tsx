@@ -8,6 +8,9 @@ import { ConnectForm, initialConnection, reconnect, type Connection } from './Co
 import { Play } from './Play';
 import { readJsonFile } from './files';
 import { usePrefs } from './prefs';
+import { InkMark } from '../../../kit/src/Mark';
+import { SiteHeader } from '../../../kit/src/SiteHeader';
+import { THEME_NAMES, useTheme, type Theme } from '../../../kit/src/theme';
 import { deleteSave, listSaves, moduleKey, openSave, putModule, putSave, type SaveRecord } from './storage';
 
 type Screen =
@@ -25,6 +28,7 @@ export function App() {
   const [storageNote, setStorageNote] = useState('');
   const [connection, setConnection] = useState<Connection>(initialConnection);
   const [prefs, setPrefs] = usePrefs();
+  const [theme, setTheme] = useTheme();
 
   const refresh = useCallback(async () => {
     try { setSaves(await listSaves()); } catch (error) { setStorageNote(error instanceof Error ? error.message : 'Saved games are unavailable.'); }
@@ -126,99 +130,116 @@ export function App() {
         setConnection={setConnection}
         prefs={prefs}
         setPrefs={setPrefs}
+        theme={theme}
+        setTheme={setTheme}
         onChange={persist}
         onClose={() => { setScreen({ kind: 'home' }); void refresh(); }}
       />
     );
   }
 
+  // One seal a screen: the game played last, or the first thing on offer when there is none.
+  const lead = saves.length ? 'save' : launches.length ? 'launch' : 'new';
+
   return (
-    <main className="home">
-      <header className="home-head">
-        <div>
-          <h1 className="wordmark">Inkwyrm</h1>
-          <p className="tagline">Adventure: a roleplay where the story is yours and the facts are kept.</p>
-        </div>
-      </header>
+    <>
+      <SiteHeader side="adventure" homeLabel="Inkwyrm Adventure" settingsHref="#settings" />
+      <main className="home">
+        <header className="home-head">
+          <InkMark name="dragon" size={64} title="Inkwyrm Adventure" land />
+          <div>
+            <h1 className="wordmark ink-write">Your adventures</h1>
+            <p className="tagline">A roleplay where the story is yours and the facts are kept.</p>
+          </div>
+        </header>
 
-      {storageNote && <p className="notice warn">{storageNote}</p>}
+        {storageNote && <p className="notice warn">{storageNote}</p>}
+        {!connection.connected && <p className="notice">No narrator connected yet. <a href="#settings">Connect one under Settings</a>, below, with your own key.</p>}
 
-      <p className="meta"><a href="/chat/">Chat</a>: talk with a character, on your own model key.</p>
-      <p className="meta"><a href="/studio/">Studio</a>: make your own worlds and characters, and see what each part sends the model.</p>
+        {errors.length > 0 && (
+          <section aria-live="polite" className="card pad">
+            <p className="name">That could not be loaded</p>
+            <ul className="errors">{errors.map((line) => <li key={line}>{line}</li>)}</ul>
+          </section>
+        )}
 
-      {saves.length > 0 && (
-        <section>
-          <h2>Continue</h2>
-          <div className="card clip">
-            {saves.map((record) => (
-              <div key={record.id} className="save-row">
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className="name">{record.name}</p>
-                  <p className="meta">{record.place} · {record.stamp} · {record.turns} {record.turns === 1 ? 'turn' : 'turns'}</p>
-                  <p className="meta">Saved {new Date(record.updatedAt).toLocaleString()}</p>
+        {saves.length > 0 && (
+          <section>
+            <h2>Continue</h2>
+            <div className="card clip">
+              {saves.map((record, index) => (
+                <div key={record.id} className="save-row">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p className="name">{record.name}</p>
+                    <p className="meta">{record.place} · {record.stamp} · {record.turns} {record.turns === 1 ? 'turn' : 'turns'}</p>
+                    <p className="meta">Saved {new Date(record.updatedAt).toLocaleString()}</p>
+                  </div>
+                  <button type="button" className={index === 0 ? 'btn seal' : 'btn'} onClick={() => void resume(record)}>Continue</button>
+                  <button type="button" className="btn quiet" aria-label={`Delete ${record.name}`} onClick={() => void remove(record)}>Delete</button>
                 </div>
-                <button type="button" className="btn primary" onClick={() => void resume(record)}>Continue</button>
-                <button type="button" className="btn quiet" aria-label={`Delete ${record.name}`} onClick={() => void remove(record)}>Delete</button>
-              </div>
-            ))}
+              ))}
+            </div>
+          </section>
+        )}
+
+        {launches.length > 0 && (
+          <section>
+            <h2>From the Studio</h2>
+            <div className="card clip">
+              {launches.map((entry, index) => (
+                <div key={entry.id} className="save-row">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p className="name">{entry.name}</p>
+                    <p className="meta">Sent {new Date(entry.at).toLocaleString()}</p>
+                  </div>
+                  <button type="button" className={lead === 'launch' && index === 0 ? 'btn seal' : 'btn'} onClick={() => newGame(entry.module)}>Play</button>
+                  <button type="button" className="btn quiet" aria-label={`Remove ${entry.name}`} onClick={() => forget(entry.id)}>Remove</button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section>
+          <h2>New game</h2>
+          <div className="card pad" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <button type="button" className={lead === 'new' ? 'btn seal wide' : 'btn wide'} style={{ minHeight: 52, justifyContent: 'flex-start' }} onClick={() => newGame(bogwaterRaw)}>Abernys: Bogwater</button>
+            <button type="button" className="btn wide" style={{ minHeight: 52, justifyContent: 'flex-start' }} onClick={() => newGame(abernysRaw)}>Abernys: Port Covenant</button>
+            <label className="file-pick">
+              <span className="meta">Or a module file</span>
+              <input type="file" accept="application/json,.json" onChange={(event) => void onModuleFile(event)} />
+            </label>
           </div>
         </section>
-      )}
 
-      {launches.length > 0 && (
         <section>
-          <h2>From the Studio</h2>
-          <div className="card clip">
-            {launches.map((entry) => (
-              <div key={entry.id} className="save-row">
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className="name">{entry.name}</p>
-                  <p className="meta">Sent {new Date(entry.at).toLocaleString()}</p>
-                </div>
-                <button type="button" className="btn primary" onClick={() => newGame(entry.module)}>Play</button>
-                <button type="button" className="btn quiet" aria-label={`Remove ${entry.name}`} onClick={() => forget(entry.id)}>Remove</button>
-              </div>
-            ))}
+          <h2>Import a save</h2>
+          <div className="card pad">
+            <p className="meta" style={{ lineHeight: 1.45 }}>Saves live in this browser. Clearing its site data deletes them, so export the ones you want to keep.</p>
+            <label className="file-pick">
+              <span className="meta">A .save.json file (or an older .praxis.json)</span>
+              <input type="file" accept="application/json,.json" onChange={(event) => void onSaveFile(event)} />
+            </label>
           </div>
         </section>
-      )}
 
-      <section>
-        <h2>New game</h2>
-        <div className="card pad" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <button type="button" className="btn primary wide" style={{ minHeight: 52, justifyContent: 'flex-start' }} onClick={() => newGame(bogwaterRaw)}>Abernys: Bogwater</button>
-          <button type="button" className="btn wide" style={{ minHeight: 52, justifyContent: 'flex-start' }} onClick={() => newGame(abernysRaw)}>Abernys: Port Covenant</button>
-          <label className="file-pick">
-            <span className="meta">Or a module file</span>
-            <input type="file" accept="application/json,.json" onChange={(event) => void onModuleFile(event)} />
-          </label>
-        </div>
-      </section>
-
-      <section>
-        <h2>Narration</h2>
-        <div className="card clip"><ConnectForm connection={connection} onChange={setConnection} /></div>
-      </section>
-
-      <section>
-        <h2>Import a save</h2>
-        <div className="card pad">
-          <p className="meta" style={{ lineHeight: 1.45 }}>Saves live in this browser. Clearing its site data deletes them, so export the ones you want to keep.</p>
-          <label className="file-pick">
-            <span className="meta">A .save.json file (or an older .praxis.json)</span>
-            <input type="file" accept="application/json,.json" onChange={(event) => void onSaveFile(event)} />
-          </label>
-        </div>
-      </section>
-
-      {errors.length > 0 && (
-        <section aria-live="polite" className="card pad">
-          <p className="name">That could not be loaded</p>
-          <ul className="errors">{errors.map((line) => <li key={line}>{line}</li>)}</ul>
+        {/* Settings is down the page here, as it is under the prompt in play. */}
+        <section id="settings">
+          <h2>Settings</h2>
+          <div className="card" style={{ marginBottom: 12 }}>
+            <div className="lr stack">
+              <span className="name">Look</span>
+              <div className="seg" role="group" aria-label="Look">
+                {(['paper', 'night', 'auto'] as Theme[]).map((option) => <button key={option} type="button" aria-pressed={theme === option} onClick={() => setTheme(option)}>{THEME_NAMES[option]}</button>)}
+              </div>
+              <span className="meta" style={{ lineHeight: 1.45 }}>Paper by day, ink by night. The same choice holds in Chat and the Studio.</span>
+            </div>
+          </div>
+          <div className="card clip"><ConnectForm connection={connection} onChange={setConnection} /></div>
         </section>
-      )}
 
-      <p className="version">{__PRAXIS_VERSION__}</p>
-    </main>
+        <p className="version">{__PRAXIS_VERSION__}</p>
+      </main>
+    </>
   );
 }

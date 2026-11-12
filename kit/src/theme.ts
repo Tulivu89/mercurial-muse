@@ -18,6 +18,10 @@ export function readTheme(): Theme {
 export function applyTheme(theme: Theme) {
   const night = theme === 'night' || (theme === 'auto' && typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = night ? 'night' : 'paper';
+  // A page may have painted its ground before the stylesheet came; the tokens take over from here.
+  document.documentElement.style.background = '';
+  // The browser's own bar follows the ground.
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', night ? '#16130F' : '#F3EEE4');
 }
 
 export function useTheme(): [Theme, (theme: Theme) => void] {

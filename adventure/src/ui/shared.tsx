@@ -7,7 +7,6 @@ import { Diamond } from './icons';
 export const APPROACH_COLORS: Record<string, string> = {
   force: 'var(--force)', finesse: 'var(--finesse)', focus: 'var(--focus)', flair: 'var(--flair)',
 };
-const RAW_COLORS: Record<string, string> = { force: '#e0876b', finesse: '#75d9df', focus: '#a99bf0', flair: '#d9b46d' };
 
 // A state's colour: its own if it is an approach, else the approach that owns it, else none.
 export function stateColor(def: StateDef): string {
@@ -60,14 +59,14 @@ export function StateBar({ def, value }: { def: StateDef; value: number }) {
   const share = span > 0 ? Math.max(0, Math.min(1, (value - lo) / span)) : 0;
   return (
     <span className="bar continuous" aria-hidden="true">
-      <span style={{ background: `linear-gradient(90deg, ${color} ${share * 100}%, #2a303c ${share * 100}%)` }} />
+      <span style={{ background: `linear-gradient(90deg, ${color} ${share * 100}%, var(--rule) ${share * 100}%)` }} />
     </span>
   );
 }
 
 export function Pips({ def, value }: { def: StateDef; value: number }) {
   const max = Math.max(def.min, def.max);
-  const color = RAW_COLORS[def.id] ?? '#b7bcc6';
+  const color = APPROACH_COLORS[def.id] ?? 'var(--text-2)';
   return (
     <span className="pips" role="img" aria-label={`${def.name} ${value} of ${max}`}>
       {Array.from({ length: max }, (_, index) => <Diamond key={index} color={color} filled={index < value} />)}

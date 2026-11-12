@@ -40,7 +40,3 @@ export function InkMark({ name = 'main', size = 32, title, land = false, classNa
 export function Drop({ size = 32, title, chat = false, land = false }: { size?: number; title?: string; chat?: boolean; land?: boolean }) {
   return <InkMark name={chat ? 'bubble' : 'main'} size={size} title={title} land={land} />;
 }
-
-export function Wordmark() {
-  return <span className="wordmark">ink<em>wyrm</em></span>;
-}

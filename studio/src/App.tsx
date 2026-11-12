@@ -1,17 +1,24 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { KIND_NAMES, RECORD_KINDS, newWorld, parseWorld, type World } from '../../core/records/index.js';
-import { InkMark, Wordmark } from '../../kit/src/Mark';
+import { InkMark } from '../../kit/src/Mark';
+import { Sheet } from '../../kit/src/Sheet';
+import { SiteHeader } from '../../kit/src/SiteHeader';
+import { ConnectForm } from '../../kit/src/Connect';
+import { initialConnection, reconnect, type Connection } from '../../kit/src/connection';
 import { THEME_NAMES, useTheme, type Theme } from '../../kit/src/theme';
 import { WorldView } from './WorldView';
+import { NOWHERE, navigate, useRoute } from './route';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
 import { ago, newId, readJsonFile } from '../../kit/src/util';
 import { isModule, moduleToWorld } from '../../core/convert/index.js';
 
 export function App() {
   const [worlds, setWorlds] = useState<World[] | null>(null);
-  const [openId, setOpenId] = useState<string | null>(null);
+  // Which world is open is in the address (route.ts), so Back leaves a world the way it came in.
+  const route = useRoute();
   const [status, setStatus] = useState<{ text: string; bad?: boolean } | null>(null);
   const [theme, setTheme] = useTheme();
+  const [settings, setSettings] = useState(false);
   const pending = useRef(new Map<string, World>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -41,38 +48,51 @@ export function App() {
     timer.current = setTimeout(flush, 400);
   }, [flush]);
 
-  const open = worlds?.find((world) => world.id === openId) ?? null;
+  const open = worlds?.find((world) => world.id === route.worldId) ?? null;
+  // An address for a world this browser doesn't have, from an old link or another device.
+  useEffect(() => {
+    if (!worlds || !route.worldId || open) return undefined;
+    const wait = setTimeout(() => { setStatus({ text: 'That world is not in this browser. Open its world file to bring it here.', bad: true }); navigate(NOWHERE, true); }, 400);
+    return () => clearTimeout(wait);
+  }, [worlds, route.worldId, open]);
 
   const remove = async (world: World) => {
     if (!window.confirm(`Delete ${world.name} from this browser? Export it first if you want to keep a copy.`)) return;
     pending.current.delete(world.id);
     await deleteWorld(world.id).catch(() => undefined);
     setWorlds((list) => (list ?? []).filter((existing) => existing.id !== world.id));
-    setOpenId(null);
+    navigate(NOWHERE, true);
     setStatus({ text: `Deleted ${world.name}.` });
   };
 
   return (
     <>
-      <header className="bar">
-        <button type="button" className="brand" onClick={() => { flush(); setOpenId(null); }} aria-label="Inkwyrm Studio, your worlds">
-          <InkMark name="nib" size={34} land />
-          <Wordmark />
-          <span className="side">Studio</span>
-        </button>
-        <div className="bar-actions">
-          <label className="sr" htmlFor="theme">Theme</label>
-          <select id="theme" className="input" style={{ width: 'auto' }} value={theme} onChange={(event) => setTheme(event.target.value as Theme)}>
-            {(Object.keys(THEME_NAMES) as Theme[]).map((option) => <option key={option} value={option}>{THEME_NAMES[option]}</option>)}
-          </select>
-          <a className="btn quiet" href="/chat/">Chat</a>
-          <a className="btn quiet" href="/">Adventure</a>
-        </div>
-      </header>
+      <SiteHeader side="studio" homeLabel="Inkwyrm Studio, your worlds" onHome={() => { flush(); navigate(NOWHERE); }} onSettings={() => setSettings(true)} />
       {open
         ? <WorldView key={open.id} world={open} onChange={save} onDelete={() => void remove(open)} onStatus={setStatus} status={status} />
-        : <Home worlds={worlds} status={status} onOpen={(id) => { setStatus(null); setOpenId(id); }} onCreate={(world) => { save(world); setOpenId(world.id); }} onStatus={setStatus} />}
+        : <Home worlds={worlds} status={status} onOpen={(id) => { setStatus(null); navigate({ ...NOWHERE, worldId: id }); }} onCreate={(world) => { save(world); navigate({ ...NOWHERE, worldId: world.id, page: world.records.length ? null : 'about' }); }} onStatus={setStatus} />}
+      {settings && <Settings theme={theme} onTheme={setTheme} onClose={() => setSettings(false)} />}
     </>
+  );
+}
+
+// One Settings for the site: the look, and the model key that Chat and the adventure already
+// share (kit/src/connection.ts).
+function Settings({ theme, onTheme, onClose }: { theme: Theme; onTheme: (theme: Theme) => void; onClose: () => void }) {
+  const [connection, setConnection] = useState<Connection>(initialConnection);
+  useEffect(() => { void reconnect(connection).then(setConnection).catch(() => undefined); }, []);
+  return (
+    <Sheet title="Settings" onClose={onClose}>
+      <label className="field">
+        <span>Look</span>
+        <select value={theme} onChange={(event) => onTheme(event.target.value as Theme)}>
+          {(Object.keys(THEME_NAMES) as Theme[]).map((option) => <option key={option} value={option}>{THEME_NAMES[option]}</option>)}
+        </select>
+      </label>
+      <h3 className="sub">Your model</h3>
+      <p className="hint">One key for the adventure, Chat and the Studio. It is kept on this device if you ask, and goes with each request; the site&rsquo;s server never stores it. The Studio calls no model yet, so this is here for the other two.</p>
+      <ConnectForm connection={connection} onChange={setConnection} />
+    </Sheet>
   );
 }
 

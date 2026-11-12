@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Inkwyrm — UI bid mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,560&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ground: #F3EEE4;
+    --surface: #FBF8F2;
+    --raised: #FFFFFF;
+    --text: #1D1B17;
+    --secondary: #5E574C;
+    --line: #D9D0C0;
+    --seal: #B23A26;
+    --seal-ink: #FFF8F0;
+    --player: #2F4A6B;
+    --player-bg: #F3F6FA;
+    --display: "Fraunces", "Iowan Old Style", Palatino, Georgia, serif;
+    --story: "Literata", Georgia, serif;
+    --ui: "Atkinson Hyperlegible Next", "Segoe UI", sans-serif;
+  }
+  [data-theme="night"] {
+    --ground: #16130F;
+    --surface: #201C16;
+    --raised: #2A251D;
+    --text: #EDE5D6;
+    --secondary: #A89E8D;
+    --line: #3A342B;
+    --seal: #E46A4E;
+    --seal-ink: #1A100B;
+    --player: #8FB1D9;
+    --player-bg: #0F1620;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #8a8175; color: var(--text); }
+  body { font-family: var(--ui); padding: 24px; }
+  h1.page, .note { font-family: var(--ui); color: #1D1B17; }
+  .stage { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+  .shot { display: flex; flex-direction: column; gap: 8px; }
+  .shot figcaption { font: 600 13px/1.3 var(--ui); color: #1D1B17; max-width: 420px; }
+  .phone, .wide { background: var(--ground); color: var(--text); overflow: hidden; position: relative;
+    border: 1px solid #1D1B17; }
+  .phone { width: 390px; height: 844px; }
+  .wide { width: 1280px; height: 860px; }
+  button, [role="button"] { font-family: inherit; color: inherit; cursor: pointer; }
+  .mark { width: 22px; height: 28px; display: block; flex: none; }
+  .hdr { display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 12px;
+    border-bottom: 1px solid var(--line); background: var(--ground); }
+  .word { font-family: var(--display); font-weight: 560; font-size: 22px; letter-spacing: -0.02em; }
+  .word em { font-style: italic; font-weight: 500; }
+  .switch { display: flex; gap: 2px; margin-left: 8px; }
+  .switch button { background: none; border: 0; min-height: 44px; padding: 0 10px;
+    font: 600 15px/1 var(--ui); color: var(--secondary); border-bottom: 2px solid transparent; }
+  .switch button[aria-current="page"] { color: var(--text); border-bottom-color: var(--seal); }
+  .gear { margin-left: auto; width: 44px; height: 44px; border: 0; background: none; color: var(--text); }
+  .col { height: calc(100% - 56px); overflow: hidden; }
+  .pad { padding: 14px 16px 24px; }
+  .world { font-family: var(--display); font-size: 28px; font-weight: 560; margin: 4px 0 10px; letter-spacing: -0.02em; }
+  .find { display: flex; gap: 8px; margin-bottom: 10px; }
+  .find input, .field input, .field textarea, .promptbox {
+    width: 100%; background: var(--raised); color: var(--text); border: 1px solid var(--line);
+    border-radius: 6px; font: 16px/1.4 var(--ui); padding: 10px 12px; min-height: 44px; }
+  .find input { flex: 1; }
+  .sort { flex: none; min-height: 44px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line);
+    background: var(--raised); font: 600 14px/1 var(--ui); }
+  .kicker { font: 600 12px/1 var(--ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--secondary); margin: 12px 0 6px; }
+  .recent { display: flex; gap: 8px; overflow: hidden; }
+  .chip { display: inline-flex; align-items: center; min-height: 32px; padding: 4px 10px; border-radius: 4px;
+    border: 1px solid var(--line); background: var(--surface); font: 600 13px/1.2 var(--ui); }
+  .row { display: flex; flex-direction: column; justify-content: center; min-height: 56px;
+    border-bottom: 1px solid var(--line); padding: 6px 0; }
+  .row b { font-weight: 600; font-size: 16px; }
+  .row span, .meta { color: var(--secondary); font-size: 14px; }
+  .kind { display: flex; align-items: baseline; gap: 8px; min-height: 44px; }
+  .kind b { font-family: var(--display); font-size: 22px; font-weight: 560; }
+  .crumb { color: var(--secondary); font-size: 14px; margin-bottom: 4px; }
+  .back { background: none; border: 0; padding: 0; min-height: 44px; font: 600 15px/1 var(--ui); color: var(--text); }
+  .who { font-family: var(--display); font-size: 34px; margin: 0; font-weight: 560; letter-spacing: -0.02em; }
+  .sub { color: var(--secondary); margin: 2px 0 12px; font-size: 15px; }
+  .doors { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .door { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; min-height: 44px; }
+  .door small { display: block; font: 600 11px/1 var(--ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--secondary); }
+  .door b { font-weight: 600; font-size: 15px; }
+  .sec { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .sec .top { display: flex; gap: 8px; align-items: center; }
+  .sec .top input { flex: 1; font-family: var(--display); font-size: 18px; font-weight: 560; }
+  .reach { min-height: 44px; border-radius: 6px; border: 1px solid var(--line); background: var(--raised); padding: 0 10px; font: 600 14px/1 var(--ui); }
+  .hint { color: var(--secondary); font-size: 14px; margin: 8px 0; }
+  .prose { font-family: var(--story); font-size: 17px; line-height: 1.5; width: 100%; min-height: 88px; resize: none; }
+  .split { display: flex; height: calc(100% - 56px); }
+  .side { width: 300px; flex: none; border-right: 1px solid var(--line); overflow: hidden; padding: 12px 14px; }
+  .page { flex: 1; overflow: hidden; padding: 16px 22px; min-width: 0; }
+  .rail { width: 300px; flex: none; border-left: 1px solid var(--line); background: var(--surface); padding: 14px; overflow: hidden; }
+  .side .row { min-height: 48px; }
+  .footlinks { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 8px; }
+  .footlinks div { min-height: 36px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+  .changed { color: var(--seal); font-weight: 700; font-size: 13px; }
+  .standard { color: var(--secondary); font-size: 13px; }
+  .storywrap { max-width: 40rem; margin: 0 auto; padding: 28px 20px 32px; }
+  .chapter { display: flex; align-items: center; gap: 8px; color: var(--secondary); font-size: 14px; margin-bottom: 18px; }
+  .narr { font-family: var(--story); font-style: italic; font-size: 18.5px; line-height: 1.55; color: var(--secondary); margin: 0 0 1em; }
+  .narr .say { font-style: normal; color: var(--text); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .act { min-height: 44px; padding: 0 12px; border-radius: 4px; border: 1px solid var(--line); background: transparent;
+    font: 600 14px/1 var(--ui); color: var(--text); }
+  .composer { display: flex; gap: 8px; align-items: flex-end; border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: var(--surface); }
+  .promptbox { background: var(--player-bg); color: var(--player); border-color: transparent; font-family: var(--story); }
+  .send { width: 44px; height: 44px; flex: none; border: 0; border-radius: 6px; background: var(--seal); color: var(--seal-ink); font-size: 18px; }
+  .menu { margin-top: 8px; }
+  .mitem { width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid var(--line);
+    min-height: 64px; padding: 10px 0; }
+  .mitem b { display: block; font-family: var(--display); font-size: 26px; font-weight: 500; }
+  .mitem span { color: var(--secondary); font-size: 14px; }
+  .you { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 8px 0 12px; }
+  .persona { display: flex; gap: 10px; align-items: flex-start; }
+  .avatar { width: 44px; height: 44px; border-radius: 22px; background: var(--player-bg); color: var(--player);
+    display: grid; place-items: center; font-family: var(--display); font-weight: 560; flex: none; }
+  .draft { margin-left: auto; font: 600 11px/1 var(--ui); letter-spacing: 0.05em; border: 1px dashed var(--line); border-radius: 4px; padding: 4px 6px; color: var(--secondary); }
+  .bar { display: flex; align-items: center; gap: 8px; min-height: 44px; border-top: 1px solid var(--line); font-size: 15px; }
+  .segs { display: flex; gap: 3px; }
+  .segs i { width: 18px; height: 8px; border-radius: 2px; background: var(--line); display: block; }
+  .segs i.on-seal { background: var(--seal); }
+  .segs i.on-player { background: var(--player); }
+  .checkcard { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .checkcard h3 { font-family: var(--display); font-size: 22px; margin: 0 0 6px; font-weight: 560; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 96px; background: var(--surface);
+    border-radius: 10px 10px 0 0; border: 1px solid var(--line); padding: 12px 16px; }
+  .dim { position: absolute; inset: 56px 0 0; background: rgba(29,27,23,0.35); }
+  .part { display: flex; justify-content: space-between; align-items: center; min-height: 52px; border-bottom: 1px solid var(--line); }
+  .part[aria-current="true"] { font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="stage">
+
+<figure class="shot" id="f-list-phone">
+  <div class="phone" data-theme="paper">
+    <header class="hdr">
+      <svg class="mark" viewBox="0 0 22 28" aria-hidden="true"><path fill="#B23A26" d="M11 1C7 7 2 11 2 17a9 9 0 0 0 18 0C20 11 15 7 11 1z"/><circle cx="11" cy="17" r="2.2" fill="#FFF8F0"/></svg>
+      <nav class="switch" aria-label="Side">
+        <button type="button">Adventure</button>
+        <button type="button">Chat</button>
+        <button type="button" aria-current="page">Studio</button>
+      </nav>
+      <button class="gear" type="button" aria-label="Settings">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6"/></svg>
+      </button>
+    </header>
+    <div class="col pad">
+      <button class="back" type="button">Aberyns: Bogwater</button>
+      <div class="find">
+        <input aria-label="Find among 87 records" placeholder="Find among 87 records" />
+      </div>
+      <div class="kicker">Recent</div>
+      <div class="recent">
+        <span class="chip">Morwen</span>
+        <span class="chip">Morwen's door</span>
+        <span class="chip">The long fence</span>
+      </div>
+      <div class="kind"><b>Characters</b><span class="meta">16</span><button class="chip" type="button" style="margin-left:auto">All kinds</button></div>
+      <div class="row"><b>Bronwen</b><span>Keeper of the Myrtle</span></div>
+      <div class="row"><b>Cadfan</b><span>Trader at the landing</span></div>
+      <div class="row"><b>Corran</b><span>Envoy of Clan Aurochs</span></div>
+      <div class="row"><b>Ellis</b><span>Nest's grandson</span></div>
+      <div class="row"><b>Ellis's cousins</b><span>The long-fence crew</span></div>
+      <div class="row"><b>Gethin</b><span>Boatman for hire</span></div>
+      <div class="row"><b>Lowri</b><span>Morwen's ward</span></div>
+      <div class="row"><b>Morwen</b><span>The witch</span></div>
+    </div>
+  </div>
+  <figcaption>Studio, phone. One kind. The line is on the row. Rules and the module note are not above the names.</figcaption>
+</figure>
+
+<figure class="shot" id="f-places-phone">
+  <div class="phone" data-theme="paper">
+    <header class="hdr">
+      <svg class="mark" viewBox="0 0 22 28" aria-hidden="true"><path fill="#B23A26" d="M11 1C7 7 2 11 2 17a9 9 0 0 0 18 0C20 11 15 7 11 1z"/><circle cx="11" cy="17" r="2.2" fill="#FFF8F0"/></svg>
+      <nav class="switch" aria-label="Side">
+        <button type="button">Adventure</button>
+        <button type="button">Chat</button>
+        <button type="button" aria-current="page">Studio</button>
+      </nav>
+      <button class="gear" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21"/></svg></button>
+    </header>
+    <div class="col pad">
+      <button class="back" type="button">‹ Places</button>
+      <p class="crumb">Aberyns / Fenmire / The fen</p>
+      <h2 class="world" style="font-size:32px">The fen</h2>
+      <div class="find"><input aria-label="Find in The fen" placeholder="Find among places" /></div>
+      <div class="row"><b>The open water</b><span>in The fen</span></div>
+      <div class="row"><b>The peat diggings</b><span>in The fen</span></div>
+      <div class="row"><b>The reed beds</b><span>in The fen</span></div>
+      <p class="hint">Up one level is Fenmire. This list is only the children of The fen.</p>
+    </div>
+  </div>
+  <figcaption>Places drill in. You are in The fen; the list is its children. The breadcrumb is the way up. The picker already writes these paths.</figcaption>
+</figure>
+
+<figure class="shot" id="f-record-phone">
+  <div class="phone" data-theme="paper">
+    <header class="hdr">
+      <svg class="mark" viewBox="0 0 22 28" aria-hidden="true"><path fill="#B23A26" d="M11 1C7 7 2 11 2 17a9 9 0 0 0 18 0C20 11 15 7 11 1z"/><circle cx="11" cy="17" r="2.2" fill="#FFF8F0"/></svg>
+      <nav class="switch" aria-label="Side">
+        <button type="button">Adventure</button>
+        <button type="button">Chat</button>
+        <button type="button" aria-current="page">Studio</button>
+      </nav>
+      <button class="gear" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/></svg></button>
+    </header>
+    <div class="col pad">
+      <button class="back" type="button">‹ Characters</button>
+      <h2 class="who">Morwen</h2>
+      <p class="sub">The witch · she/her · Harefolk</p>
+      <div class="doors">
+        <button class="door" type="button"><small>Rules</small><b>A rival · Average by Force, Finesse, Focus · Hard by Flair</b></button>
+        <button class="door" type="button"><small>In the adventure</small><b>Lives at The workroom · 3 stops in their day</b></button>
+        <button class="door" type="button"><small>Chat</small><b>Greetings and examples</b></button>
+        <button class="door" type="button"><small>In context now</small><b>356 tokens · Morwen here</b></button>
+      </div>
+      <div class="sec">
+        <div class="top">
+          <input aria-label="Section title" value="Appearance" />
+          <button class="reach" type="button">Here</button>
+        </div>
+        <p class="hint">While this is in the scene.</p>
+        <textarea class="prose" aria-label="Appearance">Lean and dun, fingers stained brown to the second knuckle, and she smells of peat smoke and bog myrtle.</textarea>
+      </div>
+    </div>
+  </div>
+  <figcaption>A record's page. Writing is the page. The old jump chips are gone; the summary cards are doors.</figcaption>
+</figure>
+
+<figure class="shot" id="f-door-phone">
+  <div class="phone" data-theme="paper">
+    <header class="hdr">
+      <svg class="mark" viewBox="0 0 22 28" aria-hidden="true"><path fill="#B23A26" d="M11 1C7 7 2 11 2 17a9 9 0 0 0 18 0C20 11 15 7 11 1z"/><circle cx="11" cy="17" r="2.2" fill="#FFF8F0"/></svg>
+      <span class="word" style="font-size:18px">ink<em>wyrm</em></span>
+      <button class="gear" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/></svg></button>
+    </header>
+    <div class="col pad">
+      <button class="back" type="button">‹ Morwen</button>
+      <p class="crumb">In the adventure</p>
+      <h2 class="who" style="font-size:30px">The workroom</h2>
+      <p class="sub">3 stops in their day</p>
+      <div class="kicker">Lives at</div>
+      <div class="row"><b>The workroom</b><span>where she lives</span></div>
+      <div class="kicker">The day</div>
+      <div class="row"><b>3 stops</b><span>in their day</span></div>
+      <button class="act" type="button">Chat with Morwen</button>
+      <button class="act" type="button">Play Bogwater</button>
+    </div>
+  </div>
+  <figcaption>The Play door, phone. It replaces the page. Back returns to the writing, at the same place.</figcaption>
+</figure>
+
+<figure class="shot" id="f-wide">
+  <div class="wide" data-theme="paper">
+    <header class="hdr">
+      <svg class="mark" viewBox="0 0 22 28" aria-hidden="true"><path fill="#B23A26" d="M11 1C7 7 2 11 2 17a9 9 0 0 0 18 0C20 11 15 7 11 1z"/><circle cx="11" cy="17" r="2.2" fill="#FFF8F0"/></svg>
+      <span class="word">ink<em>wyrm</em></span>
+      <nav class="switch" aria-label="Side">
+        <button type="button">Adventure</button>
+        <button type="button">Chat</button>
+        <button type="button" aria-current="page">Studio</button>
+      </nav>
+      <button class="gear" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21"/></svg></button>
+    </header>
+    <div class="split">
+      <aside class="side">
+        <button class="back" type="button" style="font-family:var(--display);font-size:18px">Bogwater</button>
+        <div class="find"><input aria-label="Find" placeholder="Find among 87" /></div>
+        <div class="kind"><b>Characters</b><span class="meta">16</span></div>
+        <div class="row"><b>Bronwen</b><span>Keeper of the Myrtle</span></div>
+        <div class="row"><b>Cadfan</b><span>Trader at the landing</span></div>
+        <div class="row"><b>Ellis</b><span>Nest's grandson</span></div>
+        <div class="row"><b>Lowri</b><span>Morwen's ward</span></div>
+        <div class="row" style="background:var(--raised);border-radius:6px;padding:6px 8px"><b>Morwen</b><span>The witch</span></div>
+        <div class="row"><b>Nest</b><span>The eldest Crone</span></div>
+        <div class="row"><b>Tegan</b><span>A Crone, Cadfan's mother</span></div>
+        <div class="footlinks">
+          <div>Rules <span class="changed">42 changed</span></div>
+          <div>Checks <span class="meta">All clear</span></div>
+        </div>
+      </aside>
+      <main class="page">
+        <h2 class="who">Morwen</h2>
+        <p class="sub">The witch · she/her · Harefolk</p>
+        <div class="sec">
+          <div class="top">
+            <input aria-label="Section title" value="Appearance" />
+            <button class="reach" type="button">Here</button>
+          </div>
+          <p class="hint">While this is in the scene.</p>
+          <textarea class="prose" style="min-height:120px" aria-label="Appearance">Lean and dun, fingers stained brown to the second knuckle, and she smells of peat smoke and bog myrtle.</textarea>
+        </div>
+        <div class="sec">
+          <div class="top">
+            <input aria-label="Section title" value="Personality" />
+            <button class="reach" type="button">Here</button>
+          </div>
+          <p class="hint">While this is in the scene.</p>
+        </div>
+      </main>
+      <aside class="rail">
+        <div class="kicker">In the adventure</div>
+        <h3 style="font-family:var(--display);font-size:26px;margin:4px 0 8px">The workroom</h3>
+        <div class="row"><b>Lives at</b><span>The workroom</span></div>
+        <div class="row"><b>Stops</b><span>3 in their day</span></div>
+        <div class="doors">
+          <button class="door" type="button"><small>Rules</small><b>A rival · four approaches set</b></button>
+          <button class="door" type="button"><small>Chat</small><b>Greetings and examples</b></button>
+          <button class="door" type="button"><small>In context now</small><b>356 tokens · Morwen here</b></button>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <figcaption>Studio, wide. List, writing, one door. Context is a door, shut until asked. It is not a third column by default.</figcaption>
+</figure>
+
+<figure class="shot" id="f-rules">
+  <div class="phone" data-theme="paper">
+    <header class="hdr">
+      <svg class="mark" viewBox="0 0 22 28" aria-hidden="true"><path fill="#B23A26" d="M11 1C7 7 2 11 2 17a9 9 0 0 0 18 0C20 11 15 7 11 1z"/><circle cx="11" cy="17" r="2.2" fill="#FFF8F0"/></svg>
+      <nav class="switch"><button type="button" aria-current="page">Studio</button></nav>
+      <button class="gear" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/></svg></button>
+    </header>
+    <div class="col pad">
+      <button class="back" type="button">‹ Bogwater</button>
+      <h2 class="world">Rules</h2>
+      <button class="door" type="button" style="margin-bottom:12px"><small>Changed from standard</small><b>42 changed</b></button>
+      <div class="part" aria-current="true"><b>Approaches</b><span class="meta">open</span></div>
+      <div class="part"><span>Force</span><span class="standard">standard</span></div>
+      <div class="part"><span>Finesse</span><span class="standard">standard</span></div>
+      <div class="part"><span>Focus</span><span class="standard">standard</span></div>
+      <div class="part"><span>Flair</span><span class="standard">standard</span></div>
+      <div class="part"><b>States</b><span class="meta">bands</span></div>
+      <div class="part"><b>Tiers</b></div>
+      <div class="part"><b>Dice</b></div>
+      <div class="part"><b>Deeds</b></div>
+      <div class="part"><b>Growth</b></div>
+      <div class="part"><b>Trade</b></div>
+      <div class="part"><b>Calendar</b></div>
+      <div class="part"><b>Scene actions</b></div>
+      <div class="part"><b>Goods</b></div>
+    </div>
+  </div>
+  <figcaption>World › Rules. One part in the page. "42 changed" filters. Standard stays quiet; changed is the seal colour. Part names are the brief's; which fields are changed is not claimed.</figcaption>
+</figure>
+
+<figure class="shot" id="f-adv-night">
+  <div class="phone" data-theme="night">
+    <div class="storywrap">
+      <div class="chapter">
+        <svg class="mark" viewBox="0 0 22 28" aria-hidden="true" style="width:16px;height:20px"><path fill="#E46A4E" d="M11 1C7 7 2 11 2 17a9 9 0 0 0 18 0C20 11 15 7 11 1z"/><circle cx="11" cy="17" r="2.2" fill="#1A100B"/></svg>
+        Aberyns: Bogwater
+      </div>
+      <p class="narr">The net comes up out of the black water all at once, and you come up with it. Eels slide over your arms and down your collar, cold and thick and still fighting.</p>
+      <p class="narr">The one holding the lantern leans closer. <span class="say">That's no eel.</span></p>
+      <p class="narr"><span class="say">It's in our net.</span> <span class="say">Colony.</span></p>
+      <div class="actions">
+        <button class="act" type="button">Work a night on the long fence</button>
+        <button class="act" type="button">Make a check</button>
+        <button class="act" type="button">Wait 10 min</button>
+        <button class="act" type="button">The eel traps · 0 min</button>
+      </div>
+      <div class="composer">
+        <textarea class="promptbox" rows="2" aria-label="Your turn">Your turn: *action*, speech, (thought)</textarea>
+        <button class="send" type="button" aria-label="Send your turn">↑</button>
+      </div>
+      <div class="menu">
+        <button class="mitem" type="button"><b>Scene</b><span>The long fence · 05:00 early morning · 2 here</span></button>
+        <button class="mitem" type="button"><b>You</b><span>bruised, strained</span></button>
+        <button class="mitem" type="button"><b>Map</b><span>1 ways out</span></button>
+      </div>
+    </div>
+  </div>
+  <figcaption>Adventure, phone, night. Same order: story, prompt, menu. No bar. Narration italic grey; speech roman. Send is the seal.</figcaption>
+</figure>
+
+<figure class="shot" id="f-adv-paper">
+  <div class="phone" data-theme="paper">
+    <div class="storywrap">
+      <div class="chapter">
+        <svg class="mark" viewBox="0 0 22 28" aria-hidden="true" style="width:16px;height:20px"><path fill="#B23A26" d="M11 1C7 7 2 11 2 17a9 9 0 0 0 18 0C20 11 15 7 11 1z"/><circle cx="11" cy="17" r="2.2" fill="#FFF8F0"/></svg>
+        Aberyns: Bogwater
+      </div>
+      <p class="narr">Far back across the fen, toward the causeway, a horn blows twice. All three of them look that way. Then they look back at you.</p>
+      <div class="checkcard">
+        <h3>Check</h3>
+        <p class="sub" style="margin:0 0 8px">Force · average</p>
+        <div style="margin-top:10px"><button class="act" type="button">Back to your turn</button></div>
+      </div>
+      <div class="menu">
+        <button class="mitem" type="button"><b>Scene</b><span>The long fence · 05:00 early morning · 2 here</span></button>
+        <button class="mitem" type="button"><b>You</b><span>bruised, strained</span></button>
+      </div>
+    </div>
+  </div>
+  <figcaption>Adventure, phone, paper. A check sits where the prompt sat. No new dice toy; the words of the check, in the house type.</figcaption>
+</figure>
+
+<figure class="shot" id="f-adv-wide-night">
+  <div class="wide" data-theme="night">
+    <div class="storywrap" style="padding-top:36px">
+      <div class="chapter">
+        <svg class="mark" viewBox="0 0 22 28" aria-hidden="true" style="width:16px;height:20px"><path fill="#E46A4E" d="M11 1C7 7 2 11 2 17a9 9 0 0 0 18 0C20 11 15 7 11 1z"/><circle cx="11" cy="17" r="2.2" fill="#1A100B"/></svg>
+        Aberyns: Bogwater
+      </div>
+      <p class="narr">The net comes up out of the black water all at once, and you come up with it. Eels slide over your arms and down your collar, cold and thick and still fighting, and the cord bites into the backs of your knees. A lantern swings out on a pole and stops a hand from your face.</p>
+      <p class="narr">The one holding the lantern leans closer. <span class="say">That's no eel.</span></p>
+      <p class="narr"><span class="say">It's in our net.</span> The one with the spear leans out and turns your wrist over with the butt of it, so the light falls on the ink. <span class="say">Colony.</span></p>
+      <div class="actions">
+        <button class="act" type="button">Work a night on the long fence</button>
+        <button class="act" type="button">◇ Make a check</button>
+        <button class="act" type="button">Wait 10 min</button>
+        <button class="act" type="button">The eel traps · 0 min</button>
+      </div>
+      <div class="composer">
+        <textarea class="promptbox" rows="2" aria-label="Your turn">Your turn: *action*, speech, (thought)</textarea>
+        <button class="send" type="button" aria-label="Send your turn">↑</button>
+      </div>
+      <div class="menu">
+        <button class="mitem" type="button"><b>Scene</b><span>The long fence · 05:00 early morning · 2 here</span></button>
+        <button class="mitem" type="button"><b>You</b><span>bruised, strained</span></button>
+        <button class="mitem" type="button"><b>Map</b><span>1 ways out</span></button>
+        <button class="mitem" type="button"><b>World</b><span>78 records · the rules guide</span></button>
+        <button class="mitem" type="button"><b>Settings</b><span>NovelAI · Studio · Chat</span></button>
+      </div>
+    </div>
+  </div>
+  <figcaption>Adventure, wide, night. The extra width is margin. The menu does not move into a side column. Settings is the way out, still the fifth section.</figcaption>
+</figure>
+
+<figure class="shot" id="f-adv-you">
+  <div class="phone" data-theme="night">
+    <div class="storywrap" style="padding-top:18px">
+      <button class="mitem" type="button" style="border-top:0"><b>You</b><span>bruised, strained</span></button>
+      <div class="you">
+        <div class="persona">
+          <div class="avatar">Ru</div>
+          <div>
+            <b style="font-family:var(--display);font-size:22px">The runaway</b>
+            <div class="meta">A human who walked off a shipwright's indenture in Port Covenant two days ago, with the Pact's contract inked down the inside of the left forearm.</div>
+          </div>
+          <span class="draft">DRAFT</span>
+        </div>
+      </div>
+      <div class="kicker">Condition <span style="float:right;letter-spacing:0;text-transform:none;font-weight:400">tap to set by hand</span></div>
+      <div class="bar"><span style="width:72px">Health</span><span class="segs"><i class="on-seal"></i><i class="on-seal"></i><i class="on-seal"></i><i class="on-seal"></i><i class="on-seal"></i><i></i><i></i></span><span class="meta">bruised</span></div>
+      <div class="bar"><span style="width:72px">Strain</span><span class="segs"><i class="on-player"></i><i class="on-player"></i><i class="on-player"></i><i class="on-player"></i><i></i><i></i><i></i></span><span class="meta">strained</span></div>
+      <div class="bar"><span style="width:72px">Armour</span><span class="segs"><i></i><i></i><i></i><i></i><i></i></span><span class="meta">0</span></div>
+      <div class="bar"><span style="width:120px">The ink</span><span class="meta">carries the Pact's ink down the inside of your forearm</span></div>
+    </div>
+  </div>
+  <figcaption>You, open, night. Same block. Health uses the seal, strain uses the player's blue-black. No new hues.</figcaption>
+</figure>
+
+<figure class="shot" id="f-site">
+  <div class="phone" data-theme="paper">
+    <header class="hdr">
+      <svg class="mark" viewBox="0 0 22 28" aria-hidden="true"><path fill="#B23A26" d="M11 1C7 7 2 11 2 17a9 9 0 0 0 18 0C20 11 15 7 11 1z"/><circle cx="11" cy="17" r="2.2" fill="#FFF8F0"/></svg>
+      <nav class="switch" aria-label="Side">
+        <button type="button">Adventure</button>
+        <button type="button" aria-current="page">Chat</button>
+        <button type="button">Studio</button>
+      </nav>
+      <button class="gear" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21"/></svg></button>
+    </header>
+    <div class="col pad">
+      <p class="hint" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)">No model connected yet. Connect one under Settings with your own key.</p>
+      <h2 class="world">Your chats</h2>
+      <p class="sub">Characters who remember you.</p>
+      <div class="you">
+        <div class="persona">
+          <div class="avatar">M</div>
+          <div><b>Morwen</b><div class="meta">The witch</div><div class="meta">Aberyns: Bogwater</div></div>
+        </div>
+        <div style="margin-top:8px"><button class="act" type="button">Open in Studio</button></div>
+      </div>
+      <div class="you">
+        <div class="persona">
+          <div class="avatar">N</div>
+          <div><b>Nest</b><div class="meta">The eldest Crone</div><div class="meta">Aberyns: Bogwater</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="dim"></div>
+    <div class="sheet">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2 class="who" style="font-size:26px">Settings</h2>
+        <button class="act" type="button">Close</button>
+      </div>
+      <p class="hint">One key for Adventure, Chat and Studio. Kept on this device.</p>
+      <div class="kicker">Narration from</div>
+      <div class="row"><b>NovelAI</b><span>not connected</span></div>
+      <label class="kicker" for="tok">Persistent API token</label>
+      <input id="tok" aria-label="Persistent API token" placeholder="pst-…" style="width:100%;min-height:44px;border-radius:6px;border:1px solid var(--line);background:var(--raised);padding:10px;font:16px var(--ui)" />
+      <p class="hint">Kept on this device. Adventure, Chat and Studio use this one.</p>
+    </div>
+  </div>
+  <figcaption>One site. The switch is three words. Settings is the gear, and it is the same key on every side. From a chat: Open in Studio.</figcaption>
+</figure>
+
+</div>
+</body>
+</html>

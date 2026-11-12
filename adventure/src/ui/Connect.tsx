@@ -112,7 +112,7 @@ export function ConnectForm({ connection, onChange }: { connection: Connection; 
   if (connection.connected) {
     return (
       <div className="lr" style={{ minHeight: 64 }}>
-        <span aria-hidden="true" className="dot" style={{ width: 10, height: 10, background: 'var(--good)', boxShadow: '0 0 0 4px #1d2e27' }} />
+        <span aria-hidden="true" className="dot" style={{ width: 10, height: 10, background: 'var(--good)', boxShadow: '0 0 0 4px color-mix(in srgb, var(--good) 22%, transparent)' }} />
         <span className="grow">
           <span className="name" style={{ display: 'block' }}>{provider.name} connected</span>
           <span className="meta" style={{ display: 'block', marginTop: 2 }}>

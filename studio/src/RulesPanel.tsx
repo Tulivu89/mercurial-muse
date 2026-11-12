@@ -1,7 +1,7 @@
-// The Rules panel on a character, place, item or group: what a player can do here, how its
-// states read to the narrator, and where every value came from. Folded until opened, with one
-// plain line. Only what is changed here is stored on the record.
-import { useMemo, useState } from 'react';
+// The Rules of a character, place, item or group: what a player can do here, how its states read
+// to the narrator, and where every value came from. It sits behind the Rules door of a record's
+// page, whose row says it in one plain line. Only what is changed here is stored on the record.
+import { useMemo } from 'react';
 import type { StoryRecord, World } from '../../core/records/index.js';
 import {
   LADDER, PLACE_KINDS, TIERS, TIER_NAMES, clearRule, goodsOf, rulesFor, setRule, summaryOf, worthWords,
@@ -9,11 +9,12 @@ import {
 } from '../../core/rules/index.js';
 import { LevelPick, Num, OptNum, Origin, Rule, StatePick, Words, plural } from './rules/bits';
 import { carriedWords } from '../../core/convert/index.js';
-import { InTheAdventure } from './InTheAdventure';
 
-const OPEN_KEY = 'inkwyrm.studio.rules.open';
-const wasOpen = () => { try { return localStorage.getItem(OPEN_KEY) === '1'; } catch { return false; } };
-const keepOpen = (open: boolean) => { try { localStorage.setItem(OPEN_KEY, open ? '1' : '0'); } catch { /* private mode: it just won't be remembered */ } };
+// The door's sentence, or nothing for a kind the rules don't act on.
+export function rulesSummary(world: World, record: StoryRecord): string | null {
+  const reading = rulesFor(world, record);
+  return reading ? summaryOf(reading) : null;
+}
 
 // Set on this record itself, so it can be put back from here.
 const isHere = (source: Source) => source.from === 'record' && !source.via;
@@ -35,25 +36,18 @@ function actWords(act: ActReading): string {
 
 type Path = readonly string[];
 
-export function RulesPanel({ world, record, onChange, onWorld }: { world: World; record: StoryRecord; onChange: (record: StoryRecord) => void; onWorld?: (world: World) => void }) {
+export function RulesPanel({ world, record, onChange }: { world: World; record: StoryRecord; onChange: (record: StoryRecord) => void }) {
   const reading = useMemo(() => rulesFor(world, record), [world, record]);
-  const [open, setOpen] = useState(wasOpen);
   const came = useMemo(() => carriedWords(world, record), [world, record]);
-  const adventure = <InTheAdventure world={world} record={record} onChange={onChange} onWorld={onWorld} />;
-  // A scenario has no rules of its own, but says where play starts.
-  if (!reading) return adventure;
+  if (!reading) return null;
 
   const set = (path: Path, value: unknown) => onChange({ ...record, rules: setRule(record.rules, path, value) });
   const back = (path: Path) => onChange({ ...record, rules: clearRule(record.rules, path) });
   const groupGives = (field: keyof MemberRules) => record.groupIds.some((groupId) => world.records.find((entry) => entry.id === groupId)?.rules?.members?.[field] !== undefined);
 
   return (
-    <>
-    <details className="card rules" open={open} onToggle={(event) => { const next = (event.target as HTMLDetailsElement).open; setOpen(next); keepOpen(next); }}>
-      <summary>
-        <span className="rules-title">Rules</span>
-        <span className="rules-summary">{summaryOf(reading)}</span>
-      </summary>
+    <section className="rules" aria-label="Rules">
+      <p className="lede">{summaryOf(reading)}</p>
 
       {reading.deeds.length > 0 && <Deeds reading={reading} record={record} set={set} back={back} />}
       {reading.subject === 'person' && <Person reading={reading} world={world} record={record} set={set} back={back} groupGives={groupGives} />}
@@ -71,9 +65,7 @@ export function RulesPanel({ world, record, onChange, onWorld }: { world: World;
       {reading.subject === 'group' && <Members reading={reading} record={record} set={set} back={back} />}
       <States reading={reading} set={set} back={back} />
       {came.includes('Marked as a draft.') && <p className="hint">Marked as a draft in the module it came from.</p>}
-    </details>
-    {adventure}
-    </>
+    </section>
   );
 }
 

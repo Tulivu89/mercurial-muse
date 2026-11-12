@@ -69,4 +69,4 @@ A goth ink dragon, a writer, and the site's house muse and chat persona. Her nam
 2. ~~Final drawings of the drop family.~~ Done Nov 12 (Marks: wet ink).
 3. The mascot's emotion portraits and front-page art, from her prompt notes in the vault.
 4. A trademark search where the site will be marketed.
-5. The look in code: these tokens become the site's theme (roadmap step 3).
+5. ~~The look in code.~~ Done: the Studio and Chat from their first versions, the adventure in 0.26.0 (Nov 12). The tokens and marks are `kit/src/ink.css`.
