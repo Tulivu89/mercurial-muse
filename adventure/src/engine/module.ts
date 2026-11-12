@@ -52,6 +52,8 @@ export const placeSchema = z.object({
   // What crossing to or from this place asks of a traveller: a boat for an island. A requirement
   // whose `toward` is this place applies only on the way in.
   crossing: z.array(requirementSchema).max(8).default([]),
+  // The icon the map draws for it, when it isn't its kind's.
+  icon: z.string().min(1).max(40).optional(),
 }).passthrough();
 
 // Species, factions, societies and families: the Orbis editor asks only for these two fields.

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { newRecord, newWorld, putRecord, type World } from '../../core/records/index.js';
 import { WorldView } from '../src/WorldView';
 import { NOWHERE, formatRoute, parseRoute } from '../src/route';
+import { wrap } from '../../kit/src/MapView';
 
 vi.mock('../src/go', () => ({ go: vi.fn() }));
 
@@ -417,6 +418,26 @@ describe('the map', () => {
     draw();
     fireEvent.click(tools().getByRole('button', { name: 'Reset this sheet' }));
     expect(current.map).toBeUndefined();
+  });
+
+  it('picks icons to suit the world, and one of its own for a place', () => {
+    let current = town();
+    window.location.hash = '#/w/t?page=map';
+    const view = render(<WorldView world={current} onChange={(next) => { current = next; }} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    fireEvent.click(within(screen.getByRole('group', { name: 'Icons to suit the world' })).getByRole('button', { name: 'Far' }));
+    expect(current.map?.icons).toBe('far');
+    view.rerender(<WorldView world={current} onChange={(next) => { current = next; }} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    fireEvent.click(within(screen.getByRole('region', { name: /^From / })).getByRole('button', { name: /^Long Reach/ }));
+    const card = within(screen.getByRole('region', { name: 'Long Reach' }));
+    expect(card.getByRole('option', { name: 'As its kind: Habitat' })).toBeInTheDocument();
+    fireEvent.change(card.getByRole('combobox', { name: 'Icon' }), { target: { value: 'keep' } });
+    expect(current.records.find((record) => record.id === 'reach')!.rules?.icon).toBe('keep');
+  });
+
+  it('wraps a long name between words, never inside one', () => {
+    expect(wrap('The Drowned Chapel of the Long Reach', 90)).toEqual(['The Drowned', 'Chapel of the', 'Long Reach']);
+    expect(wrap('Unbreakablenamehere', 40)).toEqual(['Unbreakablenamehere']);
+    expect(wrap('one two three four five six seven', 40)).toHaveLength(3);
   });
 
   it('sets a level\'s typical trip on the Rules page, and only that is stored', () => {

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { moduleToWorld } from '../convert/index.js';
-import { TOP, atlasOf, cellDistance, cellKey, cellWorth, childrenOf, circlesOf, inDisc, isArranged, keepLayout, moveTo, paint, placeMap, reroll, resetSheet, resize, road, sheetOf, staleMapData, travelOf, type PlaceMap, type SheetEdits, type WorldMap } from '../map/index.js';
+import { TOP, atlasOf, cellDistance, cellKey, cellWorth, colour, iconSet, childrenOf, circlesOf, inDisc, isArranged, keepLayout, moveTo, paint, placeMap, reroll, resetSheet, resize, road, sheetOf, staleMapData, travelOf, type PlaceMap, type SheetEdits, type WorldMap } from '../map/index.js';
 import { STANDARD_LEVELS, changedCount, levelsOf, pruneLevels, pruneRules, EMPTY_RULES } from '../rules/index.js';
 import type { World } from '../records/index.js';
 
@@ -272,5 +272,26 @@ describe('refining the ground', () => {
     const moved = { ...bogwater, records: bogwater.records.map((record) => (record.id === 'grey-water' ? { ...record, parentId: 'the-fen' } : record)) };
     expect(staleMapData(placeMap(moved), kept)[0]!.text).toMatch(/no longer inside it: Grey Water/);
     expect(staleMapData(map, { sheets: { gone: { seed: 1 } } })[0]!.text).toMatch(/a place that is gone/);
+  });
+});
+
+describe('colour and icons', () => {
+  const map = placeMap(bogwater);
+  it('colours cells as a look, and takes colour off again', () => {
+    const sheet = sheetOf(map, 'fenmire');
+    const coloured = colour(undefined, sheet, sheet.cells[0]!, 2, 7);
+    const painted = sheetOf(map, 'fenmire', coloured!.sheets!.fenmire);
+    expect(painted.paint.get(cellKey(...sheet.cells[0]!))).toBe(2);
+    // A look, never a rule: the same journey takes the same time.
+    expect(travelOf(atlasOf(map, coloured!.sheets), undefined).journey('eel-traps', 'bogwater').minutes).toBe(travelOf(atlasOf(map), undefined).journey('eel-traps', 'bogwater').minutes);
+    const cleared = colour(coloured, painted, sheet.cells[0]!, null, 0);
+    expect(Object.keys(cleared?.sheets?.fenmire?.paint ?? {}).length).toBeLessThan(Object.keys(coloured!.sheets!.fenmire!.paint!).length);
+  });
+
+  it("keeps a world's icon set, and a place's own icon reaches the map", () => {
+    expect(iconSet(undefined, 'far')).toEqual({ v: 1, icons: 'far' });
+    expect(iconSet({ v: 1, icons: 'far' }, 'old')).toBeUndefined();
+    const own = { ...bogwater, records: bogwater.records.map((record) => (record.id === 'bogwater' ? { ...record, rules: { ...record.rules, icon: 'keep' } } : record)) };
+    expect(placeMap(own).places.get('bogwater')!.icon).toBe('keep');
   });
 });

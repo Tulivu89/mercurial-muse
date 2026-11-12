@@ -20,12 +20,16 @@ export const sheetEditsSchema = z.object({
   claims: z.record(cell, z.string().max(200)).optional(),
   // Road cells.
   roads: z.array(cell).max(20_000).optional(),
+  // Colour painted on cells: an index into the map's palette. A look, never a rule.
+  paint: z.record(cell, z.number().int().min(0).max(7)).optional(),
 });
 export type SheetEdits = z.infer<typeof sheetEditsSchema>;
 
 export const mapSchema = z.object({
   // The generator version the layout was made with.
   v: z.number().int().min(1).optional(),
+  // The world's icon set, to suit its genre. Absent: old.
+  icons: z.enum(['old', 'modern', 'far']).optional(),
   sheets: z.record(z.string().max(200), sheetEditsSchema).optional(),
 });
 export type WorldMap = z.infer<typeof mapSchema>;

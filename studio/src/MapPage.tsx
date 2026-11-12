@@ -6,19 +6,23 @@
 import { useMemo, useRef, useState } from 'react';
 import { newRecord, putRecord, type World } from '../../core/records/index.js';
 import {
-  atlasOf, cellKey, cellWorth, cellWorthWords, chainOf, childrenOf, circlesOf, isArea, isArranged, keepLayout, legWords, midName, moveTo, paint, placeMap,
+  atlasOf, cellKey, cellWorth, cellWorthWords, chainOf, childrenOf, circlesOf, colour, iconSet, isArea, isArranged, keepLayout, legWords, midName, moveTo, paint, placeMap,
   reroll, resetSheet, resize, road, timeWords, travelOf, TOP, type Brush, type WorldMap,
 } from '../../core/map/index.js';
 import { LEVEL_NAMES, LEVEL_OF, type PlaceKind, type TravelLevel } from '../../core/rules/index.js';
 import { MapView, type MapTool } from '../../kit/src/MapView';
+import { ICON_SETS, MAP_ICONS, MAP_PAINT, iconFor, kindIcon, type IconSet } from '../../kit/src/map-icons';
 import { newId } from '../../kit/src/util';
 import { Minutes } from './rules/bits';
 import type { Route } from './route';
 
-const TOOL_SAYS: Record<MapTool, string> = {
+// Colour paints like Paint does, so the map is told it is painting.
+type Tool = MapTool | 'colour';
+const TOOL_SAYS: Record<Tool, string> = {
   look: 'Drag to look around. Tap a place to pick it; tap it twice to open what it holds.',
   move: 'Drag a place to move it; its cells grow back around it. The first change keeps this sheet as it is, so nothing else shifts.',
   paint: 'Drag across cells to give them to the place chosen below, or to the ground. Fill gives a whole patch at once.',
+  colour: 'Drag across cells to colour them. Colour is a look and never a rule: a green patch is no slower than a bare one.',
   road: 'Drag across cells to lay a road; a step along it is quicker. Start on a road to take it up.',
 };
 // A new place on a sheet is the kind of place that sheet's level usually holds.
@@ -44,9 +48,11 @@ export function MapPage({ world, route, go, onChange }: { world: World; route: R
   // A drag sends many changes between two renders; each builds on the last one sent.
   const latest = useRef(world);
   latest.current = world;
-  const [tool, setTool] = useState<MapTool>('look');
+  const [tool, setTool] = useState<Tool>('look');
   const [brush, setBrush] = useState<Brush>(1);
   const [brushTo, setBrushTo] = useState<string | null>(null);
+  const [hue, setHue] = useState<number | null>(0);
+  const set: IconSet = world.map?.icons ?? 'old';
   const laying = useRef(true);
   const ground = sheet ? atlas.sheet(sheet) : null;
   const setMap = (next: WorldMap | undefined) => {
@@ -57,6 +63,13 @@ export function MapPage({ world, route, go, onChange }: { world: World; route: R
   };
   const liveSheet = () => (sheet ? atlasOf(map, latest.current.map?.sheets).sheet(sheet) : null);
   const target = ground && (brushTo === '' || (brushTo && ground.byId.has(brushTo))) ? brushTo! : ground && selected && ground.byId.has(selected) ? selected : ground?.blobs[0]?.id ?? '';
+  const setIcon = (placeId: string, icon: string | undefined) => {
+    const record = latest.current.records.find((entry) => entry.id === placeId);
+    if (!record) return;
+    const rules = { ...(record.rules ?? {}), icon };
+    if (!icon) delete rules.icon;
+    onChange(putRecord(latest.current, { ...record, rules: Object.keys(rules).length ? rules : undefined }, Date.now()));
+  };
   const addPlace = () => {
     if (!sheet || sheet === TOP) return;
     const fresh = newRecord('place', newId(), 'New place', newId);
@@ -104,6 +117,9 @@ export function MapPage({ world, route, go, onChange }: { world: World; route: R
         ) : (
           <span className="row">
             <button type="button" className="btn small quiet" onClick={() => setFocus(map.root)}>The whole world</button>
+            <span className="seg" role="group" aria-label="Icons to suit the world">
+              {ICON_SETS.map((entry) => <button key={entry.id} type="button" aria-pressed={set === entry.id} onClick={() => setMap(iconSet(latest.current.map, entry.id))}>{entry.name}</button>)}
+            </span>
             {from && <button type="button" className="btn small quiet" onClick={() => setFocus(map.places.get(from)!.parentId ?? from)}>Around {name(from)}</button>}
           </span>
         )}
@@ -114,12 +130,13 @@ export function MapPage({ world, route, go, onChange }: { world: World; route: R
         note={(id) => (from && id !== from && !isArea(map.places.get(id)!.kind) ? timeWords(travel.journey(from, id).minutes) : undefined)}
         onSelect={setPicked} onFocus={setFocus} onOpen={openGround}
         label={sheet ? `${name(sheet)}: what is inside it, as hex ground` : `${world.name}: every place as circles`}
-        tool={sheet ? tool : 'look'}
+        tool={sheet ? (tool === 'colour' ? 'paint' : tool) : 'look'} iconSet={set}
         onMove={(id, cell) => { const live = liveSheet(); if (live) setMap(moveTo(latest.current.map, live, id, cell)); }}
         onCell={(cell, first) => {
           const live = liveSheet();
           if (!live) return;
           if (tool === 'road') { if (first) laying.current = !live.roads.has(cellKey(cell[0], cell[1])); setMap(road(latest.current.map, live, cell, laying.current)); }
+          else if (tool === 'colour') { if (brush !== 0 || first) setMap(colour(latest.current.map, live, cell, hue, brush)); }
           else if (brush !== 0 || first) setMap(paint(latest.current.map, live, cell, target, brush));
         }}
       />
@@ -132,8 +149,19 @@ export function MapPage({ world, route, go, onChange }: { world: World; route: R
       {ground && sheet && (
         <section className="card" aria-label="Refine this ground">
           <div className="seg" role="group" aria-label="What a drag does">
-            {(['look', 'move', 'paint', 'road'] as const).map((entry) => <button key={entry} type="button" aria-pressed={tool === entry} onClick={() => setTool(entry)}>{entry[0]!.toUpperCase() + entry.slice(1)}</button>)}
+            {(['look', 'move', 'paint', 'colour', 'road'] as const).map((entry) => <button key={entry} type="button" aria-pressed={tool === entry} onClick={() => setTool(entry)}>{entry[0]!.toUpperCase() + entry.slice(1)}</button>)}
           </div>
+          {tool === 'colour' && (
+            <div className="row">
+              <select className="input pick" aria-label="Colour cells" value={hue === null ? '' : String(hue)} onChange={(event) => setHue(event.target.value === '' ? null : Number(event.target.value))}>
+                {MAP_PAINT.map((name, index) => <option key={name} value={index}>{name}</option>)}
+                <option value="">No colour</option>
+              </select>
+              <div className="seg" role="group" aria-label="Colour brush">
+                {([[1, 'One cell'], [7, 'Seven'], [0, 'Fill']] as const).map(([size, label]) => <button key={size} type="button" aria-pressed={brush === size} onClick={() => setBrush(size)}>{label}</button>)}
+              </div>
+            </div>
+          )}
           {tool === 'paint' && (
             <div className="row">
               <select className="input pick" aria-label="Paint cells as" value={target} onChange={(event) => setBrushTo(event.target.value)}>
@@ -190,6 +218,20 @@ export function MapPage({ world, route, go, onChange }: { world: World; route: R
             {childrenOf(map, place.id).length > 0 && sheet !== place.id && <button type="button" className="btn small quiet" onClick={() => openGround(place.id)}>Open its ground</button>}
             {place.parentId && sheet !== place.parentId && <button type="button" className="btn small quiet" onClick={() => openGround(place.parentId!)}>See it on the ground</button>}
             {!isArea(place.kind) && place.id !== from && <button type="button" className="btn small quiet" onClick={() => setFrom(place.id)}>Measure from here</button>}
+          </div>
+          {place.id !== TOP && !isArea(place.kind) && (
+            <label className="field"><span>Icon</span>
+              <select className="input pick" aria-label="Icon" value={place.icon ?? ''} onChange={(event) => setIcon(place.id, event.target.value || undefined)}>
+                <option value="">As its kind{kindIcon(place.kind, set) ? `: ${MAP_ICONS[kindIcon(place.kind, set)!]!.name}` : ''}</option>
+                {(['any', 'old', 'modern', 'far'] as const).map((group) => (
+                  <optgroup key={group} label={group === 'any' ? 'Any world' : ICON_SETS.find((entry) => entry.id === group)!.name}>
+                    {Object.entries(MAP_ICONS).filter(([, icon]) => icon.group === group).map(([key, icon]) => <option key={key} value={key}>{icon.name}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+            </label>
+          )}
+          <div className="row">
             {ground && ground.byId.has(place.id) && !ground.byId.get(place.id)!.own && (
               <>
                 <button type="button" className="btn small quiet" onClick={() => { const live = liveSheet(); if (live) setMap(resize(latest.current.map, live, place.id, true)); }}>Bigger</button>

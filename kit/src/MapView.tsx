@@ -8,35 +8,33 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactElement } from 'react';
 import { DIRS, SQ3, cellKey, chainOf, childrenOf, inDisc, toCell, toPixel, type Atlas, type Cell, type Circle } from '../../core/map/index.js';
 import type { PlaceKind } from '../../core/rules/index.js';
+import { MAP_ICONS, MAP_PAINT, iconFor, type IconSet } from './map-icons';
 
 export type MapLook = 'circles' | 'ground';
 export type MapTool = 'look' | 'move' | 'paint' | 'road';
 
-// One line drawing per kind, on a 24-unit grid, drawn in the map's ink: about 1.4 KB for the set.
-// Each mark on the map is one <use> of its drawing.
-const ICONS: Record<string, string> = {
-  village: 'M2 20h20M3 20v-8l4-3 4 3v8M13 20v-6l4-3 4 3v6M6 20v-3h2v3',
-  town: 'M2 20h20M3 20v-9h5v9M8 20V5h7v15M15 20v-8h6v8M10.5 8h2M10.5 11h2M10.5 14h2',
-  building: 'M2 20h20M5 20v-9l7-5 7 5v9M10 20v-5h4v5',
-  landmark: 'M4 21h9M8 21V4M8 4h10l-2.5 3L18 10H8',
-  wild: 'M2 20h20M7 20v-3M3.5 17h7L7 9ZM17 20v-3M13 17h8l-4-9Z',
-  water: 'M3 9c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0M3 14c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0M3 19c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0',
-  river: 'M8 2c-3 5 3 8 0 13s3 7 0 7M16 2c-3 5 3 8 0 13s3 7 0 7',
-  road: 'M7 21 10 3M17 21 14 3M12 5v2M12 10v3M12 16v3',
-  mark: 'M12 3l6 9-6 9-6-9ZM12 9v6',
-};
-export const ICON_OF: Partial<Record<PlaceKind, string>> = {
-  settlement: 'village', village: 'village', town: 'town', district: 'town', building: 'building', landmark: 'landmark',
-  wilderness: 'wild', lake: 'water', 'sea or ocean': 'water', river: 'river', 'road or trail': 'road', other: 'mark',
-};
 const AREAS: readonly string[] = ['continent', 'major region', 'region', 'subregion', 'territory'];
 export const tintOf = (kind: PlaceKind) => (AREAS.includes(kind) ? 'area' : kind === 'wilderness' ? 'open' : kind === 'lake' || kind === 'river' || kind === 'sea or ocean' ? 'water'
   : kind === 'settlement' || kind === 'town' || kind === 'village' || kind === 'district' ? 'settle' : kind === 'building' ? 'build' : 'mark');
 
+interface Line { t: string; cls?: string; small?: boolean }
 const HERE_SAYS = { at: 'You are here', inside: 'You are inside' };
 const MAX_ICONS = 60;
 const MAX_LABELS = 60;
 const f = (n: number) => String(Math.round(n * 100) / 100);
+
+// A name in at most three lines that fit a width, breaking between words and never inside one: a
+// word longer than the line stays whole (Character Engine's rule). Past three, an ellipsis.
+export function wrap(name: string, width: number, perChar = 6.6): string[] {
+  const most = Math.max(4, Math.floor(width / perChar)), lines: string[] = [];
+  for (const word of name.split(/\s+/).filter(Boolean)) {
+    const last = lines.at(-1);
+    if (last !== undefined && `${last} ${word}`.length <= most) lines[lines.length - 1] = `${last} ${word}`;
+    else lines.push(word);
+  }
+  if (lines.length > 3) return [...lines.slice(0, 2), `${lines[2]}…`];
+  return lines.length ? lines : [name];
+}
 
 interface Camera { k: number; x: number; y: number }
 interface Target { k: number; cx: number; cy: number }
@@ -56,7 +54,7 @@ function edgesPath(cells: readonly Cell[], inside: (q: number, r: number) => boo
   return d;
 }
 
-export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = null, hereSays = HERE_SAYS, selected = null, note, onSelect, onFocus, onOpen, label, tool = 'look', onMove, onCell, onDone }: {
+export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = null, hereSays = HERE_SAYS, selected = null, note, onSelect, onFocus, onOpen, label, tool = 'look', onMove, onCell, onDone, iconSet = 'old' }: {
   atlas: Atlas;
   circles: ReadonlyMap<string, Circle>;
   look: MapLook;
@@ -79,6 +77,8 @@ export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = nu
   onMove?: (placeId: string, cell: Cell) => void;
   onCell?: (cell: Cell, first: boolean) => void;
   onDone?: () => void;
+  // The world's icon set, to suit its genre.
+  iconSet?: IconSet;
 }) {
   const uid = useId().replace(/:/g, '');
   const { map } = atlas;
@@ -189,6 +189,7 @@ export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = nu
         <>
           <path className={`t-${sheet.area ? 'land' : 'pg'}`} d={ground} />
           {sheet.blobs.map((blob) => (blob.cells.length ? <path key={blob.id} className={`t-${blob.own ? 'pg' : tintOf(blob.kind)}`} d={blob.cells.map(([q, r]) => hexPath(q, r)).join('')} /> : null))}
+          {MAP_PAINT.map((_, index) => { const cells = [...sheet.paint].filter(([, value]) => value === index); return cells.length ? <path key={`p${index}`} className={`paint p${index}`} d={cells.map(([key]) => { const [q, r] = key.split(",").map(Number) as [number, number]; return hexPath(q, r); }).join("")} /> : null; })}
           <path className="grid" d={grid} vectorEffect="non-scaling-stroke" />
           <path className="edges" d={borders} vectorEffect="non-scaling-stroke" />
           <path className="rim" d={edgesPath(sheet.cells, (q, r) => inDisc(q, r, sheet.radius))} vectorEffect="non-scaling-stroke" />
@@ -214,30 +215,30 @@ export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = nu
   const marks = (() => {
     const c = cam.current, { w, h } = size.current, boxes: { x0: number; y0: number; x1: number; y1: number }[] = [], out: ReactElement[] = [];
     let icons = 0;
-    const put = (key: string, x: number, y0: number, lines: { t: string; cls?: string }[], force: boolean, cls = '') => {
-      const wd = Math.max(...lines.map((line, i) => line.t.length * (i ? 5.8 : 6.6) + 6)), ht = lines.length * 14.5;
+    const put = (key: string, x: number, y0: number, lines: Line[], force: boolean, cls = '') => {
+      const wd = Math.max(...lines.map((line, i) => line.t.length * (line.small ? 5.8 : 6.6) + 6)), ht = lines.length * 14.5;
       for (const dy of force ? [0] : [0, 16, -16]) {
         const y = y0 + dy, box = { x0: x - wd / 2, y0: y - 11, x1: x + wd / 2, y1: y - 11 + ht };
         if (box.x1 < 0 || box.x0 > w || box.y1 < 0 || box.y0 > h) continue;
         if (!force && boxes.some((o) => o.x0 < box.x1 && box.x0 < o.x1 && o.y0 < box.y1 && box.y0 < o.y1)) continue;
         boxes.push(box);
-        lines.forEach((line, i) => out.push(<text key={`${key}:${i}`} className={`${i ? 'lb2' : 'lb'} ${line.cls ?? cls}`} x={f(x)} y={f(y + i * 14.5)} textAnchor="middle">{line.t}</text>));
+        lines.forEach((line, i) => out.push(<text key={`${key}:${i}`} className={`${line.small ? 'lb2' : 'lb'} ${line.cls ?? cls}`} x={f(x)} y={f(y + i * 14.5)} textAnchor="middle">{line.t}</text>));
         // An icon goes with its name only where the name sat down: nudged, it would sit on another.
         return dy === 0;
       }
       return false;
     };
     const icon = (id: string, x: number, y: number, s: number, dim: boolean) => {
-      const name = ICON_OF[map.places.get(id)!.kind];
+      const name = iconFor(map.places.get(id), iconSet);
       if (!name || icons >= MAX_ICONS) return;
       icons++;
       out.push(<use key={`i:${id}`} href={`#${uid}-${name}`} className={`ic${dim ? ' dim' : ''}`} x={f(x - s / 2)} y={f(y - s / 2)} width={f(s)} height={f(s)} />);
     };
     const second = (id: string) => {
-      if (id === here) return { t: hereSays.at, cls: 'here' };
-      if (here && chainOf(map, here).includes(id)) return { t: hereSays.inside, cls: 'here' };
+      if (id === here) return { t: hereSays.at, cls: 'here', small: true };
+      if (here && chainOf(map, here).includes(id)) return { t: hereSays.inside, cls: 'here', small: true };
       const said = note?.(id);
-      return said ? { t: said } : null;
+      return said ? { t: said, small: true } : null;
     };
     const special = (id: string) => id === here || id === selected;
     if (sheet) {
@@ -249,10 +250,10 @@ export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = nu
         .sort((a, b) => Number(b.id === hereId) - Number(a.id === hereId) || Number(b.id === selId) - Number(a.id === selId) || b.n - a.n)
         .slice(0, MAX_LABELS);
       for (const p of cand) {
-        const lines: { t: string; cls?: string }[] = [{ t: map.places.get(p.id)!.name, cls: p.id === selId ? 'sel' : '' }];
-        const extra = second(p.id) ?? (p.id === hereId && here ? { t: hereSays.inside, cls: 'here' } : null);
+        const lines: Line[] = [{ t: map.places.get(p.id)!.name, cls: p.id === selId ? 'sel' : '' }];
+        const extra = second(p.id) ?? (p.id === hereId && here ? { t: hereSays.inside, cls: 'here', small: true } : null);
         if (extra) lines.push(extra);
-        const withIcon = k >= 8 && Boolean(ICON_OF[map.places.get(p.id)!.kind]);
+        const withIcon = k >= 8 && Boolean(iconFor(map.places.get(p.id), iconSet));
         const ok = put(p.id, p.sx, withIcon ? p.sy + iconSize / 2 + 8 : p.sy - 2, lines, p.id === hereId || p.id === selId);
         if (withIcon && ok) icon(p.id, p.sx, p.sy - 2, iconSize, false);
       }
@@ -266,9 +267,9 @@ export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = nu
         const named = special(p.id) || (p.band !== undefined && (p.band !== 'ancestor' || p.sr < Math.max(w, h)));
         const leafish = !childrenOf(map, p.id).length || bare(p.id) || p.sr <= 60;
         const dim = p.band === 'ancestor' || p.band === 'outline';
-        const iconSize = leafish && p.sr >= 9 && ICON_OF[map.places.get(p.id)!.kind] ? Math.max(14, Math.min(30, p.sr * 1.15)) : 0;
+        const iconSize = leafish && p.sr >= 9 && iconFor(map.places.get(p.id), iconSet) ? Math.max(14, Math.min(30, p.sr * 1.15)) : 0;
         if (!named) { if (iconSize && p.sr >= 12) icon(p.id, p.sx, p.sy, iconSize, true); continue; }
-        const lines: { t: string; cls?: string }[] = [{ t: map.places.get(p.id)!.name, cls: p.id === selected ? 'sel' : undefined }];
+        const lines: Line[] = wrap(map.places.get(p.id)!.name, Math.max(p.sr * 1.7, 90)).map((t) => ({ t, cls: p.id === selected ? 'sel' : undefined }));
         if (special(p.id)) { const extra = second(p.id); if (extra) lines.push(extra); }
         const y = !leafish ? p.sy - p.sr + 18 : iconSize ? p.sy + iconSize / 2 + 12 : p.sy + 4;
         const ok = put(p.id, p.sx, y, lines, special(p.id), dim ? 'dim' : '');
@@ -377,7 +378,7 @@ export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = nu
   return (
     <svg ref={svg} className="map-view" role="img" aria-label={label} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
       <defs>
-        {Object.entries(ICONS).map(([name, d]) => (
+        {Object.entries(MAP_ICONS).map(([name, { d }]) => (
           <symbol key={name} id={`${uid}-${name}`} viewBox="0 0 24 24">
             <path d={d} fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinejoin="round" strokeLinecap="round" />
           </symbol>

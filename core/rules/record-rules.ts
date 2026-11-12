@@ -63,6 +63,8 @@ export const recordRulesSchema = z.object({
   // Places: what crossing to or from it asks of a traveller (a boat for an island). A requirement
   // whose `toward` is the place applies only on the way in.
   crossing: z.array(requirementSchema).max(8).optional(),
+  // Places: the icon the map draws, when it isn't its kind's (kit/src/map-icons.ts).
+  icon: z.string().min(1).max(40).optional(),
   // Items.
   good: goodRulesSchema.optional(),
   // Groups: what members get unless they set their own.

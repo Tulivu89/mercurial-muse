@@ -50,7 +50,7 @@ export function atlasOf(module: PraxisModule): Atlas {
   const cached = atlases.get(module);
   if (cached) return cached;
   const places = new Map(module.world.places.map((place) => [place.id, place]));
-  const map = placeMapFrom(module.world.name, module.world.places.map((place) => ({ id: place.id, name: place.name, kind: place.kind, parentId: place.parentLocationId })));
+  const map = placeMapFrom(module.world.name, module.world.places.map((place) => ({ id: place.id, name: place.name, kind: place.kind, parentId: place.parentLocationId, icon: place.icon })));
   const depth = new Map([...places.keys()].map((id) => [id, chainOf(map, id).filter((at) => places.has(at)).length - 1]));
   const travel = travelOf(layoutOf(map, module.map?.sheets ?? {}), module.ruleset.levels);
   const atlas: Atlas = { places, depth, map, travel };

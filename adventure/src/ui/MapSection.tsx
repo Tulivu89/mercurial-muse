@@ -51,7 +51,7 @@ export function MapSection({ api }: { api: PlayApi }) {
         <button type="button" className="link" onClick={() => { setFocus(null); setSheet(null); }}>Where I am</button>
       </div>
       <MapView
-        atlas={layout} circles={circles} look={look} sheet={sheetId} focus={focusId} here={here} selected={picked?.id ?? null}
+        atlas={layout} circles={circles} look={look} iconSet={world.map?.icons} sheet={sheetId} focus={focusId} here={here} selected={picked?.id ?? null}
         note={(id) => { if (id === here || isArea(atlas.places.get(id))) return undefined; const path = findPath(world, save.values, playerId, here, id); return path.ok ? durationWords(path.minutes) : 'closed'; }}
         onSelect={setSelected} onFocus={setFocus} onOpen={(id) => { setSheet(id); setLook('ground'); }}
         label={look === 'ground' ? `${atlas.map.places.get(sheetId)?.name ?? ''}: what is inside it, as hex ground` : 'The world as circles, around where you stand'}

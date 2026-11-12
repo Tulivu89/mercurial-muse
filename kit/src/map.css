@@ -4,11 +4,14 @@
   --m-land: #EAE2D2; --m-pg: #E2D6BE; --m-area: #D6C8AB; --m-open: #C2C8A4; --m-water: #B2C5D6;
   --m-settle: #D5B07B; --m-build: #C1AC92; --m-mark: #D2AE9E; --m-edge: #7D705E; --m-grid: #C9BCA6;
   --m-road: #8A6A45; --m-icon: #3B342B;
+  /* Colour an author paints on cells: a look, never a rule (kit/src/map-icons.ts MAP_PAINT). */
+  --m-p0: #A9BC8A; --m-p1: #E0C27A; --m-p2: #B9B2A6; --m-p3: #C98F6E; --m-p4: #8FA3B5; --m-p5: #F4ECDC;
 }
 :root[data-theme='night'] {
   --m-land: #1E1A15; --m-pg: #2A251C; --m-area: #2F2920; --m-open: #2C3326; --m-water: #1F2D3B;
   --m-settle: #4F3D23; --m-build: #3C3329; --m-mark: #4A332C; --m-edge: #9A8E7A; --m-grid: #3E372D;
   --m-road: #C79B66; --m-icon: #E3D8C4;
+  --m-p0: #3A4A2C; --m-p1: #5C4A22; --m-p2: #4A453E; --m-p3: #5A3626; --m-p4: #2E3D4C; --m-p5: #6A6152;
 }
 
 .map-view { display: block; width: 100%; height: clamp(320px, 58vh, 640px); touch-action: none; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; cursor: grab; user-select: none; -webkit-user-select: none; }
@@ -22,6 +25,9 @@
 .map-view .t-mark { fill: var(--m-mark); }
 .map-view .t-land { fill: var(--m-land); }
 .map-view .t-pg { fill: var(--m-pg); }
+.map-view .paint { fill-opacity: .85; }
+.map-view .p0 { fill: var(--m-p0); } .map-view .p1 { fill: var(--m-p1); } .map-view .p2 { fill: var(--m-p2); }
+.map-view .p3 { fill: var(--m-p3); } .map-view .p4 { fill: var(--m-p4); } .map-view .p5 { fill: var(--m-p5); }
 .map-view .grid { fill: none; stroke: var(--m-grid); stroke-width: .7; }
 .map-view .edges { fill: none; stroke: var(--m-edge); stroke-width: 1.3; stroke-linejoin: round; }
 .map-view .rim { fill: none; stroke: var(--m-edge); stroke-width: 1; opacity: .55; }
