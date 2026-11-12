@@ -204,3 +204,21 @@ describe('checks', () => {
     ]);
   });
 });
+
+describe('checks on the map', () => {
+  it('find map data for a place that has moved', () => {
+    const made = parseWorld({
+      format: 'studio-world/1', id: 'w', name: 'Low Tide',
+      map: { v: 1, sheets: { town: { centres: { inn: { q: 0, r: 0 }, quay: { q: 2, r: 0 } } } } },
+      records: [
+        { id: 'town', kind: 'place', name: 'Low Tide', rules: { placeKind: 'town' } },
+        { id: 'inn', kind: 'place', name: 'The Anchor', parentId: 'town', rules: { placeKind: 'building' } },
+        { id: 'quay', kind: 'place', name: 'The quay', parentId: 'inn' },
+      ],
+    });
+    if (!made.ok) throw new Error(made.errors.join('\n'));
+    expect(checkWorld(made.world).map((problem) => `${problem.where}: ${problem.text}`)).toEqual([
+      'Low Tide: Its map still places something no longer inside it: The quay. Reset the sheet, or leave it: they are ignored.',
+    ]);
+  });
+});

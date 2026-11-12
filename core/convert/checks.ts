@@ -8,6 +8,8 @@ import { rulesFor, goodsOf } from '../rules/for.js';
 import { AREA_KINDS, type ScheduleWhen } from '../rules/ruleset.js';
 import { readRuleset } from '../rules/world-rules.js';
 import { plansFromEvents, type PlanSchedule } from './schedule.js';
+import { placeMap } from '../map/sheet.js';
+import { staleMapData } from '../map/edit.js';
 
 export interface Problem {
   // The record to open to fix it, or null for the world's own pages.
@@ -116,6 +118,9 @@ export function checkWorld(world: World, days = 40): Problem[] {
       }
     }
   }
+
+  // The map keeps nothing for a place that is gone or no longer where it was.
+  for (const stale of staleMapData(placeMap(world), world.map)) add(byId.get(stale.sheet) ?? null, stale.text);
 
   // What crossing to or from a place asks waits on a state a traveller holds.
   for (const place of world.records.filter((record) => record.kind === 'place')) {

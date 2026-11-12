@@ -10,6 +10,7 @@ import { DIRS, SQ3, cellKey, chainOf, childrenOf, inDisc, toCell, toPixel, type 
 import type { PlaceKind } from '../../core/rules/index.js';
 
 export type MapLook = 'circles' | 'ground';
+export type MapTool = 'look' | 'move' | 'paint' | 'road';
 
 // One line drawing per kind, on a 24-unit grid, drawn in the map's ink: about 1.4 KB for the set.
 // Each mark on the map is one <use> of its drawing.
@@ -55,7 +56,7 @@ function edgesPath(cells: readonly Cell[], inside: (q: number, r: number) => boo
   return d;
 }
 
-export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = null, hereSays = HERE_SAYS, selected = null, note, onSelect, onFocus, onOpen, label }: {
+export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = null, hereSays = HERE_SAYS, selected = null, note, onSelect, onFocus, onOpen, label, tool = 'look', onMove, onCell, onDone }: {
   atlas: Atlas;
   circles: ReadonlyMap<string, Circle>;
   look: MapLook;
@@ -72,6 +73,12 @@ export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = nu
   onFocus: (id: string) => void;
   onOpen: (id: string) => void;
   label: string;
+  // On the ground, what a finger does besides looking: drag a place (Move), or act on each cell it
+  // crosses (Paint, Road). Only the Studio passes these; a pan never paints.
+  tool?: MapTool;
+  onMove?: (placeId: string, cell: Cell) => void;
+  onCell?: (cell: Cell, first: boolean) => void;
+  onDone?: () => void;
 }) {
   const uid = useId().replace(/:/g, '');
   const { map } = atlas;
@@ -273,7 +280,7 @@ export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = nu
 
   // ---- Gestures ----
   const pointers = useRef(new Map<number, [number, number]>());
-  const gesture = useRef<{ kind: 'pan' | 'pinch'; start: [number, number]; last: [number, number]; moved: number; d: number; mid: [number, number] } | null>(null);
+  const gesture = useRef<{ kind: 'pan' | 'pinch' | 'drag' | 'paint'; start: [number, number]; last: [number, number]; moved: number; d: number; mid: [number, number]; id?: string; cell?: string } | null>(null);
   const lastTap = useRef({ t: 0, id: null as string | null });
   const local = (event: { clientX: number; clientY: number }): [number, number] => { const box = svg.current!.getBoundingClientRect(); return [event.clientX - box.left, event.clientY - box.top]; };
   const toWorld = ([x, y]: [number, number]) => [(x - cam.current.x) / cam.current.k, (y - cam.current.y) / cam.current.k] as const;
@@ -299,8 +306,17 @@ export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = nu
     const p = local(event);
     pointers.current.set(event.pointerId, p);
     cancelAnimationFrame(anim.current);
-    if (pointers.current.size === 1) gesture.current = { kind: 'pan', start: p, last: p, moved: 0, d: 0, mid: p };
-    else if (pointers.current.size === 2) {
+    if (pointers.current.size === 1) {
+      gesture.current = { kind: 'pan', start: p, last: p, moved: 0, d: 0, mid: p };
+      const [x, y] = toWorld(p), cell = toCell(x, y);
+      if (sheet && tool === 'move' && onMove) {
+        const blob = sheet.owner.get(cellKey(cell[0], cell[1]));
+        if (blob && !blob.own) { gesture.current = { ...gesture.current, kind: 'drag', id: blob.id, cell: cellKey(cell[0], cell[1]) }; onSelect(blob.id); }
+      } else if (sheet && (tool === 'paint' || tool === 'road') && onCell && inDisc(cell[0], cell[1], sheet.radius)) {
+        gesture.current = { ...gesture.current, kind: 'paint', moved: 99, cell: cellKey(cell[0], cell[1]) };
+        onCell(cell, true);
+      }
+    } else if (pointers.current.size === 2) {
       const [a, b] = [...pointers.current.values()] as [[number, number], [number, number]];
       gesture.current = { kind: 'pinch', start: p, last: p, moved: 99, d: Math.hypot(a[0] - b[0], a[1] - b[1]), mid: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] };
     }
@@ -317,6 +333,12 @@ export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = nu
       cam.current = { ...cam.current, x: cam.current.x + m[0] - g.mid[0], y: cam.current.y + m[1] - g.mid[1] };
       g.d = d; g.mid = m;
       redraw();
+    } else if ((g.kind === 'drag' || g.kind === 'paint') && sheet) {
+      g.moved = Math.max(g.moved, Math.hypot(p[0] - g.start[0], p[1] - g.start[1]));
+      const [x, y] = toWorld(p), cell = toCell(x, y), key = cellKey(cell[0], cell[1]);
+      if (key === g.cell) return;
+      if (g.kind === 'drag' && inDisc(cell[0], cell[1], sheet.radius + 1)) { g.cell = key; onMove?.(g.id!, cell); }
+      if (g.kind === 'paint' && inDisc(cell[0], cell[1], sheet.radius)) { g.cell = key; onCell?.(cell, false); }
     } else if (g.kind === 'pan') {
       const dx = p[0] - g.last[0], dy = p[1] - g.last[1];
       g.moved += Math.abs(dx) + Math.abs(dy); g.last = p;
@@ -335,6 +357,7 @@ export function MapView({ atlas, circles, look, sheet: sheetId, focus, here = nu
     }
     if (pointers.current.size) return;
     gesture.current = null;
+    if (g.kind === 'drag' || g.kind === 'paint') { onDone?.(); if (g.kind === 'paint' || g.moved > 6) return; }
     if (g.moved > 6) return;
     const id = hit(g.start), now = performance.now();
     const again = Boolean(id) && lastTap.current.id === id && now - lastTap.current.t < 340;

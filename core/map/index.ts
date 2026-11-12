@@ -3,4 +3,5 @@
 export * from './schema.js';
 export * from './sheet.js';
 export * from './journey.js';
+export * from './edit.js';
 export * from './words.js';
