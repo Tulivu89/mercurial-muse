@@ -1,6 +1,6 @@
 # Worldbuilding tools: the plan
 
-Nov 12, 2026, revised the same day · @AmbiProp · Claude's informed proposal, written after reading both bids and its own, then revised after reading Story Engine 0.15 and *Prompt Engineering Principles*. **Waiting on the owner's approval.** The questions are under *For the owner*, each with a suggestion.
+Nov 12, 2026, revised the same day · @AmbiProp · Claude's informed proposal, written after reading both bids and its own, then revised after reading Story Engine 0.15 and *Prompt Engineering Principles*. **Approved by the owner on Nov 12**, with every suggestion under *For the owner* taken except the second: talks get an export of their own. W1 is being built.
 
 The brief is `brief.md`. Claude's own proposal, written before any bid was read, is `claude.md`. The bids are `chatgpt.md` and `gemini-3-8-worldbuilding.md`. ChatGPT says it read the repository's code but not the other proposal. Where it agrees with `claude.md`, that counts as two separate votes.
 
@@ -10,6 +10,7 @@ The brief is `brief.md`. Claude's own proposal, written before any bid was read,
 | --- | --- | --- |
 | Nov 12, first | The plan from the two bids and `claude.md`. | The bid process (`docs/bids/README.md`). |
 | Nov 12, second | Errata asks in rounds of answers to pick from. The record's own Never sections become the canon behind what the narrator sees. Prompts no longer name the words they forbid. A wrong answer is sent back once with the fix. A record can be tried in a scene before it's kept. A Check call is added. Prompts are tested by how they behave, not by their wording. | The owner shared Story Engine 0.15 (`keilladraconis/NAI-story-engine`, pull request 40, built on GLM 4.6) and added `docs/Prompt Engineering Principles.md`. What each changed is below, under *What Story Engine and the principles changed*. |
+| Nov 12, approved | The owner's answers: every suggestion stands, and talks and drafts get an export of their own, apart from the world's. | The owner. |
 
 ## The plan in seven lines
 
@@ -30,7 +31,7 @@ All three proposals:
 - no JSON from the model and no tool calling; the Studio reads plain text and builds the record itself;
 - the model never writes a record, and nothing changes without the author's Keep;
 - on a wide screen the helper sits in the right-hand column, beside the writing;
-- chats and drafts live in this browser and stay out of the world file;
+- chats and drafts live in this browser and stay out of the world file; they have an export of their own (the owner, Nov 12);
 - names get their own call, with the world's existing names listed;
 - on weak models every action shrinks to one field, one question or one proposal;
 - the author starts every call and sees its cost.
@@ -385,6 +386,8 @@ interface Kit {
 // Beside it: which list and template each world uses, by world id; and the helper model, if it differs from play's.
 ```
 
+**Export talks** (W2) saves a world's talks and waiting drafts as `<world>.talks.json`, format `inkwyrm-talks/1`: `{ format, worldId, worldName, talks: Talk[], drafts: Draft[] }`. Opening it on a world with the same id brings them back, and a talk or draft already there is kept rather than overwritten. It never carries keys, and the world's own export never carries it.
+
 The pure parts (packing a call, the prompts, the reading code with its fixes, the name check) go in `studio/src/author/`. Following the repository's rule, they move to `core/` only when Chat needs them. `newRecord` in `core/records/world.ts` takes an optional template in place of `TEMPLATES`. That's the only core change. Try a scene uses the builders play already has (`core/chat/build.ts` for a character, the narrator's for a world) through what In context now already assembles.
 
 ## Phases
@@ -392,7 +395,7 @@ The pure parts (packing a call, the prompts, the reading code with its fixes, th
 | Phase | What | Shippable alone because | Done when |
 | --- | --- | --- | --- |
 | W1 | **Draft** on the line and every section; names first on a new record; the draft card with Keep, Edit, Again, Drop and Undo; the stale check; reading every reply, with one resend and the fix; `NEEDS:`; Never sections as Kept back; What this sends; the live test kit. | One tap gives an author something to react to. | The canned replies never overwrite a field. A changed field stops Keep. The live counts for the line and section prompts are recorded on three models. |
-| W2 | **The Errata door:** rounds with picks, the talk, Settled, the default questions, Write ▾ and Write all empty, drafts in the door and on the page, Plain voice, the helper model. | It's the conversation the owner asked for, and it's quicker by picking. | Claude's Low Water character goes from blank to kept by rounds alone, and by talk alone. |
+| W2 | **The Errata door:** rounds with picks, the talk, Settled, the default questions, Write ▾ and Write all empty, drafts in the door and on the page, Plain voice, the helper model, and **Export talks** with its import. | It's the conversation the owner asked for, and it's quicker by picking. | Claude's Low Water character goes from blank to kept by rounds alone, and by talk alone. |
 | W3 | **Try a scene**, as kept or with its drafts. | It proves a record plays before anything is kept. | A draft that gives away a Kept back fact shows it in the scene. |
 | W4 | **The library:** lists and templates, a world's pick, the form, the kit file. | Every author gets their own template. | A kit exported and imported keeps every word and reach. A changed template moves no existing record. |
 | W5 | **The workshop,** on the world and on a place, with rounds, proposals, Make it, Make a record from this, Take this to the workshop, and **Check** with Fix. | It covers the bigger setting once single records draft and play well. | ChatGPT's flood-barrier session works with the card labels broken. *Not this* makes nothing. Check finds a planted contradiction and a planted give-away in at least 18 runs of 20 on the strong model. |
@@ -437,7 +440,7 @@ What held: one field per call in plain text; Settled, which ChatGPT reached on i
 ## For the owner
 
 1. **Never sections as the record's canon.** The helper reads a record's own Never sections, and writes the visible ones to show them only as behaviour. It never reads another record's Never sections or any Notes. *Suggest:* yes, with the reach's hint reworded to *Your notes. Never sent in play; the helper reads them on this record, and keeps them back.*
-2. **Chats stay in this browser.** A world's export doesn't carry its talks or drafts. *Suggest:* yes.
+2. **Chats stay in this browser.** A world's export doesn't carry its talks or drafts. *Suggest:* yes. **Answer:** yes, and talks get an export of their own: **Export talks** on the world's page saves `<world>.talks.json` (`inkwyrm-talks/1`: talks, Settled and waiting drafts, never keys), and opening it brings them back beside the same world.
 3. **Questions and templates belong to the author.** A world points at a list and doesn't carry it. *Suggest:* yes.
 4. **Plain voice.** A switch that turns Errata's manner off and leaves the same helper. *Suggest:* include it, off by default.
 5. **Four people in a place.** A proposal that would put a fifth named person in one place gets a warning on its card, not a block. *Suggest:* warn.

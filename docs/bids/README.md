@@ -15,7 +15,7 @@ One folder per topic:
 | `<model>.md` | A bid, one file per model: `chatgpt.md`, `grok.md` and so on. | The owner uploads them |
 | `decision.md` | Claude's informed proposal: what to build, taken from everything above, with credit and the calls made where the bids differ. | Claude |
 
-Topics now: `maps/` (decided and approved, with a prototype; phases M1 to M3 built), `ui/` (decided and built) and `worldbuilding/` (decided, waiting on the owner's approval).
+Topics now: `maps/` (decided and approved, with a prototype; phases M1 to M3 built), `ui/` (decided and built) and `worldbuilding/` (decided and approved; W1 being built).
 
 ## The steps
 
@@ -37,4 +37,4 @@ Topics now: `maps/` (decided and approved, with a prototype; phases M1 to M3 bui
 | --- | --- | --- | --- | --- |
 | Maps | `maps/brief.md`, Nov 11 | None: the bids were in first | ChatGPT, DeepSeek, Gemini 3.8 Flash, Grok | `maps/decision.md`, Nov 11; revised three times on Nov 12 with the owner's answers (circles drawn from hex ground, travel from levels and the map from the start, roads on cells in place of routes, refining tools, lean icons, no fog yet), and `maps/prototype.html` to try it; approved Nov 12, M1 to M3 built the same day (Studio 0.9.0 to 0.11.0, adventure 0.27.0) |
 | The look and layout of the site | `ui/brief.md`, Nov 11 | `ui/claude.md`, Nov 11 | ChatGPT, Gemini 3.8 Flash, Grok (with `mockups.html` and `frames/`) | `ui/decision.md`, Nov 12; built the same day at the owner's word (Studio 0.8.0, adventure 0.26.0, Chat 0.3.1) |
-| Worldbuilding tools | `worldbuilding/brief.md`, Nov 11 | `worldbuilding/claude.md`, Nov 11 | ChatGPT, Gemini 3.8 | `worldbuilding/decision.md`, Nov 12; revised the same day after Story Engine 0.15 and `docs/Prompt Engineering Principles.md`; waiting on the owner's ten answers |
+| Worldbuilding tools | `worldbuilding/brief.md`, Nov 11 | `worldbuilding/claude.md`, Nov 11 | ChatGPT, Gemini 3.8 | `worldbuilding/decision.md`, Nov 12; revised the same day after Story Engine 0.15 and `docs/Prompt Engineering Principles.md`; approved Nov 12 with the owner's answers (talks get their own export); W1 being built |
