@@ -15,7 +15,7 @@ One folder per topic:
 | `<model>.md` | A bid, one file per model: `chatgpt.md`, `grok.md` and so on. | The owner uploads them |
 | `decision.md` | Claude's informed proposal: what to build, taken from everything above, with credit and the calls made where the bids differ. | Claude |
 
-Topics now: `maps/` (bids in, decision written), `ui/` (decided and built) and `worldbuilding/` (bids in, decision to write).
+Topics now: `maps/` (bids in, decision revised at the owner's word), `ui/` (decided and built) and `worldbuilding/` (bids in, decision to write).
 
 ## The steps
 
@@ -35,6 +35,6 @@ Topics now: `maps/` (bids in, decision written), `ui/` (decided and built) and `
 
 | Topic | Brief | Claude's own | Bids | Decision |
 | --- | --- | --- | --- | --- |
-| Maps | `maps/brief.md`, Nov 11 | None: the bids were in first | ChatGPT, DeepSeek, Gemini 3.8 Flash, Grok | `maps/decision.md`, Nov 11 |
+| Maps | `maps/brief.md`, Nov 11 | None: the bids were in first | ChatGPT, DeepSeek, Gemini 3.8 Flash, Grok | `maps/decision.md`, Nov 11; revised Nov 12 with the owner's changes: hexes from the first phase, routes in time, a picture under a sheet later |
 | The look and layout of the site | `ui/brief.md`, Nov 11 | `ui/claude.md`, Nov 11 | ChatGPT, Gemini 3.8 Flash, Grok (with `mockups.html` and `frames/`) | `ui/decision.md`, Nov 12; built the same day at the owner's word (Studio 0.8.0, adventure 0.26.0, Chat 0.3.1) |
 | Worldbuilding tools | `worldbuilding/brief.md`, Nov 11 | `worldbuilding/claude.md`, Nov 11 | ChatGPT, Gemini 3.8 | To write |
