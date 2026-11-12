@@ -10,8 +10,7 @@ import { KeysField, NameField } from '../../kit/src/Fields';
 import { newId } from '../../kit/src/util';
 import { RecordMulti, RecordPick, withinOf } from './RecordPick';
 import { DraftButton, DraftsFor, NameIdeas, draftWaiting } from './Drafting';
-import { useAuthor } from './author/context';
-import { useDrafts, type DraftsApi } from './author/useDrafts';
+import type { DraftsApi } from './author/useDrafts';
 
 type Change = (record: StoryRecord) => void;
 
@@ -29,10 +28,8 @@ const LEFT_OPEN = new Map<string, Set<string>>();
 
 const firstWords = (text: string) => text.trim().replace(/\s+/g, ' ').slice(0, 160);
 
-export function RecordEditor({ world, record, onChange, onDelete, doors }: { world: World; record: StoryRecord; onChange: Change; onDelete: () => void; doors?: ReactNode }) {
+export function RecordEditor({ world, record, drafts, onChange, onDelete, doors }: { world: World; record: StoryRecord; drafts: DraftsApi; onChange: Change; onDelete: () => void; doors?: ReactNode }) {
   const update = (patch: Partial<StoryRecord>) => onChange({ ...record, ...patch });
-  const author = useAuthor();
-  const drafts = useDrafts(world, record, author);
   const hasGroups = world.records.some((entry) => entry.kind === 'group' && entry.id !== record.id);
   const isPerson = record.kind === 'character' || record.kind === 'persona';
   const [open, setOpen] = useState<Set<string>>(() => new Set(LEFT_OPEN.get(record.id)));

@@ -10,6 +10,10 @@ import {
 import { useMoment } from './ContextPanel';
 import { DoorPane, DoorRows, doorsFor } from './Doors';
 import { RecordEditor } from './RecordEditor';
+import { ErrataDoor, errataSays } from './ErrataDoor';
+import { useAuthor } from './author/context';
+import { useDrafts } from './author/useDrafts';
+import { useTalk } from './author/useTalk';
 import { WorldSettings } from './WorldSettings';
 import { WorldRules } from './WorldRules';
 import { MapPage } from './MapPage';
@@ -60,7 +64,12 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
   const problems = useMemo(() => checkWorld(world), [world]);
   const flagged = useMemo(() => new Set(problems.flatMap((problem) => (problem.recordId ? [problem.recordId] : []))), [problems]);
   const moment = useMoment(world, record?.id ?? null);
-  const doors = record ? doorsFor(world, record, moment) : [];
+  // Drafts and Errata's talk belong to the record open, shared by its page and its door.
+  const author = useAuthor();
+  const drafts = useDrafts(world, record, author);
+  const talk = useTalk(world, record, author, drafts);
+  const errataName = author?.plain ? 'Helper' : 'Errata';
+  const doors = record ? doorsFor(world, record, moment, author ? { label: errataName, says: errataSays(talk.talk, drafts) } : null) : [];
   const door: Door | null = here.door === 'context' ? 'context' : record && doors.some((entry) => entry.id === here.door) ? here.door : null;
 
   const [prefs, setPrefs] = useState<ListPrefs>(() => readList(world.id));
@@ -139,6 +148,7 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
             key={record.id}
             world={world}
             record={record}
+            drafts={drafts}
             onChange={(next) => onChange(putRecord(world, next, Date.now()))}
             onDelete={() => {
               if (!window.confirm(`Delete ${record.name}?`)) return;
@@ -174,6 +184,7 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
         onClose={() => go({ door: null })}
         onChange={(next) => onChange(putRecord(world, next, Date.now()))}
         onWorld={onChange}
+        errata={record ? { title: errataName, body: <ErrataDoor world={world} record={record} talk={talk} drafts={drafts} onChange={(next) => onChange(putRecord(world, next, Date.now()))} /> } : undefined}
       />
     </div>
   );

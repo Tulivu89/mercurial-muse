@@ -72,3 +72,22 @@ export async function runNames(built: Built, world: World, record: StoryRecord, 
   const seen = new Set(ideas.map((idea) => idea.name.toLowerCase()));
   return { ideas: [...ideas, ...more.filter((idea) => !seen.has(idea.name.toLowerCase()))].slice(0, 8), calls: 2, model: second.model, sent: again };
 }
+
+export interface Checked<T> { value: T; fault: string | null; calls: 1 | 2; model: string; sent: Message[] }
+
+// Any call whose reply the Studio reads and checks: sent back once with the fix when the check
+// fails, then returned as it stands, fault and all.
+export async function runChecked<T>(built: Built, read: (raw: string) => { value: T; fault: string | null }, generate: Generate, signal?: AbortSignal): Promise<Checked<T>> {
+  const first = await generate(built.messages, optionsOf(built, signal));
+  const one = read(first.text);
+  if (!one.fault) return { ...one, calls: 1, model: first.model, sent: built.messages };
+  const again: Message[] = [...built.messages, { role: 'assistant', content: first.text.trim() }, { role: 'user', content: one.fault }];
+  const second = await generate(again, optionsOf(built, signal));
+  const two = read(second.text);
+  return { ...two, calls: 2, model: second.model, sent: again };
+}
+
+// One call, read by the caller: a talk turn, where any words are an answer.
+export function generateOnce(built: Built, generate: Generate, signal?: AbortSignal) {
+  return generate(built.messages, optionsOf(built, signal));
+}

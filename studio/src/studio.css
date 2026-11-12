@@ -248,3 +248,33 @@ details.sent > summary { cursor: pointer; color: var(--text-2); font-size: 14px;
 .sent-parts { margin: 6px 0; padding-left: 18px; font-size: 14px; color: var(--text-2); }
 .sent-parts li.left { text-decoration: line-through; }
 details.sent pre.raw { margin: 0; font: 13px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; padding: 10px; border-radius: 6px; background: var(--ground); border: 1px solid var(--rule); max-height: 320px; overflow-y: auto; }
+
+/* The Errata door (W2): a round of answers to pick, Settled, the talk, and Write. */
+.errata { display: flex; flex-direction: column; gap: 14px; }
+.round { gap: 12px; border-color: var(--blue); }
+.round-lead { margin: 0; font-family: var(--read); font-style: italic; color: var(--text-2); }
+.round-q { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.round-q legend { font-weight: 700; padding: 0; margin-bottom: 6px; }
+.answers { flex-wrap: wrap; gap: 8px; align-items: stretch; }
+.answer { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 44px; max-width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--rule); background: var(--surface); color: var(--text); text-align: left; cursor: pointer; font: inherit; }
+.answer:hover { background: var(--raised); }
+.answer.picked { border-color: var(--blue); box-shadow: inset 3px 0 0 var(--blue); background: var(--raised); }
+.answer-text { font-weight: 700; }
+.answer-note { font-size: 13px; color: var(--text-2); }
+.settled .settled-line .field { margin: 0; }
+.talk { display: flex; flex-direction: column; gap: 10px; }
+.turn { position: relative; padding: 10px 40px 10px 12px; border-radius: 10px; border: 1px solid var(--rule); background: var(--surface); }
+.turn.author { background: var(--raised); }
+.turn-who { margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
+.turn-text { margin: 0; font-family: var(--read); white-space: pre-wrap; }
+.turn-x { position: absolute; top: 6px; right: 6px; min-width: 32px; }
+.offers { flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.offer { text-align: left; white-space: normal; }
+.talk-box { align-items: flex-end; }
+.talk-box textarea { min-height: 64px; }
+.write .confirm { flex-wrap: wrap; gap: 8px; }
+.door-drafts { display: flex; flex-direction: column; gap: 10px; }
+.door-draft { display: flex; flex-direction: column; gap: 6px; }
+.door-draft > .hint { margin: 0; font-weight: 700; }
+.settled .settled-line { align-items: flex-start; }
+.settled .settled-line textarea { min-height: 44px; resize: vertical; font-family: var(--read); line-height: 1.45; }

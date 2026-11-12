@@ -11,7 +11,7 @@ import { NOWHERE, navigate, useRoute } from './route';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
 import { ago, newId, readJsonFile } from '../../kit/src/util';
 import { isModule, moduleToWorld } from '../../core/convert/index.js';
-import { AuthorProvider, authorFor } from './author/context';
+import { AuthorProvider, authorFor, readHelperPrefs, saveHelperPrefs, type HelperPrefs } from './author/context';
 import type { Generate } from './author/run';
 
 // `generate` stands in for the model in tests.
@@ -25,7 +25,9 @@ export function App({ generate }: { generate?: Generate } = {}) {
   // One connection for the Studio: Settings changes it, and every Draft button calls through it.
   const [connection, setConnection] = useState<Connection>(initialConnection);
   useEffect(() => { void reconnect(connection).then(setConnection).catch(() => undefined); }, []);
-  const author = useMemo(() => authorFor(connection, () => setSettings(true), generate), [connection, generate]);
+  const [helper, setHelper] = useState<HelperPrefs>(readHelperPrefs);
+  const changeHelper = (next: HelperPrefs) => { saveHelperPrefs(next); setHelper(next); };
+  const author = useMemo(() => authorFor(connection, () => setSettings(true), generate, helper), [connection, generate, helper]);
   const pending = useRef(new Map<string, World>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -78,14 +80,14 @@ export function App({ generate }: { generate?: Generate } = {}) {
       {open
         ? <WorldView key={open.id} world={open} onChange={save} onDelete={() => void remove(open)} onStatus={setStatus} status={status} />
         : <Home worlds={worlds} status={status} onOpen={(id) => { setStatus(null); navigate({ ...NOWHERE, worldId: id }); }} onCreate={(world) => { save(world); navigate({ ...NOWHERE, worldId: world.id, page: world.records.length ? null : 'about' }); }} onStatus={setStatus} />}
-      {settings && <Settings theme={theme} onTheme={setTheme} connection={connection} onConnection={setConnection} onClose={() => setSettings(false)} />}
+      {settings && <Settings theme={theme} onTheme={setTheme} connection={connection} onConnection={setConnection} helper={helper} onHelper={changeHelper} onClose={() => setSettings(false)} />}
     </AuthorProvider>
   );
 }
 
 // One Settings for the site: the look, and the model key that Chat and the adventure already
 // share (kit/src/connection.ts).
-function Settings({ theme, onTheme, connection, onConnection, onClose }: { theme: Theme; onTheme: (theme: Theme) => void; connection: Connection; onConnection: (connection: Connection) => void; onClose: () => void }) {
+function Settings({ theme, onTheme, connection, onConnection, helper, onHelper, onClose }: { theme: Theme; onTheme: (theme: Theme) => void; connection: Connection; onConnection: (connection: Connection) => void; helper: HelperPrefs; onHelper: (helper: HelperPrefs) => void; onClose: () => void }) {
   return (
     <Sheet title="Settings" onClose={onClose}>
       <label className="field">
@@ -97,6 +99,23 @@ function Settings({ theme, onTheme, connection, onConnection, onClose }: { theme
       <h3 className="sub">Your model</h3>
       <p className="hint">One key for the adventure, Chat and the Studio. It is kept on this device if you ask, and goes with each request; the site&rsquo;s server never stores it. In the Studio it writes drafts: nothing it writes changes a record until you keep it.</p>
       <ConnectForm connection={connection} onChange={onConnection} />
+      <h3 className="sub">The Studio&rsquo;s helper</h3>
+      <label className="field">
+        <span>Model for drafts and Errata</span>
+        {connection.models.length > 1 ? (
+          <select value={helper.model} onChange={(event) => onHelper({ ...helper, model: event.target.value })}>
+            <option value="">The same as play{connection.model ? ` (${connection.model})` : ''}</option>
+            {connection.models.filter((model) => model !== connection.model).map((model) => <option key={model} value={model}>{model}</option>)}
+          </select>
+        ) : (
+          <input value={helper.model} placeholder={connection.model ? `The same as play (${connection.model})` : 'The same as play'} onChange={(event) => onHelper({ ...helper, model: event.target.value.trim() })} />
+        )}
+      </label>
+      <p className="hint">A strong instruction model can help you build while a favourite story model plays. It uses the same provider and key.</p>
+      <label className="check">
+        <input type="checkbox" checked={helper.plain} onChange={(event) => onHelper({ ...helper, plain: event.target.checked })} />
+        <span>Plain voice: the helper without Errata&rsquo;s manner</span>
+      </label>
     </Sheet>
   );
 }

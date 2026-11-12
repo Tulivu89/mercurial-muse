@@ -99,6 +99,8 @@ export interface WriteRequest {
   direction?: string;
   // What the talk settled (W2). A generate button sends none.
   settled?: string[];
+  // The recent talk, as lines (W2). Sent only when the window has room for it.
+  talk?: string;
 }
 
 export function buildFieldWrite(request: WriteRequest): BuildResult {
@@ -150,6 +152,8 @@ export function buildFieldWrite(request: WriteRequest): BuildResult {
     record: recordText,
     near: near.length ? `Near it:\n${near.join('\n')}` : '',
     settled: settled.length ? `Settled:\n${settled.join('\n')}` : '',
+    // At 8,000 tokens a write reads Settled and the record, with no talk.
+    talk: request.talk?.trim() && !small ? `The talk so far:\n${request.talk.trim()}` : '',
     closing,
   };
   const tally: PartTally[] = [
@@ -158,15 +162,21 @@ export function buildFieldWrite(request: WriteRequest): BuildResult {
     { label: `This ${kind}${keptBack.length ? `, with ${keptBack.length} kept back` : ''}`, tokens: roughTokens(parts.record), left: false, note: keptBack.length ? `Kept back: ${keptBack.map((section) => section.title).join(', ')}` : undefined },
     { label: 'Near it', tokens: roughTokens(parts.near), left: false },
     { label: 'Settled', tokens: roughTokens(parts.settled), left: false },
+    { label: 'The talk', tokens: roughTokens(parts.talk), left: false },
     { label: 'The ask', tokens: roughTokens(parts.closing), left: false },
   ].filter((part) => part.tokens > 0);
 
   const budget = window - shape.cap - MARGIN;
-  const total = () => roughTokens(system) + roughTokens(parts.premise) + roughTokens(parts.record) + roughTokens(parts.near) + roughTokens(parts.settled) + roughTokens(parts.closing);
+  const total = () => roughTokens(system) + roughTokens(parts.premise) + roughTokens(parts.record) + roughTokens(parts.near) + roughTokens(parts.settled) + roughTokens(parts.talk) + roughTokens(parts.closing);
   // Left out first: what's near it. Then the premise goes as its first two sentences.
   if (total() > budget && parts.near) {
     parts.near = '';
     tally.find((part) => part.label === 'Near it')!.left = true;
+  }
+  // Then the talk: Settled holds what it decided.
+  if (total() > budget && parts.talk) {
+    parts.talk = '';
+    tally.find((part) => part.label === 'The talk')!.left = true;
   }
   if (total() > budget && premise) {
     const compact = `The world: ${firstSentences(premise)}`;
@@ -181,7 +191,7 @@ export function buildFieldWrite(request: WriteRequest): BuildResult {
     return { ok: false, reason: `This needs about ${total().toLocaleString()} tokens and the model reads about ${window.toLocaleString()}, with room kept for the reply. Shorten the record's sections, or set a larger window for the model.` };
   }
 
-  const user = [parts.premise, parts.record, parts.near, parts.settled, parts.closing].filter(Boolean).join('\n\n');
+  const user = [parts.premise, parts.record, parts.near, parts.settled, parts.talk, parts.closing].filter(Boolean).join('\n\n');
   return {
     ok: true,
     built: {

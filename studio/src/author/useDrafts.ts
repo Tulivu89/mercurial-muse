@@ -22,7 +22,7 @@ export interface DraftsApi {
   drop: (draft: Draft) => void;
 }
 
-export function useDrafts(world: World, record: StoryRecord, author: Author | null): DraftsApi {
+export function useDrafts(world: World, record: StoryRecord | undefined, author: Author | null): DraftsApi {
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [running, setRunning] = useState<Map<string, Running>>(new Map());
   const [errors, setErrors] = useState<Map<string, string>>(new Map());
@@ -32,23 +32,26 @@ export function useDrafts(world: World, record: StoryRecord, author: Author | nu
   worldRef.current = world;
   const saving = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
+  const recordId = record?.id ?? '';
   useEffect(() => {
     let live = true;
+    setDrafts([]);
+    if (!recordId) return undefined;
     // Stored drafts join any written while they loaded, never replace them.
-    void draftsFor(world.id, record.id).then((list) => {
+    void draftsFor(world.id, recordId).then((list) => {
       if (live) setDrafts((now) => [...list.filter((stored) => !now.some((entry) => entry.id === stored.id)), ...now].sort((a, b) => a.at - b.at));
     }).catch(() => undefined);
     return () => { live = false; };
-  }, [world.id, record.id]);
+  }, [world.id, recordId]);
 
   const setIn = <T,>(set: (update: (map: Map<string, T>) => Map<string, T>) => void, key: string, value: T | null) =>
     set((map) => { const next = new Map(map); if (value === null) next.delete(key); else next.set(key, value); return next; });
 
   const write = useCallback(async (target: Target, extra: { settled?: string[]; direction?: string } = {}) => {
-    if (!author) return;
+    const now = recordRef.current;
+    if (!author || !now) return;
     const key = targetKey(target);
     if (running.has(key)) return;
-    const now = recordRef.current;
     const shape = shapeFor(now, target);
     const built = buildFieldWrite({ world: worldRef.current, record: now, target, window: author.window, prefill: author.prefill, ...extra });
     if (!shape || !built.ok) { setIn(setErrors, key, built.ok ? 'That part is gone from the record.' : built.reason); return; }

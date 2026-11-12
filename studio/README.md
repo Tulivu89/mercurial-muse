@@ -2,7 +2,7 @@
 
 Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the record model (`docs/records.md`), and see exactly what each part sends the model.
 
-## What it does (0.13.0)
+## What it does (0.14.0)
 
 - **Worlds** in this browser's storage, with a premise, genre, tone and shared conditions.
 - **Records of every kind:** characters, places, groups, items, lore, threads, scenarios and personas.
@@ -59,7 +59,15 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - **What this sent** under every draft: each part with its tokens, what was left out to fit, the Never sections by title, and the messages themselves. The window is what the provider lists for the model, or 8,000 tokens.
   - A few overused words are underlined for a second look; they never block anything.
   - **Settings** holds one connection for the Studio, the same key Chat and the adventure use. Drafts are kept in this browser in their own store (`inkwyrm-author`), never in the world file.
-  - **Live prompt tests** (`studio/live/`, `npm run prompts:live`): each prompt runs twenty times on a real model with your own key, and the failing runs are counted against a one-line contract.
+  - **Live prompt tests** (`studio/live/`, `npm run prompts:live`): four checks on a real model with your own key, five runs each by default, stopping as soon as a check can't pass and never past 60 calls. The last result on the same model is printed beside the new one.
+- **Errata** (0.14.0, phase W2). A door on every record's page, after In context now, whose row says what's waiting (*2 drafts waiting · 3 settled*).
+  - **Rounds to pick from.** *Ask me something* puts up the next questions from the list (one at a time on a small model, up to three on a large one): the ones switched on, not yet asked, whose field is still empty. Errata offers three or four answers to each, with a few words on what each means. Tap any, add your own words, then **Take these**; **Other answers** asks again without repeating what you passed over; **Skip these** moves on. Picks are written into Settled by the Studio, in the question's words and the answer's, never by the model.
+  - **Settled:** what's decided, one line each, to edit, remove or add to by hand. It's what every Write reads first.
+  - **The talk:** say anything; Errata answers briefly and offers the facts you settled as **+ Settle** lines, taken only with a tap. Any turn can be removed.
+  - **Write:** pick a field (empty ones first) and **Write it**, or **Write all empty**, which says how many calls and about how many tokens first and then writes them one after another. Writes read Settled, and the recent talk when the model has room for it; Errata is never in them. Drafts land under their fields, and on a phone in the door too.
+  - The default questions are the plan's: six for a character, five for a place, the thread's five and its next beat, and a few for every other kind. W4 makes them the author's own.
+  - **Settings › The Studio's helper:** a model for drafts and Errata apart from play's (same provider and key), and **Plain voice**, which takes Errata's manner away and leaves the same helper.
+  - **Talks with Errata** on the world's About page: **Export talks** saves the world's talks and waiting drafts as `<world>.talks.json`, and **Open a talks file** brings them back beside the same world, keeping anything already there. The world's own file never carries them.
 - **The marks** (0.7.1): the Studio's nib in the header and on the home page, in wet ink, black by day and bone at night (`kit/src/Mark.tsx`). It drops in when the Studio opens; page titles are written on and a new page settles in from a slight blur, all off with reduced motion. The tab shows the flat nib.
 - **Genre:** the purse's words are the Coin state's bands and the catalog's names are editable, so a modern world's hundred *could buy a car*.
 - **In context now:** put people and a place in the scene, type what was just said, tick what holds, and see what the world would send, with a rough token count. From 0.3.0 it shows the sentence of every state that is off its resting band, under the record it belongs to, as the narrator would read it.
@@ -82,6 +90,7 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 | M3 | Refining the ground: move, bigger and smaller, paint, roads, what a cell is worth, keep, reroll, reset, add a place; stale map data on Checks. | Built, 0.11.0. |
 | M4 | Icon sets by genre and icons by choice, colour paint, names that wrap on circles. | Built, 0.12.0 (adventure 0.27.1). |
 | W1 | Drafts: the Draft button on the line and every section, names first, the draft card, one resend with the fix, Never sections kept back, What this sent, live prompt tests (`docs/bids/worldbuilding/decision.md`). | Built, 0.13.0. |
+| W2 | The Errata door: rounds to pick from, Settled, the talk, Write and Write all empty, the helper's own model, Plain voice, Export talks. | Built, 0.14.0. |
 
 ## Not yet
 
@@ -92,7 +101,7 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 - A world checked by the adventure's own loader before it is played: Checks covers what the brief lists, and anything else the adventure refuses is said on its start screen.
 - Where a place or a group starts its states reaching the adventure.
 - On World › Rules: taking an approach away (the four can be renamed and re-costed, and a fifth added with its rating state), the fight and follow rules, craft's steps, and what a hop into a room costs.
-- The rest of the helper (`docs/bids/worldbuilding/decision.md`): the Errata door with rounds to pick and Settled (W2), Try a scene (W3), the library of questions and templates (W4), the workshop and Check (W5), and drafts for keys, set entries, greetings and events (W6). Images.
+- The rest of the helper (`docs/bids/worldbuilding/decision.md`): Try a scene (W3), the library of questions and templates (W4), the workshop and Check (W5), and drafts for keys, set entries, greetings and events (W6). Images.
 
 The shared look, world storage and fields moved to `kit/` in 0.1.1, for Chat to use too.
 
