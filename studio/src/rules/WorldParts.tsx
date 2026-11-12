@@ -1,9 +1,9 @@
 // The parts of World › Rules an adventure needs written: the calendar, travel, and scene actions.
 import type { World } from '../../../core/records/index.js';
-import { DEFAULT_CALENDAR, type Calendar, type Ruleset, type SceneAction, type WorldRules } from '../../../core/rules/index.js';
+import { DEFAULT_CALENDAR, LEVEL_NAMES, TRAVEL_LEVELS, levelsOf, pruneLevels, type Calendar, type Ruleset, type SceneAction, type TravelLevel, type WorldRules } from '../../../core/rules/index.js';
 import { RecordMulti, WhosePick } from '../RecordPick';
 import { newId } from '../../../kit/src/util';
-import { Num, OptNum, Origin, PutBack, Rule, StatePick, Words } from './bits';
+import { Minutes, Num, OptNum, Origin, PutBack, Rule, StatePick, Words } from './bits';
 
 type Put = (patch: Partial<WorldRules>) => void;
 
@@ -143,6 +143,41 @@ export function SceneActionsPart({ world, rules, ruleset, put }: { world: World;
         </details>
       ))}
       <div className="row"><button type="button" className="btn small" onClick={() => put({ actions: [...actions, blank()] })}>Add a scene action</button></div>
+    </section>
+  );
+}
+
+// Travel by level (docs/bids/maps/decision.md): how long a typical trip across each level takes,
+// what stepping inside one of its places costs, and how much quicker a road is. The map turns
+// these into every journey's time: a cell is a quarter of a level's typical trip.
+export function TravelPart({ rules, put }: { rules: WorldRules | undefined; put: Put }) {
+  const own = rules?.levels;
+  const levels = levelsOf(own);
+  const set = (level: TravelLevel, field: 'across' | 'step', value: number | undefined) => {
+    const entry = { ...(own?.[level] ?? {}), [field]: value };
+    put({ levels: pruneLevels({ ...(own ?? {}), [level]: entry }) });
+  };
+  return (
+    <section className="rules-part" aria-label="Travel by level">
+      <h2 className="sub">Travel by level</h2>
+      <p className="hint">Every kind of place has a level. A journey climbs to the level where both ends sit side by side, crosses that place&rsquo;s map, and comes back down. Crossing costs the cells between them, and one cell is a quarter of the level&rsquo;s typical trip until a map sets its own. Stepping into or out of an area costs nothing: nobody stops in an area.</p>
+      {TRAVEL_LEVELS.map((level) => {
+        const mine = own?.[level];
+        return (
+          <div key={level} className="card">
+            <div className="card-head"><b className="grow">{LEVEL_NAMES[level].name}</b><span className="hint">{LEVEL_NAMES[level].kinds}</span></div>
+            <Rule label="A typical trip across" source={mine?.across !== undefined ? 'world' : 'standard'} onPutBack={mine?.across !== undefined && (() => set(level, 'across', undefined))}>
+              <Minutes label={`${LEVEL_NAMES[level].name}: a typical trip across`} value={levels.times[level].across} onChange={(value) => set(level, 'across', value)} />
+            </Rule>
+            <Rule label="Stepping inside one of its places" source={mine?.step !== undefined ? 'world' : 'standard'} onPutBack={mine?.step !== undefined && (() => set(level, 'step', undefined))}>
+              <Minutes label={`${LEVEL_NAMES[level].name}: stepping inside`} value={levels.times[level].step} onChange={(value) => set(level, 'step', value)} />
+            </Rule>
+          </div>
+        );
+      })}
+      <Rule label="A step along a road" hint="Per cent of a cell. Roads are painted on a map, in the next phase." source={own?.road !== undefined ? 'world' : 'standard'} onPutBack={own?.road !== undefined && (() => put({ levels: pruneLevels({ ...(own ?? {}), road: undefined }) }))}>
+        <Num label="A step along a road, per cent of a cell" value={Math.round(levels.road * 100)} min={5} max={100} onChange={(percent) => put({ levels: pruneLevels({ ...(own ?? {}), road: percent / 100 }) })} />
+      </Rule>
     </section>
   );
 }

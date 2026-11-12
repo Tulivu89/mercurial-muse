@@ -122,3 +122,30 @@ export const SCOPE_WORDS: Record<StateDef['scope'], string> = {
 };
 
 export const plural = (count: number, one: string, many = `${one}s`) => `${count} ${count === 1 ? one : many}`;
+
+// A length of time, written as a number and a unit (minutes, hours or days) and kept in minutes.
+// A day is twenty-four hours on the clock.
+const UNITS = [{ id: 'min', name: 'minutes', size: 1 }, { id: 'h', name: 'hours', size: 60 }, { id: 'd', name: 'days', size: 1440 }] as const;
+export function Minutes({ value, onChange, label, max = 525_600 }: { value: number; onChange: (value: number) => void; label: string; max?: number }) {
+  const fit = (minutes: number) => [...UNITS].reverse().find((unit) => minutes >= unit.size && minutes % unit.size === 0) ?? UNITS[0];
+  const [unit, setUnit] = useState<(typeof UNITS)[number]>(() => fit(value));
+  const [draft, setDraft] = useState(String(value / unit.size));
+  useEffect(() => { const next = fit(value); setUnit(next); setDraft(String(value / next.size)); }, [value]);
+  const send = (text: string, size: number) => {
+    const number = Number(text);
+    if (text.trim() === '' || !Number.isFinite(number) || number < 0) return;
+    const minutes = Math.round(number * size);
+    if (minutes <= max && minutes !== value) onChange(minutes);
+  };
+  return (
+    <span className="row">
+      <input type="number" inputMode="decimal" min={0} step="any" className="input num" aria-label={label} value={draft}
+        onChange={(event) => { setDraft(event.target.value); send(event.target.value, unit.size); }}
+        onBlur={() => setDraft(String(value / unit.size))} />
+      <select className="input pick" aria-label={`${label}: unit`} value={unit.id}
+        onChange={(event) => { const next = UNITS.find((entry) => entry.id === event.target.value)!; setUnit(next); send(draft, next.size); }}>
+        {UNITS.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}
+      </select>
+    </span>
+  );
+}

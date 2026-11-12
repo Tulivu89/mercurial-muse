@@ -1,13 +1,14 @@
 // Where the Studio is, kept in the address after the #, so the browser's Back walks back through
 // what was opened, and a link from Chat can open one record:
-// `#/w/<world>?kind=character&in=<place>&rec=<record>&door=rules`.
+// `#/w/<world>?kind=character&in=<place>&rec=<record>&door=rules`. The map's ground for one
+// place is `page=map&sheet=<place>`; the map with no sheet is the circles.
 import { useMemo, useSyncExternalStore } from 'react';
 import { RECORD_KINDS, type RecordKind } from '../../core/records/index.js';
 
 // The jobs a record's page opens onto (docs/bids/ui/decision.md).
 export const DOORS = ['day', 'rules', 'adventure', 'chat', 'context'] as const;
 export type Door = (typeof DOORS)[number];
-export const PAGES = ['about', 'rules', 'checks'] as const;
+export const PAGES = ['about', 'rules', 'checks', 'map'] as const;
 export type Page = (typeof PAGES)[number];
 
 export interface Route {
@@ -21,9 +22,11 @@ export interface Route {
   door: Door | null;
   // The part of World › Rules that is open.
   part: string | null;
+  // The map's ground: the place whose sheet is open.
+  sheet: string | null;
 }
 
-export const NOWHERE: Route = { worldId: null, kind: null, inside: null, page: null, rec: null, door: null, part: null };
+export const NOWHERE: Route = { worldId: null, kind: null, inside: null, page: null, rec: null, door: null, part: null, sheet: null };
 
 const oneOf = <T extends string>(list: readonly T[], value: string | null): T | null => (value && (list as readonly string[]).includes(value) ? (value as T) : null);
 
@@ -42,6 +45,7 @@ export function parseRoute(hash: string): Route {
     rec,
     door: oneOf(DOORS, asked.get('door')),
     part: asked.get('part'),
+    sheet: asked.get('sheet'),
   };
 }
 
@@ -53,6 +57,7 @@ export function formatRoute(route: Route): string {
   if (route.rec) asked.set('rec', route.rec); else if (route.page) asked.set('page', route.page);
   if (route.door) asked.set('door', route.door);
   if (route.page === 'rules' && !route.rec && route.part) asked.set('part', route.part);
+  if (route.page === 'map' && !route.rec && route.sheet) asked.set('sheet', route.sheet);
   const rest = asked.toString();
   return `#/w/${encodeURIComponent(route.worldId)}${rest ? `?${rest}` : ''}`;
 }

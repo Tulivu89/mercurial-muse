@@ -9,6 +9,7 @@
 import { z } from 'zod';
 import { calendarSchema } from './clock.js';
 import { stateDefSchema, type StateDef } from './state.js';
+import { levelsChanged, levelsSchema, pruneLevels } from './levels.js';
 import { STANDARD_RULESET, STANDARD_RULESET_ID, mergeBy } from './standard.js';
 import {
   TIERS, approachSchema, craftSchema, deedSchema, diceSchema, fightSchema, followRuleSchema, goodSchema, growthSchema, restSchema,
@@ -48,6 +49,8 @@ export const worldRulesSchema = z.object({
   // Absent means the real calendar.
   calendar: calendarSchema.optional(),
   travel: travelSchema.optional(),
+  // Travel by level: only the numbers the world changed (levels.ts).
+  levels: levelsSchema.optional(),
   actions: z.array(sceneActionSchema).max(1000).default([]),
 });
 export type WorldRules = z.infer<typeof worldRulesSchema>;
@@ -229,6 +232,7 @@ export function pruneRules(rules: WorldRules | null | undefined): WorldRules | u
   });
   const next: WorldRules = {
     ...rules,
+    levels: pruneLevels(rules.levels),
     states: kept(rules.states, (entry) => entry.id, base.states, stateDefSchema),
     approaches: kept(rules.approaches, (entry) => entry.id, base.approaches, approachSchema as z.ZodType<Approach>),
     deeds: kept(rules.deeds, deedKey, base.deeds, deedSchema),
@@ -248,7 +252,7 @@ export function pruneRules(rules: WorldRules | null | undefined): WorldRules | u
     else delete (next as Loose)[block];
   }
   const empty = !next.states.length && !next.approaches.length && !next.deeds.length && !next.follow.length && !next.goods.length && !Object.keys(next.tiers).length
-    && BLOCKS.every((block) => !next[block]) && !next.calendar && !next.travel && !next.actions.length;
+    && BLOCKS.every((block) => !next[block]) && !next.calendar && !next.travel && !next.levels && !next.actions.length;
   return empty ? undefined : next;
 }
 
@@ -284,7 +288,7 @@ export const changeRules = {
 export function changedCount(rules: WorldRules | null | undefined): number {
   if (!rules) return 0;
   return rules.states.length + rules.approaches.length + rules.deeds.length + rules.follow.length + rules.goods.length + Object.keys(rules.tiers).length
-    + BLOCKS.reduce((sum, block) => sum + Object.keys((rules[block] ?? {}) as Loose).length, 0) + (rules.calendar ? 1 : 0) + (rules.travel ? 1 : 0) + rules.actions.length;
+    + BLOCKS.reduce((sum, block) => sum + Object.keys((rules[block] ?? {}) as Loose).length, 0) + (rules.calendar ? 1 : 0) + (rules.travel ? 1 : 0) + levelsChanged(rules.levels) + rules.actions.length;
 }
 
 // States an author can add in one tap, beyond the standard: a faction's standing and what it has

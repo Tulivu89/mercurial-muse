@@ -1,0 +1,1019 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- The maps prototype, second version, as published for the owner on Nov 12, 2026. Open it in any browser; nothing loads but the fonts. -->
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Inkwyrm Map Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Literata:opsz,wght@7..72,400&display=swap">
+<style>
+/* Layout: the working map first, its controls and the travel list under it; side by side on a wide screen.
+   Wet Ink (docs/brand.md): paper by day, ink by night. Map tints are muted kin of the ground. */
+:root {
+  --ground: #F3EEE4; --surface: #FBF8F2; --raised: #FFFFFF;
+  --text: #1D1B17; --text-2: #5E574C; --rule: #D9D0C0;
+  --seal: #B23A26; --on-seal: #FFF8F0; --blue: #2F4A6B; --on-blue: #F3F6FA;
+  --m-land: #EAE2D2; --m-pg: #E2D6BE; --m-area: #D6C8AB; --m-open: #C2C8A4; --m-water: #B2C5D6;
+  --m-settle: #D5B07B; --m-build: #C1AC92; --m-mark: #D2AE9E; --m-edge: #7D705E; --m-grid: #C9BCA6;
+  --m-road: #8A6A45; --m-icon: #3B342B;
+  --display: 'Fraunces', Georgia, serif;
+  --read: 'Literata', Georgia, 'Times New Roman', serif;
+  --ui: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #16130F; --surface: #201C16; --raised: #2A251D;
+    --text: #EDE5D6; --text-2: #A89E8D; --rule: #3A342B;
+    --seal: #E46A4E; --on-seal: #1A100B; --blue: #8FB1D9; --on-blue: #0F1620;
+    --m-land: #1E1A15; --m-pg: #2A251C; --m-area: #2F2920; --m-open: #2C3326; --m-water: #1F2D3B;
+    --m-settle: #4F3D23; --m-build: #3C3329; --m-mark: #4A332C; --m-edge: #9A8E7A; --m-grid: #3E372D;
+    --m-road: #C79B66; --m-icon: #E3D8C4;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #16130F; --surface: #201C16; --raised: #2A251D;
+  --text: #EDE5D6; --text-2: #A89E8D; --rule: #3A342B;
+  --seal: #E46A4E; --on-seal: #1A100B; --blue: #8FB1D9; --on-blue: #0F1620;
+  --m-land: #1E1A15; --m-pg: #2A251C; --m-area: #2F2920; --m-open: #2C3326; --m-water: #1F2D3B;
+  --m-settle: #4F3D23; --m-build: #3C3329; --m-mark: #4A332C; --m-edge: #9A8E7A; --m-grid: #3E372D;
+  --m-road: #C79B66; --m-icon: #E3D8C4;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--ground); color: var(--text); font: 15px/1.5 var(--ui); }
+.page {
+  max-width: 1240px; margin: 0 auto;
+  padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+header { display: grid; gap: 6px; margin-bottom: 18px; }
+.eyebrow { font: 600 12px var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); margin: 0; }
+h1 { font: 600 30px/1.15 var(--display); margin: 0; text-wrap: balance; }
+.lede { font: 400 15.5px/1.6 var(--read); color: var(--text-2); margin: 0; max-width: 64ch; }
+
+.layout { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 920px) {
+  .layout { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
+  .mapcol { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+}
+.side { display: grid; gap: 18px; min-width: 0; }
+
+.mapbox { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; padding: 10px 12px; }
+.bar.top { border-bottom: 1px solid var(--rule); }
+.bar.foot { border-top: 1px solid var(--rule); }
+.bar .grow { flex: 1 1 auto; min-width: 0; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 999px; padding: 2px; background: var(--ground); }
+.seg button { border: 0; background: transparent; font: 600 14px var(--ui); color: var(--text-2); padding: 7px 13px; border-radius: 999px; min-height: 36px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--text); color: var(--surface); }
+.trail { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; font: 600 14px var(--ui); min-width: 0; }
+.trail button { border: 0; background: none; color: var(--blue); font: inherit; padding: 6px 2px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.trail .sep { color: var(--text-2); }
+.hint { color: var(--text-2); font-size: 13.5px; margin: 0; }
+.full { flex-basis: 100%; }
+
+svg#map { display: block; width: 100%; height: clamp(340px, 58vh, 640px); touch-action: none; background: var(--surface); cursor: grab; user-select: none; -webkit-user-select: none; }
+svg#map.tool { cursor: crosshair; }
+
+.btn { border: 1px solid var(--rule); background: var(--raised); color: var(--text); font: 600 14px var(--ui); padding: 8px 12px; border-radius: 10px; min-height: 40px; cursor: pointer; }
+.btn:hover { border-color: var(--text-2); }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.seal { background: var(--seal); color: var(--on-seal); border-color: transparent; }
+.btn.quiet { background: transparent; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+select.pick { font: 600 14px var(--ui); color: var(--text); background: var(--raised); border: 1px solid var(--rule); border-radius: 10px; min-height: 40px; padding: 6px 10px; max-width: 100%; }
+
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--rule); border-radius: 10px; background: var(--raised); }
+.stepper button { border: 0; background: none; color: var(--text); font: 700 17px var(--ui); width: 38px; height: 38px; cursor: pointer; border-radius: 10px; }
+.stepper output { min-width: 74px; text-align: center; font: 600 14px var(--ui); font-variant-numeric: tabular-nums; }
+
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.panel h2 { font: 600 19px/1.25 var(--display); margin: 0; }
+.panel p { margin: 0; }
+.card-name { font: 600 24px/1.2 var(--display); margin: 0; text-wrap: balance; }
+.meta { color: var(--text-2); font-size: 14px; }
+.big { font: 600 20px var(--ui); font-variant-numeric: tabular-nums; }
+.big.you { color: var(--seal); }
+.legs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.legs li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 7px 10px; border-radius: 8px; background: var(--ground); font-size: 14px; }
+.legs li.free { color: var(--text-2); }
+.legs li .t { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+.legs li .n { grid-column: 1 / -1; color: var(--text-2); font-size: 13px; }
+.legs li.across { box-shadow: inset 3px 0 0 var(--blue); }
+.status { color: var(--seal); font-weight: 600; min-height: 1.5em; }
+
+.times { list-style: none; margin: 0; padding: 0; display: grid; }
+.times li + li { border-top: 1px solid var(--rule); }
+.times button { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: baseline; text-align: left; background: none; border: 0; color: var(--text); padding: 9px 2px; font: 400 14.5px var(--ui); cursor: pointer; }
+.times .w { color: var(--text-2); font-size: 12.5px; display: block; }
+.times .t { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.times button[aria-current="true"] .nm { color: var(--blue); font-weight: 700; }
+
+.bands { display: grid; gap: 4px; }
+.band { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 10px 0; border-top: 1px solid var(--rule); }
+.band:first-child { border-top: 0; }
+.band .k { color: var(--text-2); font-size: 13px; }
+.band .ctl { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.band label { display: grid; gap: 4px; font-size: 13px; color: var(--text-2); }
+.notes { margin: 0; padding-left: 18px; display: grid; gap: 8px; font: 400 15px/1.55 var(--read); color: var(--text); }
+.notes b { font-family: var(--ui); }
+.iconrow { display: flex; flex-wrap: wrap; gap: 10px 14px; }
+.iconrow span { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); }
+.iconrow svg { width: 26px; height: 26px; color: var(--m-icon); }
+
+/* The map's own marks. Strokes stay one width at any zoom. */
+.c { stroke: var(--m-edge); stroke-width: 1; fill-opacity: .9; }
+.c.bare { fill-opacity: 0; stroke-opacity: 0; }
+.t-area { fill: var(--m-area); } .t-open { fill: var(--m-open); } .t-water { fill: var(--m-water); }
+.t-settle { fill: var(--m-settle); } .t-build { fill: var(--m-build); } .t-mark { fill: var(--m-mark); }
+.t-land { fill: var(--m-land); } .t-pg { fill: var(--m-pg); }
+.grid { fill: none; stroke: var(--m-grid); stroke-width: .7; }
+.edges { fill: none; stroke: var(--m-edge); stroke-width: 1.3; stroke-linejoin: round; }
+.rim { fill: none; stroke: var(--m-edge); stroke-width: 1; opacity: .55; }
+.road { fill: none; stroke: var(--m-road); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+.you-edge { fill: none; stroke: var(--seal); stroke-width: 3; stroke-linejoin: round; }
+.sel-edge { fill: none; stroke: var(--blue); stroke-width: 2.5; stroke-dasharray: 6 4; stroke-linejoin: round; }
+.you-ring { fill: none; stroke: var(--seal); stroke-width: 3; }
+.sel-ring { fill: none; stroke: var(--blue); stroke-width: 2.5; stroke-dasharray: 6 4; }
+.ic { color: var(--m-icon); opacity: .85; }
+.ic.dim { opacity: .45; }
+.lb { font: 600 12.5px var(--ui); fill: var(--text); paint-order: stroke; stroke: var(--surface); stroke-width: 3.5px; stroke-linejoin: round; }
+.lb.dim { fill: var(--text-2); font-weight: 400; }
+.lb2 { font: 400 11.5px var(--ui); fill: var(--text-2); paint-order: stroke; stroke: var(--surface); stroke-width: 3.5px; stroke-linejoin: round; font-variant-numeric: tabular-nums; }
+.lb2.you { fill: var(--seal); font-weight: 700; }
+.lb.sel { fill: var(--blue); }
+</style>
+
+<div class="page">
+  <header>
+    <p class="eyebrow">Inkwyrm · maps plan · a working sketch, second version</p>
+    <h1>Map prototype</h1>
+    <p class="lede">Bogwater's 38 places, laid out from what holds what, with no routes. Times come from the levels and the map. On the ground you can move places, make them bigger or smaller, paint cells and lay roads. Roads make crossings quicker, so routes are no longer needed.</p>
+  </header>
+
+  <div class="layout">
+    <div class="mapcol">
+      <div class="mapbox">
+        <div class="bar top">
+          <div class="seg" role="group" aria-label="View">
+            <button type="button" data-act="view" data-v="circles" id="v-circles">Circles</button>
+            <button type="button" data-act="view" data-v="ground" id="v-ground">Ground</button>
+          </div>
+          <div class="grow" id="topinfo"></div>
+        </div>
+        <svg id="map" role="img" aria-label="Map of the world">
+          <defs>
+            <!-- The whole icon set: one line drawing per kind on a 24-unit grid, drawn in the
+                 map's ink. About 1.4 KB together; each mark on the map is one <use>. -->
+            <symbol id="i-village" viewBox="0 0 24 24"><path d="M2 20h20M3 20v-8l4-3 4 3v8M13 20v-6l4-3 4 3v6M6 20v-3h2v3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+            <symbol id="i-town" viewBox="0 0 24 24"><path d="M2 20h20M3 20v-9h5v9M8 20V5h7v15M15 20v-8h6v8M10.5 8h2M10.5 11h2M10.5 14h2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+            <symbol id="i-building" viewBox="0 0 24 24"><path d="M2 20h20M5 20v-9l7-5 7 5v9M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+            <symbol id="i-landmark" viewBox="0 0 24 24"><path d="M4 21h9M8 21V4M8 4h10l-2.5 3L18 10H8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+            <symbol id="i-wild" viewBox="0 0 24 24"><path d="M2 20h20M7 20v-3M3.5 17h7L7 9ZM17 20v-3M13 17h8l-4-9Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+            <symbol id="i-water" viewBox="0 0 24 24"><path d="M3 9c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0M3 14c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0M3 19c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+            <symbol id="i-river" viewBox="0 0 24 24"><path d="M8 2c-3 5 3 8 0 13s3 7 0 7M16 2c-3 5 3 8 0 13s3 7 0 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+            <symbol id="i-road" viewBox="0 0 24 24"><path d="M7 21 10 3M17 21 14 3M12 5v2M12 10v3M12 16v3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+            <symbol id="i-mark" viewBox="0 0 24 24"><path d="M12 3l6 9-6 9-6-9ZM12 9v6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+          </defs>
+          <g id="world"></g>
+          <g id="labels"></g>
+        </svg>
+        <div class="bar foot" id="foot"></div>
+      </div>
+    </div>
+
+    <div class="side">
+      <section class="panel" id="card" aria-live="polite"></section>
+      <section class="panel">
+        <h2>From where you stand</h2>
+        <ul class="times" id="times"></ul>
+        <div class="row"><button type="button" class="btn quiet" data-act="all" id="allbtn">Show every place</button></div>
+      </section>
+      <section class="panel">
+        <h2>Roads, in place of routes</h2>
+        <p class="hint">A road is cells painted on a sheet. A step along a road costs <span id="roadshare"></span> of a cell, so a crossing finds the road if it is quicker. Roads join nothing by themselves and need no place at either end. The button below traces Bogwater's eight old routes as roads, each on the sheet where its two ends meet.</p>
+        <div class="row"><button type="button" class="btn" data-act="trace">Trace the old routes as roads</button></div>
+      </section>
+      <section class="panel">
+        <h2>Travel by level</h2>
+        <p class="hint">A level is what a place is: a land, a region, a settlement, a building. Each has a typical trip across it and a cost to step inside one of its places. One cell is a quarter of a typical trip, until a sheet sets its own.</p>
+        <div class="bands" id="bands"></div>
+      </section>
+      <section class="panel">
+        <h2>The icon set</h2>
+        <p class="hint">One line drawing per kind, about 1.4 KB for the set. Each icon on the map is one element that points at its drawing, so a hundred icons cost a hundred short lines. A world could pick a set to suit its genre, with the same kinds and different drawings.</p>
+        <div class="iconrow" id="icons"></div>
+      </section>
+      <section class="panel">
+        <h2>What to look for</h2>
+        <ul class="notes">
+          <li><b>Circles keep to Character Engine's rules.</b> Only what you are looking at is named: the place in focus, what is in it, the places around it (dimmed), and the land's top places. Rooms appear once you look inside their building. A building you are not inside is drawn as its icon.</li>
+          <li><b>The ground is refined, not drawn from scratch.</b> Move a place, then make it bigger or smaller. Paint cells to a place or back to the ground, or fill a patch. Lay roads. Only what you change is kept.</li>
+          <li><b>A journey climbs, crosses and comes down.</b> Tap a place to see each leg, and whether a road helped.</li>
+          <li><b>Adding is free.</b> Add a place on the ground and it finds room. On an arranged sheet nothing else moves.</li>
+        </ul>
+        <div class="row"><button type="button" class="btn" data-act="startover">Start over</button></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const SQ3 = Math.sqrt(3);
+
+// Bogwater's places and old routes, from adventure/modules/abernys-bogwater.json.
+const PLACES = [["abernys","Abernys","major region",null],["fenmire","Fenmire","subregion","abernys"],["bogwater","Bogwater","village","fenmire"],["the-landing","The landing","building","bogwater"],["landing-dock","The dock","landmark","the-landing"],["landing-smokehouse","The smokehouse","building","the-landing"],["cadfans-store","Cadfan's store","building","the-landing"],["the-myrtle","The Myrtle","building","bogwater"],["myrtle-taproom","The taproom","building","the-myrtle"],["myrtle-loft","The loft","building","the-myrtle"],["crones-house","The Crones' house","building","bogwater"],["crones-hall","The hall","building","crones-house"],["meyricks-room","Meyrick's room","building","crones-house"],["burning-ground","The burning ground","landmark","crones-house"],["nests-island","Nest's island","village","fenmire"],["nests-jetty","The jetty","landmark","nests-island"],["nests-longhouse","The longhouse","building","nests-island"],["morwens-island","Morwen's island","village","fenmire"],["morwens-door","Morwen's door","landmark","morwens-island"],["morwens-workroom","The workroom","building","morwens-island"],["morwens-back-room","The back room","building","morwens-island"],["eel-traps","The eel traps","landmark","fenmire"],["traps-long-fence","The long fence","landmark","eel-traps"],["traps-bend-fence","The bend fence","landmark","eel-traps"],["traps-channel","The channel","river","eel-traps"],["the-fen","The fen","wilderness","fenmire"],["fen-reed-beds","The reed beds","wilderness","the-fen"],["fen-peat-diggings","The peat diggings","wilderness","the-fen"],["fen-open-water","The open water","lake","the-fen"],["grey-water","Grey Water","lake","fenmire"],["woeds-edge","The Woed's edge","wilderness","fenmire"],["far-islands","The far islands","other","fenmire"],["the-woed","The Woed","wilderness","abernys"],["the-fold","The Fold","village","the-woed"],["port-covenant","Port Covenant","town","abernys"],["caerwyn","Caerwyn","settlement","abernys"],["cairn-maw","Cairn Maw","subregion","abernys"],["aurochs-downs","The Aurochs downs","wilderness","cairn-maw"]]
+  .map(([id, name, kind, parent]) => ({ id, name, kind, parent }));
+const OLD_ROUTES = [["bogwater","the-fen"],["bogwater","eel-traps"],["bogwater","nests-island"],["bogwater","morwens-island"],["the-fen","grey-water"],["bogwater","woeds-edge"],["eel-traps","caerwyn"],["grey-water","port-covenant"]];
+const ROOT = 'abernys';
+const ROAD = 0.4;   // a step along a road costs this share of a cell
+
+const AREA = new Set(['continent', 'major region', 'region', 'subregion', 'territory']);
+const WATERY = new Set(['wilderness', 'lake', 'river', 'sea or ocean']);
+const BAND_OF = { 'continent': 'land', 'major region': 'land', 'region': 'region', 'subregion': 'region', 'territory': 'region', 'sea or ocean': 'region',
+  'wilderness': 'open', 'lake': 'open', 'river': 'open', 'road or trail': 'open',
+  'settlement': 'settle', 'town': 'settle', 'village': 'settle', 'district': 'settle', 'landmark': 'settle', 'other': 'settle', 'building': 'build' };
+const BANDS = [
+  { id: 'land', name: 'A land', kinds: 'continent, major region' },
+  { id: 'region', name: 'A region', kinds: 'region, subregion, territory, sea' },
+  { id: 'open', name: 'Open country', kinds: 'wilderness, lake, river, road' },
+  { id: 'settle', name: 'A settlement or a site', kinds: 'settlement, town, village, district, landmark, other' },
+  { id: 'build', name: 'A building', kinds: 'building' },
+];
+const DEFAULT_BANDS = { land: { across: 2880, step: 0 }, region: { across: 240, step: 0 }, open: { across: 60, step: 5 }, settle: { across: 10, step: 2 }, build: { across: 2, step: 0 } };
+const NICE = [0, 1, 2, 3, 5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360, 480, 720, 1080, 1440, 2160, 2880, 4320, 5760, 7200, 10080, 20160, 43200];
+const CELL_NICE = [0.25, 0.5, 1, 2, 3, 5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360, 480, 720, 1080, 1440, 2160, 2880, 4320, 10080];
+const TINT = (kind) => AREA.has(kind) ? 'area' : kind === 'wilderness' ? 'open' : (kind === 'lake' || kind === 'river' || kind === 'sea or ocean') ? 'water'
+  : ['settlement', 'town', 'village', 'district'].includes(kind) ? 'settle' : kind === 'building' ? 'build' : 'mark';
+const ICON = { settlement: 'village', village: 'village', town: 'town', district: 'town', building: 'building', landmark: 'landmark',
+  wilderness: 'wild', lake: 'water', 'sea or ocean': 'water', river: 'river', 'road or trail': 'road', other: 'mark' };
+const ICON_NAMES = [['village', 'Village, settlement'], ['town', 'Town, district'], ['building', 'Building'], ['landmark', 'Landmark'], ['wild', 'Wilderness'], ['water', 'Lake, sea'], ['river', 'River'], ['road', 'Road or trail'], ['mark', 'Anything else']];
+const NEW_KIND = { land: 'region', region: 'village', open: 'landmark', settle: 'building', build: 'building' };
+
+const KEY = 'inkwyrm-map-prototype-2';
+const fresh = () => ({ view: 'circles', sheet: 'fenmire', you: 'traps-long-fence', sel: null, focus: null, tool: 'look', brush: null, brushSize: 1,
+  edits: {}, bands: JSON.parse(JSON.stringify(DEFAULT_BANDS)), added: [], n: 0 });
+let S = fresh();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch (e) { /* storage off: start fresh */ }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* nothing kept */ } };
+let showAll = false;
+let statusText = '';
+
+// ---- The world, indexed ----
+let byId, kids, desc, cache, circ, circShown, travel;
+function index() {
+  const all = PLACES.concat(S.added);
+  byId = new Map(all.map((p) => [p.id, p]));
+  kids = new Map();
+  for (const p of all) if (p.parent && byId.has(p.parent)) { if (!kids.has(p.parent)) kids.set(p.parent, []); kids.get(p.parent).push(p); }
+  for (const list of kids.values()) list.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  desc = new Map();
+  const count = (id) => { if (desc.has(id)) return desc.get(id); let n = 0; for (const k of kids.get(id) || []) n += 1 + count(k.id); desc.set(id, n); return n; };
+  all.forEach((p) => count(p.id));
+  cache = new Map();
+  if (!byId.has(S.you)) S.you = 'traps-long-fence';
+  if (S.sel && !byId.has(S.sel)) S.sel = null;
+  if (S.focus && !byId.has(S.focus)) S.focus = null;
+  if (!byId.has(S.sheet) || !kidsOf(S.sheet).length) S.sheet = 'fenmire';
+}
+const kidsOf = (id) => kids.get(id) || [];
+const parentOf = (id) => { const p = byId.get(id); return p && p.parent && byId.has(p.parent) ? p.parent : null; };
+const nm = (id) => byId.get(id).name;
+const lower = (id) => { const n = nm(id); return /^The /.test(n) ? 'the' + n.slice(3) : n; };
+function chainOf(id) { const out = []; for (let x = id; x; x = parentOf(x)) out.push(x); return out; }
+const edit = (pid) => (S.edits[pid] = S.edits[pid] || {});
+
+// ---- Hex arithmetic: pointy-top axial cells of circumradius 1 ----
+function fnv(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+const h01 = (seed, s) => fnv(seed + '|' + s) / 4294967296;
+const DIRS = [[0, 1], [-1, 1], [-1, 0], [0, -1], [1, -1], [1, 0]];
+const K = (q, r) => q + ',' + r;
+const unK = (k) => k.split(',').map(Number);
+const px = (q, r) => [SQ3 * (q + r / 2), 1.5 * r];
+function toHex(x, y) {
+  const qf = SQ3 / 3 * x - y / 3, rf = 2 / 3 * y, sf = -qf - rf;
+  let q = Math.round(qf), r = Math.round(rf); const s = Math.round(sf);
+  const dq = Math.abs(q - qf), dr = Math.abs(r - rf), ds = Math.abs(s - sf);
+  if (dq > dr && dq > ds) q = -r - s; else if (dr > ds) r = -q - s;
+  return [q, r];
+}
+const hd = (a, b) => (Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[0] + a[1] - b[0] - b[1])) / 2;
+const inDisc = (q, r, R) => (Math.abs(q) + Math.abs(r) + Math.abs(q + r)) / 2 <= R;
+
+function sizeOf(p) {
+  const d = desc.get(p.id) || 0;
+  let s = d === 0 ? 1 : Math.max(3, Math.min(19, Math.round(1 + 2 * Math.log2(1 + d))));
+  if (WATERY.has(p.kind)) s = Math.max(s, 3);
+  if (AREA.has(p.kind)) s = Math.max(s, 7);
+  return s;
+}
+
+// ---- One sheet: what is directly inside a place, as blobs on a disc of hexes ----
+function sheet(pid) {
+  if (cache.has(pid)) return cache.get(pid);
+  const P = byId.get(pid), ks = kidsOf(pid), e = S.edits[pid] || {}, sizes = e.sizes || {};
+  const area = AREA.has(P.kind);
+  const bordered = (area && ks.length > 0 && ks.every((k) => AREA.has(k.kind))) || P.kind === 'building';
+  const blobs = ks.map((k) => ({ id: k.id, kind: k.kind, size: sizes[k.id] || sizeOf(k) }));
+  if (bordered && !area) blobs.push({ id: pid, kind: P.kind, size: 1, own: true });
+  const seed = 'v1|' + pid + '|' + (e.seed || 0);
+  const pad = bordered ? 0.2 : 1.1;
+  const rad = (b) => 0.95 * Math.sqrt(b.size);
+  const stored = e.centres || {};
+  const placed = [];
+  for (const b of blobs) if (stored[b.id]) { [b.x, b.y] = px(stored[b.id][0], stored[b.id][1]); b.fixed = true; placed.push(b); }
+  const free = blobs.filter((b) => !b.fixed).sort((a, b) => b.size - a.size || (a.id < b.id ? -1 : 1));
+  for (const b of free) {
+    const th = h01(seed, b.id) * Math.PI * 2, c = Math.cos(th), s = Math.sin(th);
+    for (let d = 0; ; d += 0.2) {
+      const x = d * c, y = d * s;
+      if (placed.every((o) => Math.hypot(o.x - x, o.y - y) >= rad(o) + rad(b) + pad)) { b.x = x; b.y = y; break; }
+    }
+    placed.push(b);
+  }
+  if (!placed.some((b) => b.fixed) && placed.length) {
+    let sx = 0, sy = 0, w = 0;
+    for (const b of placed) { sx += b.x * b.size; sy += b.y * b.size; w += b.size; }
+    for (const b of placed) { b.x -= sx / w; b.y -= sy / w; }
+  }
+  const total = blobs.reduce((n, b) => n + b.size, 0);
+  const target = bordered ? total : Math.ceil(total * 1.9) + 3;
+  let R = 1;
+  while (3 * R * R + 3 * R + 1 < target) R++;
+  const ext = Math.max(0, ...blobs.map((b) => Math.hypot(b.x, b.y) + (bordered ? 0 : rad(b))));
+  while (SQ3 * R < ext + 0.5) R++;
+  if (e.minR) R = Math.max(R, e.minR);
+
+  const cells = [];
+  for (let q = -R; q <= R; q++) for (let r = Math.max(-R, -q - R); r <= Math.min(R, -q + R); r++) cells.push([q, r]);
+  const owner = new Map();
+  const nearestFree = (q, r) => {
+    let pick = null, best = Infinity;
+    for (const c of cells) { if (owner.has(K(c[0], c[1]))) continue; const d = hd(c, [q, r]); if (d < best) { best = d; pick = c; } }
+    return pick || [q, r];
+  };
+  const order = blobs.slice().sort((a, b) => (b.fixed ? 1 : 0) - (a.fixed ? 1 : 0) || b.size - a.size || (a.id < b.id ? -1 : 1));
+  for (const b of order) {
+    let [q, r] = b.fixed ? stored[b.id] : toHex(b.x, b.y);
+    if (!inDisc(q, r, R) || owner.has(K(q, r))) [q, r] = nearestFree(q, r);
+    b.c = [q, r]; b.cells = [[q, r]]; owner.set(K(q, r), b);
+  }
+  const grow = (b, moat) => {
+    let pick = null, score = Infinity;
+    for (const [q, r] of b.cells) for (const [dq, dr] of DIRS) {
+      const nq = q + dq, nr = r + dr, k = K(nq, nr);
+      if (!inDisc(nq, nr, R) || owner.has(k)) continue;
+      if (moat && DIRS.some(([eq, er]) => { const o = owner.get(K(nq + eq, nr + er)); return o && o !== b; })) continue;
+      const sc = hd([nq, nr], b.c) + h01(seed, b.id + '@' + k) * 0.9;
+      if (sc < score) { score = sc; pick = [nq, nr]; }
+    }
+    return pick;
+  };
+  const claim = (b, c) => { b.cells.push(c); owner.set(K(c[0], c[1]), b); };
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const b of order) {
+      if (b.cells.length >= b.size) continue;
+      const c = grow(b, !bordered) || grow(b, false);
+      if (c) { claim(b, c); grew = true; }
+    }
+  }
+  if (bordered) {
+    grew = true;
+    while (grew) { grew = false; for (const b of order) { const c = grow(b, false); if (c) { claim(b, c); grew = true; } } }
+  }
+  // Painted cells win, except a place's own centre, which nothing paints over.
+  const blobById = new Map(blobs.map((b) => [b.id, b]));
+  const centres = new Set(blobs.map((b) => K(b.c[0], b.c[1])));
+  for (const [k, to] of Object.entries(e.claims || {})) {
+    const [q, r] = unK(k);
+    if (!inDisc(q, r, R) || centres.has(k)) continue;
+    if (to === '') owner.delete(k); else if (blobById.has(to)) owner.set(k, blobById.get(to));
+  }
+  for (const b of blobs) b.cells = [];
+  for (const [k, b] of owner) b.cells.push(unK(k));
+  for (const b of blobs) {
+    let sx = 0, sy = 0;
+    for (const [q, r] of b.cells) { const [x, y] = px(q, r); sx += x; sy += y; }
+    b.cx = sx / b.cells.length; b.cy = sy / b.cells.length;
+  }
+  const roads = new Set((e.roads || []).filter((k) => { const [q, r] = unK(k); return inDisc(q, r, R); }));
+  const L = { pid, R, bordered, area, blobs, owner, cells, roads, ground: area ? null : pid, byId: blobById, search: new Map() };
+  cache.set(pid, L);
+  return L;
+}
+const arranged = (pid) => Boolean(S.edits[pid] && (S.edits[pid].centres || S.edits[pid].cellMin || S.edits[pid].claims || S.edits[pid].roads));
+function settle(pid) {
+  const e = edit(pid);
+  if (!e.centres) { const L = sheet(pid); e.centres = {}; for (const b of L.blobs) e.centres[b.id] = b.c.slice(); e.minR = L.R; }
+}
+
+// A shortest walk across a sheet's cells. stepCost(a, b) prices one step; null means no way.
+function search(L, startKey, stepCost) {
+  const dist = new Map([[startKey, 0]]), prev = new Map(), done = new Set(), heap = [[0, startKey]];
+  const push = (it) => { heap.push(it); let i = heap.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
+  const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let i = 0; for (;;) { const l = 2 * i + 1, r = l + 1; let m = i; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top; };
+  while (heap.length) {
+    const [d, k] = pop();
+    if (done.has(k)) continue;
+    done.add(k);
+    const [q, r] = unK(k);
+    for (const [dq, dr] of DIRS) {
+      const nq = q + dq, nr = r + dr;
+      if (!inDisc(nq, nr, L.R)) continue;
+      const nk = K(nq, nr), c = stepCost(k, nk);
+      if (c === null) continue;
+      if (d + c < (dist.has(nk) ? dist.get(nk) : Infinity)) { dist.set(nk, d + c); prev.set(nk, k); push([d + c, nk]); }
+    }
+  }
+  return { dist, prev };
+}
+function crossing(L, x, y) {
+  const from = K(...L.byId.get(x).c), to = K(...L.byId.get(y).c);
+  if (!L.search.has(from)) L.search.set(from, search(L, from, (a, b) => (L.roads.has(a) && L.roads.has(b)) ? ROAD : 1));
+  const { dist, prev } = L.search.get(from);
+  let onRoad = 0, steps = 0;
+  for (let k = to; k !== from && prev.has(k); k = prev.get(k)) { steps++; if (L.roads.has(k) && L.roads.has(prev.get(k))) onRoad++; }
+  return { cells: dist.get(to), steps, onRoad };
+}
+
+// ---- Travel: up to where both sit side by side, across that sheet, and down ----
+const bandOf = (id) => BAND_OF[byId.get(id).kind] || 'settle';
+const level = (pid) => BANDS.find((b) => b.id === bandOf(pid)).name;
+const cellMin = (pid) => { const e = S.edits[pid]; return (e && e.cellMin) || S.bands[bandOf(pid)].across / 4; };
+const stepMin = (pid) => AREA.has(byId.get(pid).kind) ? 0 : S.bands[bandOf(pid)].step;
+function hier(a, b) {
+  if (a === b) return { min: 0, legs: [] };
+  const ca = chainOf(a), cb = chainOf(b), inB = new Set(cb);
+  const lca = ca.find((x) => inB.has(x));
+  if (!lca) return { min: Infinity, legs: [] };
+  const ia = ca.indexOf(lca), ib = cb.indexOf(lca), legs = [];
+  const out = (child, par) => legs.push({ min: stepMin(par), text: `Out of ${lower(child)}, into ${lower(par)}` });
+  const into = (par, child) => legs.push({ min: stepMin(par), text: `From ${lower(par)} into ${lower(child)}` });
+  if (ib === 0) { for (let j = 0; j < ia; j++) out(ca[j], ca[j + 1]); }
+  else if (ia === 0) { for (let j = ib; j > 0; j--) into(cb[j], cb[j - 1]); }
+  else {
+    for (let j = 0; j < ia - 1; j++) out(ca[j], ca[j + 1]);
+    const L = sheet(lca), x = ca[ia - 1], y = cb[ib - 1], cm = cellMin(lca), c = crossing(L, x, y);
+    const note = c.onRoad
+      ? `${c.steps} cells, ${c.onRoad} of them by road, at ${fmtCell(cm)} a cell off the road`
+      : `${c.steps} ${c.steps === 1 ? 'cell' : 'cells'} at ${fmtCell(cm)} a cell`;
+    legs.push({ min: c.cells * cm, text: `Across ${lower(lca)}: ${lower(x)} to ${lower(y)}`, note, across: true });
+    for (let j = ib - 1; j > 0; j--) into(cb[j], cb[j - 1]);
+  }
+  return { min: legs.reduce((s, l) => s + l.min, 0), legs };
+}
+function fmt(m) {
+  if (!isFinite(m)) return 'no way there';
+  m = Math.round(m);
+  if (m === 0) return 'no time';
+  const d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mi = m % 60, parts = [];
+  if (d) parts.push(d + (d === 1 ? ' day' : ' days'));
+  if (h) parts.push(h + ' h');
+  if (mi) parts.push(mi + ' min');
+  return parts.join(' ');
+}
+const fmtCell = (m) => m < 1 ? Math.round(m * 60) + ' s' : fmt(m);
+const fmtBand = (m) => m === 0 ? 'none' : fmt(m);
+
+// ---- Circles: every sheet, rounded and nested, at the hex layout's centres ----
+function circles() {
+  const C = new Map();
+  const put = (id, x, y, r) => {
+    C.set(id, { x, y, r });
+    if (!kidsOf(id).length) return;
+    const L = sheet(id), s = r * 0.9 / ((L.R + 0.75) * SQ3);
+    for (const b of L.blobs) {
+      if (b.id === id || !b.cells.length) continue;
+      put(b.id, x + b.cx * s, y + b.cy * s, Math.sqrt(b.cells.length * 2.598 / Math.PI) * s * (L.bordered ? 0.92 : 1.05));
+    }
+  };
+  put(ROOT, 0, 0, 1000);
+  return C;
+}
+// Character Engine's bands: the focus, the chain above it, what is directly in it, and the
+// land's top places (always named). Rooms show only once their building is on the focus chain.
+const focusOf = () => (S.focus && byId.has(S.focus)) ? S.focus : (parentOf(S.you) || S.you);
+function bands() {
+  const F = focusOf(), chainF = new Set(chainOf(F)), band = new Map();
+  for (const id of chainF) band.set(id, id === F ? 'focus' : 'ancestor');
+  for (const k of kidsOf(F)) band.set(k.id, 'child');
+  for (const k of kidsOf(ROOT)) if (!band.has(k.id)) band.set(k.id, 'outline');
+  const shown = (id) => { for (let p = parentOf(id); p; p = parentOf(p)) if (byId.get(p).kind === 'building' && !chainF.has(p)) return false; return true; };
+  const bare = (id) => byId.get(id).kind === 'building' && !chainF.has(id) && id !== S.sel && id !== S.you;
+  return { F, chainF, band, shown, bare };
+}
+
+// ---- Drawing ----
+const svg = document.getElementById('map'), world = document.getElementById('world'), labels = document.getElementById('labels');
+const f = (n) => (Math.round(n * 100) / 100).toString();
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const cam = { circles: null, ground: null };
+const C_ = () => cam[S.view];
+function vp() { const r = svg.getBoundingClientRect(); return { w: r.width || 360, h: r.height || 400 }; }
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function corner(x, y, i) { const a = Math.PI / 180 * (30 + 60 * i); return [x + Math.cos(a), y + Math.sin(a)]; }
+function hexD(q, r) { const [x, y] = px(q, r); let d = ''; for (let i = 0; i < 6; i++) { const [cx, cy] = corner(x, y, i); d += (i ? 'L' : 'M') + f(cx) + ' ' + f(cy); } return d + 'Z'; }
+function edgesD(cellList, isIn) {
+  let d = '';
+  for (const [q, r] of cellList) {
+    const [x, y] = px(q, r);
+    for (let i = 0; i < 6; i++) {
+      if (isIn(q + DIRS[i][0], r + DIRS[i][1])) continue;
+      const a = corner(x, y, i), b = corner(x, y, (i + 1) % 6);
+      d += 'M' + f(a[0]) + ' ' + f(a[1]) + 'L' + f(b[0]) + ' ' + f(b[1]);
+    }
+  }
+  return d;
+}
+const onSheet = (pid, id) => { const ch = chainOf(id); const i = ch.findIndex((x) => parentOf(x) === pid); return i < 0 ? null : ch[i]; };
+// A road is drawn as lines between the centres of neighbouring road cells, plus a dot for a lone one.
+function roadD(L) {
+  let d = '';
+  for (const k of L.roads) {
+    const [q, r] = unK(k), [x, y] = px(q, r);
+    let joined = false;
+    for (const [dq, dr] of DIRS) {
+      const nk = K(q + dq, r + dr);
+      if (!L.roads.has(nk)) continue;
+      joined = true;
+      if (k < nk) { const [x2, y2] = px(q + dq, r + dr); d += 'M' + f(x) + ' ' + f(y) + 'L' + f(x2) + ' ' + f(y2); }
+    }
+    if (!joined) d += 'M' + f(x - 0.15) + ' ' + f(y) + 'L' + f(x + 0.15) + ' ' + f(y);
+  }
+  return d;
+}
+
+function drawCircles() {
+  const B = bands();
+  circShown = new Set([...circ.keys()].filter(B.shown));
+  const list = [...circ.entries()].filter(([id]) => circShown.has(id)).sort((a, b) => b[1].r - a[1].r);
+  let s = '';
+  for (const [id, c] of list) s += `<circle class="c t-${TINT(byId.get(id).kind)}${B.bare(id) ? ' bare' : ''}" cx="${f(c.x)}" cy="${f(c.y)}" r="${f(c.r)}" vector-effect="non-scaling-stroke"/>`;
+  const sel = S.sel && circShown.has(S.sel) && circ.get(S.sel);
+  if (sel && S.sel !== S.you) s += `<circle class="sel-ring" cx="${f(sel.x)}" cy="${f(sel.y)}" r="${f(sel.r)}" vector-effect="non-scaling-stroke"/>`;
+  const you = circ.get(S.you);
+  if (you) s += `<circle class="you-ring" cx="${f(you.x)}" cy="${f(you.y)}" r="${f(you.r)}" vector-effect="non-scaling-stroke"/>`;
+  world.innerHTML = s;
+}
+function drawGround() {
+  const L = sheet(S.sheet);
+  const ownerOf = (q, r) => L.owner.get(K(q, r)) || null;
+  let ground = '', grid = '';
+  for (const [q, r] of L.cells) { const d = hexD(q, r); grid += d; if (!ownerOf(q, r)) ground += d; }
+  let s = `<path class="t-${L.area ? 'land' : 'pg'}" d="${ground}"/>`;
+  for (const b of L.blobs) if (b.cells.length) s += `<path class="t-${b.own ? 'pg' : TINT(b.kind)}" d="${b.cells.map(([q, r]) => hexD(q, r)).join('')}"/>`;
+  s += `<path class="grid" d="${grid}" vector-effect="non-scaling-stroke"/>`;
+  let borders = '';
+  for (const [q, r] of L.cells) {
+    const o = ownerOf(q, r), [x, y] = px(q, r);
+    for (let i = 0; i < 6; i++) {
+      const nq = q + DIRS[i][0], nr = r + DIRS[i][1];
+      if (!inDisc(nq, nr, L.R) || ownerOf(nq, nr) === o || K(q, r) > K(nq, nr)) continue;
+      const a = corner(x, y, i), c = corner(x, y, (i + 1) % 6);
+      borders += 'M' + f(a[0]) + ' ' + f(a[1]) + 'L' + f(c[0]) + ' ' + f(c[1]);
+    }
+  }
+  s += `<path class="edges" d="${borders}" vector-effect="non-scaling-stroke"/>`;
+  s += `<path class="rim" d="${edgesD(L.cells, (q, r) => inDisc(q, r, L.R))}" vector-effect="non-scaling-stroke"/>`;
+  if (L.roads.size) s += `<path class="road" d="${roadD(L)}" vector-effect="non-scaling-stroke"/>`;
+  const blobEdge = (b, cls) => `<path class="${cls}" d="${edgesD(b.cells, (q, r) => ownerOf(q, r) === b)}" vector-effect="non-scaling-stroke"/>`;
+  const selB = S.sel && L.byId.get(onSheet(S.sheet, S.sel) || S.sel);
+  if (selB && S.sel !== S.you && selB.cells.length) s += blobEdge(selB, 'sel-edge');
+  const youId = S.you === S.sheet ? null : onSheet(S.sheet, S.you);
+  const youB = youId && L.byId.get(youId);
+  if (youB && youB.cells.length) s += blobEdge(youB, 'you-edge');
+  else if (S.you === S.sheet) s += `<path class="you-edge" d="${edgesD(L.cells, (q, r) => inDisc(q, r, L.R))}" vector-effect="non-scaling-stroke"/>`;
+  world.innerHTML = s;
+}
+function drawLabels() {
+  const c = C_(), { w, h } = vp(), boxes = [];
+  let s = '', icons = 0;
+  const free = (b) => !boxes.some((o) => o.x0 < b.x1 && b.x0 < o.x1 && o.y0 < b.y1 && b.y0 < o.y1);
+  // Largest first; a label that can't find room on, just below or just above its place is
+  // dropped, never drawn over another (Character Engine's rule).
+  const put = (x, y0, lines, force, cls) => {
+    const wd = Math.max(...lines.map((l, i) => l.t.length * (i ? 5.8 : 6.5) + 6)), ht = lines.length * 14.5;
+    for (const dy of force ? [0] : [0, 16, -16]) {
+      const y = y0 + dy, b = { x0: x - wd / 2, y0: y - 11, x1: x + wd / 2, y1: y - 11 + ht };
+      if (b.x1 < 0 || b.x0 > w || b.y1 < 0 || b.y0 > h) continue;
+      if (!force && !free(b)) continue;
+      boxes.push(b);
+      lines.forEach((l, i) => { s += `<text class="${i ? 'lb2' : 'lb'} ${l.cls || cls || ''}" x="${f(x)}" y="${f(y + i * 14.5)}" text-anchor="middle">${esc(l.t)}</text>`; });
+      return true;
+    }
+    return false;
+  };
+  const icon = (id, x, y, size, dim) => {
+    const key = ICON[byId.get(id).kind];
+    if (!key || icons >= 60) return;
+    icons++;
+    s += `<use href="#i-${key}" class="ic${dim ? ' dim' : ''}" x="${f(x - size / 2)}" y="${f(y - size / 2)}" width="${f(size)}" height="${f(size)}"/>`;
+  };
+  const timeLine = (id) => {
+    if (id === S.you) return { t: 'You are here', cls: 'you' };
+    if (chainOf(S.you).includes(id)) return { t: 'You are inside', cls: 'you' };
+    if (AREA.has(byId.get(id).kind)) return null;
+    return { t: fmt(travel(id).min) };
+  };
+  if (S.view === 'circles') {
+    const B = bands();
+    const cand = [...circ.entries()].filter(([id]) => circShown.has(id)).map(([id, p]) => ({ id, sx: p.x * c.k + c.x, sy: p.y * c.k + c.y, sr: p.r * c.k, band: B.band.get(id) }))
+      .filter((p) => p.sr >= 4)
+      .sort((a, b) => (b.id === S.you) - (a.id === S.you) || (b.id === S.sel) - (a.id === S.sel) || b.sr - a.sr).slice(0, 60);
+    for (const p of cand) {
+      const special = p.id === S.you || p.id === S.sel;
+      const named = special || (p.band && (p.band !== 'ancestor' || p.sr < Math.max(w, h)));
+      const leafish = !kidsOf(p.id).length || B.bare(p.id) || p.sr <= 60;
+      const dim = p.band === 'ancestor' || p.band === 'outline';
+      let iconSize = 0;
+      if (leafish && p.sr >= 9 && ICON[byId.get(p.id).kind]) iconSize = Math.max(14, Math.min(30, p.sr * 1.15));
+      if (!named) { if (iconSize && p.sr >= 12) icon(p.id, p.sx, p.sy, iconSize, true); continue; }
+      const lines = [{ t: nm(p.id), cls: p.id === S.sel ? 'sel' : '' }];
+      if (special) { const t = timeLine(p.id); if (t) lines.push(t); }
+      const top = !leafish;
+      const y = top ? p.sy - p.sr + 18 : iconSize ? p.sy + iconSize / 2 + 12 : p.sy + 4;
+      const ok = put(p.sx, y, lines, special, dim ? 'dim' : '');
+      if (iconSize && (ok || special)) icon(p.id, p.sx, p.sy - (top ? 0 : 2), iconSize, dim);
+    }
+  } else {
+    const L = sheet(S.sheet), cellPx = c.k;
+    const youId = onSheet(S.sheet, S.you), selId = S.sel && onSheet(S.sheet, S.sel);
+    const cand = L.blobs.filter((b) => !b.own && b.cells.length).map((b) => ({ id: b.id, sx: b.cx * c.k + c.x, sy: b.cy * c.k + c.y, n: b.cells.length }))
+      .sort((a, b) => (b.id === youId) - (a.id === youId) || (b.id === selId) - (a.id === selId) || b.n - a.n);
+    const iconSize = Math.max(16, Math.min(34, cellPx * 1.2));
+    for (const p of cand) {
+      const special = p.id === youId || p.id === selId;
+      const lines = [{ t: nm(p.id), cls: p.id === selId ? 'sel' : '' }];
+      const t = timeLine(p.id); if (t) lines.push(t);
+      const withIcon = cellPx >= 8 && ICON[byId.get(p.id).kind];
+      const ok = put(p.sx, withIcon ? p.sy + iconSize / 2 + 8 : p.sy - 2, lines, special);
+      if (withIcon && ok) icon(p.id, p.sx, p.sy - 2, iconSize, false);
+    }
+  }
+  labels.innerHTML = s;
+}
+function applyCam() { const c = C_(); world.setAttribute('transform', `translate(${f(c.x)} ${f(c.y)}) scale(${c.k})`); drawLabels(); }
+function draw() { if (S.view === 'circles') drawCircles(); else drawGround(); applyCam(); }
+
+// ---- The camera ----
+function targetCircle(id) { const { w, h } = vp(), p = circ.get(id), k = Math.min(w, h) * 0.45 / p.r; return { k, cx: p.x, cy: p.y }; }
+function targetGround() { const { w, h } = vp(), L = sheet(S.sheet), ex = SQ3 * L.R + 1.3, ey = 1.5 * L.R + 1.4; return { k: Math.min(w / (2 * ex), h / (2 * ey)) * 0.94, cx: 0, cy: 0 }; }
+function setCam(t) { const { w, h } = vp(); cam[S.view] = { k: t.k, x: w / 2 - t.cx * t.k, y: h / 2 - t.cy * t.k }; }
+let anim = 0;
+function fly(t) {
+  const c = C_();
+  if (!c || reduce) { setCam(t); applyCam(); return; }
+  const { w, h } = vp(), k0 = c.k, cx0 = (w / 2 - c.x) / c.k, cy0 = (h / 2 - c.y) / c.k, t0 = performance.now(), view = S.view;
+  cancelAnimationFrame(anim);
+  const step = (now) => {
+    if (S.view !== view) return;
+    const u = Math.min(1, (now - t0) / 420), e = u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    setCam({ k: k0 * Math.pow(t.k / k0, e), cx: cx0 + (t.cx - cx0) * e, cy: cy0 + (t.cy - cy0) * e });
+    applyCam();
+    if (u < 1) anim = requestAnimationFrame(step);
+  };
+  anim = requestAnimationFrame(step);
+}
+function focusOn(id) { S.focus = id; drawCircles(); fly(targetCircle(id)); }
+function zoomAt(p, factor) {
+  const c = C_(), lim = S.view === 'circles' ? [0.02, 600] : [2, 260];
+  const k2 = Math.min(lim[1], Math.max(lim[0], c.k * factor)), g = k2 / c.k;
+  c.x = p[0] - (p[0] - c.x) * g; c.y = p[1] - (p[1] - c.y) * g; c.k = k2;
+}
+const toWorld = (p) => { const c = C_(); return [(p[0] - c.x) / c.k, (p[1] - c.y) / c.k]; };
+function hitCircle(p) {
+  const [x, y] = toWorld(p), k = C_().k;
+  let best = null, br = Infinity;
+  for (const [id, c] of circ) if (circShown.has(id) && Math.hypot(c.x - x, c.y - y) <= c.r && c.r * k >= 4 && c.r < br) { best = id; br = c.r; }
+  return best;
+}
+function cellAt(p) { const L = sheet(S.sheet), [q, r] = toHex(...toWorld(p)); return inDisc(q, r, L.R) ? [q, r] : null; }
+function hitGround(p) {
+  const L = sheet(S.sheet), cell = cellAt(p);
+  if (!cell) return null;
+  const b = L.owner.get(K(...cell));
+  return b ? b.id : L.ground;
+}
+
+// ---- Refining the ground: paint cells to a place or back to the ground, and lay roads ----
+function brushTarget() {
+  const L = sheet(S.sheet);
+  if (S.brush === '' || (S.brush && L.byId.has(S.brush))) return S.brush;
+  const sel = S.sel && L.byId.has(S.sel) ? S.sel : null;
+  return sel || (L.blobs[0] ? L.blobs[0].id : '');
+}
+function paintAt(p, first) {
+  const L = sheet(S.sheet), cell = cellAt(p);
+  if (!cell) return false;
+  const k = K(...cell), e = edit(S.sheet);
+  if (S.tool === 'road') {
+    const roads = new Set(e.roads || []);
+    if (first) gesture.erase = roads.has(k);
+    if (gesture.erase) roads.delete(k); else roads.add(k);
+    e.roads = [...roads];
+    return true;
+  }
+  const to = brushTarget();
+  e.claims = e.claims || {};
+  if (S.brushSize === 0) {
+    if (!first) return false;
+    const from = L.owner.get(k) || null, seen = new Set([k]), todo = [cell];
+    while (todo.length) {
+      const [q, r] = todo.pop();
+      e.claims[K(q, r)] = to;
+      for (const [dq, dr] of DIRS) {
+        const nq = q + dq, nr = r + dr, nk = K(nq, nr);
+        if (seen.has(nk) || !inDisc(nq, nr, L.R) || (L.owner.get(nk) || null) !== from) continue;
+        seen.add(nk); todo.push([nq, nr]);
+      }
+    }
+  } else {
+    const reach = S.brushSize === 1 ? [cell] : [cell, ...DIRS.map(([dq, dr]) => [cell[0] + dq, cell[1] + dr])];
+    for (const [q, r] of reach) if (inDisc(q, r, L.R)) e.claims[K(q, r)] = to;
+  }
+  return true;
+}
+function traceOldRoutes() {
+  let n = 0;
+  const sheets = new Set();
+  for (const [a, b] of OLD_ROUTES) {
+    if (!byId.has(a) || !byId.has(b)) continue;
+    const ca = chainOf(a), cb = new Set(chainOf(b)), lca = ca.find((x) => cb.has(x));
+    if (!lca) continue;
+    const x = onSheet(lca, a) || a, y = onSheet(lca, b) || b;
+    if (x === y || x === lca || y === lca) continue;
+    settle(lca);
+    cache.delete(lca);
+    const L = sheet(lca), A = L.byId.get(x), Bb = L.byId.get(y);
+    const from = K(...A.c), to = K(...Bb.c);
+    const { prev } = search(L, from, (_, nb) => { const o = L.owner.get(nb); return !o || o === A || o === Bb ? 1 : 5; });
+    const e = edit(lca), roads = new Set(e.roads || []);
+    for (let k = to; k && k !== from; k = prev.get(k)) roads.add(k);
+    roads.add(from);
+    e.roads = [...roads];
+    cache.delete(lca);
+    n++; sheets.add(lca);
+  }
+  return `Traced ${n} old routes as roads on ${sheets.size} sheets: ${[...sheets].map(nm).join(', ')}.`;
+}
+
+// ---- Gestures: one finger pans, two pinch; a tap selects; tools act on the ground ----
+const ptrs = new Map();
+let gesture = null, lastTap = { t: 0, id: null };
+const local = (e) => { const r = svg.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+const dist2 = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+svg.addEventListener('pointerdown', (e) => {
+  svg.setPointerCapture(e.pointerId);
+  const p = local(e);
+  ptrs.set(e.pointerId, p);
+  cancelAnimationFrame(anim);
+  if (ptrs.size === 1) {
+    gesture = { kind: 'pan', start: p, last: p, moved: 0 };
+    if (S.view === 'ground' && S.tool === 'move') {
+      const id = hitGround(p);
+      if (id && id !== S.sheet) { settle(S.sheet); gesture = { kind: 'drag', id, start: p, moved: 0 }; S.sel = id; refresh(true); }
+    } else if (S.view === 'ground' && (S.tool === 'paint' || S.tool === 'road')) {
+      settle(S.sheet);
+      gesture = { kind: 'paint', start: p, moved: 99, last: cellAt(p) };
+      if (paintAt(p, true)) refresh(true);
+    }
+  } else if (ptrs.size === 2) {
+    const [a, b] = [...ptrs.values()];
+    gesture = { kind: 'pinch', d: dist2(a, b), mid: mid(a, b) };
+  }
+});
+svg.addEventListener('pointermove', (e) => {
+  if (!ptrs.has(e.pointerId) || !gesture) return;
+  const p = local(e);
+  ptrs.set(e.pointerId, p);
+  const c = C_();
+  if (gesture.kind === 'pinch' && ptrs.size >= 2) {
+    const [a, b] = [...ptrs.values()], d = dist2(a, b), m = mid(a, b);
+    zoomAt(m, d / gesture.d);
+    c.x += m[0] - gesture.mid[0]; c.y += m[1] - gesture.mid[1];
+    gesture.d = d; gesture.mid = m;
+    applyCam();
+  } else if (gesture.kind === 'pan') {
+    const dx = p[0] - gesture.last[0], dy = p[1] - gesture.last[1];
+    gesture.moved += Math.abs(dx) + Math.abs(dy); gesture.last = p;
+    if (gesture.moved > 6) { c.x += dx; c.y += dy; applyCam(); }
+  } else if (gesture.kind === 'drag') {
+    gesture.moved = Math.max(gesture.moved, dist2(p, gesture.start));
+    const L = sheet(S.sheet), [q, r] = toHex(...toWorld(p)), cur = S.edits[S.sheet].centres[gesture.id];
+    if (inDisc(q, r, L.R + 1) && (!cur || cur[0] !== q || cur[1] !== r)) { S.edits[S.sheet].centres[gesture.id] = [q, r]; refresh(true); }
+  } else if (gesture.kind === 'paint') {
+    const cell = cellAt(p);
+    if (cell && (!gesture.last || cell[0] !== gesture.last[0] || cell[1] !== gesture.last[1])) { gesture.last = cell; if (paintAt(p, false)) refresh(true); }
+  }
+});
+function endPtr(e) {
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.delete(e.pointerId);
+  if (!gesture) return;
+  if (gesture.kind === 'pinch') {
+    if (ptrs.size === 1) { const p = [...ptrs.values()][0]; gesture = { kind: 'pan', start: p, last: p, moved: 99 }; } else gesture = null;
+    return;
+  }
+  if (ptrs.size) return;
+  if (gesture.kind === 'pan' && gesture.moved <= 6) tap(gesture.start);
+  if (gesture.kind === 'drag') { statusText = gesture.moved > 6 ? 'Moved. Times on this sheet follow where you put things.' : ''; refresh(); }
+  if (gesture.kind === 'paint') refresh();
+  gesture = null;
+}
+svg.addEventListener('pointerup', endPtr);
+svg.addEventListener('pointercancel', endPtr);
+svg.addEventListener('wheel', (e) => { e.preventDefault(); zoomAt(local(e), Math.exp(-e.deltaY * 0.0016)); applyCam(); }, { passive: false });
+function tap(p) {
+  const id = S.view === 'circles' ? hitCircle(p) : hitGround(p);
+  const now = performance.now(), again = id && lastTap.id === id && now - lastTap.t < 340;
+  lastTap = { t: now, id };
+  S.sel = id;
+  statusText = '';
+  if (again) { if (S.view === 'circles') focusOn(id); else if (id !== S.sheet && kidsOf(id).length) openSheet(id); }
+  refresh();
+}
+
+// ---- Panels ----
+const $ = (id) => document.getElementById(id);
+function stepper(act, label, text, extra = '') {
+  return `<span class="stepper" role="group" aria-label="${esc(label)}"><button type="button" data-act="${act}" data-dir="-1" ${extra} aria-label="Less">−</button><output>${esc(text)}</output><button type="button" data-act="${act}" data-dir="1" ${extra} aria-label="More">+</button></span>`;
+}
+function bump(list, cur, dir) {
+  if (dir > 0) { const v = list.find((x) => x > cur + 1e-9); return v === undefined ? list[list.length - 1] : v; }
+  const v = [...list].reverse().find((x) => x < cur - 1e-9); return v === undefined ? list[0] : v;
+}
+const whereIs = (id) => { const ch = chainOf(id).slice(1).map(nm); return ch.length ? 'in ' + ch.join(' › ') : 'the whole world'; };
+const TOOL_SAYS = {
+  look: 'Drag to look around. Tap a place to pick it; tap it again to open its ground.',
+  move: 'Drag a place to move it. The first move keeps this sheet as it is, so nothing else shifts.',
+  paint: 'Drag across cells to give them to the place chosen below, or to the ground. Fill gives a whole patch at once.',
+  road: 'Drag across cells to lay a road. Start on a road to take it up again.',
+};
+
+function renderTop() {
+  $('v-circles').setAttribute('aria-pressed', S.view === 'circles');
+  $('v-ground').setAttribute('aria-pressed', S.view === 'ground');
+  svg.classList.toggle('tool', S.view === 'ground' && S.tool !== 'look');
+  if (S.view === 'circles') {
+    $('topinfo').innerHTML = `<div class="row"><button type="button" class="btn quiet" data-act="me">Where I am</button><button type="button" class="btn quiet" data-act="whole">The whole world</button></div>`;
+    $('foot').innerHTML = `<p class="hint">Pinch or drag to look around. Tap a place to pick it; tap it again to look inside. Names follow what you are looking at: ${esc(nm(focusOf()))}, what is in it, and the land's top places.</p>`;
+    return;
+  }
+  const ch = chainOf(S.sheet).reverse();
+  $('topinfo').innerHTML = `<nav class="trail" aria-label="Where this sheet sits">${ch.map((id, i) => i === ch.length - 1 ? `<span>${esc(nm(id))}</span>` : `<button type="button" data-act="sheet" data-id="${esc(id)}">${esc(nm(id))}</button><span class="sep">›</span>`).join('')}</nav>`;
+  const L = sheet(S.sheet), e = S.edits[S.sheet] || {}, cm = cellMin(S.sheet);
+  const groundSays = L.area ? `The pale cells are ${lower(S.sheet)}'s land; nobody stops there.` : L.bordered ? `One cell is ${lower(S.sheet)} itself, for being inside but in no room.` : `The pale cells are ${lower(S.sheet)} itself: you can stand there.`;
+  const scaleSays = e.cellMin ? 'Set for this sheet' : `${level(S.sheet)}'s default: a typical trip of ${fmt(S.bands[bandOf(S.sheet)].across)} is four cells`;
+  const target = brushTarget();
+  const brushOpts = [`<option value="" ${target === '' ? 'selected' : ''}>${L.area ? 'Open land' : esc(nm(S.sheet)) + "'s ground"}</option>`]
+    .concat(L.blobs.map((b) => `<option value="${esc(b.id)}" ${target === b.id ? 'selected' : ''}>${esc(b.own ? nm(b.id) + ' itself' : nm(b.id))}</option>`)).join('');
+  $('foot').innerHTML = `
+    <div class="seg" role="group" aria-label="Tool">
+      ${['look', 'move', 'paint', 'road'].map((t) => `<button type="button" data-act="tool" data-v="${t}" aria-pressed="${S.tool === t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}
+    </div>
+    <p class="hint full">${esc(TOOL_SAYS[S.tool])}</p>
+    ${S.tool === 'paint' ? `<div class="row full"><select class="pick" id="brush" aria-label="Paint cells as">${brushOpts}</select>
+      <div class="seg" role="group" aria-label="Brush">${[[1, 'One cell'], [2, 'Seven'], [0, 'Fill']].map(([v, l]) => `<button type="button" data-act="size" data-v="${v}" aria-pressed="${S.brushSize === v}">${l}</button>`).join('')}</div></div>` : ''}
+    <span class="row"><span class="meta">One cell</span>${stepper('cell', 'What one cell is worth', fmtCell(cm))}</span>
+    <p class="hint full">${esc(scaleSays)}. ${esc(groundSays)} ${arranged(S.sheet) ? 'This sheet has changes kept.' : 'Nothing on this sheet is kept yet.'}</p>
+    <div class="row">
+      <button type="button" class="btn" data-act="keep" ${e.centres ? 'disabled' : ''}>Keep this layout</button>
+      <button type="button" class="btn" data-act="reroll">Reroll</button>
+      <button type="button" class="btn" data-act="reset" ${S.edits[S.sheet] ? '' : 'disabled'}>Reset this sheet</button>
+      <button type="button" class="btn" data-act="add">Add a place here</button>
+    </div>`;
+  const sel = $('brush');
+  if (sel) sel.addEventListener('change', (ev) => { S.brush = ev.target.value; save(); });
+}
+function renderCard() {
+  const id = S.sel;
+  if (!id) {
+    $('card').innerHTML = `<h2>${esc(nm(S.you))}</h2><p class="meta">Where you stand, ${esc(whereIs(S.you))}.</p><p class="status">${esc(statusText)}</p><p>Tap a place on the map, or one in the list, to see how long it takes to get there and why.</p>`;
+    return;
+  }
+  const p = byId.get(id), t = travel(id), here = id === S.you, hasKids = kidsOf(id).length > 0, added = S.added.some((a) => a.id === id);
+  const onThis = S.view === 'ground' && sheet(S.sheet).byId.has(id) && id !== S.sheet;
+  const legs = t.legs.map((l) => `<li class="${l.min ? '' : 'free'} ${l.across ? 'across' : ''}"><span>${esc(l.text)}</span><span class="t">${esc(fmt(l.min))}</span>${l.note ? `<span class="n">${esc(l.note)}</span>` : ''}</li>`).join('');
+  $('card').innerHTML = `
+    <div><p class="card-name">${esc(p.name)}</p><p class="meta">${esc(p.kind)}, ${esc(whereIs(id))}</p></div>
+    ${here ? `<p class="big you">You are here.</p>` : AREA.has(p.kind) ? `<p class="meta">An area: you travel across it, never to it. Open its ground to see what it holds.</p>` : `<p class="big">${esc(fmt(t.min))}</p><p class="meta">from ${esc(lower(S.you))}</p>`}
+    <p class="status">${esc(statusText)}</p>
+    ${!here && !AREA.has(p.kind) && t.legs.length ? `<ul class="legs">${legs}</ul>` : ''}
+    <div class="row">
+      ${here || AREA.has(p.kind) ? '' : `<button type="button" class="btn seal" data-act="go">Go here</button>`}
+      ${S.view === 'circles' ? `<button type="button" class="btn" data-act="zoom">Look at it</button>` : ''}
+      ${hasKids ? `<button type="button" class="btn" data-act="open">Open its ground</button>` : ''}
+      ${parentOf(id) && !(S.view === 'ground' && S.sheet === parentOf(id)) ? `<button type="button" class="btn" data-act="onground">See it on the ground</button>` : ''}
+      ${onThis ? `<button type="button" class="btn" data-act="grow" data-dir="1">Bigger</button><button type="button" class="btn" data-act="grow" data-dir="-1">Smaller</button>` : ''}
+      ${added ? `<button type="button" class="btn" data-act="remove">Remove it</button>` : ''}
+    </div>`;
+}
+function renderTimes() {
+  const rows = [...byId.keys()].filter((id) => id !== S.you && !AREA.has(byId.get(id).kind)).map((id) => ({ id, min: travel(id).min }))
+    .sort((a, b) => a.min - b.min || nm(a.id).localeCompare(nm(b.id)));
+  const shown = showAll ? rows : rows.slice(0, 10);
+  $('times').innerHTML = shown.map((r) => `<li><button type="button" data-act="pick" data-id="${esc(r.id)}" aria-current="${r.id === S.sel}"><span><span class="nm">${esc(nm(r.id))}</span><span class="w">${esc(whereIs(r.id))}</span></span><span class="t">${esc(fmt(r.min))}</span></button></li>`).join('');
+  $('allbtn').textContent = showAll ? 'Show the nearest ten' : `Show every place (${rows.length})`;
+}
+function renderBands() {
+  $('bands').innerHTML = BANDS.map((b) => {
+    const v = S.bands[b.id];
+    return `<div class="band"><div><b>${esc(b.name)}</b><div class="k">${esc(b.kinds)}</div></div>
+      <div class="ctl"><label>Typical trip across${stepper('band', b.name + ': typical trip across', fmtBand(v.across), `data-band="${b.id}" data-field="across"`)}</label>
+      <label>Stepping inside${stepper('band', b.name + ': stepping inside', fmtBand(v.step), `data-band="${b.id}" data-field="step"`)}</label></div></div>`;
+  }).join('');
+}
+function renderPanels() { renderTop(); renderCard(); renderTimes(); renderBands(); }
+
+function refresh(quick) {
+  index();
+  travel = (d) => hier(S.you, d);
+  circ = circles();
+  if (!circShown) circShown = new Set(circ.keys());
+  if (!cam[S.view]) { if (S.view === 'circles') { drawCircles(); setCam(targetCircle(focusOf())); } else setCam(targetGround()); }
+  draw();
+  if (quick) { renderCard(); renderTimes(); } else renderPanels();
+  save();
+}
+function openSheet(id) { S.view = 'ground'; S.sheet = id; S.brush = null; index(); setCam(targetGround()); }
+
+document.addEventListener('click', (ev) => {
+  const b = ev.target.closest('[data-act]');
+  if (!b) return;
+  const d = b.dataset, act = d.act;
+  statusText = '';
+  if (act === 'view') {
+    if (S.view === d.v) return;
+    S.view = d.v;
+    if (d.v === 'ground') {
+      const target = S.sel && kidsOf(S.sel).length ? S.sel : S.sel && parentOf(S.sel) ? parentOf(S.sel) : kidsOf(S.you).length ? S.you : parentOf(S.you);
+      if (target && target !== S.sheet) { S.sheet = target; S.brush = null; cam.ground = null; }
+      if (!cam.ground) { index(); setCam(targetGround()); }
+    }
+  } else if (act === 'sheet') { S.sheet = d.id; S.brush = null; index(); setCam(targetGround()); }
+  else if (act === 'tool') S.tool = d.v;
+  else if (act === 'size') S.brushSize = +d.v;
+  else if (act === 'cell') { edit(S.sheet).cellMin = bump(CELL_NICE, cellMin(S.sheet), +d.dir); }
+  else if (act === 'keep') { settle(S.sheet); statusText = 'Kept. Adding a place now moves nothing else.'; }
+  else if (act === 'reroll') { const e = S.edits[S.sheet] || {}; S.edits[S.sheet] = { seed: (e.seed || 0) + 1, ...(e.cellMin ? { cellMin: e.cellMin } : {}) }; }
+  else if (act === 'reset') delete S.edits[S.sheet];
+  else if (act === 'grow') {
+    settle(S.sheet);
+    const L = sheet(S.sheet), bl = L.byId.get(S.sel), e = edit(S.sheet);
+    e.sizes = e.sizes || {};
+    const cur = e.sizes[S.sel] || bl.size;
+    e.sizes[S.sel] = Math.max(1, Math.min(60, +d.dir > 0 ? Math.max(cur + 1, Math.round(cur * 1.35)) : Math.min(cur - 1, Math.round(cur / 1.35))));
+    if (e.claims) for (const k of Object.keys(e.claims)) if (e.claims[k] === S.sel) delete e.claims[k];
+    delete e.minR;
+  }
+  else if (act === 'add') {
+    S.n += 1;
+    const id = 'added-' + S.n;
+    S.added.push({ id, name: 'New place ' + S.n, kind: NEW_KIND[bandOf(S.sheet)], parent: S.sheet });
+    S.sel = id;
+    statusText = S.edits[S.sheet] && S.edits[S.sheet].centres ? 'Added. It found a gap; nothing else moved.' : 'Added. The sheet laid itself out again.';
+  } else if (act === 'remove') { S.added = S.added.filter((a) => a.id !== S.sel); S.sel = null; }
+  else if (act === 'go') { const t = travel(S.sel).min; S.you = S.sel; statusText = `You went. The clock would move ${fmt(t)}.`; }
+  else if (act === 'zoom') { focusOn(S.sel); renderPanels(); return; }
+  else if (act === 'open') openSheet(S.sel);
+  else if (act === 'onground') openSheet(parentOf(S.sel));
+  else if (act === 'pick') {
+    S.sel = d.id;
+    if (S.view === 'circles') focusOn(parentOf(d.id) || d.id);
+    else if (onSheet(S.sheet, d.id) === null && d.id !== S.sheet) { const par = parentOf(d.id); if (par) openSheet(par); }
+  }
+  else if (act === 'me') { S.sel = null; focusOn(parentOf(S.you) || S.you); renderPanels(); return; }
+  else if (act === 'whole') { focusOn(ROOT); renderPanels(); return; }
+  else if (act === 'all') { showAll = !showAll; renderTimes(); return; }
+  else if (act === 'band') { const v = S.bands[d.band]; v[d.field] = bump(NICE, v[d.field], +d.dir); }
+  else if (act === 'trace') { index(); statusText = traceOldRoutes(); }
+  else if (act === 'startover') { S = fresh(); cam.circles = null; cam.ground = null; showAll = false; circShown = null; }
+  refresh();
+});
+let rz = 0;
+window.addEventListener('resize', () => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => applyCam()); });
+
+$('roadshare').textContent = Math.round(ROAD * 100) + '%';
+$('icons').innerHTML = ICON_NAMES.map(([k, l]) => `<span><svg aria-hidden="true"><use href="#i-${k}"/></svg>${esc(l)}</span>`).join('');
+refresh();
+})();
+</script>
+
+</body>
+</html>

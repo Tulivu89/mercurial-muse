@@ -5,7 +5,7 @@
 import { useState, type ReactNode } from 'react';
 import type { World } from '../../core/records/index.js';
 import {
-  EMPTY_RULES, EXTRA_STATES, TIERS, TIER_NAMES, approachOrigin, changeRules, changedCount, deedKey, deedOrigin, fieldOrigin, goodOrigin, inStandard, listOf,
+  EMPTY_RULES, EXTRA_STATES, levelsChanged, TIERS, TIER_NAMES, approachOrigin, changeRules, changedCount, deedKey, deedOrigin, fieldOrigin, goodOrigin, inStandard, listOf,
   pruneRules, readRuleset, stateOrigin, tierOrigin, worthWords,
   type Approach, type Block, type Cost, type Deed, type Ruleset, type StateDef, type Tier, type WorldRules as Rules,
 } from '../../core/rules/index.js';
@@ -13,7 +13,7 @@ import { newId } from '../../kit/src/util';
 import { LevelPick, Num, OptNum, OnlyChanged, Origin, PutBack, Rule, StatePick, Words, plural } from './rules/bits';
 import { StateEditor } from './rules/StateEditor';
 import { approachWords, costWords, stateWords } from './rules/words';
-import { CalendarPart, SceneActionsPart } from './rules/WorldParts';
+import { CalendarPart, SceneActionsPart, TravelPart } from './rules/WorldParts';
 
 const WHO: Record<Cost['who'], string> = { player: 'You', place: 'The place', target: 'The target' };
 const fitsWho = (who: Cost['who'] | 'player' | 'place') => (def: StateDef) => (who === 'place' ? def.scope === 'place' : who === 'player' ? def.scope === 'char' || def.scope === 'protagonist' : ['char', 'npc', 'protagonist'].includes(def.scope));
@@ -30,6 +30,7 @@ const PARTS: { id: string; name: string; says: string; changed: (rules: Rules) =
   { id: 'trade', name: 'Trade and making', says: 'Bribes, purses, selling back and making things.', changed: (rules) => Object.keys(rules.trade ?? {}).length + Object.keys(rules.craft ?? {}).length },
   { id: 'goods', name: 'Goods', says: 'What anyone can sell, and what each is worth.', changed: (rules) => rules.goods.length },
   { id: 'calendar', name: 'The calendar and travel', says: 'The week, the months, the times of day, walking pace.', changed: (rules) => (rules.calendar ? 1 : 0) + (rules.travel ? 1 : 0) },
+  { id: 'travel', name: 'Travel by level', says: 'A typical trip across a land, a region, a settlement or a building, and what a road saves.', changed: (rules) => levelsChanged(rules.levels) },
   { id: 'actions', name: 'Scene actions', says: 'What a player can do at a place by its own button.', changed: (rules) => rules.actions.length },
 ];
 
@@ -341,6 +342,7 @@ export function WorldRules({ world, onChange, part: asked = null, onPart = () =>
       {part.id === 'goods' && <div className="row"><button type="button" className="btn small" onClick={() => apply(changeRules.good(rules, { id: `good-${newId().slice(0, 8)}`, name: 'a new thing', description: '', worth: 1, kind: 'goods', hidden: false, hinders: [], makeable: true, fine: false, restores: [] }))}>Add a good</button></div>}
 
       {part.id === 'calendar' && <CalendarPart rules={rules} ruleset={ruleset} put={put} />}
+      {part.id === 'travel' && <TravelPart rules={rules} put={put} />}
       {part.id === 'actions' && <SceneActionsPart world={world} rules={rules} ruleset={ruleset} put={put} />}
     </OnlyChanged.Provider>
   );

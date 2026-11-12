@@ -175,7 +175,7 @@ describe('rules on every record', () => {
     fireEvent.click(rail().getByRole('button', { name: /^Rules/ }));
     expect(screen.getByText('All standard')).toBeInTheDocument();
     // The page is a list of its parts; one opens on its own.
-    expect(parts().getAllByRole('button')).toHaveLength(10);
+    expect(parts().getAllByRole('button')).toHaveLength(11);
     fireEvent.click(parts().getByRole('button', { name: /^The dice and rest/ }));
     fireEvent.change(screen.getByLabelText('How hard, when nothing else says'), { target: { value: '3' } });
     expect(current.rules?.dice).toEqual({ difficulty: 3 });
@@ -352,5 +352,53 @@ describe('a world with many records', () => {
     fireEvent.keyDown(sheet.getByRole('searchbox'), { key: 'Enter' });
     expect(current.records.find((record) => record.id === 'room-0')!.parentId).toBe('room-1');
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
+describe('the map', () => {
+  // A small town: a region holding two villages, one of them with an inn of two rooms.
+  const town = (): World => {
+    let n = 0;
+    const ids = () => `m-${++n}`;
+    const place = (id: string, name: string, kind: string, parentId: string | null) => ({ ...newRecord('place', id, name, ids), parentId, rules: { placeKind: kind as never } });
+    let next = newWorld('t', 'Saltmarsh', 1);
+    for (const record of [
+      place('marsh', 'The marsh', 'region', null),
+      place('ferry', 'Ferry End', 'village', 'marsh'),
+      place('inn', 'The Lamp', 'building', 'ferry'),
+      place('tap', 'The taproom', 'building', 'inn'),
+      place('loft', 'The loft', 'building', 'inn'),
+      place('reach', 'Long Reach', 'village', 'marsh'),
+    ]) next = putRecord(next, record, 2);
+    return next;
+  };
+
+  it('lays the world out with no setup, opens a place\'s ground, and times a trip leg by leg', () => {
+    window.location.hash = '#/w/t?page=map';
+    render(<WorldView world={town()} onChange={() => {}} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    expect(screen.getByRole('heading', { level: 1, name: 'Map' })).toBeInTheDocument();
+    expect(screen.getByText(/6 places on 3 sheets/)).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Saltmarsh: every place as circles' })).toBeInTheDocument();
+    // Times are measured from the first place you can stand in, and listed nearest first.
+    const from = within(screen.getByRole('region', { name: /^From / }));
+    fireEvent.click(from.getByRole('button', { name: /^Long Reach/ }));
+    expect(within(screen.getByRole('region', { name: 'Long Reach' })).getByText('Across the marsh: Ferry End to Long Reach')).toBeInTheDocument();
+    fireEvent.click(from.getByRole('button', { name: /^The taproom/ }));
+    const card = within(screen.getByRole('region', { name: 'The taproom' }));
+    expect(card.getByText('From Ferry End into the Lamp')).toBeInTheDocument();
+    fireEvent.click(card.getByRole('button', { name: 'See it on the ground' }));
+    expect(window.location.hash).toBe('#/w/t?page=map&sheet=inn');
+    expect(screen.getByRole('img', { name: 'The Lamp: what is inside it, as hex ground' })).toBeInTheDocument();
+    expect(screen.getByText(/One cell is the Lamp itself/)).toBeInTheDocument();
+  });
+
+  it('sets a level\'s typical trip on the Rules page, and only that is stored', () => {
+    let current = town();
+    window.location.hash = '#/w/t?page=rules&part=travel';
+    const view = render(<WorldView world={current} onChange={(next) => { current = next; }} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    fireEvent.change(screen.getByLabelText('A region: a typical trip across'), { target: { value: '2' } });
+    expect(current.rules?.levels).toEqual({ region: { across: 120 } });
+    view.rerender(<WorldView world={current} onChange={(next) => { current = next; }} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    expect(screen.getByLabelText('A region: a typical trip across: unit')).toHaveValue('h');
   });
 });

@@ -12,6 +12,7 @@ import { DoorPane, DoorRows, doorsFor } from './Doors';
 import { RecordEditor } from './RecordEditor';
 import { WorldSettings } from './WorldSettings';
 import { WorldRules } from './WorldRules';
+import { MapPage } from './MapPage';
 import { WorldList, keepList, readList, withOpened, type ListPrefs } from './WorldList';
 import { checkWorld } from '../../core/convert/index.js';
 import { newId, readFileBytes } from '../../kit/src/util';
@@ -112,10 +113,11 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
         contextSays={moment.says} status={status} onAdd={add} onImportCard={(event) => void importCard(event)}
       />
 
-      <main className="editor ink-settle" key={formatRoute({ ...here, kind: null, inside: null, door: null, part: null })}>
-        {atPage && !(page === 'rules' && here.part) && <button type="button" className="btn small quiet back" onClick={() => go({ rec: null, page: null, door: null, part: null })}>‹ {listName}</button>}
+      <main className="editor ink-settle" key={formatRoute({ ...here, kind: null, inside: null, door: null, part: null, sheet: null })}>
+        {atPage && !(page === 'rules' && here.part) && <button type="button" className="btn small quiet back" onClick={() => go({ rec: null, page: null, door: null, part: null, sheet: null })}>‹ {listName}</button>}
         {page === 'about' && <WorldSettings world={world} onChange={onChange} onDelete={onDelete} />}
         {page === 'rules' && <WorldRules world={world} onChange={onChange} part={here.part} onPart={(part) => go({ part })} />}
+        {page === 'map' && <MapPage world={world} route={here} go={go} />}
         {page === 'checks' && (
           <>
             <h1 className="ink-write">Checks</h1>
