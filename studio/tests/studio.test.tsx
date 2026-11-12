@@ -391,6 +391,34 @@ describe('the map', () => {
     expect(screen.getByText(/One cell is the Lamp itself/)).toBeInTheDocument();
   });
 
+  it('refines a place\'s ground: keep, bigger, what a cell is worth, a new place, and reset', () => {
+    let current = town();
+    window.location.hash = '#/w/t?page=map&sheet=marsh';
+    const draw = () => view.rerender(<WorldView world={current} onChange={(next) => { current = next; }} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    const view = render(<WorldView world={current} onChange={(next) => { current = next; }} onDelete={() => {}} onStatus={() => {}} status={null} />);
+    const tools = () => within(screen.getByRole('region', { name: 'Refine this ground' }));
+    fireEvent.click(tools().getByRole('button', { name: 'Keep this layout' }));
+    expect(Object.keys(current.map!.sheets!.marsh!.centres!).sort()).toEqual(['ferry', 'reach']);
+    draw();
+    expect(tools().getByRole('button', { name: 'Keep this layout' })).toBeDisabled();
+    // Pick Long Reach from the list, and make it bigger.
+    fireEvent.click(within(screen.getByRole('region', { name: /^From / })).getByRole('button', { name: /^Long Reach/ }));
+    fireEvent.click(within(screen.getByRole('region', { name: 'Long Reach' })).getByRole('button', { name: 'Bigger' }));
+    expect(current.map!.sheets!.marsh!.sizes!.reach).toBeGreaterThan(1);
+    draw();
+    fireEvent.change(tools().getByLabelText('One cell here is worth: unit'), { target: { value: 'min' } });
+    draw();
+    fireEvent.change(tools().getByLabelText('One cell here is worth'), { target: { value: '15' } });
+    expect(current.map!.sheets!.marsh!.cellMinutes).toBe(15);
+    draw();
+    fireEvent.click(tools().getByRole('button', { name: 'Add a place here' }));
+    const added = current.records.find((record) => record.name === 'New place')!;
+    expect(added).toMatchObject({ parentId: 'marsh', rules: { placeKind: 'village' } });
+    draw();
+    fireEvent.click(tools().getByRole('button', { name: 'Reset this sheet' }));
+    expect(current.map).toBeUndefined();
+  });
+
   it('sets a level\'s typical trip on the Rules page, and only that is stored', () => {
     let current = town();
     window.location.hash = '#/w/t?page=rules&part=travel';
