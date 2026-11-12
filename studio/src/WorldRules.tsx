@@ -47,7 +47,7 @@ export function WorldRules({ world, onChange }: { world: World; onChange: (world
 
   return (
     <>
-      <h1>Rules</h1>
+      <h1 className="ink-write">Rules</h1>
       <p className="lede">{world.name} plays by the Four Approaches. Everything on this page is the standard until you change it, and every record that set nothing of its own follows what this page says.</p>
       <div className="row">
         <span className={`chip ${changed ? 'src-world' : 'src-standard'}`}>{changed ? `${plural(changed, 'part')} changed in this world` : 'All standard'}</span>

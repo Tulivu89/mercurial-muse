@@ -2,7 +2,7 @@
 
 Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the record model (`docs/records.md`), and see exactly what each part sends the model.
 
-## What it does (0.7.0)
+## What it does (0.7.1)
 
 - **Worlds** in this browser's storage, with a premise, genre, tone and shared conditions.
 - **Records of every kind:** characters, places, groups, items, lore, threads, scenarios and personas.
@@ -32,6 +32,7 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - **One picker** for every choice of a record (where someone lives, who carries a thing, a place's parent, a group, a milestone's target, who must be there). It opens a sheet with a search box, the records picked lately in this world, then every record by kind, A to Z; a place shows what it's inside. Lists of records (groups, who is there, where an action is offered, In context now's scene) are chips with Add.
   - **The list** has Find (by name, or by the place something is in), A to Z or as added, and kinds that fold, remembered per world in this browser. On a wide screen it scrolls on its own.
   - **A jump bar** at the top of a record's page reaches its parts: basics, rules, sections, sets, schedule, chat, notes.
+- **The marks** (0.7.1): the Studio's nib in the header and on the home page, in wet ink, black by day and bone at night (`kit/src/Mark.tsx`). It drops in when the Studio opens; page titles are written on and a new page settles in from a slight blur, all off with reduced motion. The tab shows the flat nib.
 - **Genre:** the purse's words are the Coin state's bands and the catalog's names are editable, so a modern world's hundred *could buy a car*.
 - **In context now:** put people and a place in the scene, type what was just said, tick what holds, and see what the world would send, with a rough token count. From 0.3.0 it shows the sentence of every state that is off its resting band, under the record it belongs to, as the narrator would read it.
 - **Files:** a world exports as `<name>.world.json` (`studio-world/1`) and opens again. Cards import into the open world (0.1.1):

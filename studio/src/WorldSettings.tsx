@@ -36,7 +36,7 @@ export function WorldSettings({ world, onChange, onDelete }: { world: World; onC
 
   return (
     <>
-      <h1>{world.name}</h1>
+      <h1 className="ink-write">{world.name}</h1>
       <section className="card" aria-label="Play">
         <div className="row">
           <button type="button" className="btn primary" onClick={play}>Play in the adventure</button>

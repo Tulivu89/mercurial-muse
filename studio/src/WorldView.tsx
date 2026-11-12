@@ -166,13 +166,13 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
         })}
       </nav>
 
-      <main className="editor">
+      <main className="editor ink-settle" key={String(selected)}>
         <button type="button" className="btn small quiet back" onClick={() => setSelected(null)}>Back to {world.name}</button>
         {selected === 'world' && <WorldSettings world={world} onChange={onChange} onDelete={onDelete} />}
         {selected === 'rules' && <WorldRules world={world} onChange={onChange} />}
         {selected === 'checks' && (
           <>
-            <h1>Checks</h1>
+            <h1 className="ink-write">Checks</h1>
             <p className="lede">What would trip the adventure or lose the narrator, found before anyone plays: stops that are not real places, more than four people in one place over forty days, a When with no condition, routes that end nowhere, and rules that point at something gone.</p>
             {problems.length === 0 && <p className="status" role="status">All clear.</p>}
             {problems.map((problem, index) => (

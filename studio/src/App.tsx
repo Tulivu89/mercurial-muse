@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { KIND_NAMES, RECORD_KINDS, newWorld, parseWorld, type World } from '../../core/records/index.js';
-import { Drop, Wordmark } from '../../kit/src/Mark';
+import { InkMark, Wordmark } from '../../kit/src/Mark';
 import { THEME_NAMES, useTheme, type Theme } from '../../kit/src/theme';
 import { WorldView } from './WorldView';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
@@ -56,7 +56,7 @@ export function App() {
     <>
       <header className="bar">
         <button type="button" className="brand" onClick={() => { flush(); setOpenId(null); }} aria-label="Inkwyrm Studio, your worlds">
-          <Drop size={34} />
+          <InkMark name="nib" size={34} land />
           <Wordmark />
           <span className="side">Studio</span>
         </button>
@@ -133,9 +133,9 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
   return (
     <main className="home">
       <div className="row" style={{ alignItems: 'flex-start', gap: 20 }}>
-        <Drop size={72} title="Inkwyrm" />
+        <InkMark name="nib" size={72} title="Inkwyrm Studio" land />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: '1 1 300px' }}>
-          <h1>Your worlds</h1>
+          <h1 className="ink-write">Your worlds</h1>
           <p className="lede">Make a world once: its places, its people, what they want and what they won&rsquo;t say. Every part says when it reaches the model.</p>
         </div>
       </div>

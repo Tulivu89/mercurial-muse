@@ -41,18 +41,23 @@ Every pair above passes 4.5:1 contrast.
 **Shapes:**
 - Small radii: 6 px for controls, 10 px for cards, 4 px for chips.
 - Chat bubbles are squared at the corner nearest the speaker.
-- No gradients and no glow. Narration is italic in grey ink, and speech is plain.
+- The interface has no gradients and no glow. Narration is italic in grey ink, and speech is plain.
+- **The marks are the exception: wet ink** (decided Nov 12). Lacquer shading and highlights, black by day and bone at night. Only the marks carry them.
 
-## Mark: the drop
+## Marks: wet ink
 
-One shape, used four ways. Final drawings go to an illustrator; the workshop's vector drawings are sketches.
+Decided Nov 12. The owner's drawings, in lacquer: a dark radial body, a gloss ribbon, a bead of light, a rim reflection and a ground shadow. The masters are in `docs/brand/marks/`; the site draws them from `kit/src/Mark.tsx` (`InkMark`), with their colours in the `--mk-*` tokens of `kit/src/wet-ink.css`.
 
 | Use | Drawing |
 | --- | --- |
-| **Inkwyrm** (main mark, app icon) | An ink drop with a slit dragon's eye. |
-| **Studio** | The same drop with a slit down the middle, which makes it a pen nib. |
-| **Chat** | The drop with its taper turned down and curved, so it reads as a speech bubble's tail. |
-| **Adventure** | The drop with die dots (recommended: it stays legible as a small icon), or an ink dragon. Open. |
+| **Inkwyrm** (main mark, app icon) | An ink drop with a slit dragon's eye inside corner marks and two chevrons. |
+| **Studio** | The drop as a pen nib: a round top, a slit down to the eye, which is the nib's breather hole. |
+| **Chat** | A speech bubble of ink, its tail the drop's taper. |
+| **Adventure** | A coiled ink dragon: the neck rising from the coil to a maned head, the tail curling into the hollow. |
+
+- **Day:** black lacquer, white light. **Night:** bone (pale lacquer), as the site's text turns pale at night. The cut-outs are real holes, so the ground shows through.
+- **Small sizes:** below about 32 px the shine is noise. Favicons are flat (`favicon.svg` in each side's `public/`), dark ink by day and bone at night by the device's own setting, the main mark without its corner marks.
+- **Motion: Settle** (decided Nov 12). A page's mark drops in, stretched as it falls and squashed as it lands, and its shine comes on as it settles. Page titles are written on left to right with a soft wet edge, and a new page settles in from a slight blur. All of it is off with reduced motion. Review page: the artifact *Inkwyrm Wet Ink Marks*.
 
 ## Mascot
 
@@ -61,7 +66,7 @@ A goth ink dragon, a writer, and the site's house muse and chat persona. Her nam
 ## Still to do
 
 1. Check and register the domains: inkwyrm.com first, inkworm.com for the misspelling.
-2. Final drawings of the drop family.
+2. ~~Final drawings of the drop family.~~ Done Nov 12 (Marks: wet ink).
 3. The mascot's emotion portraits and front-page art, from her prompt notes in the vault.
 4. A trademark search where the site will be marketed.
 5. The look in code: these tokens become the site's theme (roadmap step 3).

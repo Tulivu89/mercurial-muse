@@ -8,6 +8,12 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.25.2 - The mark - 2026-11-12
+
+- The tab shows Inkwyrm's mark (`public/favicon.svg`): flat ink by day, bone at night, by the
+  device's setting. The Adventure dragon is drawn too (`favicon-adventure.svg`), for when the
+  adventure takes the Wet Ink look.
+
 ## 0.25.1 - Inkwyrm - 2026-11-11
 
 - Players read Inkwyrm where they read Praxis: the page title, the loading line, the start
