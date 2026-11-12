@@ -17,6 +17,8 @@ Three sides on one core: the adventure, the Studio and Chat. The foundations of 
 
 ## Working on it
 
+The [front-page handoff](docs/front-page/README.md) holds the illustrated dashboard direction, a standalone interactive mockup, restrained motion specifications, and a phased plan for a separate implementation chat. It is design groundwork; the application's current entry points are unchanged.
+
 One npm install at the root serves every part (npm workspaces): `npm ci`, then `npm test`, `npm run lint` and `npm run build` from the root. `npm run dev:all` starts the adventure's API and interface together; `npm run dev:studio` starts the Studio and `npm run dev:chat` starts Chat (both want the adventure's API running for the relay).
 
 Orbis and Ember, the Howling Whispers reference copies, left the tree in 0.22.0; their code is in the history before that.
