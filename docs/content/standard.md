@@ -44,14 +44,33 @@ Two habits follow from this table:
 - **Write each Here sentence so the model could act on it at a noodle stall,** with no plot in the scene (the owner's Core test from Mythic Overdrive).
 - **Never repeat Here in Named, or a group in its members.** A model sent the same fact twice treats it as twice as important.
 
+## A character's fields: one job each
+
+A character is written in the Studio's default sections (the owner, Nov 13). Each one answers a different question the model asks while it plays the character, so a fact lives in exactly one of them. Profile Plus (Presence, Core, Resistance, Conduct) stays what it was in Character Engine: a way of thinking a character through before writing, not the record's shape.
+
+| Field | Reach | The question it answers for the model | Holds | Never holds |
+| --- | --- | --- | --- | --- |
+| **Line** | Named, lists | Who is this, if I only get one sentence? | Job, place, and the one thing that makes a stranger look twice | Anything only a friend would know |
+| **Appearance** | Here | What would someone see right now, and what does the body do? | Build, face, colouring, their kind in one or two traits; how the body moves and rests; involuntary tells (a tail that snaps before the face shows anything) | Clothes (a set), voice (Speech), chosen gestures that answer someone (Personality) |
+| **Personality** | Here | How does this character respond? | What they do when someone asks, refuses, flirts, lies, helps, hurts one of theirs; what they go after in an exchange; what they won't do. Each line is a response the model can play on its next turn: *when this, they do that.* | How the body moves (Appearance), how the words come out (Speech), why they're like this (Background), the goal they're working on (Wants), creeds and adjectives with no act under them |
+| **Speech** | Here | How do the words come out? | The voice's sound; sentence length and rhythm; register; words they use and won't; verbal habits; how all of that changes with mood or with whom | What they say about anything in particular (that's Personality or a hook); sample lines (example chats carry those) |
+| **Background** | Named | What comes up when someone asks about their past? | Where they're from, what happened to them, family, past work: only what a scene could bring up | The parts of the past that explain a response; write the response in Personality and leave the explanation out |
+| **Wants** | Named | What are they working on, and what's in the way? | The current goal and its obstacle; what would change things between them and the player | Their general character |
+| **Hooks** | Named, each with its own keys | What do they go long about when it comes up? | A hoard, a place they keep, a craft: each stands alone, because it arrives alone | Anything Here already says |
+| **When sections** | When | What changes under this condition? | Only what changes: what she admits at a bond tier, how she is at night or drunk | A second copy of Here |
+
+**The test for where a fact goes:** ask which question the model would be answering when it needs the fact. "She bounces on her feet" answers *what does the body do?*: Appearance. "She asks personal questions early and tells you what she thinks of the answers" answers *how does she respond?*: Personality. "Short sentences, a lot of questions, interrupts once she has the answer" answers *how do the words come out?*: Speech. "Her grandmother was a jeweller" answers *what comes up when someone asks?*: Background. If a fact seems to fit two fields, it's usually two facts; write each where it works.
+
+**Why the split matters for weak models:** a model reads Personality when it decides what the character does next, and Speech when it words it. A Personality padded with posture and history gives it less to decide with; a Speech section full of opinions makes every line sound like a speech.
+
 ## Tiers and shapes
 
 Budgets are **provisional**: roughly twice the measured typical size, so the checker's "over" means "unusually heavy, look", not "wrong". The pilot replaces them with numbers from play.
 
 | Tier | What | Sections and reach | Provisional budget |
 | --- | --- | --- | --- |
-| **Lead** | A featured chat partner or a character a thread turns on | Appearance, Personality, Speech: Here. Background, Wants and any hooks (a hoard, a portrait hall): Named, each with its own keys. What she admits at a bond tier: When. Greetings and three to five example chats. A schedule. | Here 1,400 · each Named 300 · chat parts 2,400 |
-| **Person** | Anyone else in a world | Appearance, Personality: Here. Background or Wants: Named. A schedule only if a thread turns on them; otherwise met where they live or work. | Here 200 · Named 250 |
+| **Lead** | A featured chat partner or a character a thread turns on | The fields above, all of them: Appearance, Personality, Speech (Here); Background, Wants and hooks such as a hoard or a portrait hall (Named, each with its own keys); what she admits at a bond tier (When). Greetings and three to five example chats. A schedule. | Here 1,400 · each Named 300 · chat parts 2,400 |
+| **Person** | Anyone else in a world | The same fields, shorter: Appearance, Personality, Speech (Here, a few lines each); Background or Wants (Named) only if a scene could bring them up. A schedule only if a thread turns on them; otherwise met where they live or work. | Here 200 · Named 250 |
 | **Place** | Anywhere you can be | Entry (what it is and who's there), Atmosphere (what you hear and smell now): Here. History: Named, if a scene needs it. | Here 120 |
 | **Group** | Species, family, faction, crew, profession | Entry: Named. Holds what members share, so a member shows it in one or two traits and a colouring. | Named 150 |
 | **Item** | A thing a scene or rule uses | Entry: Here. | Here 80 |
@@ -131,7 +150,7 @@ Content is never written by whatever model is connected to the site (the owner, 
 | A3 | Every record needs a line, at 25 words or fewer. | From `docs/records.md`; unmeasured in play | A region scene where most of the cast is lines only |
 | A4 | Example chats steer a chat partner more than her sections do. | Claimed in `docs/records.md` | Pilot: the same lead with and without her examples, on the weak model |
 | A5 | Behaviour-first, comparison-free records help weak models more than longer ones. | The premise of this page | Pilot: the same scene on GLM-4.6 with a gold record and with a slop-flagged one |
-| A6 | Persons use the Studio's default sections (Appearance, Personality, Speech, Background, Wants); leads use Qiulong's card shape. | **Open: the owner's call.** Profile Plus (Presence, Core, Resistance, Conduct) is the alternative | Write one pilot person both ways and play both |
+| A6 | Every character uses the Studio's default sections, with the field definitions above; Profile Plus is a thinking template, not a shape. | **Decided** by the owner, Nov 13 | The pilot checks the definitions hold: no fact fits two fields, and the split plays better on a weak model |
 | A7 | Reviewing frames as lines catches most problems before they cost anything. | Provisional | The first village: count what review caught at the frame versus after the fill |
 | A8 | Fable 5.2 fills from a frame and the gold set at acceptable quality, with sample review. | Provisional | Fill one village, review all of it once, then decide the sample rate |
 | A9 | The checker's catches are low-noise. | **Measured:** 2 in 87 approved records | Watch the rate on the pilot and the first fill |
@@ -143,4 +162,4 @@ Content is never written by whatever model is connected to the site (the owner, 
 
 ## The pilot (C1)
 
-The dragon's resort: Qiulong (her Teahouse card is already gold-standard), Errata (her Inkwyrm card is drafted and untested), Echydna (concept only; the owner's notes spell her Echydna and Dark Lord Funk spells her Echidna, so the name is open), the teahouse and its rooms, and their schedules. It's small, it's chat-first, it's the Home the front page is missing, and it tests A2, A4, A5 and A6 directly. It's written as one Studio world file, checked with `content:check`, and played on GLM-4.6 or Xialong before anything is scaled.
+The dragon's resort: Qiulong (her Teahouse card is already gold-standard), Errata (her Inkwyrm card is drafted and untested), Echydna (concept only; the name is Echydna, and the myth of Echidna, Mother of Monsters, is the owner's chosen inspiration for her and for other characters and stories), the teahouse and its rooms, and their schedules. It's small, it's chat-first, it's the Home the front page is missing, and it tests A2, A4, A5 and A6 directly. It's written as one Studio world file, checked with `content:check`, and played on GLM-4.6 or Xialong before anything is scaled. The brief for its dedicated session is `docs/content/pilot-brief.md`.
