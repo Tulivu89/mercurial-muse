@@ -14,6 +14,7 @@ import { ErrataDoor, errataSays } from './ErrataDoor';
 import { useAuthor } from './author/context';
 import { useDrafts } from './author/useDrafts';
 import { useTalk } from './author/useTalk';
+import { recordActivity } from '../../kit/src/activity';
 import { WorldSettings } from './WorldSettings';
 import { WorldRules } from './WorldRules';
 import { MapPage } from './MapPage';
@@ -71,6 +72,9 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
   const errataName = author?.plain ? 'Helper' : 'Errata';
   const doors = record ? doorsFor(world, record, moment, author ? { label: errataName, says: errataSays(talk.talk, drafts) } : null) : [];
   const door: Door | null = here.door === 'context' ? 'context' : record && doors.some((entry) => entry.id === here.door) ? here.door : null;
+
+  // A record that really opened, with the door it opened on, is what the Overview's Continue offers.
+  useEffect(() => { if (record) recordActivity({ kind: 'studio', worldId: world.id, recordId: record.id, ...(door && door !== 'context' ? { door } : {}) }); }, [world.id, record?.id, door]);
 
   const [prefs, setPrefs] = useState<ListPrefs>(() => readList(world.id));
   const changePrefs = (next: ListPrefs) => setPrefs(keepList(world.id, next));

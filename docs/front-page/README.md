@@ -1,6 +1,6 @@
 # Inkwyrm front page: build handoff
 
-Nov 12, 2026 · @AmbiProp · Groundwork requested by the owner; application integration has not begun.
+Nov 12, 2026 · @AmbiProp · Groundwork requested by the owner. Integration began Nov 13: the Overview 0.1.0 is served at `/overview/` (see [integration.md](integration.md), *Built so far*).
 
 Inkwyrm needs a face of its own. Its front page is an illustrated dashboard: included examples explain the service on a first visit; the same places become useful shortcuts as someone builds a library. Studio keeps its job of authoring worlds. **Home** continues to mean an inhabited place, not the site's root page.
 
@@ -13,6 +13,7 @@ The owner asked for groundwork another chat can run with, a mockup, and effects 
 - [Prompt for the implementation chat](next-chat.md): ready to copy into a new session.
 - [Interactive mockup](mockup/index.html): one standalone HTML file, including fonts and approved marks. Download and open it in a browser; GitHub's file viewer displays source rather than running HTML.
 - [Validation record](validation.md): browser coverage, repository checks, and remaining limits.
+- [How it fits the work so far](integration.md): the Studio's drafts, Errata and maps on the front page, what the front page asks of the Studio, and the build order beside the worldbuilding phases. A plan, awaiting the owner.
 
 To preview from a checkout, run `python3 -m http.server 5191 --directory docs/front-page/mockup` from the repository root and open `http://localhost:5191/`. No installation or build is needed. The file also works directly from disk.
 

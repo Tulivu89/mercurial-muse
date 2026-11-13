@@ -261,3 +261,29 @@ describe('the chat screen', () => {
     expect(impl).not.toHaveBeenCalled();
   });
 });
+
+describe('a character asked for by address', () => {
+  it('reads #/with/<world>/<record>, and nothing else, as a character to start with', async () => {
+    const { viewFromHash } = await import('../src/App');
+    expect(viewFromHash('#/with/inkwyrm-house/errata')).toEqual({ name: 'home', with: { worldId: 'inkwyrm-house', recordId: 'errata' } });
+    expect(viewFromHash('#/with/low%20water/dee')).toEqual({ name: 'home', with: { worldId: 'low water', recordId: 'dee' } });
+    expect(viewFromHash('#/with/only-one')).toEqual({ name: 'home' });
+    expect(viewFromHash('#/chat/abc')).toEqual({ name: 'chat', id: 'abc' });
+  });
+
+  it('opens the new-chat sheet for that character and creates no chat by itself', () => {
+    const onStart = vi.fn();
+    const done = vi.fn();
+    render(<Home worlds={[houseWorld(1)]} chats={[]} portraits={{}} status={null} userName="Ama" startWith={{ worldId: HOUSE_WORLD_ID, recordId: ERRATA_ID }} onStartWithDone={done} onOpen={() => {}} onStart={onStart} onImport={() => {}} />);
+    expect(done).toHaveBeenCalledWith(true);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(onStart).not.toHaveBeenCalled();
+  });
+
+  it('says so when the character isn\'t in this browser', () => {
+    const done = vi.fn();
+    render(<Home worlds={[houseWorld(1)]} chats={[]} portraits={{}} status={null} userName="Ama" startWith={{ worldId: 'gone', recordId: 'nobody' }} onStartWithDone={done} onOpen={() => {}} onStart={() => {}} onImport={() => {}} />);
+    expect(done).toHaveBeenCalledWith(false);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});

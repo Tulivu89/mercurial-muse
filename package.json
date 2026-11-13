@@ -7,15 +7,17 @@
     "kit",
     "adventure",
     "studio",
-    "chat"
+    "chat",
+    "overview"
   ],
   "scripts": {
     "test": "npm test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "build": "npm run build -w adventure && npm run build -w studio && npm run build -w chat",
+    "build": "npm run build -w adventure && npm run build -w studio && npm run build -w chat && npm run build -w overview",
     "dev:all": "npm run dev:all -w adventure",
     "dev:studio": "npm run dev -w studio",
     "dev:chat": "npm run dev -w chat",
-    "prompts:live": "npm run prompts:live -w studio"
+    "prompts:live": "npm run prompts:live -w studio",
+    "dev:overview": "npm run dev -w overview"
   }
 }

@@ -128,6 +128,11 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.3.2 - Chat with, by address - 2026-11-13
+
+- **`#/with/<world>/<record>`** opens the new-chat sheet for that character, as the Studio's *Chat with* and the Overview's *Meet Errata* ask. It creates no chat until **Start the chat**. A character this browser doesn't have says so.
+- A chat that really opens is noted for the Overview's Continue (`kit/src/activity.ts`).
+
 ### 0.3.1 - The site's header - 2026-11-12
 
 - **One header for the site** (`kit/src/SiteHeader.tsx`): the bubble, the three sides with Chat underlined, and a gear for Settings. Chats and Home sit under it as Chat's own two places. On a phone the header no longer wraps onto a second row.

@@ -5,7 +5,9 @@ import type { MouseEvent } from 'react';
 import { InkMark, type MarkName } from './Mark';
 import './site-header.css';
 
-export type Side = 'adventure' | 'chat' | 'studio';
+// The Overview is the site's front page: its mark is the main drop, and none of the three is
+// current there.
+export type Side = 'adventure' | 'chat' | 'studio' | 'overview';
 
 const SIDES: { id: Side; name: string; href: string; mark: MarkName }[] = [
   { id: 'adventure', name: 'Adventure', href: '/', mark: 'dragon' },
@@ -23,7 +25,7 @@ export function SiteHeader({ side, homeLabel, onHome, onSettings, settingsHref }
   onSettings?: () => void;
   settingsHref?: string;
 }) {
-  const here = SIDES.find((entry) => entry.id === side)!;
+  const here = SIDES.find((entry) => entry.id === side) ?? { id: 'overview' as const, name: 'Overview', href: '/overview/', mark: 'main' as MarkName };
   const home = (event: MouseEvent) => { if (!onHome) return; event.preventDefault(); onHome(); };
   const gear = (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">

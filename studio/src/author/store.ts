@@ -140,6 +140,20 @@ export async function importTalks(raw: unknown, worldId: string): Promise<{ ok: 
   return { ok: true, talks: addedTalks, drafts: addedDrafts };
 }
 
+// How much is waiting in each world, by record: drafts not yet kept, and lines settled with
+// Errata. Counts only, for the Overview; it never reads the drafts' words.
+export async function authoringCounts(): Promise<Record<string, Record<string, { drafts: number; settled: number }>>> {
+  const [drafts, talks] = await Promise.all([
+    withStore<Draft[]>('readonly', (store) => store.getAll() as IDBRequest<Draft[]>),
+    withStore<Talk[]>('readonly', (store) => store.getAll() as IDBRequest<Talk[]>, 'talks'),
+  ]);
+  const counts: Record<string, Record<string, { drafts: number; settled: number }>> = {};
+  const at = (worldId: string, recordId: string) => ((counts[worldId] ??= {})[recordId] ??= { drafts: 0, settled: 0 });
+  for (const draft of drafts ?? [...memory.values()]) if (draft.state !== 'needs') at(draft.worldId, draft.recordId).drafts += 1;
+  for (const talk of talks ?? [...memoryTalks.values()]) if (talk.settled.length) at(talk.worldId, talk.recordId).settled += talk.settled.length;
+  return counts;
+}
+
 // Tests start from nothing.
 export function forgetDraftsInMemory(): void {
   memory.clear();
