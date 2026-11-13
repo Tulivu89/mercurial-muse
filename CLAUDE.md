@@ -19,6 +19,7 @@ The site is **Inkwyrm** (`docs/brand.md`: the name, the Wet Ink look and its tok
 - One npm install at the root (workspaces). Orbis and Ember are gone from the tree; their code is in the history.
 - The look and layout were decided in `docs/bids/ui/decision.md`: the Studio's list goes one level at a time, a record's page is the writing with doors to its other jobs, and every Studio page has an address (`studio/src/route.ts`). Read it before changing a frame.
 - `docs/bids/` holds questions put to several models: a brief, Claude's own proposal where it could win (written before any bid is read, never revised), the bids, and the decision. Its README says how a bid runs.
+- `docs/content/standard.md` is the content standard for flagship records: what lands in context (measured), tiers and budgets (provisional), the failure list, and how a seed grows into a region. Its assumptions table says what is still untested. `npm run content:check -- <file>` checks a world file or module against it. The writing skills are in `.claude/skills/`: `pulp-voice` for prose, `inkwyrm-records` for records. Flagship content is written in dedicated sessions, never by the model connected to the site.
 - `docs/abernys/` is the setting, all the user's own. `docs/praxis/` holds the design docs, including the Bogwater test module's plan and full design.
 
 ## Working with the user
