@@ -27,6 +27,8 @@ Copied from the owner's CharacterVault on Nov 13 (commit `a0d5c54`), in `docs/bi
 | `errata/Errata - Inkwyrm.md` | Her chat card for Inkwyrm | Drafted, never played |
 | `errata/Errata.md` | Her character page, including a schedule and recurring ties | Source of truth for her look |
 | `errata/Errata - Inkwyrm - Adult.md` | Her After Dark material | As for Qiulong |
+| `qiulong/Qiulong - Discord.json` | Her Discord card (AnotherRoom JSON), from the owner on Nov 13: the Teahouse persona widened into someone you can talk to, with voice, body and tells carried by the example chats | The owner's model of a chat persona. Kept for the Discord side later |
+| `depravitae/Depravitae - Discord Bot.md` | The owner's other Discord card, from CharacterVault | The same method on a second character |
 
 Also:
 - `chat/src/errata.ts` is the Errata Chat ships today, built from her Inkwyrm card. If the pilot changes her, that file changes too, with `HOUSE_VERSION` raised so browsers take the new record.
