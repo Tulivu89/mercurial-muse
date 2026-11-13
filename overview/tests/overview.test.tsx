@@ -7,6 +7,7 @@ import { NAVIGATION_KEY, withActivity, type NavigationV1 } from '../../kit/src/a
 import { houseWorld } from '../../chat/src/errata';
 import { App, type Readers } from '../src/App';
 import { selectOverview, type Library, type SaveSummary } from '../src/select';
+import { EMPTY_COLLECTION, patchMember } from '../../kit/src/collection';
 
 const none: NavigationV1 = { version: 1, recent: [] };
 const ok = <T,>(value: T) => ({ state: 'ready' as const, value });
@@ -69,6 +70,18 @@ describe('choosing what to show', () => {
     expect(view.failed).toEqual(['chats', 'saved games']);
     expect(view.continueWith).toBeNull();
     expect(view.adventure).toBeNull();
+  });
+  it('respects hidden and archived collection members in recommendations and Continue', () => {
+    const world = lowWater(); const saved = chatWith(world, 'a', 4);
+    let collection = patchMember(EMPTY_COLLECTION, world.id, 'dee', { state: 'hidden' });
+    collection = patchMember(collection, 'inkwyrm-house', 'errata', { state: 'archived' });
+    const view = selectOverview(library({ worlds: ok([houseWorld(0), world]), chats: ok([saved]), collection, navigation: withActivity(none, { kind: 'chat', chatId: saved.id }, 5) }));
+    expect(view.characters).toHaveLength(0);
+    expect(view.continueWith).toBeNull();
+  });
+  it('does not resurrect a deleted bundled world after collection initialization', () => {
+    const collection = { ...patchMember(EMPTY_COLLECTION, 'inkwyrm-house', 'errata', { state: 'active' }), initialized: true };
+    expect(selectOverview(library({ worlds: ok([]), collection })).characters).toHaveLength(0);
   });
 });
 

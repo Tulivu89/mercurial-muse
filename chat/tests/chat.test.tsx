@@ -77,7 +77,7 @@ describe('the home screen', () => {
   it('lists characters and starts a chat with what CharacterRoom asks', () => {
     const onStart = vi.fn();
     render(<Home worlds={[world]} chats={[]} portraits={{}} status={null} userName="" onOpen={() => {}} onStart={onStart} onImport={() => {}} />);
-    fireEvent.click(within(screen.getByRole('region', { name: 'Characters' })).getByRole('button', { name: /Errata/ }));
+    fireEvent.click(within(screen.getByRole('article', { name: 'Errata' })).getByRole('button', { name: 'Start chat' }));
     const sheet = screen.getByRole('dialog', { name: 'New chat with Errata' });
     for (const label of ['You are', 'Scenario', 'Relationship', 'Style', 'Response length', 'Greeting']) expect(within(sheet).getByLabelText(label)).toBeInTheDocument();
     fireEvent.change(within(sheet).getByLabelText('Your name'), { target: { value: 'Sam' } });
@@ -93,7 +93,7 @@ describe('the home screen', () => {
   it('shows recent chats with their last line', () => {
     const onOpen = vi.fn();
     render(<Home worlds={[world]} chats={[start()]} portraits={{}} status={null} userName="" onOpen={onOpen} onStart={() => {}} onImport={() => {}} />);
-    const recent = screen.getByRole('region', { name: 'Recent chats' });
+    const recent = screen.getByRole('region', { name: 'Continue' });
     expect(within(recent).getByText(/Loose pages cover the floor/)).toBeInTheDocument();
     fireEvent.click(within(recent).getByRole('button'));
     expect(onOpen).toHaveBeenCalledWith('c1');
@@ -101,6 +101,27 @@ describe('the home screen', () => {
 });
 
 describe('the chat screen', () => {
+  it('stops and keeps a partial reply before flushing navigation to Overview', async () => {
+    const order: string[] = [];
+    const impl = vi.fn((_messages: unknown, _target: unknown, options: GenerateOptions = {}): Promise<Generated> => new Promise((_resolve, reject) => {
+      options.onDelta?.('Errata: A partial reply.\n  Emotion: neutral');
+      options.signal?.addEventListener('abort', () => { order.push('stopped'); reject(new DOMException('Stopped', 'AbortError')); }, { once: true });
+    }));
+    function Pending() {
+      const [chat, setChat] = useState(start);
+      return <ChatView chat={chat} world={world} connection={connection} settings={DEFAULT_SETTINGS} generateImpl={impl as never}
+        onChange={(next) => { if (next.messages.length > 1 && next.messages.at(-1)?.from === 'character') order.push('kept'); setChat(next); }}
+        onOverview={async () => { order.push('overview'); throw new Error('Stay here for this test'); }} onBack={() => {}} onDelete={() => {}} onSettings={() => {}} />;
+    }
+    render(<Pending />);
+    fireEvent.change(screen.getByLabelText('Your message'), { target: { value: 'Hello.' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    await screen.findByRole('button', { name: 'Stop' });
+    fireEvent.click(screen.getByRole('link', { name: 'Inkwyrm, the front page' }));
+    await waitFor(() => expect(order).toContain('overview'));
+    expect(order).toEqual(['stopped', 'kept', 'overview']);
+    expect(screen.getByText('A partial reply.')).toBeInTheDocument();
+  });
   it('sends a message, streams the reply into a bubble and shows the emotion on the portrait', async () => {
     const { calls, impl } = provider(['Errata: *I take the page.*\nThis line is yours.\n  Emotion: smug']);
     const { container } = render(<Harness impl={impl} />);

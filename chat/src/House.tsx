@@ -2,6 +2,7 @@
 // rooms as pictures, and each character who lives there standing where their schedule puts them.
 // Tap one to see how they are, do something for them, or drop into a chat. Arrange is where a
 // room gets its picture and layers and a figure its spot; that part edits the records.
+import { IMAGE_TYPES, MediaImage, animationSlot, posterSlot } from '../../kit/src/media';
 import { useEffect, useRef, useState, type ChangeEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   CLOCK_STEPS, actionBlocked, careAt, clockTracks, doAction, formatDate, formatStamp, lastEmotion, levelReaches, lifeKey, lifeNow, livesIn, moveClock, needEmotion,
@@ -107,7 +108,7 @@ export function House({ worlds, chats, portraits, lives, userName, onLife, onWor
     ...(layer.fill ? { inset: 0, width: '100%', height: '100%' } : { left: `${layer.x * 100}%`, top: `${layer.y * 100}%`, width: `${layer.scale * 100}%`, translate: '-50% -50%' }),
   } as const);
   const layers = (above: boolean) => room.layers.filter((layer) => layer.shown && layer.above === above && pictures[layerSlot(room.id, layer.id)]).map((layer) => (
-    <img key={layer.id} className={`layer motion-${layer.motion}`} src={pictures[layerSlot(room.id, layer.id)]} alt="" style={layerStyle(layer)} />
+    <MediaImage key={layer.id} frameClassName={`layer motion-${layer.motion}`} src={pictures[layerSlot(room.id, layer.id)]!} poster={pictures[posterSlot(layerSlot(room.id, layer.id))]} animated={pictures[animationSlot(layerSlot(room.id, layer.id))] === 'true'} active alt="" frameStyle={layerStyle(layer)} />
   ));
 
   return (
@@ -139,14 +140,15 @@ export function House({ worlds, chats, portraits, lives, userName, onLife, onWor
         <section className="stage" aria-label={room.name || 'Room'}>
           <div className={`room${pictures[roomSlot(room.id)] ? '' : ' bare'}${arranging ? ' arranging' : ''}`} ref={box}>
             {pictures[roomSlot(room.id)]
-              ? <img className="backdrop" src={pictures[roomSlot(room.id)]} alt="" />
+              ? <MediaImage frameClassName="room-backdrop" className="backdrop" src={pictures[roomSlot(room.id)]!} poster={pictures[posterSlot(roomSlot(room.id))]} animated={pictures[animationSlot(roomSlot(room.id))] === 'true'} active alt="" />
               : <p className="bare-text"><b>{room.name}</b>{room.text}</p>}
             {layers(false)}
             {here.map((resident) => {
               const spot = resident.place!.spot;
               const set = portraits[portraitOwner(world.id, resident.record.id)] ?? {};
               const face = resolvePortrait(resident.emotion, Object.keys(set).filter((slot) => !slot.includes(':')));
-              const picture = (spot.pic && set[figureSlot(spot.pic)]) || (face ? set[face] : undefined);
+              const pictureSlot = spot.pic && set[figureSlot(spot.pic)] ? figureSlot(spot.pic) : face;
+              const picture = pictureSlot ? set[pictureSlot] : undefined;
               return (
                 <button
                   key={resident.record.id} type="button" className={`figure${resident.record.id === selected?.record.id ? ' on' : ''}${picture ? '' : ' plain'}`}
@@ -157,7 +159,7 @@ export function House({ worlds, chats, portraits, lives, userName, onLife, onWor
                   onPointerMove={(event) => drag(event, resident)}
                   onPointerUp={() => { dragging.current = false; }}
                 >
-                  {picture ? <img src={picture} alt="" draggable={false} /> : <span className="initial">{resident.record.name.charAt(0)}</span>}
+                  {picture ? <MediaImage src={picture} poster={pictureSlot ? set[posterSlot(pictureSlot)] : undefined} animated={pictureSlot ? set[animationSlot(pictureSlot)] === 'true' : false} active={resident.record.id === selected?.record.id} alt="" draggable={false} /> : <span className="initial">{resident.record.name.charAt(0)}</span>}
                   <span className="tag">{resident.record.name}{resident.low.length > 0 && <span className="dot on" title={`Low: ${resident.low.join(', ')}`} />}</span>
                 </button>
               );
@@ -297,7 +299,7 @@ function Arranger({ room, pictures, owner, onPicture, onRoom, resident, set, wor
         <div className="row between">
           <h3>{room.name || 'Room'}</h3>
           <span className="row">
-            <span className="btn small file-btn">{pictures[roomSlot(room.id)] ? 'Change the picture' : 'Add a picture'}<input type="file" accept="image/*" aria-label="Room picture" onChange={file((picked) => onPicture(owner, roomSlot(room.id), picked))} /></span>
+            <span className="btn small file-btn">{pictures[roomSlot(room.id)] ? 'Change the picture' : 'Add a picture'}<input type="file" accept={IMAGE_TYPES} aria-label="Room picture" onChange={file((picked) => onPicture(owner, roomSlot(room.id), picked))} /></span>
             {pictures[roomSlot(room.id)] && <button type="button" className="link danger" onClick={() => onPicture(owner, roomSlot(room.id), null)}>Remove</button>}
           </span>
         </div>
@@ -306,7 +308,7 @@ function Arranger({ room, pictures, owner, onPicture, onRoom, resident, set, wor
           <div key={entry.id} className="card">
             <div className="row">
               <input className="input grow" aria-label="Layer name" value={entry.name} placeholder="Lantern light, steam, rain" maxLength={80} onChange={(event) => layer(entry.id, { name: event.target.value })} />
-              <span className="btn small quiet file-btn">{pictures[layerSlot(room.id, entry.id)] ? 'Change' : 'Picture'}<input type="file" accept="image/*" aria-label={`Picture for ${entry.name || 'this layer'}`} onChange={file((picked) => onPicture(owner, layerSlot(room.id, entry.id), picked))} /></span>
+              <span className="btn small quiet file-btn">{pictures[layerSlot(room.id, entry.id)] ? 'Change' : 'Picture'}<input type="file" accept={IMAGE_TYPES} aria-label={`Picture for ${entry.name || 'this layer'}`} onChange={file((picked) => onPicture(owner, layerSlot(room.id, entry.id), picked))} /></span>
               <button type="button" className="link danger" onClick={() => { onPicture(owner, layerSlot(room.id, entry.id), null); onRoom({ ...room, layers: room.layers.filter((other) => other.id !== entry.id) }); }}>Remove</button>
             </div>
             <div className="checks">
@@ -345,7 +347,7 @@ function Arranger({ room, pictures, owner, onPicture, onRoom, resident, set, wor
                 {resident.record.figures.map((figure) => <option key={figure.id} value={figure.id}>{figure.name || 'Unnamed'}{set[figureSlot(figure.id)] ? '' : ' (no picture yet)'}</option>)}
               </select>
             </label>
-            {spot.pic && <span className="btn small quiet file-btn" style={{ alignSelf: 'flex-end' }}>Upload it<input type="file" accept="image/*" aria-label="Figure picture" onChange={file((picked) => onPicture(portraitOwner(worldId, resident.record.id), figureSlot(spot.pic), picked))} /></span>}
+            {spot.pic && <span className="btn small quiet file-btn" style={{ alignSelf: 'flex-end' }}>Upload it<input type="file" accept={IMAGE_TYPES} aria-label="Figure picture" onChange={file((picked) => onPicture(portraitOwner(worldId, resident.record.id), figureSlot(spot.pic), picked))} /></span>}
             <button type="button" className="btn small quiet" style={{ alignSelf: 'flex-end' }} onClick={() => { const fresh = { id: newId(), name: resident.place!.event.slice(0, 40) || 'At ease' }; onRecord({ ...resident.record, figures: [...resident.record.figures, fresh] }); }}>New picture slot</button>
           </div>
           <p className="hint">A cut-out with a clear background sits best in a room. Uploads keep their transparency.</p>

@@ -55,6 +55,14 @@ describe('an adventure module as a Studio world', () => {
     const out = (worldToModule(edited).module.characters as Loose[]).find((entry) => entry.id === person.id)!;
     expect(out).toMatchObject({ name: 'Someone else', tier: 'nemesis' });
   });
+  it('keeps the Chat listing default through module conversion without changing character identity', () => {
+    const person = world.records.find((record) => record.kind === 'character')!;
+    const listed = { ...world, records: world.records.map((record) => record.id === person.id ? { ...record, chatListed: true } : record) };
+    const reread = moduleToWorld(worldToModule(listed).module, 10);
+    if (!reread.ok) throw new Error(reread.errors.join(' '));
+    expect(reread.world.records.find((record) => record.id === person.id)).toMatchObject({ id: person.id, name: person.name, chatListed: true });
+    expect(reread.world.records.filter((record) => record.kind === 'character')).toHaveLength(world.records.filter((record) => record.kind === 'character').length);
+  });
 
   it('turns threads into thread records: the five questions as sections for the author, the kind and milestones as rules', () => {
     const source = (raw.threads as Loose[])[2]!;

@@ -3,6 +3,7 @@
 // never asked of the model. A picture written the way shared cards write one, ![](address),
 // is shown under the words it came with.
 import { Fragment, type ReactNode } from 'react';
+import { MediaImage } from '../../kit/src/media';
 
 const TOKEN = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|\([^()\n]+\)|\[[^[\]\n]+\])/g;
 const IMAGE = /!\[([^\]\n]*)\]\(\s*((?:https?:\/\/|data:image\/)[^)\s]+)\s*\)/g;
@@ -23,7 +24,7 @@ export function RichText({ text }: { text: string }) {
     const images = [...raw.matchAll(IMAGE)];
     const line = raw.replace(IMAGE, '').trim();
     if (line) out.push(<p key={`p${row}`}>{inline(line)}</p>);
-    images.forEach((image, at) => out.push(<img key={`i${row}-${at}`} className="picture" src={image[2]} alt={image[1] ?? ''} loading="lazy" referrerPolicy="no-referrer" />));
+    images.forEach((image, at) => out.push(<MediaImage key={`i${row}-${at}`} className="picture" src={image[2]!} alt={image[1] ?? ''} animated={/\.(gif|png|webp|avif)(?:[?#]|$)/i.test(image[2]!)} active controls loading="lazy" referrerPolicy="no-referrer" />));
   });
   return <>{out}</>;
 }

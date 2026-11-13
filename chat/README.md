@@ -2,9 +2,12 @@
 
 Inkwyrm's chat side, at `/chat/` on the site: CharacterRoom, rebuilt as a web app on the shared core. Characters, personas and scenarios are records from the Studio's worlds. A chat is an instance and never writes to them. The plan is `docs/chat-brief.md`.
 
-## What it does (0.3.0: Phases A and B, and Home)
+## What it does (0.4.0: the curated collection)
 
-- **Home:** recent chats on top, then every character in the Studio's worlds. Errata, the house muse, comes bundled.
+- **Collection:** a portrait gallery of the characters you choose, with direct Continue/New chat, conversation selection, favorites, shelves, archive, artwork and framing controls. World NPCs stay in Add characters until chosen. The collection title, layout, density, sort, image playback and visible metadata are personal display preferences.
+- **Conversations:** every conversation remains accessible, including those with people removed from the collection. A character page brings their conversations and images together.
+- **Images:** GIF, APNG and animated WebP originals and their timing survive upload and backup/restore. Posters keep browsing light; full originals load on demand. Playback supports Still, Selected and Visible, respects reduced motion and stops offscreen/background playback.
+- See [the collection guide](../docs/chat-collection/README.md) for the data boundaries and verification.
 - **Import** onto the character list:
   - CharacterRoom contact, user and scenario cards, pictures included;
   - Character Card V1, V2 and V3 as JSON, PNG cards with the card in a `chara` or `ccv3` chunk, and the older Pygmalion shape.
@@ -29,7 +32,7 @@ Inkwyrm's chat side, at `/chat/` on the site: CharacterRoom, rebuilt as a web ap
   - plans (Plan, or your own): limited to a few turns or ongoing, counting down by your messages;
   - moods: the character's last few emotions, or time away, put them in one of nine states of mind;
   - each generation shows what it will send and what it costs before it is sent.
-- **Home** (0.3.0), beside Chats: a place with everyone in it.
+- **Home** (0.3.0), beside Collection and Conversations: a place with everyone in it.
   - Pick a scenario with rooms. Each room is a picture; each character who lives there is drawn in the room and at the spot their schedule puts them, with layers (lantern light, steam) over or under them, and a little movement.
   - Tap a character to see what they are doing, how their needs stand, and what you can do for them. Actions move needs and a bond; a cooldown or the relationship can hold one back.
   - Their day is theirs, not a chat's: one clock, one relationship and one set of needs per character on this device, read by Home and by every chat with them.
@@ -39,7 +42,7 @@ Inkwyrm's chat side, at `/chat/` on the site: CharacterRoom, rebuilt as a web ap
   - A room locked behind a relationship hides whoever is in it until you reach it.
 - **Under the hood** (the token count in the header): the exact request for the last reply and what came back; In context now, by reach; Memory; Time; and this chat's settings, sets and lore switches.
 - **Settings:** the connection (the site's own, shared with the adventure), the model and how it is sent, the context window, reply length and temperature, paper or night, text size, bubbles or a page, and an avatar plus 24 emotion portraits per character, where a partial set works.
-- **Files:** a chat exports and imports as `<name>.chat.json`; Back up everything makes one file of every world, chat and portrait in this browser.
+- **Files:** a chat exports and imports as `<name>.chat.json`; Back up everything includes worlds, chats, lives, image originals/posters and collection curation. Adventure saves and Studio authoring talks have separate exports.
 
 Everything is kept in this browser (IndexedDB `inkwyrm-chat`; worlds in the Studio's `inkwyrm-studio`). Keys go through the site's relay per request and are never stored on the server.
 

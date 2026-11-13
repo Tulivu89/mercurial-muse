@@ -192,3 +192,10 @@ details.block summary, .ask summary { cursor: pointer; min-height: 36px; font-we
 .arranger { display: flex; flex-direction: column; gap: 10px; }
 .arranger h3 { font-family: var(--display); font-weight: 600; font-size: 18px; }
 .arranger input[type='range'] { min-height: 32px; padding: 0; border: 0; background: none; }
+
+.portrait > .media-image { width: 100%; height: 100%; object-fit: cover; }
+
+.room > .room-backdrop { display: block; width: 100%; }
+.room-backdrop > img { height: auto; }
+.figure > .media-image, .slot-face > .media-image { width: 100%; height: 100%; }
+.local-nav { flex-wrap: wrap; }

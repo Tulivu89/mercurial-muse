@@ -159,7 +159,7 @@ export function importTavernCard(world: World, raw: unknown, ids: Ids, now: numb
   const notes: string[] = [];
   let next = world;
 
-  const record: StoryRecord = { ...newRecord('character', ids(), card.name.slice(0, 120), ids), sections: [] };
+  const record: StoryRecord = { ...newRecord('character', ids(), card.name.slice(0, 120), ids), chatListed: true, sections: [] };
   if (card.nickname && card.nickname.toLowerCase() !== card.name.toLowerCase()) record.keys = [card.nickname.slice(0, 60)];
   // These cards have no one-line summary; a short personality field is the nearest thing.
   if (card.personality && card.personality.length <= 200 && !card.personality.includes('\n')) record.line = card.personality;

@@ -4,7 +4,7 @@
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
-const FOCUSABLE = 'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE = 'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), summary, [tabindex]:not([tabindex="-1"])';
 
 export function Sheet({ title, onClose, closeLabel = 'Close', onKeyDown, children }: {
   title: string;
@@ -14,11 +14,19 @@ export function Sheet({ title, onClose, closeLabel = 'Close', onKeyDown, childre
   children: ReactNode;
 }) {
   const box = useRef<HTMLDivElement>(null);
-  useEffect(() => { if (!box.current?.contains(document.activeElement)) box.current?.focus(); }, []);
+  useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (!box.current?.contains(document.activeElement)) box.current?.focus();
+    return () => { if (opener?.isConnected) opener.focus(); };
+  }, []);
 
   const keys = (event: KeyboardEvent) => {
     if (event.key === 'Tab' && box.current) {
-      const stops = [...box.current.querySelectorAll<HTMLElement>(FOCUSABLE)];
+      const stops = [...box.current.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((element) => {
+        if (element.closest('[hidden]') || getComputedStyle(element).display === 'none') return false;
+        const folded = element.closest('details:not([open])');
+        return !folded || folded.querySelector('summary')?.contains(element);
+      });
       const first = stops[0];
       const last = stops.at(-1);
       if (first && last) {
@@ -36,7 +44,7 @@ export function Sheet({ title, onClose, closeLabel = 'Close', onKeyDown, childre
       <div ref={box} className="sheet" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} onKeyDown={keys}>
         <div className="sheet-head">
           <b className="grow">{title}</b>
-          <button type="button" className="btn small" onClick={onClose}>{closeLabel}</button>
+          <button type="button" className="btn quiet" onClick={onClose}>{closeLabel}</button>
         </div>
         {children}
       </div>

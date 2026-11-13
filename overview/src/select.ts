@@ -7,6 +7,7 @@ import { messageText, type Chat } from '../../core/chat/index.js';
 import { KIND_NAMES, type World } from '../../core/records/index.js';
 import { chatWithHref, hrefFor, type NavigationV1, type Target } from '../../kit/src/activity';
 import { EXAMPLE_ADVENTURES, EXAMPLE_WORLDS, HOUSE_WORLD_ID, IMPORTS_WORLD_ID, type ExampleAdventure, type ExampleWorld } from './examples';
+import { characterKey, collectionCharacters, EMPTY_COLLECTION, type Collection, type Member } from '../../kit/src/collection';
 
 export type Read<T> = { state: 'loading' } | { state: 'ready'; value: T } | { state: 'error'; message: string };
 
@@ -23,10 +24,11 @@ export interface Library {
   navigation: NavigationV1;
   // Errata as she comes with the site, for a browser where Chat hasn't put her in yet.
   house: World;
+  collection?: Collection;
 }
 
 export interface ContinueItem { label: string; title: string; detail: string; href: string; action: string }
-export interface CharacterCard { key: string; name: string; line: string; world: string; tag: 'Recent chat' | 'Included'; excerpt: string; href: string; action: string }
+export interface CharacterCard { key: string; name: string; line: string; world: string; tag: 'Recent chat' | 'Included' | 'Favorite' | 'In your collection'; excerpt: string; href: string; action: string; owner?: string; member?: Member }
 export interface WorldCard {
   key: string; name: string; premise: string; tag: 'Last worked on' | 'Your world' | 'Included'; href: string; action: string;
   detail: string;
@@ -79,6 +81,8 @@ function resolve(target: Target, library: Library): ContinueItem | null {
   const worlds = ready(library.worlds);
   if (target.kind === 'chat') {
     const chat = ready(library.chats)?.find((entry) => entry.id === target.chatId);
+    const member = chat ? library.collection?.members[characterKey(chat.worldId, chat.characterId)] : undefined;
+    if (member && member.state !== 'active') return null;
     return chat ? { label: 'Continue', title: chat.characterName || 'Your chat', detail: lastExcerpt(chat) || 'Your last conversation', href: hrefFor(target), action: 'Continue chat' } : null;
   }
   if (target.kind === 'adventure') {
@@ -111,23 +115,21 @@ export function selectOverview(library: Library): Overview {
     if (continueWith) break;
   }
 
-  // Characters: recent chats' characters first, one card each, then Errata as included.
+  // The same curated membership used by Chat. World NPCs never fill this panel by accident.
   const cards: CharacterCard[] = [];
-  const recentChats = [...(chats ?? [])].sort((a, b) => b.updatedAt - a.updatedAt);
-  for (const chat of recentChats) {
-    const key = `${chat.worldId}/${chat.characterId}`;
-    if (cards.some((card) => card.key === key) || cards.length >= 3) continue;
-    const world = worlds?.find((entry) => entry.id === chat.worldId);
-    const record = world?.records.find((entry) => entry.id === chat.characterId);
-    cards.push({
-      key, name: chat.characterName || record?.name || 'Character', line: record?.line ?? '', world: world?.name ?? '',
-      tag: 'Recent chat', excerpt: lastExcerpt(chat), href: hrefFor({ kind: 'chat', chatId: chat.id }), action: `Continue with ${chat.characterName || 'them'}`,
-    });
-  }
+  const curated = library.collection ?? EMPTY_COLLECTION;
   const house = worlds?.find((entry) => entry.id === HOUSE_WORLD_ID) ?? library.house;
-  const errata = house.records.find((record) => record.kind === 'character');
-  if (errata && cards.length < 3 && !cards.some((card) => card.key === `${house.id}/${errata.id}`)) {
-    cards.push({ key: `${house.id}/${errata.id}`, name: errata.name, line: errata.line, world: 'Comes with Inkwyrm', tag: 'Included', excerpt: '', href: chatWithHref(house.id, errata.id), action: `Meet ${errata.name}` });
+  const available = [...(worlds ?? [])];
+  // A fresh visitor can meet the bundled muse before Chat has seeded her. Once a collection
+  // exists, a missing stored house is a deletion, not permission to advertise a broken target.
+  if (!curated.initialized && !available.some((world) => world.id === house.id)) available.push(house);
+  for (const { world, record, member, chat } of collectionCharacters(available, chats ?? [], curated).slice(0, 3)) {
+    const key = `${world.id}/${record.id}`;
+    cards.push({
+      key, name: record.name, line: record.line, world: world.name, owner: `${world.id}:${record.id}`, member,
+      tag: member.favorite ? 'Favorite' : chat ? 'Recent chat' : world.id === HOUSE_WORLD_ID ? 'Included' : 'In your collection',
+      excerpt: chat ? lastExcerpt(chat) : '', href: chat ? hrefFor({ kind: 'chat', chatId: chat.id }) : chatWithHref(world.id, record.id), action: chat ? `Continue with ${record.name}` : `Meet ${record.name}`,
+    });
   }
 
   // Worlds: the one last worked on, then the newest of the author's own, then the examples.

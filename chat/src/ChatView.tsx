@@ -14,6 +14,7 @@ import { clock as clockText, newId } from '../../kit/src/util';
 import { AgainIcon, BackIcon, BinIcon, CloseIcon, ContinueIcon, CopyIcon, EditIcon, KeepIcon, NextIcon, SendIcon, StopIcon } from './icons';
 import { ContextPanel, DetailsPanel, MemoryPanel, SentPanel, TimePanel, type SideApi } from './Panels';
 import { Portrait } from './Portrait';
+import { InkMark } from '../../kit/src/Mark';
 import { RichText } from './RichText';
 import { contextTokensFor, type Settings } from './settings';
 import type { PortraitSet, Sent } from './store';
@@ -40,13 +41,14 @@ export interface ChatViewProps {
   onChange: (chat: Chat) => void;
   onSent?: (sent: Sent) => void;
   onBack: () => void;
+  onOverview?: () => void | Promise<void>;
   onDelete: () => void;
   onSettings: () => void;
   // Swapped out in tests so nothing leaves the machine.
   generateImpl?: typeof generate;
 }
 
-export function ChatView({ chat, world, connection, settings, portraits, sent = null, needs, onChange, onSent, onBack, onDelete, onSettings, generateImpl = generate }: ChatViewProps) {
+export function ChatView({ chat, world, connection, settings, portraits, sent = null, needs, onChange, onSent, onBack, onOverview, onDelete, onSettings, generateImpl = generate }: ChatViewProps) {
   // The status line follows the clock without a reply having to happen.
   const [tick, setTick] = useState(() => Date.now());
   useEffect(() => { const timer = setInterval(() => setTick(Date.now()), 30_000); return () => clearInterval(timer); }, []);
@@ -68,6 +70,8 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
   const [preview, setPreview] = useState<Built | null>(null);
   const [tucked, setTucked] = useState(false);
   const abort = useRef<AbortController | null>(null);
+  const inFlight = useRef<Promise<void> | null>(null);
+  const leaving = useRef(false);
   const firstBuild = useRef(true);
   const chatRef = useRef(chat);
   chatRef.current = chat;
@@ -125,7 +129,15 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     return () => { live = false; };
   }, [panel, chat, world, connection.model, settings]);
 
-  async function run(kind: Kind, targetId?: string, base: Chat = chatRef.current) {
+  function run(kind: Kind, targetId?: string, base: Chat = chatRef.current): Promise<void> {
+    if (inFlight.current) return inFlight.current;
+    const task = runTurn(kind, targetId, base).catch((error: unknown) => { setBusy(null); setError(error instanceof Error ? error.message : 'The reply failed.'); });
+    inFlight.current = task;
+    void task.finally(() => { if (inFlight.current === task) inFlight.current = null; });
+    return task;
+  }
+
+  async function runTurn(kind: Kind, targetId?: string, base: Chat = chatRef.current) {
     if (busy) return;
     const blocked = ready();
     if (blocked) { setError(blocked); return; }
@@ -133,7 +145,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     if (kind !== 'reply' && index < 0) return;
     const upTo = kind === 'reply' ? base.messages.length : kind === 'regenerate' ? index : index + 1;
     const built = await buildRequest(base, world!, buildOptions(upTo, kind === 'continue', false));
-    if (!built) return;
+    if (!built || leaving.current) return;
 
     const options: GenerateOptions = { ...samplers(settings.replyTokens), ...(built.profile === 'general' ? { stop: [`\n${userName}:`] } : {}), ...(built.prefill ? { prefill: built.prefill } : {}) };
     const controller = new AbortController();
@@ -184,7 +196,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
   }
 
   function send() {
-    if (busy) return;
+    if (busy || inFlight.current) return;
     const text = chat.draft.trim();
     let base: Chat = { ...chatRef.current, draft: '' };
     if (text) base = { ...addUserMessage(base, asAction && !/^\*.*\*$/s.test(text) ? `*${text}*` : text, newId(), Date.now()), draft: '' };
@@ -272,6 +284,12 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
       <div className="column">
         <header className={`chat-head${tucked && !panel ? ' tucked' : ''}`}>
           <button type="button" className="icon-btn plain" onClick={onBack} aria-label="Back to your chats"><BackIcon /></button>
+          <a className="icon-btn plain" href="/overview/" aria-label="Inkwyrm, the front page" onClick={async (event) => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault(); leaving.current = true; abort.current?.abort();
+            try { await inFlight.current; await onOverview?.(); window.location.assign('/overview/'); }
+            catch { leaving.current = false; /* the app reports the save failure */ }
+          }}><InkMark size={28} /></a>
           <button type="button" className="who" onClick={() => setFace(true)} aria-label={`About ${charName}`}>
             <Portrait name={charName} emotion={emotion} set={portraits} size={40} />
             <span className="chat-who">
