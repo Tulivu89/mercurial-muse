@@ -8,7 +8,8 @@
     "build": "tsc -p tsconfig.json && vite build",
     "lint": "tsc -p tsconfig.json --pretty false",
     "test": "vitest run",
-    "prompts:live": "vitest run --config live/vitest.config.ts"
+    "prompts:live": "vitest run --config live/vitest.config.ts",
+    "content:check": "vite-node scripts/content-check.ts"
   },
   "dependencies": {
     "react": "^18.3.1",

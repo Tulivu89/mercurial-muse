@@ -61,3 +61,7 @@ Two flags close together means rewrite the passage, not patch it. DRAFT pieces, 
 ## When continuing an existing piece
 
 Prose already on the page (an ongoing story, earlier turns, the story's text part, the user's own writing) sets the voice. Match it first. This skill is the default for blank-page work and the correction for drift back toward AI-isms, not a style to stamp over a voice that's already established.
+
+## In this repository (Inkwyrm)
+
+This skill came from the owner's story vault. Here there is no `Style/reference.md`, no story profile and no DRAFT or [rewind] commands: calibration comes from the owner's failure list in `docs/content/standard.md`, and from Keep entries when the owner adds them. Pulp-voice governs prose: greetings, example chats, scenes, narration. Records (sections, lines, places, groups) follow the stricter `inkwyrm-records` skill, which loads this one's anti-patterns.
