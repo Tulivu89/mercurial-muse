@@ -3,10 +3,10 @@ name: Site
 on:
   push:
     branches: [main, 'claude/**']
-    paths: ['adventure/**', 'core/**', 'kit/**', 'studio/**', 'chat/**', 'package.json', 'package-lock.json', '.github/workflows/site.yml']
+    paths: ['adventure/**', 'core/**', 'kit/**', 'studio/**', 'chat/**', 'overview/**', 'package.json', 'package-lock.json', '.github/workflows/site.yml']
   pull_request:
     branches: [main]
-    paths: ['adventure/**', 'core/**', 'kit/**', 'studio/**', 'chat/**', 'package.json', 'package-lock.json', '.github/workflows/site.yml']
+    paths: ['adventure/**', 'core/**', 'kit/**', 'studio/**', 'chat/**', 'overview/**', 'package.json', 'package-lock.json', '.github/workflows/site.yml']
 
 permissions:
   contents: read
@@ -26,7 +26,7 @@ jobs:
       - run: npm test
       - run: npm run lint
       - run: npm run build
-      - name: Serve the production build and check the adventure, the Studio and Chat answer
+      - name: Serve the production build and check the adventure, the Studio, Chat and the Overview answer
         working-directory: adventure
         run: |
           NODE_ENV=production PORT=8791 node dist-server/adventure/server/index.js &
@@ -43,3 +43,7 @@ jobs:
           chat=$(grep -o 'src="/chat/assets/[^"]*\.js"' /tmp/chat.html | head -1 | cut -d'"' -f2)
           test -n "$chat"
           curl -fsS -o /dev/null -w '%{content_type}\n' "http://127.0.0.1:8791$chat" | grep -q javascript
+          curl -fsS http://127.0.0.1:8791/overview/ | tee /tmp/overview.html | grep -q 'id="root"'
+          overview=$(grep -o 'src="/overview/assets/[^"]*\.js"' /tmp/overview.html | head -1 | cut -d'"' -f2)
+          test -n "$overview"
+          curl -fsS -o /dev/null -w '%{content_type}\n' "http://127.0.0.1:8791$overview" | grep -q javascript

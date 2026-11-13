@@ -156,23 +156,34 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
     }
   };
 
-  const bringIn = (raw: unknown) => {
+  // `again`: open the copy this browser already has instead of making another (the Overview's
+  // examples, which only ever ask to look).
+  const bringIn = (raw: unknown, again = false) => {
     const read = moduleToWorld(raw, Date.now());
     if (!read.ok) { onStatus({ text: read.errors.join(' '), bad: true }); return; }
     const taken = worlds?.some((world) => world.id === read.world.id);
+    if (taken && again) { onOpen(read.world.id); return; }
     const world = taken ? { ...read.world, id: newId(), name: `${read.world.name} (copy)` } : read.world;
     onCreate(world);
     onStatus({ text: [`Brought in ${world.name}: ${read.notes.join(' ')}`, 'It goes back out as the same module, with whatever you change.'].join(' ') });
   };
   // The adventure's own modules, fetched only when asked for.
-  const bringModule = async (which: 'bogwater' | 'port-covenant') => {
+  const bringModule = async (which: 'bogwater' | 'port-covenant', again = false) => {
     try {
       const loaded = which === 'bogwater' ? await import('../../adventure/modules/abernys-bogwater.json') : await import('../../adventure/modules/abernys-port-covenant.json');
-      bringIn(loaded.default);
+      bringIn(loaded.default, again);
     } catch (error) {
       onStatus({ text: (error as Error).message, bad: true });
     }
   };
+  // `#/bring/bogwater` from the Overview: open the example, bringing it in only if it isn't here.
+  useEffect(() => {
+    if (worlds === null) return;
+    const asked = /^#\/bring\/(bogwater|port-covenant)$/.exec(window.location.hash)?.[1] as 'bogwater' | 'port-covenant' | undefined;
+    if (!asked) return;
+    window.history.replaceState(null, '', `${window.location.pathname}#/`);
+    void bringModule(asked, true);
+  }, [worlds === null]);
 
   return (
     <main className="home">

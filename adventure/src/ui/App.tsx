@@ -12,6 +12,7 @@ import { InkMark } from '../../../kit/src/Mark';
 import { SiteHeader } from '../../../kit/src/SiteHeader';
 import { THEME_NAMES, useTheme, type Theme } from '../../../kit/src/theme';
 import { deleteSave, listSaves, moduleKey, openSave, putModule, putSave, type SaveRecord } from './storage';
+import { recordActivity } from '../../../kit/src/activity';
 
 type Screen =
   | { kind: 'home' }
@@ -41,6 +42,8 @@ export function App() {
     try { await putModule(module); } catch { setStorageNote('This browser is not keeping saves. Export your game to keep it.'); }
     setErrors([]);
     setScreen({ kind: 'play', id, name, module, save });
+    // The game that really opened is what the Overview's Continue offers (once it has been saved).
+    recordActivity({ kind: 'adventure', saveId: id });
   }
 
   function newGame(raw: unknown) {
@@ -91,6 +94,23 @@ export function App() {
     if (!opened.ok) { setErrors(opened.errors); return; }
     void begin(opened.module, opened.save, record.name, record.id);
   }
+
+  // A save named in the address, from the Overview's Continue: `/?save=<id>`. It opens that game
+  // as it was saved, or says why it can't; it never starts a new one in its place.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('save');
+    if (!id) return;
+    window.history.replaceState(null, '', window.location.pathname);
+    void (async () => {
+      let found: SaveRecord | undefined;
+      try { found = (await listSaves()).find((record) => record.id === id); } catch (error) {
+        setErrors([error instanceof Error ? error.message : 'Saved games are unavailable.']);
+        return;
+      }
+      if (found) await resume(found);
+      else setErrors(['That saved game is not in this browser any more. Pick another below, or start a new one.']);
+    })();
+  }, []);
 
   async function remove(record: SaveRecord) {
     if (!window.confirm(`Delete "${record.name}" from this browser? Export it first if you want to keep it.`)) return;

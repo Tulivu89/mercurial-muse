@@ -3,6 +3,7 @@ import { EMOTIONS, careAt, lifeKey, lifeNow, needsText, newChat, newLife, readCh
 import { importCardFile, newWorld, recordById, type StoryRecord, type World } from '../../core/records/index.js';
 import { initialConnection, reconnect, type Connection } from '../../kit/src/connection';
 import { SiteHeader } from '../../kit/src/SiteHeader';
+import { recordActivity } from '../../kit/src/activity';
 import { useTheme } from '../../kit/src/theme';
 import { downloadJson, imageDataUrl, newId, readFileBytes, readJsonFile } from '../../kit/src/util';
 import { listWorlds, putWorld } from '../../kit/src/worlds';
@@ -20,10 +21,16 @@ import {
 const IMPORTS_WORLD_ID = 'inkwyrm-imports';
 const SEEDED_KEY = 'inkwyrm.chat.seeded';
 
-type View = { name: 'home' } | { name: 'house' } | { name: 'settings' } | { name: 'chat'; id: string };
-function viewFromHash(): View {
-  const hash = window.location.hash.replace(/^#\/?/, '');
+// `with` is a character to start a chat with, from the Studio's *Chat with* or the Overview:
+// `#/with/<world>/<record>`. It opens the new-chat sheet and creates nothing by itself.
+type View = { name: 'home'; with?: { worldId: string; recordId: string } } | { name: 'house' } | { name: 'settings' } | { name: 'chat'; id: string };
+export function viewFromHash(hashText = window.location.hash): View {
+  const hash = hashText.replace(/^#\/?/, '');
   if (hash === 'settings') return { name: 'settings' };
+  const asked = /^with\/([^/]+)\/([^/?]+)$/.exec(hash);
+  if (asked) {
+    try { return { name: 'home', with: { worldId: decodeURIComponent(asked[1]), recordId: decodeURIComponent(asked[2]) } }; } catch { return { name: 'home' }; }
+  }
   if (hash === 'home') return { name: 'house' };
   if (hash.startsWith('chat/') && hash.length > 5) return { name: 'chat', id: decodeURIComponent(hash.slice(5)) };
   return { name: 'home' };
@@ -150,6 +157,8 @@ export function App() {
 
   const openId = view.name === 'chat' ? view.id : null;
   const open = chats?.find((chat) => chat.id === openId) ?? null;
+  // A chat that really opened is what the Overview's Continue offers.
+  useEffect(() => { if (open) recordActivity({ kind: 'chat', chatId: open.id }); }, [open?.id]);
   useEffect(() => {
     if (!openId || openId in sent) return;
     getSent(openId).then((record) => setSent((all) => ({ ...all, [openId]: record ?? null }))).catch(() => undefined);
@@ -282,6 +291,12 @@ export function App() {
           )}
           <Home
             worlds={worlds} chats={chats} portraits={portraits} status={status} userName={settings.userName}
+            startWith={view.name === 'home' ? view.with ?? null : null}
+            onStartWithDone={(found) => {
+              window.history.replaceState(null, '', `${window.location.pathname}#/`);
+              setView({ name: 'home' });
+              if (!found) setStatus({ text: 'That character is not in this browser. Open their world in the Studio, or import their card here.', bad: true });
+            }}
             onOpen={(id) => go({ name: 'chat', id })}
             onStart={(chat) => {
               setSettings((now) => ({ ...now, userName: chat.personaId ? now.userName : chat.userName }));

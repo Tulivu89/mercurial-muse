@@ -1,6 +1,6 @@
 # Inkwyrm front page: build handoff
 
-Nov 12, 2026 · @AmbiProp · Groundwork requested by the owner; application integration has not begun.
+Nov 12, 2026 · @AmbiProp · Groundwork requested by the owner. Integration began Nov 13: the Overview 0.1.0 is served at `/overview/` (see [integration.md](integration.md), *Built so far*).
 
 Inkwyrm needs a face of its own. Its front page is an illustrated dashboard: included examples explain the service on a first visit; the same places become useful shortcuts as someone builds a library. Studio keeps its job of authoring worlds. **Home** continues to mean an inhabited place, not the site's root page.
 

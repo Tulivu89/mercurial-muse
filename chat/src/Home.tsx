@@ -1,5 +1,5 @@
 // The start: recent chats on top, then every character in the Studio's worlds, and import.
-import { useState, type ChangeEvent } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import {
   RESPONSE_LENGTHS, STYLES, STYLE_HINTS, STYLE_NAMES, lastEmotion, lastLine, newChat, responseLengthName, setClockMode, hasSchedule, type Chat, type NewChat,
 } from '../../core/chat/index.js';
@@ -15,7 +15,7 @@ export interface Cast { world: World; record: StoryRecord }
 export const castOf = (worlds: World[]): Cast[] => worlds.flatMap((world) => world.records.filter((record) => record.kind === 'character').map((record) => ({ world, record })));
 const capital = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 
-export function Home({ worlds, chats, portraits, status, userName, onOpen, onStart, onImport }: {
+export function Home({ worlds, chats, portraits, status, userName, startWith = null, onStartWithDone, onOpen, onStart, onImport }: {
   worlds: World[] | null;
   chats: Chat[] | null;
   portraits: Record<string, PortraitSet>;
@@ -24,8 +24,18 @@ export function Home({ worlds, chats, portraits, status, userName, onOpen, onSta
   onOpen: (id: string) => void;
   onStart: (chat: Chat) => void;
   onImport: (file: File) => void;
+  // A character asked for by address: its new-chat sheet opens once the worlds are read.
+  startWith?: { worldId: string; recordId: string } | null;
+  onStartWithDone?: (found: boolean) => void;
 }) {
   const [starting, setStarting] = useState<Cast | null>(null);
+  useEffect(() => {
+    if (!startWith || worlds === null) return;
+    const world = worlds.find((entry) => entry.id === startWith.worldId);
+    const record = world?.records.find((entry) => entry.id === startWith.recordId && entry.kind === 'character');
+    if (world && record) setStarting({ world, record });
+    onStartWithDone?.(Boolean(world && record));
+  }, [startWith?.worldId, startWith?.recordId, worlds === null]);
   const cast = castOf(worlds ?? []);
   const now = Date.now();
   const pick = (event: ChangeEvent<HTMLInputElement>) => {

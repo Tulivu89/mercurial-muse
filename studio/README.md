@@ -2,7 +2,7 @@
 
 Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the record model (`docs/records.md`), and see exactly what each part sends the model.
 
-## What it does (0.14.0)
+## What it does (0.14.1)
 
 - **Worlds** in this browser's storage, with a premise, genre, tone and shared conditions.
 - **Records of every kind:** characters, places, groups, items, lore, threads, scenarios and personas.
@@ -68,6 +68,7 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - The default questions are the plan's: six for a character, five for a place, the thread's five and its next beat, and a few for every other kind. W4 makes them the author's own.
   - **Settings › The Studio's helper:** a model for drafts and Errata apart from play's (same provider and key), and **Plain voice**, which takes Errata's manner away and leaves the same helper.
   - **Talks with Errata** on the world's About page: **Export talks** saves the world's talks and waiting drafts as `<world>.talks.json`, and **Open a talks file** brings them back beside the same world, keeping anything already there. The world's own file never carries them.
+- **For the Overview** (0.14.1): a record that really opens is noted, with its door, for the front page's Continue (`kit/src/activity.ts`), and `#/bring/bogwater` or `#/bring/port-covenant` opens that bundled world, bringing it in only if this browser doesn't have it yet.
 - **The marks** (0.7.1): the Studio's nib in the header and on the home page, in wet ink, black by day and bone at night (`kit/src/Mark.tsx`). It drops in when the Studio opens; page titles are written on and a new page settles in from a slight blur, all off with reduced motion. The tab shows the flat nib.
 - **Genre:** the purse's words are the Coin state's bands and the catalog's names are editable, so a modern world's hundred *could buy a car*.
 - **In context now:** put people and a place in the scene, type what was just said, tick what holds, and see what the world would send, with a rough token count. From 0.3.0 it shows the sentence of every state that is off its resting band, under the record it belongs to, as the narrator would read it.

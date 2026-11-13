@@ -78,6 +78,12 @@ export function createApp(options: AppOptions = {}) {
       app.use('/chat', express.static(chatRoot, { index: false, maxAge: '1h' }));
       app.get(['/chat', '/chat/*splat'], (_request, response) => response.sendFile(path.join(chatRoot, 'index.html')));
     }
+    // The Overview, the site's front page (docs/front-page/), under /overview/ until it takes the root.
+    const overviewRoot = path.resolve(directory, '../../../../overview/dist');
+    if (existsSync(overviewRoot)) {
+      app.use('/overview', express.static(overviewRoot, { index: false, maxAge: '1h' }));
+      app.get(['/overview', '/overview/*splat'], (_request, response) => response.sendFile(path.join(overviewRoot, 'index.html')));
+    }
     app.use(express.static(webRoot, { index: false, maxAge: '1h' }));
     app.get('*splat', (_request, response) => response.sendFile(path.join(webRoot, 'index.html')));
   }

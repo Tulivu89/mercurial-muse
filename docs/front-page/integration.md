@@ -1,6 +1,6 @@
 # Front page: how it fits the work so far
 
-Nov 12, 2026 · @AmbiProp · Claude's reading of the front-page handoff (`README.md`, `implementation.md`, `visual-and-motion.md`), checked against the code at Studio 0.14.0. **A plan for the owner to approve or change; nothing here is built yet.**
+Nov 12, 2026, revised Nov 13 · @AmbiProp · Claude's reading of the front-page handoff (`README.md`, `implementation.md`, `visual-and-motion.md`), checked against the code at Studio 0.14.0. **Approved by the owner on Nov 13**, with one change: the examples are built in a dedicated session, not with the site's helper (see *Content*). The first pass is built: see *Built so far*.
 
 The handoff's phases stand: F1 destinations and activity, F2 finished examples, F3 the Overview at `/overview/`, F4 the root, F5 Home posts. This page says where each one touches the Studio's newer work (maps, Drafts, Errata), what to take from that work, and the order to build in alongside the worldbuilding phases.
 
@@ -29,9 +29,33 @@ The handoff's code map is accurate. Three points matter for the order:
 - **Start here** in the Studio's Settings sheet, beside the theme and the helper, once F4 adds the preference.
 - **The shared header** gains the Overview: the wordmark leads to `/overview/` (then `/`), and the three sides stay as they are. Adventure's link moves only in F4.
 
-## Content: build the example with the Studio
+## Content: a dedicated session, not the site's helper
 
-F2 needs Errata's writing room: a scenario with rooms, Errata's evening schedule, and her placement. That's exactly what the Studio and its helper are for. Build it in the Studio, in the house world, with Errata drafting the fields: the first real use of W1 and W2 on content that ships. It also gives the live prompt tests their first real run. The art (her approved CharacterVault design, the room) stays an owner dependency and doesn't block F1 or F3.
+F2 needs Errata's writing room: a scenario with rooms, Errata's evening schedule, and her placement. Later it needs more characters and a world outside fantasy. **The owner's call (Nov 13): examples are written in a dedicated session on a strong model, to the house writing rules, never drafted by whatever model happens to be connected to the site.** They're the first thing a visitor reads, so they set the bar for everything else. They're delivered as files (a world file or module) and checked in the Studio like any world. The art (Errata's approved CharacterVault design, the room) stays an owner dependency. Neither blocks F1 or F3.
+
+## Built so far (Nov 13): enough to show people
+
+The owner wanted enough of the front page live to show a couple of friends. That's the first visit, which has to be right, and a returning visit that already works on real data.
+
+- **F1, the part the Overview needs:**
+  - `kit/src/activity.ts`: the versioned activity record (`inkwyrm.navigation.v1`), validated, bounded to twenty, one entry per place, written only when something really opens.
+  - Chat reads `#/with/<world>/<record>`. This fixes the Studio's *Chat with*, which was a dead link.
+  - The adventure opens `/?save=<id>`, and says so if the save is gone rather than starting a new game.
+  - The Studio notes the record and door that opened, and opens a bundled world by address (`#/bring/bogwater`), bringing it in only if this browser lacks it.
+- **The Overview 0.1.0 at `/overview/`:**
+  - The first visit: the brand promise and a red **Meet Errata**.
+  - A returning visit: *Pick up the thread.* and one Continue.
+  - **Characters:** recent chats, then Errata as included. Cards are typographic until approved portraits exist.
+  - **Worlds:** the author's own, with map covers and *drafts waiting*, then the two Abernys modules as included.
+  - **Adventure:** the save last opened, or Bogwater's opening, quoted.
+  - **Home:** a plain strip saying the example household is still being written. No room is advertised that doesn't exist.
+  - Each store loads and fails on its own. The page makes no model calls and writes nothing, not even the theme.
+  - Paper and Night, the handoff's motion budget, and reduced motion.
+- **Served** like the Studio and Chat, checked in CI's production run. The root is still the adventure.
+
+**To show friends:** send them `<site>/overview/` once it's deployed. The first visit needs no key: Errata's sheet, the two worlds and Bogwater's start screen all open without one. Talking to Errata or playing needs their own model.
+
+**Not yet:** the read-only *Look inside* (it opens a copy for now, and says so), Start here, pins and dismissals, Home in the Overview, and moving the root (F4).
 
 ## The order, with the worldbuilding phases
 
@@ -40,7 +64,7 @@ F2 needs Errata's writing room: a scenario with rooms, Errata's evening schedule
 | 1. **F1** | Chat's `#/with/<world>/<record>` setup (fixing the Studio's dead link) and exact `#/home/...`; Adventure's `?save=<id>`; `kit/src/navigation.ts` (the versioned activity record, validated and bounded, plus shared address builders); activity hooks in all three sides, with Studio doors and kept drafts. | Small, fixes a live bug, and everything after it needs it. |
 | 2. **W3, Try a scene** | As planned. | It's next in the approved worldbuilding order and doesn't touch the front page. |
 | 3. **F3, the Overview at `/overview/`** | A new `overview/` workspace on the kit's tokens, marks, header and connection. Four panels on real stores, each loading and failing on its own. Continue from the activity record. Worlds with drafts waiting and map covers. Examples from a small catalog, never installed by viewing. The Studio's read-only preview comes with it. | Useful even before the art: personal content is real, and examples are clearly labelled. |
-| 4. **F2, the example content** | The writing room built in the Studio, Errata's schedule, art when it arrives, the catalog's final entries. | Runs beside 3 and 5; the art is the owner's. |
+| 4. **F2, the example content** | Written in a dedicated session on a strong model: Errata's writing room and schedule, then more characters and a non-fantasy world, delivered as files and checked in the Studio. Art when it arrives. | Runs beside 3 and 5; the art is the owner's. |
 | 5. **W4, the library** | As planned. | Independent of the front page. |
 | 6. **F4, the root** | Adventure to `/adventure/`, `/?launch=` forwarded, `/` becomes the Overview, Start here, and every link and serve check together. | Only once the Overview has proved itself at `/overview/`. |
 | 7. **W5, W6, F5** | The workshop and Check, more fields, Home posts when Chat has them. | As planned. |
@@ -62,4 +86,4 @@ Each step is one pull request (F3 may be two: panels, then the preview). Each ru
 2. **Map covers** for personal worlds with no art. *Suggest:* yes; it's honest and already drawn.
 3. **Drafts waiting** as the Worlds panel's Continue line. *Suggest:* yes. It reads only counts, never the drafts' text.
 4. **Errata helps you build it** beside *Make a world*. *Suggest:* yes, one line, no second mascot panel.
-5. **The writing room built in the Studio with Errata's help.** *Suggest:* yes, and use it as the first live prompt-test run.
+5. **The writing room built in the Studio with Errata's help.** *Answer (Nov 13):* no. Examples get a dedicated session on a strong model; the site's helper is for authors.
