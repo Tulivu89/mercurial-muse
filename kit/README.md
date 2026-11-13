@@ -11,3 +11,6 @@ The browser code the sides share: the Studio and Chat use all of it, the adventu
 - `src/worlds.ts`: worlds in this browser's IndexedDB (`inkwyrm-studio`). The Studio writes them; Chat reads them.
 - `src/util.ts`, `src/Fields.tsx`: ids, files, and the name and keys fields.
 - `src/connection.ts`, `src/Connect.tsx`: the player's provider, key and model. They are the adventure's own settings (`praxis.provider`, `praxis.novelai.token`, `praxis.key.<provider>`, `praxis.model.<provider>`), so a player connects once for the whole site. Don't rename the keys.
+
+- `src/collection.ts`: versioned personal Chat membership, shelves, favorites, presentation, migration and shared selectors for Chat/Overview.
+- `src/media.tsx`, `src/media.css`: original-preserving image intake, derived posters, on-demand portrait reads, and animation playback with reduced-motion and visibility handling.

@@ -15,15 +15,16 @@ const SIDES: { id: Side; name: string; href: string; mark: MarkName }[] = [
   { id: 'studio', name: 'Studio', href: '/studio/', mark: 'nib' },
 ];
 
-export function SiteHeader({ side, homeLabel, onHome, onSettings, settingsHref }: {
+export function SiteHeader({ side, homeLabel, onHome, onSettings, settingsHref, onOverview }: {
   side: Side;
-  // What the mark leads to, said for a screen reader: "Inkwyrm Studio, your worlds".
+  // Description of the current side's library shortcut. The brand always opens Overview.
   homeLabel?: string;
   // The side's own first page, when it can go there without loading the site again.
   onHome?: () => void;
   // Settings: a sheet the side opens, or a place on its page.
   onSettings?: () => void;
   settingsHref?: string;
+  onOverview?: () => void | Promise<void>;
 }) {
   const here = SIDES.find((entry) => entry.id === side) ?? { id: 'overview' as const, name: 'Overview', href: '/overview/', mark: 'main' as MarkName };
   const home = (event: MouseEvent) => { if (!onHome) return; event.preventDefault(); onHome(); };
@@ -36,13 +37,13 @@ export function SiteHeader({ side, homeLabel, onHome, onSettings, settingsHref }
   );
   return (
     <header className="site-bar">
-      <a className="site-brand" href={here.href} onClick={home} aria-label={homeLabel ?? `Inkwyrm ${here.name}`}>
+      <a className="site-brand" href="/overview/" aria-label="Inkwyrm, the front page" onClick={onOverview ? async (event) => { if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return; event.preventDefault(); try { await onOverview(); window.location.assign('/overview/'); } catch { /* the owning editor reports the save failure */ } } : undefined}>
         <InkMark name={here.mark} size={32} land />
         <span className="site-wordmark" aria-hidden="true">ink<em>wyrm</em></span>
       </a>
       <nav className="site-switch" aria-label="The sides of Inkwyrm">
         {SIDES.map((entry) => (
-          <a key={entry.id} href={entry.href} aria-current={entry.id === side ? 'page' : undefined} onClick={entry.id === side ? home : undefined}>{entry.name}</a>
+          <a key={entry.id} href={entry.href} title={entry.id === side ? homeLabel : undefined} aria-current={entry.id === side ? 'page' : undefined} onClick={entry.id === side ? home : undefined}>{entry.name}</a>
         ))}
       </nav>
       {settingsHref

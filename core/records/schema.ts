@@ -175,6 +175,8 @@ export const recordSchema = z.object({
   schedule: scheduleSchema.nullable().default(null),
   // What a new chat with this character starts set to. Empty means the app's own default.
   chatDefaults: z.object({ relationship: shortText(40).default(''), style: shortText(40).default(''), responseLength: shortText(40).default('') }).nullable().default(null),
+  // An author's default listing. Personal collection choices override it; play is unaffected.
+  chatListed: z.boolean().optional(),
   // Home (CharacterRoom's Tamagotchi mode). Figures are named pictures of the character doing
   // something; the pictures themselves are kept by Chat. Idle is where they are in a scenario
   // when nothing is scheduled.

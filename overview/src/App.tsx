@@ -12,6 +12,10 @@ import { loadNavigation, type NavigationV1 } from '../../kit/src/activity';
 import { InkMark, type MarkName } from '../../kit/src/Mark';
 import { SiteHeader } from '../../kit/src/SiteHeader';
 import { applyTheme, readTheme } from '../../kit/src/theme';
+import { useCollection } from '../../kit/src/collection';
+import { MediaImage, animationSlot, posterSlot } from '../../kit/src/media';
+import '../../kit/src/media.css';
+import { portraitSets, type Portrait, type PortraitSet } from '../../chat/src/store';
 import { selectOverview, type Authoring, type CharacterCard, type Read, type SaveSummary, type WorldCard } from './select';
 
 export interface Readers {
@@ -20,6 +24,7 @@ export interface Readers {
   saves: () => Promise<SaveSummary[]>;
   authoring: () => Promise<Authoring>;
   house: () => World;
+  portraits?: () => Promise<Portrait[]>;
 }
 
 const message = (error: unknown) => (error instanceof Error ? error.message : 'It could not be read.');
@@ -51,8 +56,11 @@ export function App({ readers }: { readers: Readers }) {
   const chats = useRead(readers.chats, tick);
   const saves = useRead(readers.saves, tick);
   const authoring = useRead(readers.authoring, tick);
+  const portraits = useRead(readers.portraits ?? (async () => []), tick);
+  const pictures = useMemo(() => portraits.state === 'ready' ? portraitSets(portraits.value) : {}, [portraits]);
+  const collection = useCollection();
   const house = useMemo(() => readers.house(), [readers]);
-  const view = selectOverview({ worlds, chats, saves, authoring, navigation, house });
+  const view = selectOverview({ worlds, chats, saves, authoring, navigation, house, collection });
 
   return (
     <>
@@ -78,8 +86,8 @@ export function App({ readers }: { readers: Readers }) {
 
         <div className="panels">
           <Panel mark="bubble" title="Characters" more={{ label: 'All chats', href: '/chat/' }} loading={chats.state === 'loading'}>
-            <div className={`cast${view.characters.length === 1 ? ' solo' : ''}`}>{view.characters.map((card, index) => <Character key={card.key} card={card} lead={index === 0} />)}</div>
-            <p className="panel-lede">{view.characters.some((card) => card.tag === 'Recent chat') ? 'Your recent conversations, then who comes with the site.' : 'Characters who remember you: what you said, how things stand, what time it is for them.'}</p>
+            <div className={`cast${view.characters.length === 1 ? ' solo' : ''}`}>{view.characters.map((card, index) => <Character key={card.key} card={card} lead={index === 0} set={card.owner ? pictures[card.owner] : undefined} />)}</div>
+            <p className="panel-lede">{view.characters.length ? 'Your curated Chat collection, ready to meet or continue.' : 'Choose the people you want to see here in your Chat collection.'}</p>
             <div className="row">
               {view.characters[0] && <a className="btn" href={view.characters[0].href}>{view.characters[0].action} <span aria-hidden="true">→</span></a>}
               <a className="link-btn" href="/chat/">Import a character</a>
@@ -180,11 +188,12 @@ function Panel({ mark, title, more, loading, wide = false, children }: { mark: M
   );
 }
 
-function Character({ card, lead }: { card: CharacterCard; lead: boolean }) {
+function Character({ card, lead, set }: { card: CharacterCard; lead: boolean; set?: PortraitSet }) {
+  const slot = set?.cover ? 'cover' : set?.avatar ? 'avatar' : set?.neutral ? 'neutral' : null;
   return (
     <a className={`character${lead ? ' lead' : ''}`} href={card.href}>
       <span className="tag">{card.tag}</span>
-      <span className="character-initial" aria-hidden="true">{card.name.slice(0, 1)}</span>
+      {slot && set?.[slot] ? <MediaImage frameClassName="overview-character-image" src={set[slot]!} poster={set[posterSlot(slot)]} animated={set[animationSlot(slot)] === 'true'} alt="" style={{ objectFit: card.member?.fit ?? 'cover', objectPosition: `${card.member?.x ?? 50}% ${card.member?.y ?? 35}%` }} /> : <span className="character-initial" aria-hidden="true">{card.name.slice(0, 1)}</span>}
       <span className="character-name">{card.name}</span>
       {card.line && <span className="character-line">{card.line}</span>}
       {card.excerpt && <span className="character-excerpt">&ldquo;{card.excerpt}&rdquo;</span>}

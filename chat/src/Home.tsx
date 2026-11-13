@@ -1,13 +1,12 @@
-// The start: recent chats on top, then every character in the Studio's worlds, and import.
-import { useEffect, useState, type ChangeEvent } from 'react';
+// The curated Chat collection and explicit new-conversation setup. World NPCs stay in the picker.
+import { useEffect, useState } from 'react';
+import { CollectionView, type CollectionViewProps } from './CollectionView';
+import { Sheet } from '../../kit/src/Sheet';
 import {
-  RESPONSE_LENGTHS, STYLES, STYLE_HINTS, STYLE_NAMES, lastEmotion, lastLine, newChat, responseLengthName, setClockMode, hasSchedule, type Chat, type NewChat,
+  RESPONSE_LENGTHS, STYLES, STYLE_HINTS, STYLE_NAMES, newChat, responseLengthName, setClockMode, hasSchedule, type Chat, type NewChat,
 } from '../../core/chat/index.js';
 import { RELATIONSHIPS, type StoryRecord, type World } from '../../core/records/index.js';
-import { Drop } from '../../kit/src/Mark';
-import { clock, newId } from '../../kit/src/util';
-import { Portrait } from './Portrait';
-import { portraitOwner, type PortraitSet } from './store';
+import { newId } from '../../kit/src/util';
 
 export type Status = { text: string; bad?: boolean } | null;
 export interface Cast { world: World; record: StoryRecord }
@@ -15,18 +14,10 @@ export interface Cast { world: World; record: StoryRecord }
 export const castOf = (worlds: World[]): Cast[] => worlds.flatMap((world) => world.records.filter((record) => record.kind === 'character').map((record) => ({ world, record })));
 const capital = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 
-export function Home({ worlds, chats, portraits, status, userName, startWith = null, onStartWithDone, onOpen, onStart, onImport }: {
-  worlds: World[] | null;
-  chats: Chat[] | null;
-  portraits: Record<string, PortraitSet>;
-  status: Status;
-  userName: string;
-  onOpen: (id: string) => void;
-  onStart: (chat: Chat) => void;
-  onImport: (file: File) => void;
-  // A character asked for by address: its new-chat sheet opens once the worlds are read.
+export function Home({ worlds, chats, portraits, status, userName, startWith = null, onStartWithDone, onOpen, onStart, onImport, onRetry, ...collectionProps }: Omit<CollectionViewProps, 'onNewChat'> & {
+  status: Status; userName: string; onStart: (chat: Chat) => void;
   startWith?: { worldId: string; recordId: string } | null;
-  onStartWithDone?: (found: boolean) => void;
+  onStartWithDone?: (found: boolean) => void; onRetry?: () => void;
 }) {
   const [starting, setStarting] = useState<Cast | null>(null);
   useEffect(() => {
@@ -36,68 +27,11 @@ export function Home({ worlds, chats, portraits, status, userName, startWith = n
     if (world && record) setStarting({ world, record });
     onStartWithDone?.(Boolean(world && record));
   }, [startWith?.worldId, startWith?.recordId, worlds === null]);
-  const cast = castOf(worlds ?? []);
-  const now = Date.now();
-  const pick = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (file) onImport(file);
-  };
-
-  return (
-    <main className="home">
-      <div className="row" style={{ alignItems: 'flex-start', gap: 20 }}>
-        <Drop size={64} title="Inkwyrm" chat />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: '1 1 260px' }}>
-          <h1>Your chats</h1>
-          <p className="lede">Characters who remember you. Pick one, or bring your own.</p>
-        </div>
-      </div>
-      {status && <p className={`status${status.bad ? ' bad' : ''}`} role="status">{status.text}</p>}
-
-      {!!chats?.length && (
-        <section aria-label="Recent chats" className="recent">
-          <h2>Recent</h2>
-          {chats.map((chat) => (
-            <button type="button" key={chat.id} className="chat-row" onClick={() => onOpen(chat.id)}>
-              <Portrait name={chat.characterName} emotion={lastEmotion(chat)} set={portraits[portraitOwner(chat.worldId, chat.characterId)]} size={52} />
-              <span className="chat-row-text">
-                <span className="chat-row-top"><b>{chat.characterName || 'Character'}</b><time>{clock(chat.updatedAt, now)}</time></span>
-                <span className="chat-row-line">{lastLine(chat) || 'No messages yet.'}</span>
-              </span>
-            </button>
-          ))}
-        </section>
-      )}
-
-      <section aria-label="Characters" className="cast">
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <h2>Characters</h2>
-          <span className="btn small quiet file-btn">
-            Import a character
-            <input type="file" accept="application/json,.json,image/png,.png" aria-label="Import a character" onChange={pick} />
-          </span>
-        </div>
-        {worlds === null && <p className="hint">Opening your worlds…</p>}
-        {worlds !== null && cast.length === 0 && <p className="hint">No characters yet. Import a card, or make one in the Studio.</p>}
-        <div className="cards">
-          {cast.map(({ world, record }) => (
-            <button type="button" key={`${world.id}:${record.id}`} className="char-card" onClick={() => setStarting({ world, record })}>
-              <Portrait name={record.name} set={portraits[portraitOwner(world.id, record.id)]} size={64} />
-              <span>
-                <b>{record.name}</b>
-                {record.line && <span className="line">{record.line}</span>}
-                <span className="hint">{world.name}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-        <p className="hint">Imports take CharacterRoom cards (contact, user and scenario) and Character Card V1, V2 and V3 files, as JSON or PNG. Characters, personas and scenarios are edited in the <a href="/studio/">Studio</a>.</p>
-      </section>
-
-      {starting && worlds && <NewChatSheet cast={starting} worlds={worlds} userName={userName} onCancel={() => setStarting(null)} onStart={(chat) => { setStarting(null); onStart(chat); }} />}
-    </main>
-  );
+  return <>
+    {status && <p className={`status${status.bad ? ' bad' : ''}`} style={{ margin: '16px 28px' }} role="status">{status.text}{onRetry && <button type="button" className="btn quiet" onClick={onRetry}>Retry library</button>}</p>}
+    <CollectionView worlds={worlds} chats={chats} portraits={portraits} onOpen={onOpen} onNewChat={setStarting} onImport={onImport} {...collectionProps} />
+    {starting && worlds && <NewChatSheet cast={starting} worlds={worlds} userName={userName} onCancel={() => setStarting(null)} onStart={(chat) => { setStarting(null); onStart(chat); }} />}
+  </>;
 }
 
 // A new chat asks what CharacterRoom's chat settings ask: persona, scenario, relationship, style,
@@ -140,8 +74,7 @@ function NewChatSheet({ cast, worlds, userName, onCancel, onStart }: { cast: Cas
   };
 
   return (
-    <div className="sheet" role="dialog" aria-label={`New chat with ${record.name}`}>
-      <h2>New chat with {record.name}</h2>
+    <Sheet title={`New chat with ${record.name}`} onClose={onCancel}>
       <div className="row">
         <label className="field grow">
           <span>You are</span>
@@ -190,6 +123,6 @@ function NewChatSheet({ cast, worlds, userName, onCancel, onStart }: { cast: Cas
         <button type="button" className="btn primary" onClick={start}>Start the chat</button>
         <button type="button" className="btn quiet" onClick={onCancel}>Cancel</button>
       </div>
-    </div>
+    </Sheet>
   );
 }

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { EMOTIONS, careAt, lifeKey, lifeNow, needsText, newChat, newLife, readChatFile, type Chat, type Life } from '../../core/chat/index.js';
-import { importCardFile, newWorld, recordById, type StoryRecord, type World } from '../../core/records/index.js';
+import { importCardFile, newRecord, newWorld, recordById, type StoryRecord, type World } from '../../core/records/index.js';
 import { initialConnection, reconnect, type Connection } from '../../kit/src/connection';
 import { SiteHeader } from '../../kit/src/SiteHeader';
+import { characterKey, initializeCollection, loadCollection, memberFor, patchMember, saveCollection } from '../../kit/src/collection';
+import { animationSlot, portraitSource, posterSlot, readImageAsset, readImageDataUrl } from '../../kit/src/media';
 import { recordActivity } from '../../kit/src/activity';
 import { useTheme } from '../../kit/src/theme';
-import { downloadJson, imageDataUrl, newId, readFileBytes, readJsonFile } from '../../kit/src/util';
+import { downloadJson, newId, readFileBytes, readJsonFile } from '../../kit/src/util';
 import { listWorlds, putWorld } from '../../kit/src/worlds';
 import { ChatView } from './ChatView';
 import { HOUSE_VERSION, HOUSE_WORLD_ID, houseWorld, refreshHouse } from './errata';
@@ -14,7 +16,7 @@ import { House } from './House';
 import { SettingsView } from './SettingsView';
 import { readSettings, writeSettings, type Settings } from './settings';
 import {
-  allPortraits, deleteChat, deletePortrait, getSent, listChats, listLives, makeBackup, putLife, portraitOwner, portraitSets, putChat, putPortrait, putSent, restoreBackup,
+  displayPortraits, deleteChat, deletePortrait, getSent, listChats, listLives, makeBackup, putLife, portraitOwner, portraitSets, putChat, putPortrait, putSent, restoreBackup,
   type PortraitSet, type Sent,
 } from './store';
 
@@ -23,19 +25,22 @@ const SEEDED_KEY = 'inkwyrm.chat.seeded';
 
 // `with` is a character to start a chat with, from the Studio's *Chat with* or the Overview:
 // `#/with/<world>/<record>`. It opens the new-chat sheet and creates nothing by itself.
-type View = { name: 'home'; with?: { worldId: string; recordId: string } } | { name: 'house' } | { name: 'settings' } | { name: 'chat'; id: string };
+type View = { name: 'home'; with?: { worldId: string; recordId: string } } | { name: 'conversations' } | { name: 'character'; worldId: string; recordId: string } | { name: 'house' } | { name: 'settings' } | { name: 'chat'; id: string };
 export function viewFromHash(hashText = window.location.hash): View {
   const hash = hashText.replace(/^#\/?/, '');
+  if (hash === 'conversations') return { name: 'conversations' };
+  const character = /^character\/([^/]+)\/([^/?]+)$/.exec(hash);
+  if (character) { try { return { name: 'character', worldId: decodeURIComponent(character[1]!), recordId: decodeURIComponent(character[2]!) }; } catch { return { name: 'home' }; } }
   if (hash === 'settings') return { name: 'settings' };
   const asked = /^with\/([^/]+)\/([^/?]+)$/.exec(hash);
   if (asked) {
     try { return { name: 'home', with: { worldId: decodeURIComponent(asked[1]), recordId: decodeURIComponent(asked[2]) } }; } catch { return { name: 'home' }; }
   }
   if (hash === 'home') return { name: 'house' };
-  if (hash.startsWith('chat/') && hash.length > 5) return { name: 'chat', id: decodeURIComponent(hash.slice(5)) };
+  if (hash.startsWith('chat/') && hash.length > 5) { try { return { name: 'chat', id: decodeURIComponent(hash.slice(5)) }; } catch { return { name: 'home' }; } }
   return { name: 'home' };
 }
-const hashFor = (view: View) => (view.name === 'chat' ? `#/chat/${encodeURIComponent(view.id)}` : view.name === 'settings' ? '#/settings' : view.name === 'house' ? '#/home' : '#/');
+const hashFor = (view: View) => view.name === 'character' ? `#/character/${encodeURIComponent(view.worldId)}/${encodeURIComponent(view.recordId)}` : view.name === 'conversations' ? '#/conversations' : (view.name === 'chat' ? `#/chat/${encodeURIComponent(view.id)}` : view.name === 'settings' ? '#/settings' : view.name === 'house' ? '#/home' : '#/');
 
 // The world a chat plays in: the character's own, plus the persona and scenario when they were
 // picked from another world. A persona made once serves every chat.
@@ -51,6 +56,10 @@ export function worldFor(worlds: World[], chat: Chat): World | null {
 }
 
 export function App() {
+  const [readTick, setReadTick] = useState(0);
+  const [worldsReady, setWorldsReady] = useState(false);
+  const [chatsReady, setChatsReady] = useState(false);
+  const writes = useRef(new Set<Promise<unknown>>());
   const [worlds, setWorlds] = useState<World[] | null>(null);
   const [chats, setChats] = useState<Chat[] | null>(null);
   const [portraits, setPortraits] = useState<Record<string, PortraitSet>>({});
@@ -74,6 +83,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    setWorldsReady(false); setChatsReady(false);
     void (async () => {
       try {
         let list = await listWorlds();
@@ -93,19 +103,25 @@ export function App() {
         }
         try { localStorage.setItem(SEEDED_KEY, String(HOUSE_VERSION)); } catch { /* storage blocked */ }
         setWorlds(list);
+        setWorldsReady(true);
       } catch (error) {
         // No storage at all: Errata still works for this visit.
-        setWorlds([houseWorld(Date.now())]);
+        if (worlds === null) setWorlds([houseWorld(Date.now())]);
         fail(error);
       }
-      listChats().then(setChats).catch(() => setChats([]));
-      allPortraits().then((all) => setPortraits(portraitSets(all))).catch(() => undefined);
+      listChats().then((list) => { setChats(list); setChatsReady(true); }).catch((error) => { if (chats === null) setChats([]); fail(error); });
+      displayPortraits().then((all) => setPortraits(portraitSets(all))).catch(() => undefined);
       listLives().then(setLives).catch(() => undefined);
     })();
-    void reconnect(initialConnection()).then(setConnection);
-  }, []);
+    void reconnect(initialConnection()).then(setConnection).catch(fail);
+  }, [readTick]);
 
   useEffect(() => { writeSettings(settings); }, [settings]);
+  useEffect(() => {
+    if (!worldsReady || !chatsReady || !worlds || !chats) return;
+    const current = loadCollection();
+    if (!current.initialized) { try { saveCollection(initializeCollection(current, worlds, chats)); } catch (error) { fail(error); } }
+  }, [worldsReady, chatsReady, worlds, chats]);
 
   // Saves shortly after the last change, so typing a draft doesn't write on every key.
   const flush = useCallback(() => {
@@ -113,12 +129,14 @@ export function App() {
     timer.current = null;
     const batch = [...pending.current.values()];
     pending.current.clear();
-    for (const chat of batch) putChat(chat).catch((error: Error) => setStatus({ text: `Not saved: ${error.message}`, bad: true }));
+    for (const chat of batch) { const write = putChat(chat); writes.current.add(write); void write.catch((error: Error) => { if (!pending.current.has(chat.id) || pending.current.get(chat.id)!.updatedAt <= chat.updatedAt) pending.current.set(chat.id, chat); setStatus({ text: `Not saved: ${error.message}`, bad: true }); }).finally(() => writes.current.delete(write)); }
   }, []);
   useEffect(() => {
     window.addEventListener('pagehide', flush);
     return () => { window.removeEventListener('pagehide', flush); flush(); };
   }, [flush]);
+
+  const beforeOverview = async () => { flush(); await Promise.all([...writes.current]); };
 
   const save = useCallback((chat: Chat, now = false) => {
     setChats((list) => [chat, ...(list ?? []).filter((existing) => existing.id !== chat.id)].sort((a, b) => b.updatedAt - a.updatedAt));
@@ -158,7 +176,13 @@ export function App() {
   const openId = view.name === 'chat' ? view.id : null;
   const open = chats?.find((chat) => chat.id === openId) ?? null;
   // A chat that really opened is what the Overview's Continue offers.
-  useEffect(() => { if (open) recordActivity({ kind: 'chat', chatId: open.id }); }, [open?.id]);
+  useEffect(() => {
+    if (!open) return;
+    recordActivity({ kind: 'chat', chatId: open.id });
+    const world = worlds?.find((w) => w.id === open.worldId); const record = world?.records.find((r) => r.id === open.characterId);
+    const current = loadCollection();
+    if (world && record && memberFor(current, world, record, chats ?? [])) { try { saveCollection(patchMember(current, world.id, record.id, { ...(memberFor(current, world, record, chats ?? [])!), lastChatId: open.id })); } catch (error) { fail(error); } }
+  }, [open?.id]);
   useEffect(() => {
     if (!openId || openId in sent) return;
     getSent(openId).then((record) => setSent((all) => ({ ...all, [openId]: record ?? null }))).catch(() => undefined);
@@ -167,23 +191,37 @@ export function App() {
   const setPortrait = async (owner: string, slot: string, file: File | null) => {
     try {
       // A room is seen large; a figure or a face is not.
-      const data = file ? await imageDataUrl(file, slot.startsWith('room:') || slot.startsWith('layer:') ? 1600 : slot.startsWith('fig:') ? 900 : 512) : null;
-      if (data) await putPortrait(owner, slot, data); else await deletePortrait(owner, slot);
+      const image = file ? await readImageAsset(file, slot.startsWith('room:') || slot.startsWith('layer:') ? 1600 : slot.startsWith('fig:') ? 900 : 640) : null;
+      const data = image?.data;
+      if (image) await putPortrait(owner, slot, image.data, image); else await deletePortrait(owner, slot);
       setPortraits((all) => {
         const next = { ...(all[owner] ?? {}) };
-        if (data) next[slot] = data; else delete next[slot];
+        delete next[posterSlot(slot)]; delete next[animationSlot(slot)];
+        if (data && image) { next[slot] = portraitSource(`${owner}:${slot}`, newId()); next[posterSlot(slot)] = image.poster; next[animationSlot(slot)] = String(image.animated); } else delete next[slot];
         return { ...all, [owner]: next };
       });
     } catch (error) { fail(error); }
   };
 
+  const createCharacter = async (name: string) => {
+    if (!worldsReady) throw new Error('Retry the library before creating a character.');
+    const target = worlds?.find((world) => world.id === IMPORTS_WORLD_ID) ?? newWorld(IMPORTS_WORLD_ID, 'Your characters', Date.now());
+    const record = { ...newRecord('character', newId(), name, newId), chatListed: true };
+    const world = { ...target, records: [...target.records, record], updatedAt: Date.now() };
+    await putWorld(world); setWorlds([world, ...(worlds ?? []).filter((w) => w.id !== world.id)]);
+    try { saveCollection(patchMember(loadCollection(), world.id, record.id, { state: 'active' })); } catch (error) { fail(error); }
+    await beforeOverview(); window.location.assign(`/studio/#/w/${encodeURIComponent(world.id)}?rec=${encodeURIComponent(record.id)}`);
+  };
+
   const importCharacter = async (file: File) => {
+    if (!worldsReady) { fail(new Error('Your worlds could not be read yet. Retry the library before importing a character.')); return; }
     try {
       const list = worlds ?? [];
       const target = list.find((world) => world.id === IMPORTS_WORLD_ID) ?? newWorld(IMPORTS_WORLD_ID, 'Imported', Date.now());
       const read = importCardFile(target, await readFileBytes(file), newId, Date.now());
       if (!read.ok) { setStatus({ text: read.errors.join(' '), bad: true }); return; }
-      const { world, recordId, kind, notes, images } = read.result;
+      const { world: importedWorld, recordId, kind, notes, images } = read.result;
+      const world = kind === 'character' ? { ...importedWorld, records: importedWorld.records.map((r) => r.id === recordId ? { ...r, chatListed: true } : r) } : importedWorld;
       await putWorld(world);
       setWorlds([world, ...list.filter((entry) => entry.id !== world.id)]);
       const owner = portraitOwner(world.id, recordId);
@@ -191,9 +229,14 @@ export function App() {
       if (images?.avatar) pictures.avatar = images.avatar;
       for (const [slot, data] of Object.entries(images?.emotions ?? {})) if ((EMOTIONS as readonly string[]).includes(slot)) pictures[slot] = data;
       // A PNG card is its own avatar.
-      if (read.fromPng && !pictures.avatar) pictures.avatar = await imageDataUrl(file).catch(() => '');
-      for (const [slot, data] of Object.entries(pictures)) if (data) await putPortrait(owner, slot, data);
+      if (read.fromPng && !pictures.avatar) pictures.avatar = await new Promise<string>((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(String(r.result)); r.onerror = reject; r.readAsDataURL(file); }).catch(() => '');
+      for (const [slot, data] of Object.entries(pictures)) if (data) {
+        const image = await readImageDataUrl(data).catch(() => null);
+        await putPortrait(owner, slot, data, image ?? {});
+        if (image) { pictures[slot] = portraitSource(`${owner}:${slot}`, newId()); pictures[posterSlot(slot)] = image.poster; pictures[animationSlot(slot)] = String(image.animated); }
+      }
       if (Object.keys(pictures).length) setPortraits((all) => ({ ...all, [owner]: { ...(all[owner] ?? {}), ...pictures } }));
+      if (kind === 'character') { try { saveCollection(patchMember(loadCollection(), world.id, recordId, { state: 'active' })); } catch (error) { fail(error); } }
       const name = recordById(world, recordId)?.name ?? 'the card';
       const what = kind === 'character' ? `Brought in ${name}.` : kind === 'persona' ? `Brought in ${name} as a persona. Pick it when you start a chat.` : `Brought in the scenario ${name}. Pick it when you start a chat.`;
       setStatus({ text: [what, ...notes].join(' ') });
@@ -211,14 +254,14 @@ export function App() {
   };
 
   const backup = async () => {
-    try { flush(); downloadJson(`inkwyrm-backup-${new Date().toISOString().slice(0, 10)}.json`, await makeBackup(Date.now())); } catch (error) { fail(error); }
+    try { await beforeOverview(); downloadJson(`inkwyrm-backup-${new Date().toISOString().slice(0, 10)}.json`, await makeBackup(Date.now())); } catch (error) { fail(error); }
   };
   const restore = async (file: File) => {
     try {
       const counts = await restoreBackup(await readJsonFile(file));
       setWorlds(await listWorlds());
       setChats(await listChats());
-      setPortraits(portraitSets(await allPortraits()));
+      setPortraits(portraitSets(await displayPortraits()));
       setStatus({ text: `Restored ${counts.worlds} world${counts.worlds === 1 ? '' : 's'}, ${counts.chats} chat${counts.chats === 1 ? '' : 's'} and ${counts.portraits} portrait${counts.portraits === 1 ? '' : 's'}.` });
     } catch (error) { fail(error); }
   };
@@ -259,6 +302,7 @@ export function App() {
         onChange={(next) => saveChat(next, life)}
         onSent={(record) => { setSent((all) => ({ ...all, [record.chatId]: record })); putSent(record).catch(() => undefined); }}
         onBack={() => { flush(); go({ name: 'home' }); }}
+        onOverview={beforeOverview}
         onDelete={() => void remove(open)}
         onSettings={() => go({ name: 'settings' })}
       />
@@ -267,9 +311,10 @@ export function App() {
 
   return (
     <>
-      <SiteHeader side="chat" homeLabel="Inkwyrm Chat, your chats" onHome={() => go({ name: 'home' })} onSettings={() => go(view.name === 'settings' ? { name: 'home' } : { name: 'settings' })} />
+      <SiteHeader onOverview={beforeOverview} side="chat" homeLabel="Inkwyrm Chat, your chats" onHome={() => go({ name: 'home' })} onSettings={() => go(view.name === 'settings' ? { name: 'home' } : { name: 'settings' })} />
       <nav className="local-nav" aria-label="Chat">
-        <button type="button" aria-current={view.name === 'home' || undefined} onClick={() => go({ name: 'home' })}>Chats</button>
+        <button type="button" aria-current={view.name === 'home' || view.name === 'character' || undefined} onClick={() => go({ name: 'home' })}>Collection</button>
+        <button type="button" aria-current={view.name === 'conversations' || undefined} onClick={() => go({ name: 'conversations' })}>Conversations</button>
         <button type="button" aria-current={view.name === 'house' || undefined} onClick={() => go({ name: 'house' })}>Home</button>
         {view.name === 'settings' && <button type="button" aria-current="true" onClick={() => go({ name: 'home' })}>Settings · Done</button>}
       </nav>
@@ -290,7 +335,12 @@ export function App() {
             <p className="status" style={{ margin: '12px clamp(12px, 3vw, 28px) 0' }}>No model connected yet. <button type="button" className="link" onClick={() => go({ name: 'settings' })}>Connect one under Settings</button> with your own key.</p>
           )}
           <Home
+            key={view.name === 'character' ? characterKey(view.worldId, view.recordId) : 'collection'}
             worlds={worlds} chats={chats} portraits={portraits} status={status} userName={settings.userName}
+            onRetry={!worldsReady || !chatsReady ? () => { setStatus(null); setReadTick((n) => n + 1); } : undefined}
+            mode={view.name === 'conversations' ? 'conversations' : 'collection'}
+            profile={view.name === 'character' ? { worldId: view.worldId, recordId: view.recordId } : undefined}
+            onPortrait={(owner, slot, file) => void setPortrait(owner, slot, file)} onCreate={worldsReady ? createCharacter : undefined} onBackup={() => void backup()}
             startWith={view.name === 'home' ? view.with ?? null : null}
             onStartWithDone={(found) => {
               window.history.replaceState(null, '', `${window.location.pathname}#/`);

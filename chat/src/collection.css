@@ -1,0 +1,504 @@
+.collection-page {
+  max-width: 1320px;
+  margin: auto;
+  padding: 32px 28px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.collection-page h1 {
+  font: 600 clamp(34px, 4vw, 48px) / 1.12 var(--display);
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+}
+.collection-page h2 {
+  font: 600 25px/1.2 var(--display);
+}
+.collection-lede {
+  font: 16px/1.6 var(--read);
+  color: var(--text-2);
+  margin: 10px 0;
+}
+.collection-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.collection-heading .sub {
+  margin-bottom: 8px;
+}
+.collection-page .btn {
+  min-height: 44px;
+}
+.collection-continue {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 18px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.collection-continue > span {
+  min-width: 0;
+  flex: 1;
+}
+.collection-continue b {
+  font: 600 21px var(--display);
+}
+.collection-continue small {
+  display: block;
+  font: 13px var(--ui);
+  color: var(--text-2);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-top: 4px;
+}
+.collection-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.collection-toolbar .search {
+  flex: 1 1 220px;
+}
+.collection-toolbar select {
+  max-width: 100%;
+}
+.character-gallery {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+.character-gallery[data-size='compact'] {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+.character-gallery[data-size='large'] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.collection-card {
+  min-width: 0;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--surface);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.card-picture {
+  display: block;
+  text-decoration: none;
+  color: var(--text);
+}
+.character-art {
+  display: block;
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  overflow: hidden;
+  background: var(--ground);
+  object-fit: cover;
+  object-position: 50% 35%;
+}
+.character-art > .media-image {
+  width: 100%;
+  height: 100%;
+  object-fit: inherit;
+  object-position: inherit;
+}
+.character-monogram {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 18px;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--rule);
+  background: var(--ground);
+}
+.character-monogram > span {
+  font: 600 clamp(50px, 7vw, 100px) var(--display);
+  letter-spacing: -0.06em;
+}
+.character-monogram small {
+  font: italic 13px var(--read);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.collection-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 14px;
+  gap: 8px;
+}
+.card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-name {
+  font: 600 23px/1.15 var(--display);
+  color: var(--text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1;
+}
+.card-name:hover {
+  text-decoration: underline;
+}
+.favorite-control,
+.card-manage {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--text-2);
+  padding: 5px;
+}
+.favorite-control {
+  font-size: 24px;
+}
+.favorite-control[aria-pressed='true'] {
+  color: var(--seal);
+}
+.card-manage {
+  border-color: var(--rule);
+  border-radius: 6px;
+}
+.card-description {
+  font: 13px/1.6 var(--read);
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.card-source {
+  font-size: 11px;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 8px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+.card-actions .btn {
+  font-size: 13px;
+  padding: 0 10px;
+}
+.card-actions .card-manage {
+  margin-left: auto;
+}
+.text-control {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 3px;
+  background: none;
+  color: var(--blue);
+  border: 0;
+  font: 13px var(--ui);
+  text-decoration: none;
+}
+.text-control:hover {
+  text-decoration: underline;
+}
+.character-gallery[data-layout='list'] {
+  display: flex;
+  flex-direction: column;
+}
+.character-gallery[data-layout='list'] .collection-card {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+}
+.character-gallery[data-layout='list'] .character-art {
+  height: 100%;
+  min-height: 144px;
+  aspect-ratio: auto;
+}
+.character-gallery[data-layout='list'] .character-monogram > span {
+  font-size: 40px;
+}
+.character-gallery[data-layout='list'] .character-monogram small {
+  display: none;
+}
+.empty-collection {
+  padding: 40px 20px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  gap: 14px;
+  color: var(--text-2);
+}
+.empty-collection p {
+  max-width: 480px;
+  font: 15px/1.7 var(--read);
+}
+.cast-picker {
+  max-height: 55dvh;
+  overflow: auto;
+}
+.cast-pick {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.cast-pick > span {
+  flex: 1;
+  min-width: 100px;
+}
+.cast-pick b,
+.cast-pick small {
+  display: block;
+}
+.cast-pick small {
+  color: var(--text-2);
+  font-size: 12px;
+}
+.member-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.member-controls > p,
+.member-controls > fieldset {
+  width: 100%;
+}
+.shelf-check {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  gap: 8px;
+  margin-right: 18px;
+}
+.card-framing {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--rule);
+  padding: 16px;
+  border-radius: 6px;
+}
+.card-framing > .character-art {
+  max-width: 180px;
+  justify-self: center;
+}
+.card-framing input[type='range'] {
+  min-height: 44px;
+  padding: 0;
+}
+.art-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.art-slot {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.art-slot > .media-image,
+.art-empty {
+  height: 150px;
+  width: 100%;
+  object-fit: contain;
+  background: var(--ground);
+}
+.art-empty {
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+  font: 600 40px var(--display);
+}
+.art-slot .btn {
+  font-size: 12px;
+  padding: 0 8px;
+}
+.art-slot .text-control {
+  font-size: 12px;
+}
+.character-artwork {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.character-hero {
+  display: grid;
+  grid-template-columns: minmax(160px, 280px) minmax(0, 1fr);
+  gap: 30px;
+  align-items: center;
+}
+.character-hero > .character-art {
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+}
+.character-hero .collection-lede {
+  margin: 15px 0 22px;
+}
+.collection-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  border-bottom: 1px solid var(--rule);
+}
+.collection-tabs button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: var(--text-2);
+}
+.collection-tabs button[aria-pressed='true'] {
+  border-bottom-color: var(--seal);
+  color: var(--text);
+}
+.character-about {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.conversation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.back-collection {
+  align-self: flex-start;
+}
+.collection-page ~ .sheet-shade details > summary {
+  min-height: 44px;
+  cursor: pointer;
+  padding: 10px 0;
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .card-picture .character-art {
+    transition: opacity 180ms;
+  }
+  .card-picture:hover .character-art {
+    opacity: 0.9;
+  }
+}
+@media (max-width: 1050px) {
+  .character-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .character-gallery[data-size='compact'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .character-gallery[data-size='large'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 650px) {
+  .collection-page {
+    padding: 24px 16px 50px;
+    gap: 18px;
+  }
+  .collection-heading {
+    align-items: start;
+  }
+  .collection-heading > .row {
+    gap: 7px;
+  }
+  .collection-heading .btn {
+    font-size: 13px;
+    padding: 0 11px;
+  }
+  .character-gallery,
+  .character-gallery[data-size='compact'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .character-gallery[data-size='large'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .collection-card-body {
+    padding: 10px;
+    gap: 6px;
+  }
+  .card-name {
+    font-size: 21px;
+  }
+  .card-name-row {
+    gap: 0;
+  }
+  .card-description {
+    font-size: 12px;
+  }
+  .card-actions {
+    gap: 3px 4px;
+  }
+  .card-actions .btn,
+  .card-actions .text-control {
+    font-size: 12px;
+  }
+  .card-actions .btn {
+    padding: 0 8px;
+  }
+  .card-actions .card-manage {
+    margin-left: 0;
+  }
+  .collection-toolbar {
+    gap: 10px;
+  }
+  .collection-toolbar .search {
+    flex-basis: 100%;
+  }
+  .collection-continue {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .collection-continue > span {
+    flex-basis: 100%;
+  }
+  .character-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .character-hero > .character-art {
+    max-width: 260px;
+    justify-self: center;
+  }
+  .cast-pick {
+    gap: 8px;
+  }
+  .cast-pick .btn {
+    font-size: 12px;
+    padding: 0 9px;
+  }
+  .art-slots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .collection-tabs button {
+    font-size: 13px;
+    padding: 8px 9px;
+  }
+  .character-gallery[data-layout='list'] .collection-card {
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+}
+.card-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.collection-page .text-control, .collection-page .btn { max-width: 100%; overflow-wrap: anywhere; }

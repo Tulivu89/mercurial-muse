@@ -90,6 +90,7 @@ export function SettingsSection({ api }: { api: PlayApi }) {
 
   return (
     <>
+      <p className="meta"><a href="/overview/">Inkwyrm overview</a> · <a href="/chat/">Chat collection</a> · <a href="/studio/">Studio</a></p>
       <div className="sub"><p className="label">Narration</p></div>
       <div className="card">
         <ConnectForm connection={connection} onChange={api.setConnection} />

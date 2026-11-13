@@ -28,6 +28,7 @@ export function App({ generate }: { generate?: Generate } = {}) {
   const [helper, setHelper] = useState<HelperPrefs>(readHelperPrefs);
   const changeHelper = (next: HelperPrefs) => { saveHelperPrefs(next); setHelper(next); };
   const author = useMemo(() => authorFor(connection, () => setSettings(true), generate, helper), [connection, generate, helper]);
+  const writes = useRef(new Set<Promise<unknown>>());
   const pending = useRef(new Map<string, World>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -41,7 +42,7 @@ export function App({ generate }: { generate?: Generate } = {}) {
     timer.current = null;
     const batch = [...pending.current.values()];
     pending.current.clear();
-    for (const world of batch) putWorld(world).catch((error: Error) => setStatus({ text: `Not saved: ${error.message}`, bad: true }));
+    for (const world of batch) { const write = putWorld(world); writes.current.add(write); void write.catch((error: Error) => { if (!pending.current.has(world.id) || pending.current.get(world.id)!.updatedAt <= world.updatedAt) pending.current.set(world.id, world); setStatus({ text: `Not saved: ${error.message}`, bad: true }); }).finally(() => writes.current.delete(write)); }
   }, []);
   useEffect(() => {
     const onHide = () => flush();
@@ -76,7 +77,7 @@ export function App({ generate }: { generate?: Generate } = {}) {
 
   return (
     <AuthorProvider value={author}>
-      <SiteHeader side="studio" homeLabel="Inkwyrm Studio, your worlds" onHome={() => { flush(); navigate(NOWHERE); }} onSettings={() => setSettings(true)} />
+      <SiteHeader onOverview={async () => { flush(); await Promise.all([...writes.current]); }} side="studio" homeLabel="Inkwyrm Studio, your worlds" onHome={() => { flush(); navigate(NOWHERE); }} onSettings={() => setSettings(true)} />
       {open
         ? <WorldView key={open.id} world={open} onChange={save} onDelete={() => void remove(open)} onStatus={setStatus} status={status} />
         : <Home worlds={worlds} status={status} onOpen={(id) => { setStatus(null); navigate({ ...NOWHERE, worldId: id }); }} onCreate={(world) => { save(world); navigate({ ...NOWHERE, worldId: world.id, page: world.records.length ? null : 'about' }); }} onStatus={setStatus} />}

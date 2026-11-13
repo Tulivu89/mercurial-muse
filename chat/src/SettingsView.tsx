@@ -1,5 +1,6 @@
 // Settings: the connection (the site's, shared with the adventure), the model, the context
 // window, display, each character's portraits, and files.
+import { IMAGE_TYPES, MediaImage, animationSlot, posterSlot } from '../../kit/src/media';
 import { useState, type ChangeEvent } from 'react';
 import { AVATAR_SLOT, EMOTIONS, PROFILE_NAMES, XIALONG, profileFor, resolvePortrait } from '../../core/chat/index.js';
 import { ConnectForm, ModelFields } from '../../kit/src/Connect';
@@ -115,8 +116,8 @@ export function SettingsView({ connection, onConnection, settings, onSettings, t
                 return (
                   <div key={slot} className={`slot${set[slot] ? ' filled' : ''}`}>
                     <span className="file-btn slot-face">
-                      {data ? <img src={data} alt="" /> : <span aria-hidden="true">+</span>}
-                      <input type="file" accept="image/*" aria-label={`Upload ${slot}`} onChange={file((picked) => onPortrait(owner, slot, picked))} />
+                      {data ? <MediaImage src={data} poster={stand ? set[posterSlot(stand)] : undefined} animated={stand ? set[animationSlot(stand)] === 'true' : false} alt="" /> : <span aria-hidden="true">+</span>}
+                      <input type="file" accept={IMAGE_TYPES} aria-label={`Upload ${slot}`} onChange={file((picked) => onPortrait(owner, slot, picked))} />
                     </span>
                     <b>{slot}</b>
                     {set[slot]
@@ -132,7 +133,7 @@ export function SettingsView({ connection, onConnection, settings, onSettings, t
 
       <section className="card" aria-label="Files">
         <h2>Files</h2>
-        <p className="hint">Chats, worlds and portraits are kept in this browser only. Back up everything makes one file of all of it; restoring it replaces anything with the same id.</p>
+        <p className="hint">Chats, worlds and portraits are kept in this browser only. Back up everything includes the Chat collection, original images, chats, lives and worlds. Adventure saves and Studio authoring talks have their own exports; restoring it replaces anything with the same id.</p>
         <div className="row">
           <button type="button" className="btn" onClick={onBackup}>Back up everything</button>
           <span className="btn quiet file-btn">Restore a backup<input type="file" accept="application/json,.json" aria-label="Restore a backup" onChange={file(onRestore)} /></span>

@@ -222,7 +222,7 @@ export function importCharacterCard(world: World, raw: unknown, ids: Ids, now: n
   const card = parsed.data;
   const notes: string[] = [];
 
-  const record: StoryRecord = { ...newRecord('character', ids(), card.name.trim(), ids), sections: [] };
+  const record: StoryRecord = { ...newRecord('character', ids(), card.name.trim(), ids), chatListed: true, sections: [] };
   record.keys = list(card.alias).map((key) => key.slice(0, 60));
   record.line = card.description.trim().slice(0, 400);
   record.pronouns = card.pronouns.trim().slice(0, 40);

@@ -101,6 +101,7 @@ export function moduleToWorld(raw: unknown, now: number): ImportResult {
   for (const person of list(module.characters)) {
     const species = text(person.speciesId);
     records.push(record(person.id === playerId ? 'persona' : 'character', text(person.id), text(person.name), {
+      ...(typeof person.chatListed === 'boolean' ? { chatListed: person.chatListed } : {}),
       line: fits(person.role, 400) ? person.role : '',
       pronouns: fits(person.pronouns, 40) ? person.pronouns : '',
       notes: text(person.draftNote),
@@ -235,7 +236,7 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
     const schedule = day && carriedDay && sameDays(day, carriedDay) ? carriedDay : day;
     const { schedule: _was, ...kept } = extra(person);
     return {
-      ...kept, ...(schedule ? { schedule } : {}), id: person.id, name: person.name, description: body(person, 'description', ['background', 'description'], true),
+      ...kept, ...(person.chatListed !== undefined ? { chatListed: person.chatListed } : {}), ...(schedule ? { schedule } : {}), id: person.id, name: person.name, description: body(person, 'description', ['background', 'description'], true),
       ...optional({
         role: person.line.slice(0, 200), pronouns: person.pronouns, draftNote: person.notes,
         appearance: body(person, 'appearance', ['appearance']), personality: body(person, 'personality', ['personality']), speech: body(person, 'speech', ['speech']),

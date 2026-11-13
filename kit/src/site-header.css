@@ -15,3 +15,6 @@
   .site-wordmark { display: inline; }
   .site-brand { margin-right: 8px; }
 }
+/* Keep the section links distinct at narrow widths and enlarged text. */
+.site-bar, .site-switch { flex-wrap: wrap; }
+.site-switch a { max-width: 100%; overflow-wrap: anywhere; }

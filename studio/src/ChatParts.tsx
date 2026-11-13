@@ -8,6 +8,8 @@ export function ChatParts({ record, update }: { record: StoryRecord; update: (pa
     update({ examples: record.examples.map((existing) => (existing.id === chatId ? { ...existing, ...patch } : existing)) });
   return (
     <>
+      <label className="checks"><input type="checkbox" checked={record.chatListed === true} onChange={(event) => update({ chatListed: event.target.checked })} /> Show in Chat by default</label>
+      <p className="hint">World characters stay available for one-off chats. Each reader can add, remove or archive them in their own collection.</p>
       <h3 className="sub">Greetings and example chats</h3>
       <p className="hint">The examples steer a character more than any section does. The adventure's narrator never gets them.</p>
       {record.greetings.map((greeting, index) => (

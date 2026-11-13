@@ -1,7 +1,7 @@
 import { Component, StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { houseWorld } from '../../chat/src/errata';
-import { listChats } from '../../chat/src/store';
+import { displayPortraits, listChats } from '../../chat/src/store';
 import { listSaves } from '../../adventure/src/ui/storage';
 import { authoringCounts } from '../../studio/src/author/store';
 import { listWorlds } from '../../kit/src/worlds';
@@ -13,6 +13,7 @@ import './overview.css';
 const readers: Readers = {
   worlds: listWorlds,
   chats: listChats,
+  portraits: displayPortraits,
   saves: async () => (await listSaves()).map(({ id, name, moduleName, place, stamp, turns, updatedAt }) => ({ id, name, moduleName, place, stamp, turns, updatedAt })),
   authoring: authoringCounts,
   house: () => houseWorld(0),
