@@ -25,14 +25,20 @@ Settle these first, in one line each. A frame is exactly this list, so a session
 
 ## Writing the sections
 
-| Section | Reach | Holds |
-| --- | --- | --- |
-| Appearance | Here | Lines, weight and movement; a colouring; their kind in one or two traits. Closes on a feature no one else in the cast closes on. No clothing. |
-| Personality | Here | What they do, in acts a scene can use. The test: what do they do at a noodle stall, with no plot in the scene? Then the want under it. |
-| Speech | Here | Rhythm, register, habits. No sample lines; those are example chats. |
-| Background, Wants, hooks | Named, each with its own keys | Each section stands alone, because it arrives alone. Never repeats Here. |
-| What changes at a bond tier, a time, a world state | When | Only what changes. |
-| Outfits | A set | Fit, coverage, what the clothes show and hide. No pose. |
+A character uses the Studio's default sections. Each answers one question the model asks while playing them, so every fact lives in exactly one. The full table, with what each field never holds, is in the standard under *A character's fields*; this is the working version.
+
+| Section | Reach | Answers | Holds |
+| --- | --- | --- | --- |
+| Appearance | Here | What would someone see, and what does the body do? | Lines, weight and movement; a colouring; their kind in one or two traits; involuntary tells. Closes on a feature no one else in the cast closes on. No clothing, no voice. |
+| Personality | Here | How does this character respond? | Responses the model can play next turn: *when someone does this, they do that.* What they go after in an exchange; what they won't do. No posture, no wording habits, no history, no creed. The test: what do they do at a noodle stall, with no plot in the scene? |
+| Speech | Here | How do the words come out? | The voice's sound, rhythm, sentence length, register, words used and avoided, habits, and how they shift with mood or company. No sample lines; those are example chats. |
+| Background | Named | What comes up when someone asks about their past? | Only what a scene could bring up. A past that explains a response stays out: the response is in Personality. |
+| Wants | Named | What are they working on, and what's in the way? | The current goal and its obstacle. |
+| Hooks | Named, each with its own keys | What do they go long about? | Each stands alone, because it arrives alone. Never repeats Here. |
+| When sections | When | What changes under this condition? | Only what changes. |
+| Outfits | A set | What are they wearing? | Fit, coverage, what the clothes show and hide. No pose. |
+
+If a fact seems to fit two sections, it's usually two facts. Ask which question the model would be answering when it needs it, and put it there.
 
 A place: Entry (what it is and who's there) and Atmosphere (what you hear and smell now), both Here, each a sentence or two. A group: Entry, Named, holding what its members share so they don't repeat it. Leave out any section a record doesn't need.
 
