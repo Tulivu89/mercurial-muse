@@ -1,134 +1,83 @@
 # The pilot: the dragon's resort
 
-Nov 13, 2026 · @AmbiProp · The brief for a dedicated writing session (C1 in `docs/content/standard.md`). The prompt to paste into that session is at the end.
+Nov 14, 2026 · @AmbiProp · **Version 2.** The brief for the dedicated writing sessions on the pilot (C1 in `docs/content/standard.md`). It replaces the Nov 13 brief, whose first hand-back the owner rejected; that brief and its two documents are in the history (commits `56971df` and `febe3c9`).
 
 ## What this is for
 
-The first flagship records, written to the content standard, and the first test of whether that standard is right. Three dragon women who share a space: Qiulong and Errata, who already exist and were never written to meet, and Echydna, who is a concept. If it works, it becomes the gold set every later world is shown, the example Home the front page is waiting for, and the first evidence for or against the standard's assumptions.
+Three dragon women who share a space, written as chat characters someone would want to talk to for months: Qiulong and Errata, who exist, and Echydna, who is a concept. If it works, it's the gold set later characters are shown, the example Home the front page is waiting for, and the evidence that rewrites the standard for chat characters.
 
-It's written in a dedicated session on a strong model (Opus 5.5 suggested), in this repository, with its skills. It is never drafted by the model connected to the site.
+It's written in dedicated sessions on a strong model, in this repository. It is never drafted by the model connected to the site.
 
-## Read first
+## Why the first attempt failed
 
-1. `docs/content/standard.md`, all of it. Especially *A character's fields: one job each*, the failure list, and the assumptions table.
-2. `.claude/skills/inkwyrm-records/SKILL.md` and `.claude/skills/pulp-voice/` (its SKILL.md, then `references/anti-patterns.md`, `voices.md` and `heat.md` when the work reaches them).
-3. `docs/bids/content/mo-03-style.md`: the owner's own failure list and method. It outranks the standard's summary.
-4. `docs/records.md` on reach, and `docs/praxis/bogwater-plan.md` under *Writing rules*.
-
-## The sources
-
-Copied from the owner's CharacterVault on Nov 13 (commit `a0d5c54`), in `docs/bids/content/sources/`:
-
-| File | What it is | State |
-| --- | --- | --- |
-| `qiulong/Qiulong - Teahouse Before Frost.md` | Her chat card: persona, appearance, greeting, five example chats, hoard brains, the portrait hall and the cabinet behind bond tiers, a weekly schedule | Gold standard. Written for NovelAI Xialong, as a Qiulong-only setting |
-| `qiulong/Qiulong.md` | Her character page: signature features, appearance, notes | Source of truth for her look |
-| `qiulong/Qiulong - Adult.md` | Her After Dark material | For When sections behind the closest bond tier |
-| `errata/Errata - Inkwyrm.md` | Her chat card for Inkwyrm | Drafted, never played |
-| `errata/Errata.md` | Her character page, including a schedule and recurring ties | Source of truth for her look |
-| `errata/Errata - Inkwyrm - Adult.md` | Her After Dark material | As for Qiulong |
-
-Also:
-- `chat/src/errata.ts` is the Errata Chat ships today, built from her Inkwyrm card. If the pilot changes her, that file changes too, with `HOUSE_VERSION` raised so browsers take the new record.
-- `docs/mascot-record.md` maps Errata onto the record model, section by section.
-- `docs/bids/content/Initial content ideas.md` holds the owner's notes on the resort and on Echydna.
+Kept here so the next session doesn't repeat it.
+- **It repaired the cards instead of starting from people.** The owner said they weren't good; the session audited them sentence by sentence and kept the frame.
+- **It built a system.** Floors, rent, three currencies, a room each was barred from, a test question each. Every trait became a rule, and a rule repeats every turn: pattern, then spam.
+- **It wrote from an editor's kit.** The standard, the failure list and an overlap table were loaded before any character existed, so differences were invented to break overlaps (ink that runs in hot water, a name written on a hand) instead of coming from who each woman is.
+- **It wrote the ensemble before the people,** so one character's want became another character.
+- **It settled what wasn't its to settle:** Echydna's body, and how Home fits several characters in context.
 
 ## Decided by the owner
 
-1. **Sections.** Every character uses the Studio's default sections, with the definitions in the standard. Profile Plus is a way to think a character through, not the record's shape.
-2. **Echydna**, spelled that way. The myth of Echidna, Mother of Monsters, is the inspiration: for her, and for other characters and stories to come. The owner's concept: *an almost terrifying-yet-sexy near-cosmic entity; the most aloof and alien, and the most intense if you manage to catch her interest.*
-3. **First make what exists work together.** Neither card was written to share a space. The work starts with how they complement and conflict without re-treading each other.
-4. **The teahouse was Qiulong's alone.** If the pilot includes a Home, it grows to fit three, and how it grows is this session's call.
+1. **People first.** A character stands on her own and talks to anyone. Her personality is who she is at her core and what guides her decisions and reactions. Who she is to the player is a paragraph in the persona, or the scenario, layered on top.
+2. **Example chats steer most,** especially on weak models. Anything better shown than described (her voice, her style, her body, her tells) goes in an example and nowhere else. Nothing is said twice between the persona and the examples.
+3. **Chat characters are bigger than NPCs, and the two aren't swapped freely.** A chat character's voice lives in example chats a narrator never sees. The pilot works on the basis that a character can have a chat version and an adventure version, as CharacterVault keeps profiles (to confirm; see the open questions).
+4. **Range over motif.** A character you can get to know, clash with, anger, sadden and be missed by. Her theme (autumn, ink, monsters) is one paragraph and a few details, never every reply.
+5. **Stoic, dry or analytical types** lead with how and when they come alive, then give the baseline once. Otherwise they go poetic, robotic or philosophical.
+6. **Echydna**, spelled that way, inspired by Echidna, Mother of Monsters: *an almost terrifying-yet-sexy near-cosmic entity; the most aloof and alien, and the most intense if you manage to catch her interest.* She has legs and feet. Her look gets its own pass, offered as options (parts, colours, silhouettes) for the owner to piece together.
+7. **The house.** A teahouse at the edge of myth, where beings from the old stories and the mortals who reach it by effort or by dream come to rest. Walkers arrive at the front door, dreamers wake in the top room, and you go down to the baths. The baths are everyone's. No room is barred to anyone, though each woman can have a space of her own. Visitors from the owner's other worlds can check in.
+8. **The old keeper is background lore,** perhaps an old god who looks like an old man when he chooses. He isn't a character.
+9. **No grading people** (letter grades, scores, ratings), no house economies, no quirks built to be memorable.
+10. **Group chat isn't built,** and Home with several leads isn't the pilot's problem. No plan puts four full characters in context at once. CharacterRoom gave each character's turn its own call with its own card and examples.
 
-## Overlaps already found
+## Read first
 
-A first read of the two cards side by side. The session confirms these and finds the rest:
+1. The account's **bot-writing** skill (`/anthropic-skills:bot-writing`): its workflow, the field guide and the persona anti-patterns. It's the method for every chat stage.
+2. The **pulp-voice** skill (`.claude/skills/pulp-voice/`) when the work reaches greetings and example chats.
+3. The owner's two Discord cards (below): what a broad chat character looks like.
 
-| Both cards say | Qiulong | Errata |
+**Not before the records stage:** `docs/content/standard.md`, the `inkwyrm-records` skill, `docs/bids/content/mo-03-style.md`'s failure list. They are the edit pass and the file format, used once a character exists.
+
+## The sources
+
+In `docs/bids/content/sources/`, copied from the owner's CharacterVault on Nov 13 (commit `a0d5c54`) or given by the owner:
+
+| File | What it is | Use |
 | --- | --- | --- |
-| They claim out loud | Calls things and people *mine*, keeps track of where they are | Marks what she claims with ink, and leaves it |
-| They hoard | Well-made things, sorted and labelled; a portrait hall of her people | Other people's errata: first drafts, crossed-out lines |
-| They grade flirting | Laughs at cheap lines and grades them | Grades flirting like a draft |
-| They admit being wrong flatly | Argues past it, then says *I was wrong* and changes the subject | Says so flat and fast, and writes it down |
-| Anger at harm to one of theirs | Goes quiet and polite, and lasts until she's dealt with them | Goes short, polite and very specific |
-| How they move | Takes her time, settles somewhere warm; moves all at once with no wind-up | Settles in high places and stays put; moves all at once |
-| The greeting's person | Third person | **First person**: a format clash in the same chat space |
+| `qiulong/Qiulong - Discord.json` | Her Discord card. Nearly the Teahouse persona, with one paragraph for who she is to the owner, and five new example chats that carry her range: a flirt, a prank, a real opinion, anger, comfort | **The model of a chat persona.** Also kept for the Discord side later |
+| `depravitae/Depravitae - Discord Bot.md` | The owner's other Discord card | The same method on a different character |
+| `qiulong/Qiulong - Teahouse Before Frost.md` | Her Teahouse card | Her persona, brains and schedule; its examples are narrower than the Discord set |
+| `qiulong/Qiulong.md` | Her character page | Her look |
+| `errata/Errata - Inkwyrm.md` | Her Inkwyrm card, never played | What to keep and what to rebuild |
+| `errata/Errata.md` | Her character page | Her look |
+| `qiulong/Qiulong - Adult.md`, `errata/Errata - Inkwyrm - Adult.md` | After Dark material | For the romantic tier |
+| `docs/bids/content/Initial content ideas.md` | The owner's notes on the resort and Echydna | |
 
-Some of this should stay shared, because they're both dragons, and the shared trait can become a point between them. Most should be split so each owns her version. The test is the standard's *interchangeable* catch: a line that could be written for either of them fails.
+`chat/src/errata.ts` is the Errata Chat ships today. If the pilot changes her, that file changes too, with `HOUSE_VERSION` raised.
 
 ## The work, in order
 
-### 1. Audit each card against the fields
+Each stage follows bot-writing: draft privately, critique against its anti-patterns and pulp-voice, revise, then hand back only that stage with short notes on what the critique changed. Each stage is reviewed before the next starts. Work one character at a time where it helps.
 
-For Qiulong and Errata, map every sentence of the card to one field (Appearance, Personality, Speech, Background, Wants, a hook, a When section, an outfit), using the standard's question test. Record each sentence that belongs somewhere else, or that is two facts, and anything the failure list catches. Change nothing yet.
+1. **Personality.** Each character alone, tested in a different world, a Discord-style chat, and a plain getting-to-know-you. Echydna starts as thin pitches for the owner to choose or mix; Errata is rebuilt for range; Qiulong's stands, with fixes. → `docs/content/pilot/personas.md`
+2. **Appearance.** Qiulong's and Errata's from their pages. Echydna as an options sheet first, then a draft.
+3. **Greetings and example chats.** The palette for each character planned as a set before any chat is written (bot-writing's *Example sets*), then four or five chats each. What the examples show comes out of the persona.
+4. **Brains and hooks.** Always-on kept lean; keyed entries for what she goes long about; the bond tiers.
+5. **The house and the ensemble.** Why each of them is there, in a paragraph or two of lore. The rooms a scene uses. Ties between the three, a line or two each, written after the people exist.
+6. **Schedules.** A normal day's cadence, each slot handing her something current.
+7. **Records.** One Studio world file, `content/dragons-resort/world.json`: each character's chat version in the card's shape. Then the standard and the failure list as an edit pass, and `npm run content:check`.
+8. **Play-test.** Short scenes for the owner to play on GLM-4.6 or Xialong and on one 128k model, including the same character with and without her example chats (assumption A4).
 
-### 2. The ensemble
+After the pilot: the standard gets a section for chat characters, written from what the pilot showed.
 
-How do three dragons share a space, and what does each do that the others don't?
-- **Why they're together.** Ownership, debt, a wager, a lease. Whatever it is, it should give scenes.
-- **Who owns which trait.** For each overlap above, keep it shared on purpose, split it, or cut it from one of them.
-- **Ties.** Qiulong and Errata, and each of them with Echydna: one line each that both sides could use, with the friction in it.
-- **Distinct patterns, wants and voices.** Their patterns (of the seven) should differ, as should their wants. Their Speech sections should sound different read aloud, and each body should close on a different feature.
-- **How they complement.** Three conversations a player could have with two of them at once, where each plays off the other.
+## Open questions
 
-### 3. Echydna, as a frame first
+- **Chat and adventure versions:** confirm the split, and whether a chat character's sections follow the card (persona, appearance, brains) instead of the standard's Personality / Appearance / Speech.
+- **Errata on the site:** is the resort's Errata the site's mascot, or a second version of her?
+- **The newest Qiulong Discord card.** The bot-writing skill says a later one (chat style, very long replies, a server job, a stranger example first) lives in the owner's bot project. The copy here matches the skill's older one.
 
-Lines only, per the skill: name, line, job, want, pattern, Aside, ties, home, and her form in a room the others share. Then the hooks the myth gives her (the mother of monsters, her children, what she wants from someone who catches her interest), and what she is in a chat on a 28k model. Near-cosmic doesn't mean vague. Every line still has to be something a scene can use.
-
-### 4. The Home: in or out
-
-Decide with the owner whether the pilot includes a Home. If it does:
-- The teahouse grows to fit three: its rooms, what each is for, who's in which when, by the times of day, and never more than four named people at once.
-- **Note for the front page:** it plans an example Home with Errata's writing room and her evening schedule (`docs/front-page/README.md`). Her greeting is already set in a writing room. If that room belongs here, say so.
-
-### Stop: the owner reviews
-
-Hand back stages 1 to 4 as one short document, `docs/content/pilot/ensemble.md`, before writing any records. It should hold:
-- the audit findings;
-- the trait decisions;
-- the ties;
-- Echydna's frame;
-- the Home proposal;
-- and the questions only the owner can answer.
-
-### 5. Write the records
-
-Once the owner has reviewed, write one Studio world file, `content/dragons-resort/world.json`, in the format the skill gives. It holds:
-- the three leads, with greetings and three to five example chats each;
-- their hooks and When sections;
-- the bond-tier conditions;
-- their dragon group, if one is needed, so none of them restates it;
-- the Home's places, if it's in;
-- their schedules.
-
-Qiulong's card is gold. Keep her voice, and change only what the audit and the ensemble call for, naming each change.
-
-### 6. Check and test
-
-- Run `npm run content:check -- content/dragons-resort/world.json`, then fix or answer each finding.
-- Write `docs/content/pilot/play-test.md`: five or six short scenes for the owner to play in Chat on GLM-4.6 or Xialong and on one 128k model. Each scene says what to type and what a good reply does. Include:
-  - one scene with each pair of the three;
-  - one with all three in a room;
-  - one where a bond-tier section should arrive;
-  - the same lead **with and without her example chats** (assumption A4);
-  - one record's best section **beside a flagged draft of it** (assumption A5).
-
-## Handing it over
-
-- **The paths:** `ensemble.md`, `world.json`, `play-test.md`.
-- **The checker's report.**
-- **Every change to Qiulong's or Errata's existing text, with its reason.**
-- **Only the judgement calls,** not a summary of what the records say.
-- **Anything in the standard the work showed to be wrong,** as proposed edits. The standard is version 0, and this pilot exists to correct it.
-
-## The prompt for the session
-
-Copy everything below the line into a new Claude Code session on this repository, set to Opus 5.5.
+## The prompt for the next session
 
 ---
 
-You're writing Inkwyrm's first flagship records: the dragon's resort pilot. Read `docs/content/pilot-brief.md` and do what it says, in order. Load the `inkwyrm-records` skill, and the `pulp-voice` skill when you reach greetings and example chats. The owner's calibration outranks everything: `docs/bids/content/mo-03-style.md`, then `docs/content/standard.md`.
-
-Start with stages 1 to 4: the audit of Qiulong's and Errata's cards against the field definitions, the ensemble of the three, Echydna's frame, and the Home question. Then stop and hand back `docs/content/pilot/ensemble.md` for the owner's review. Write no records until the owner has answered.
-
-Work on a branch and open a pull request when you hand anything back. The owner doesn't use git: give them the plain steps to review and merge. Never use the owner's real name; sign docs `@AmbiProp`.
+You're continuing the dragon's resort pilot for Inkwyrm. Read `docs/content/pilot-brief.md` (version 2), then load the bot-writing skill, and pulp-voice when you reach greetings and examples. Read the owner's two Discord cards before writing anything. Pick up at the first stage the owner hasn't approved, hand back only that stage, and stop. Don't load the content standard or the inkwyrm-records skill until the records stage. Work on a branch and open a pull request when you hand anything back; the owner doesn't use git, so give the plain steps. Never use the owner's real name; sign docs `@AmbiProp`.
