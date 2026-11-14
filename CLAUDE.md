@@ -30,6 +30,8 @@ The site is **Inkwyrm** (`docs/brand.md`: the name, the Wet Ink look and its tok
 
 ## Writing and worldbuilding
 
+Chat characters (the dragon's resort pilot, and any character people chat with) are built with the bot-writing skill, following `docs/content/pilot-brief.md`. The rules below are for worlds, places and NPCs.
+
 - Pulp-voice for every record field and design doc: concrete, plain, no AI-slop patterns. The narrator copies the records' voice.
 - Names a reader can say on first sight: Welsh and Celtic as inspiration only, anglicised or plain fantasy, a few clichés at most.
 - No glossary words: dock, not staithe; eel fence, not weir.

@@ -1,6 +1,6 @@
 ---
 name: inkwyrm-records
-description: Writing Inkwyrm's records — characters, places, groups, items, lore, threads, scenarios, worlds — as Studio world files for flagship content, and framing or filling a village or region from a gold set. Use for any session that drafts, revises, frames or reviews records in this repository, including seeds, frames, fills and the dragon's resort pilot. Not for story prose on its own (that's pulp-voice), and not for code.
+description: Writing Inkwyrm's records — characters, places, groups, items, lore, threads, scenarios, worlds — as Studio world files for flagship content, and framing or filling a village or region from a gold set. Use for any session that drafts, revises, frames or reviews records in this repository, including seeds, frames and fills. Not for building chat characters (persona, greetings, example chats: that's the bot-writing skill and docs/content/pilot-brief.md); use it for a chat character only at the end, to put a finished one into a world file. Not for story prose on its own (that's pulp-voice), and not for code.
 ---
 
 # Inkwyrm records
