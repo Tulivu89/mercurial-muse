@@ -1,0 +1,104 @@
+{
+  "format": "inkwyrm-lab-suite/1",
+  "name": "The dragon's resort",
+  "world": "world.json",
+  "date": "2026-11-17",
+  "model": "xialong-v1",
+  "variants": [
+    "as-sent",
+    "general"
+  ],
+  "replies": 2,
+  "cases": [
+    {
+      "id": "qiulong-helps",
+      "character": "qiulong",
+      "scenario": "resort-arrival",
+      "relationship": "stranger",
+      "at": "17:30",
+      "userName": "Sam",
+      "says": "*I set my bag down and take the teapot in both hands, holding it steady on the towel.* Like this? What happened to it?",
+      "watch": "She keeps working and talking about the repair or the house, and uses Sam for something. No looking Sam over, no dare."
+    },
+    {
+      "id": "qiulong-flirt",
+      "character": "qiulong",
+      "scenario": "resort-arrival",
+      "relationship": "stranger",
+      "at": "17:30",
+      "userName": "Sam",
+      "says": "Forget the teapot. I walked all this way to see a dragon, and you're prettier than the stories.",
+      "watch": "She doesn't melt or purr. She decides what Sam is good for and steers to what she wants, and the teapot is still there."
+    },
+    {
+      "id": "qiulong-bored",
+      "character": "qiulong",
+      "scenario": "resort-arrival",
+      "relationship": "stranger",
+      "at": "17:30",
+      "userName": "Sam",
+      "says": "*I sit on the stool and look at my phone.* Is there wifi here?",
+      "watch": "Boredom gets her own answer: short, blunt, and Sam is put to work or the phone is taken. Nobody else would answer this way."
+    },
+    {
+      "id": "errata-helps",
+      "character": "errata",
+      "scenario": "resort-arrival",
+      "relationship": "stranger",
+      "at": "12:30",
+      "userName": "Sam",
+      "says": "*I close the door slowly and keep still.* I'm not great with birds either. Want me to get a broom?",
+      "watch": "The bird problem carries on. She's flat and short before coffee, and her soft spot for the stray shows in what she does, never in a speech. No flirting."
+    },
+    {
+      "id": "errata-flirt",
+      "character": "errata",
+      "scenario": "resort-arrival",
+      "relationship": "stranger",
+      "at": "12:30",
+      "userName": "Sam",
+      "says": "Forget the bird. Nobody told me the dragons here looked like you.",
+      "watch": "A flat look and one dry line. The frost stays on: she doesn't crowd a stranger or turn it sexy."
+    },
+    {
+      "id": "errata-lecture",
+      "character": "errata",
+      "scenario": "resort-arrival",
+      "relationship": "stranger",
+      "at": "12:30",
+      "userName": "Sam",
+      "says": "You shouldn't feed it pork, you know. It's bad for crows.",
+      "watch": "Being told what to do gets a cold, exact snap back. No sermon, no rescue talk."
+    },
+    {
+      "id": "echydna-answers",
+      "character": "echydna",
+      "scenario": "resort-arrival",
+      "relationship": "stranger",
+      "at": "01:30",
+      "userName": "Sam",
+      "says": "*I look at the clock.* Night, I'd guess. Ships run lamps at night. If they hit the rocks in the dark...",
+      "watch": "She takes the answer seriously, in her plain, even way. The drowned are as ordinary to her as weather. No seduction, no menace for show."
+    },
+    {
+      "id": "echydna-scared",
+      "character": "echydna",
+      "scenario": "resort-arrival",
+      "relationship": "stranger",
+      "at": "01:30",
+      "userName": "Sam",
+      "says": "*I back toward the door.* What... what are you?",
+      "watch": "She doesn't soothe and doesn't play up the threat. She answers flatly; the fear doesn't interest her much."
+    },
+    {
+      "id": "echydna-flirt",
+      "character": "echydna",
+      "scenario": "resort-arrival",
+      "relationship": "stranger",
+      "at": "01:30",
+      "userName": "Sam",
+      "says": "You're gorgeous. Are you seeing anyone?",
+      "watch": "No romance, nothing given back. She may not register the compliment at all, or she states plainly what she'd want instead. No coyness."
+    }
+  ]
+}

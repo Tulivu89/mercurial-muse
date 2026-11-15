@@ -131,6 +131,11 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.4.4 - New greetings, triggers that fire - 2026-11-15
+
+- **The resort's greetings are rewritten** (`docs/content/dragons-resort/greetings-v2.md`): each woman in the middle of her own day, at an hour her schedule agrees with, handing the person something to do. A browser that has the resort takes the new version; chats already started keep their greeting.
+- **Triggers fire on capitals with Xialong.** CharacterRoom's kernel matches triggers case for case, so each one is now sent capitalised as well (`keyVariants` in `core/chat/sheet.ts`). The resort's loose triggers (*past, want, horns*) are gone.
+
 ### 0.4.3 - The resort is the house - 2026-11-15
 
 - **The resort's Errata is the site's Errata.** A first visit gets the dragon's resort (Qiulong, Errata and Echydna) instead of the old mascot's world, and a browser that has the old world loses it. Chats with the old Errata stay readable until deleted.

@@ -88,7 +88,9 @@ export function App() {
       try {
         let list = await listWorlds();
         // The house comes with the site: the dragon's resort, put in once. Delete it and it
-        // stays gone (Home offers it again). The older mascot world it replaced is taken out.
+        // stays gone (Home offers it again). When the bundled house changes, this browser's copy
+        // is replaced by it: the world file is the source, not the copy. The older mascot world
+        // it replaced is taken out.
         let seeded = 0;
         try { seeded = Number(localStorage.getItem(SEEDED_KEY)) || 0; } catch { /* storage blocked */ }
         if (seeded < HOUSE_VERSION) {
@@ -96,10 +98,11 @@ export function App() {
             await deleteWorld(RETIRED_HOUSE_ID);
             list = list.filter((world) => world.id !== RETIRED_HOUSE_ID);
           }
-          if (!list.some((world) => world.id === HOUSE_WORLD_ID)) {
+          const had = list.some((world) => world.id === HOUSE_WORLD_ID);
+          if (!seeded || had) {
             const house = await loadResort(Date.now());
             await putWorld(house);
-            list = [...list, house];
+            list = [...list.filter((world) => world.id !== HOUSE_WORLD_ID), house];
           }
         }
         try { localStorage.setItem(SEEDED_KEY, String(HOUSE_VERSION)); } catch { /* storage blocked */ }

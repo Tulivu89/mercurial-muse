@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  addAlternative, addReply, addUserMessage, buildRequest, budgetFor, deleteMessage, editMessage, editableText, exportChat, newChat, parseReply, pickedAlt, profileFor,
+  addAlternative, addReply, keyVariants, addUserMessage, buildRequest, budgetFor, deleteMessage, editMessage, editableText, exportChat, newChat, parseReply, pickedAlt, profileFor,
   readChatFile, readReply, remember, replaceMacros, replyText, resolvePortrait, sceneFor, sheetFor, stepAlternative, windowStartFor, type BuildOptions, type Chat,
 } from '../chat/index.js';
 import { formatPrompt } from '../narration/formats.js';
@@ -185,6 +185,13 @@ describe('the General profile', () => {
 });
 
 describe('the AetherRoom profile from records', () => {
+  it('fires a lower-case key on a capitalised word, since the kernel matches case-sensitively', async () => {
+    expect(keyVariants(['flood', 'high water', 'Flood'])).toEqual(['flood', 'Flood', 'high water', 'High water']);
+    const said = addUserMessage(chat(), 'Flood took it all.', 'u1', NOW);
+    const built = (await buildRequest(said, world(), options('xialong-v1', { upTo: 2 })))!;
+    expect(built.messages.some((message) => message.content.includes('She lost the station tapes in the flood.'))).toBe(true);
+  });
+
   it('reads records as CharacterRoom cards', () => {
     const scene = sceneFor(world(), chat({ relationship: 'close' }), NOW)!;
     const sheet = sheetFor(scene);

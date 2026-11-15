@@ -2,7 +2,8 @@
 // setups, so a weak reply can be pinned on the model or on the setup, and on which part of it.
 // Whoever runs it (a person, or a coding agent in another app) plays the model for each variant,
 // writes the replies down, and the lab scores them. Pure: the script does the files.
-import { messageText, pickedAlt, profileFor, rebuild, requestText, type PackRequest, type TestPack } from '../../../core/chat/index.js';
+import { XIALONG, addUserMessage, makeTestPack, messageText, newChat, pickedAlt, profileFor, rebuild, requestText, samplersFor, type PackRequest, type TestPack } from '../../../core/chat/index.js';
+import type { World } from '../../../core/records/index.js';
 import { livesIn } from '../../../core/chat/index.js';
 import { catchesIn } from '../content/lint';
 
@@ -22,9 +23,10 @@ export function originalReplies(pack: TestPack, upTo: number): string[] {
   return message?.from === 'character' ? message.alts.map((alt) => alt.parts.map((part) => part.text).join('\n')) : [];
 }
 
-export async function labVariants(pack: TestPack, upTo: number): Promise<Variant[]> {
+export async function labVariants(pack: TestPack, upTo: number, only?: readonly string[]): Promise<Variant[]> {
   const out: Variant[] = [];
   const add = async (id: string, title: string, what: string, changed: Pick<TestPack, 'settings' | 'needs' | 'chat' | 'world'>, model = pack.settings.model) => {
+    if (only && !only.includes(id)) return;
     const request = await rebuild(changed, upTo, model);
     if (request) out.push({ id, title, what, request });
   };
@@ -152,4 +154,72 @@ export function scoresText(rows: { variant: string; scores: Score[] }[]): string
     }
   }
   return lines.join('\n');
+}
+
+// --- The standing suite: the same openers against a world's characters, run whenever the
+// world or the setup changes, so two runs can be compared. Its file is `inkwyrm-lab-suite/1`.
+
+export const SUITE_FORMAT = 'inkwyrm-lab-suite/1';
+export interface SuiteCase {
+  id: string;
+  character: string;
+  scenario: string | null;
+  relationship: TestPack['chat']['relationship'];
+  // The time of day the chat happens, "HH:MM", on the suite's date.
+  at: string;
+  userName: string;
+  // What the person says after her greeting. Her reply to it is the turn under test.
+  says: string;
+  // What a judge looks for in her reply.
+  watch: string;
+}
+export interface Suite { format: typeof SUITE_FORMAT; name: string; world: string; date: string; model: string; variants: string[]; replies: number; cases: SuiteCase[] }
+
+export function readSuite(raw: unknown): { ok: true; suite: Suite } | { ok: false; errors: string[] } {
+  const top = raw && typeof raw === 'object' ? raw as Partial<Suite> : {};
+  if (top.format !== SUITE_FORMAT) return { ok: false, errors: ['This is not a lab suite (inkwyrm-lab-suite/1).'] };
+  if (!Array.isArray(top.cases) || !top.cases.length) return { ok: false, errors: ['The suite has no cases.'] };
+  const bad = top.cases.filter((entry) => !entry?.id || !entry.character || !entry.says || !/^\d\d:\d\d$/.test(entry.at ?? '')).map((entry) => entry?.id ?? '(no id)');
+  if (bad.length) return { ok: false, errors: [`These cases need an id, a character, an "at" time and what the person says: ${bad.join(', ')}.`] };
+  return { ok: true, suite: { ...(top as Suite), name: top.name ?? 'Suite', world: top.world ?? '', date: top.date ?? '2026-11-16', model: top.model ?? 'xialong-v1', variants: top.variants ?? ['as-sent', 'general'], replies: top.replies ?? 2 } };
+}
+
+// One case as a test pack: a new chat with her first greeting, then what the person says. The
+// clock is the machine's local time on the suite's date, which is what the chat itself reads.
+export function suitePack(suite: Suite, world: World, entry: SuiteCase): TestPack {
+  const record = world.records.find((candidate) => candidate.id === entry.character && candidate.kind === 'character');
+  if (!record) throw new Error(`${entry.id}: no character "${entry.character}" in ${world.name}.`);
+  const [year, month, day] = suite.date.split('-').map(Number) as [number, number, number];
+  const [hour, minute] = entry.at.split(':').map(Number) as [number, number];
+  const at = new Date(year, month - 1, day, hour, minute).getTime();
+  let n = 0;
+  const ids = () => `${entry.id}-${++n}`;
+  const start = newChat({
+    id: entry.id, worldId: world.id, characterId: record.id, characterName: record.name, personaId: null, scenarioId: entry.scenario,
+    userName: entry.userName, relationship: entry.relationship, style: 'roleplay', responseLength: (record.chatDefaults?.responseLength ?? 'medium') as TestPack['chat']['responseLength'], greeting: record.greetings[0] ?? null,
+  }, ids, at);
+  const chat = { ...addUserMessage(start, entry.says, ids(), at), updatedAt: at };
+  return makeTestPack({
+    chat, world, now: at, next: null, last: null,
+    settings: { provider: 'suite', model: suite.model, mode: 'chat', format: 'auto', profile: profileFor(suite.model), contextTokens: XIALONG.contextTokens, replyTokens: 1000, samplers: samplersFor(suite.model, 0.8) },
+  });
+}
+
+export function suiteReadme(suite: Suite, cases: { entry: SuiteCase; variants: string[] }[]): string {
+  return [
+    `# Lab suite: ${suite.name}`,
+    '',
+    `${cases.length} cases, each a fresh chat: her greeting, then one message from the person. The turn under test is her reply. Built for ${suite.model} on ${suite.date}, with today's code.`,
+    '',
+    '| Case | Who | Relationship | Time | Watch for |',
+    '| --- | --- | --- | --- | --- |',
+    ...cases.map(({ entry }) => `| \`${entry.id}/\` | ${entry.character} | ${entry.relationship} | ${entry.at} | ${entry.watch} |`),
+    '',
+    '## How to run it',
+    '',
+    `1. **Play the model, blind.** Each case folder has one folder per variant (${cases[0]?.variants.join(', ') ?? ''}). In each, read only \`context.md\` and write her reply ${suite.replies} times, as \`reply-1.md\`, \`reply-2.md\` and so on. Only the reply, in the form her messages take in the context. Don't read the world file or the other folders first.`,
+    '2. **Score.** `npm run chat:lab -- score <this folder>` writes `scores.md` for every case.',
+    '3. **Judge.** For each case, one line per variant against its *Watch for*, then `findings.md`: what held, what slid toward the same voice in every character, and which variant played better.',
+    '',
+  ].join('\n');
 }

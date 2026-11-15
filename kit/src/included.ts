@@ -11,8 +11,8 @@ export const ERRATA_ID = 'errata';
 // The world Chat puts in a first visitor's browser, and the Overview offers before that.
 export const HOUSE_WORLD_ID = RESORT_WORLD_ID;
 // Raised when the house changes in a way a browser that already has it should take up.
-// 3: the resort replaced the old mascot world.
-export const HOUSE_VERSION = 3;
+// 3: the resort replaced the old mascot world. 4: the greetings were rewritten.
+export const HOUSE_VERSION = 4;
 export const RETIRED_HOUSE_ID = 'inkwyrm-house';
 
 // The bundled file, read and checked. `now` stamps it as this browser's copy.
