@@ -4,7 +4,8 @@
 import { describe, expect, it } from 'vitest';
 import { TEST_PACK_FORMAT, XIALONG, buildRequest, makeTestPack, newChat, packOptions, readTestPack, requestText, samplersFor, type Chat, type TestPack } from '../../core/chat/index.js';
 import { parseWorld, type World } from '../../core/records/index.js';
-import { labReadme, labVariants, originalReplies, scoreReply, turnOf } from '../src/lab/chatLab';
+import { labReadme, labVariants, originalReplies, readSuite, scoreReply, suitePack, turnOf } from '../src/lab/chatLab';
+import suiteFile from '../../content/dragons-resort/lab-suite.json';
 import file from '../../content/dragons-resort/world.json';
 
 const NOW = Date.UTC(2026, 10, 15, 3, 0);
@@ -69,10 +70,10 @@ describe('the chat lab', () => {
     const variants = await labVariants(pack(), 2);
     expect(variants.map((variant) => variant.id)).toEqual(['as-sent', 'general', 'no-examples', 'only-her', 'with-scenario']);
     const text = (id: string) => variants.find((variant) => variant.id === id)!.request.messages.map((message) => message.content).join('\n');
-    // "want" brings in the other women's Wants: the leak the owner's chat had.
+    // Asking what she wants brings in her Wants, and, with the others in the world, theirs too.
     expect(text('as-sent')).toContain('Qiulong: Wants');
     expect(text('only-her')).not.toContain('Qiulong: Wants');
-    expect(text('only-her')).toContain('Tastes and Strays');
+    expect(text('only-her')).toContain('Chases loud distraction');
     expect(text('as-sent')).toContain('Example quotes');
     expect(text('no-examples')).not.toContain('Example quotes');
     expect(text('as-sent')).not.toContain('Scene:');
@@ -89,10 +90,35 @@ describe('the chat lab', () => {
 
   it('scores a reply: catches, other people named, quote marks, and copied stretches as one', async () => {
     const [asSent] = await labVariants(pack(), 2);
-    const score = scoreReply('reply-1.md', '*She taps the stool.* "Ask Qiulong," she says, as if it were obvious. Plays dirty eight-ball and rushdown fighters just to rattle opponents.', asSent!.request, pack());
+    const score = scoreReply('reply-1.md', '*She taps the stool.* "Ask Qiulong," she says, as if it were obvious. Stays at arm\'s length with flat remarks when someone opens with rehearsed small talk.', asSent!.request, pack());
     expect(score.named).toEqual(['Qiulong']);
     expect(score.quotes).toBe(2);
     expect(score.catches.length).toBeGreaterThan(0);
-    expect(score.lifted).toEqual(['plays dirty eight ball and rushdown fighters just to rattle opponents']);
+    expect(score.lifted).toEqual(['stays at arm\'s length with flat remarks when someone opens with rehearsed small talk']);
   });
 });
+
+describe('the standing suite', () => {
+  it('reads the resort\'s suite, and every case names a real character', () => {
+    const read = readSuite(suiteFile);
+    expect(read.ok).toBe(true);
+    if (!read.ok) return;
+    const people = new Set(resort().records.filter((record) => record.kind === 'character').map((record) => record.id));
+    for (const entry of read.suite.cases) expect(people.has(entry.character)).toBe(true);
+    expect(readSuite({ format: 'inkwyrm-lab-suite/1', cases: [{ id: 'x' }] }).ok).toBe(false);
+  });
+
+  it('makes each case a new chat: her greeting, what the person says, at the case\'s hour', async () => {
+    const read = readSuite(suiteFile);
+    if (!read.ok) throw new Error(read.errors.join(' '));
+    const entry = read.suite.cases.find((candidate) => candidate.character === 'echydna')!;
+    const made = suitePack(read.suite, resort(), entry);
+    expect(made.chat.messages.map((message) => message.from)).toEqual(['character', 'user']);
+    expect(new Date(made.chat.updatedAt).getHours() * 60 + new Date(made.chat.updatedAt).getMinutes()).toBe(Number(entry.at.slice(0, 2)) * 60 + Number(entry.at.slice(3)));
+    const variants = await labVariants(made, made.chat.messages.length, read.suite.variants);
+    expect(variants.map((variant) => variant.id)).toEqual(['as-sent', 'general']);
+    // Her greeting's place agrees with where her schedule has her at that hour.
+    expect(variants[0]!.request.messages[0]!.content).toContain('Locations: Kitchen & Back Jetty');
+  });
+});
+

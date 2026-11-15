@@ -49,6 +49,8 @@ Fable's time goes where a strong model matters most and review is cheapest: the 
 
 The house of glass: a cyberpunk influencer house the world watches. It's chat-first like the resort, so the pilot's pipeline applies stage for stage, and it's the world outside fantasy the front page wants. Nova has a card in `docs/bids/content/`; the influencer has a paragraph in `Initial content ideas.md`.
 
+**It starts with the framework chat** (`docs/content/hog-wild/plan.md`): five short checkpoints that settle the show, the cast, the looks, how Nova's configuration and the audience fit the records, the frame and a lab suite, before Fable writes a line. Fable then runs the stages below from that framework.
+
 - **Checkpoint 1:** the house (what the cameras see, who's in it, what the audience pays for), then three seed pitches each for Nova and the influencer, each a positive vibe plus a temperament someone would recognise, and how each sits against the other.
 - **Then, one character at a time,** the retrospective's order and gates. Grounding questions answered before the persona (what trash she likes, what makes her laugh outside her job, what makes her snap, what quiet damage keeps her from being a trope). Palette table before the example chats.
 - **Last:** the house and their ties, schedules, and `content/hog-wild/world.json`, checker clean.

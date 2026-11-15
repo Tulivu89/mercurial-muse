@@ -50,6 +50,17 @@ const entryName = (record: StoryRecord, section: Section, own: boolean) => {
 
 export interface Sheet { char: KernelCard; user: KernelCard; scenario?: KernelCard; floaty: KernelFloaty[] }
 
+// CharacterRoom's kernel matches keys case-sensitively, so a key written "echydna" never fires on
+// "Echydna", and "what do you want" never fires at the start of a sentence. Authors write keys in
+// lower case (the General profile matches without case), so each key also goes in capitalised.
+export function keyVariants(keys: readonly string[]): string[] {
+  const out: string[] = [];
+  for (const key of keys) {
+    for (const form of [key, key.charAt(0).toUpperCase() + key.slice(1)]) if (form.trim() && !out.includes(form)) out.push(form);
+  }
+  return out;
+}
+
 export function sheetFor(scene: Scene): Sheet {
   const { character, persona, scenario } = scene;
   const held = new Set(scene.conditionIds);
@@ -82,7 +93,7 @@ export function sheetFor(scene: Scene): Sheet {
     for (const section of record.sections) {
       if (!section.text.trim()) continue;
       const name = entryName(record, section, own);
-      const keys = section.keys.length ? section.keys : ownTerms(record);
+      const keys = keyVariants(section.keys.length ? section.keys : ownTerms(record));
       if (section.reach === 'named') keyed.push({ name, content: section.text, keys, requiredIntimacy: 'none' });
       else if (section.reach === 'when' && section.when && held.has(section.when) && (section.keys.length || !own)) keyed.push({ name, content: section.text, keys, requiredIntimacy: 'none' });
       else if (!own && section.reach === 'always') floaty.push({ id: `${record.id}:${section.id}`, active: true, entry: { name, content: section.text } });

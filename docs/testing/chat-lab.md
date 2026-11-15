@@ -47,9 +47,31 @@ npm run chat:lab -- score lab/errata-test.lab
 
 That writes `scores.md`. For each reply it gives the length, catches from the content standard's failure list, other characters named, quotation marks (the house format has none), and stretches of six words or more copied from the sheet or the examples.
 
+## The standing suite
+
+A test pack is one turn from one real chat. The suite is the same set of openers run against the resort's three every time, so two runs can be compared: before and after a world change, or one model against another. It needs no pack.
+
+```bash
+npm run chat:lab -- suite
+```
+
+That reads `content/dragons-resort/lab-suite.json` and writes `lab/suite-<date>/`: one folder per case, each with the `as-sent` and `general` variants, and a `README.md` with what to look for in each. A case is a new chat at the hour her greeting happens: her greeting, then one message from the person. Each woman gets three: an ordinary reply to her greeting, a stranger flirting, and a push that should set her off in her own way (boredom, a lecture, fear). Score the whole suite in one go:
+
+```bash
+npm run chat:lab -- score lab/suite-<date>
+```
+
+To add a case, add an entry to the suite file: `id`, `character`, `scenario`, `relationship`, `at` (the hour, `HH:MM`), `userName`, `says` (the person's message) and `watch` (what a judge looks for). A new world gets its own suite file beside its world file; run it with `npm run chat:lab -- suite <file>`.
+
 ## 3. Let another app's agent run it
 
-Each subscription comes with a coding agent that can open the repository and run commands: Claude Code, ChatGPT's Codex, Google's Jules. Attach the pack to the session (uploading it into the repository works too, but then it stays in the repository's history), and paste this:
+Each subscription comes with a coding agent that can open the repository and run commands: Claude Code, ChatGPT's Codex, Google's Jules or the Gemini CLI. `AGENTS.md` at the root tells them how to set up and run the lab (Codex and Jules read it on their own; `GEMINI.md` points Gemini's tools at it; Claude Code reads `CLAUDE.md`). Where an app asks for a setup script, it's `npm ci`.
+
+**For the suite**, paste this:
+
+> Read `AGENTS.md`. Run `npm ci`, then `npm run chat:lab -- suite`, and follow the `README.md` it writes, blind. Then score it, write `findings.md`, and hand back `findings.md` and `scores.md` as files. Don't commit anything.
+
+**For a pack the owner sent**, attach the pack to the session (uploading it into the repository works too, but then it stays in the repository's history), and paste this:
 
 > Read `docs/testing/chat-lab.md`. The test pack is `lab/<file>.json`. Run `npm ci`, then `npm run chat:lab -- lab/<file>.json`. Follow the `README.md` it writes, blind: for each variant read only its `context.md` and write the replies as the model would. Don't read the world file, the other variants or `original.md` until every reply is written. Then run the score, read everything beside `original.md`, and write `findings.md`. Hand back `findings.md` and `scores.md` as files. Don't commit the pack or the lab folder.
 
@@ -66,8 +88,8 @@ Google AI Studio is on the provider list now. Its keys have come with a free dai
 The owner's chat with the resort's Errata on xialong-v1, rebuilt from its export (its borrowed persona and scenario weren't in that file, so they're left out here). What the context shows, before any model plays it:
 
 1. **She didn't know where she was.** The chat had no scenario from the resort: no Autumn's Leaves, no house, no Qiulong running it. "What a specific rumor" is a fair answer from someone who has never heard of the teahouse. *Fixed:* a new chat now starts in the scenario where her schedule puts her.
-2. **The other women's sections came in on loose keys.** Three of the seven brains in her context were someone else's. "Qiulong: Wants" and "Echydna: Wants" came in on the word *want*, and "Echydna: Pampering and Worship" came in on *horns*, from Errata's own greeting. *To fix in the world file:* keys on Named sections that are specific to the person (her name, her things), never *want*, *past*, *family* or *horns*. That's stream 5's job in `docs/content/next.md`.
-3. **The schedule and the greeting disagree.** The greeting puts her on a parlor barstool with iced coffee. At the hour the chat ran, her schedule put her in her spare room in her sleep clothes, and the sheet says so. The model gets told both.
+2. **The other women's sections came in on loose keys.** Three of the seven brains in her context were someone else's. "Qiulong: Wants" and "Echydna: Wants" came in on the word *want*, and "Echydna: Pampering and Worship" came in on *horns*, from Errata's own greeting. *Fixed Nov 15:* the generic triggers are out, and the real questions bring the notes in (`docs/content/dragons-resort/greetings-v2.md`). Capitalised words now fire on Xialong too.
+3. **The schedule and the greeting disagree.** The greeting puts her on a parlor barstool with iced coffee. At the hour the chat ran, her schedule put her in her spare room in her sleep clothes, and the sheet says so. The model gets told both. *Eased Nov 15:* each new greeting sits at an hour her schedule agrees with. A chat on real time at another hour still gets both.
 4. **Her voice and her outfit sit under the player's card.** In CharacterRoom's layout, her Speech and her outfit come after the player's name with no label saying they're hers. That's how CharacterRoom has always laid out a card's brains, so it's worth a variant before changing it.
 5. **The examples are half the request:** about 1,900 of 3,600 tokens. Two of the six are romantic, played to someone she's only just met.
 

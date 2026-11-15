@@ -80,7 +80,7 @@ describe('the home screen', () => {
     fireEvent.click(within(sheet).getByRole('button', { name: 'Start the chat' }));
     const chat = onStart.mock.calls[0]![0] as Chat;
     expect(chat).toMatchObject({ characterId: ERRATA_ID, userName: 'Sam', relationship: 'close', style: 'roleplay' });
-    expect(chat.messages[0]!.alts[0]!.parts[0]!.emotion).toBe('bored');
+    expect(chat.messages[0]!.alts[0]!.parts[0]!.emotion).toBe('irritated');
     // The card's own defaults fill the sheet.
     expect(chat.responseLength).toBe('medium');
   });
@@ -89,7 +89,7 @@ describe('the home screen', () => {
     const onOpen = vi.fn();
     render(<Home worlds={[world]} chats={[start()]} portraits={{}} status={null} userName="" onOpen={onOpen} onStart={() => {}} onImport={() => {}} />);
     const recent = screen.getByRole('region', { name: 'Continue' });
-    expect(within(recent).getByText(/rain ticking on the eaves/)).toBeInTheDocument();
+    expect(within(recent).getByText(/Half past noon/)).toBeInTheDocument();
     fireEvent.click(within(recent).getByRole('button'));
     expect(onOpen).toHaveBeenCalledWith('c1');
   });
@@ -120,8 +120,8 @@ describe('the chat screen', () => {
   it('sends a message, streams the reply into a bubble and shows the emotion on the portrait', async () => {
     const { calls, impl } = provider(['Errata: *I take the page.*\nThis line is yours.\n  Emotion: smug']);
     const { container } = render(<Harness impl={impl} />);
-    expect(screen.getByText(/rain ticking on the eaves/)).toBeInTheDocument();
-    expect(container.querySelector('.chat-head .portrait')).toHaveAttribute('data-emotion', 'bored');
+    expect(screen.getByText(/A crow with a crooked wing/)).toBeInTheDocument();
+    expect(container.querySelector('.chat-head .portrait')).toHaveAttribute('data-emotion', 'irritated');
     fireEvent.change(screen.getByLabelText('Your message'), { target: { value: 'Here is my draft.' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
     await screen.findByText('This line is yours.');
