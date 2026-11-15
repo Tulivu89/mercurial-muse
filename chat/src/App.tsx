@@ -9,6 +9,7 @@ import { recordActivity } from '../../kit/src/activity';
 import { useTheme } from '../../kit/src/theme';
 import { downloadJson, newId, readFileBytes, readJsonFile } from '../../kit/src/util';
 import { listWorlds, putWorld } from '../../kit/src/worlds';
+import { RESORT_WORLD_ID, loadResort } from '../../kit/src/included';
 import { ChatView } from './ChatView';
 import { HOUSE_VERSION, HOUSE_WORLD_ID, houseWorld, refreshHouse } from './errata';
 import { Home, type Status } from './Home';
@@ -203,6 +204,19 @@ export function App() {
     } catch (error) { fail(error); }
   };
 
+  // The dragon's resort, from the site's own world files, put in this browser once on request.
+  const bringResort = async () => {
+    if (!worldsReady) { fail(new Error('Your worlds could not be read yet. Retry the library before bringing in the resort.')); return; }
+    try {
+      const resort = await loadResort(Date.now());
+      await putWorld(resort);
+      setWorlds([...(worlds ?? []).filter((world) => world.id !== resort.id), resort]);
+      let collection = loadCollection();
+      for (const record of resort.records.filter((entry) => entry.kind === 'character' && entry.chatListed)) collection = patchMember(collection, resort.id, record.id, { state: 'active' });
+      saveCollection(collection);
+    } catch (error) { fail(error); }
+  };
+
   const createCharacter = async (name: string) => {
     if (!worldsReady) throw new Error('Retry the library before creating a character.');
     const target = worlds?.find((world) => world.id === IMPORTS_WORLD_ID) ?? newWorld(IMPORTS_WORLD_ID, 'Your characters', Date.now());
@@ -322,6 +336,7 @@ export function App() {
         <House
           worlds={worlds ?? []} chats={chats ?? []} portraits={portraits} lives={lives} userName={settings.userName}
           onLife={saveLife} onWorld={saveWorld} onPicture={(owner, slot, file) => void setPortrait(owner, slot, file)} onChat={chatFrom}
+          onBringResort={worldsReady && !worlds?.some((world) => world.id === RESORT_WORLD_ID) ? () => void bringResort() : undefined}
         />
       ) : view.name === 'settings' ? (
         <SettingsView

@@ -21,6 +21,12 @@ export const EXAMPLE_WORLDS: ExampleWorld[] = [
     note: 'Opens a copy in the Studio, in this browser.',
     href: '/studio/#/bring/port-covenant', cover: { over: 'Abernys', title: 'Port Covenant' },
   },
+  {
+    worldId: 'dragons-resort', name: 'The dragon\'s resort',
+    line: 'A teahouse at the edge of myth, run by a dragon whose mother and half-sister have moved in for the season.',
+    note: 'Opens a copy in the Studio, in this browser. Its three are in Chat and Home.',
+    href: '/studio/#/bring/dragons-resort', cover: { over: 'Autumn\'s Leaves', title: 'The dragon\'s resort' },
+  },
 ];
 
 export const EXAMPLE_ADVENTURES: ExampleAdventure[] = [

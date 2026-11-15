@@ -2,6 +2,8 @@
 
 Nov 14, 2026 · @AmbiProp · **Version 3: the hand-off.** Everything a fresh session needs to build the pilot's three characters, and nothing it doesn't. Versions 1 and 2, and the drafts the owner rejected, are in the git history. Don't read them.
 
+**Status, Nov 15:** stages 0 to 7 are done (`docs/content/dragons-resort/`, and the world file `content/dragons-resort/world.json`, checker clean). The resort is on the site: Chat › Home › Bring in The dragon's resort. Next is stage 8, the play-test; what follows it is `docs/content/next.md`. The order that worked better than this page's is in `docs/content/process-retrospective.md`: appearance before persona, brains before example chats.
+
 ## What this is
 
 Three dragon women at a teahouse at the edge of myth, built as chat characters someone would want to talk to for months: to get to know, clash with, romance, anger and be missed by. Qiulong is done as a person. Echydna has a seed. Errata starts over. Once they work, they become Inkwyrm's example Home and the gold set for later characters.

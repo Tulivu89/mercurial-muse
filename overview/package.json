@@ -1,7 +1,7 @@
 {
   "name": "overview",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Inkwyrm's front page, served at /overview/: what comes with the site on a first visit, and one exact Continue after.",
   "type": "module",
   "scripts": {

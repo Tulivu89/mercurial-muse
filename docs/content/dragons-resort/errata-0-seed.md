@@ -1,6 +1,6 @@
 # Errata, stage 0: the seed
 
-Nov 14, 2026 · @AmbiProp · Three pitches. Pick one, change one, or give your own. Each pitch names someone whose temperament she'd share. Only the temperament comes from them, no names and no story.
+Nov 14, 2026 · @AmbiProp · **Not chosen.** The owner gave her seed instead: a goth baddie, Shego from across the room and Elvira up close (`docs/content/process-retrospective.md`). Kept for the record. Three pitches. Pick one, change one, or give your own. Each pitch names someone whose temperament she'd share. Only the temperament comes from them, no names and no story.
 
 1. **Anne Shirley, grown up.** An ink dragon who falls for places, stories and the occasional person on sight, talks about all of it at length, and holds a grudge for years against anyone who laughs at her.
 2. **Howl, from Howl's Moving Castle.** An ink dragon who's gorgeous and knows it, and slips out of every promise she makes until someone she loves is in real trouble.

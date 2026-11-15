@@ -3,10 +3,10 @@ name: Site
 on:
   push:
     branches: [main, 'claude/**']
-    paths: ['adventure/**', 'core/**', 'kit/**', 'studio/**', 'chat/**', 'overview/**', 'package.json', 'package-lock.json', '.github/workflows/site.yml']
+    paths: ['adventure/**', 'core/**', 'content/**', 'kit/**', 'studio/**', 'chat/**', 'overview/**', 'package.json', 'package-lock.json', '.github/workflows/site.yml']
   pull_request:
     branches: [main]
-    paths: ['adventure/**', 'core/**', 'kit/**', 'studio/**', 'chat/**', 'overview/**', 'package.json', 'package-lock.json', '.github/workflows/site.yml']
+    paths: ['adventure/**', 'core/**', 'content/**', 'kit/**', 'studio/**', 'chat/**', 'overview/**', 'package.json', 'package-lock.json', '.github/workflows/site.yml']
 
 permissions:
   contents: read

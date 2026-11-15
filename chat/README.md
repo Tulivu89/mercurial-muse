@@ -131,6 +131,11 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.4.1 - The dragon's resort - 2026-11-15
+
+- **Home's first household:** Qiulong, Errata and Echydna at Autumn's Leaves, from `content/dragons-resort/world.json`. Home offers **Bring in The dragon's resort** until this browser has it; the three join the collection. It's the pilot's world, put here for its play-test (stage 8 of `docs/content/pilot-brief.md`).
+- The resort's Errata is a separate character from the mascot in `chat/src/errata.ts`, in her own world. Which one the site keeps is still the owner's call.
+
 ### 0.3.2 - Chat with, by address - 2026-11-13
 
 - **`#/with/<world>/<record>`** opens the new-chat sheet for that character, as the Studio's *Chat with* and the Overview's *Meet Errata* ask. It creates no chat until **Start the chat**. A character this browser doesn't have says so.
