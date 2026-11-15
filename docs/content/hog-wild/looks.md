@@ -1,17 +1,17 @@
 # HOG Wild: looks
 
-Nov 15, 2026 · @AmbiProp · The residents' looks as NovelAI V5 character blocks. Four are locked from the owner's rolls, with the tags read from the images' own settings and narrowed to what came out. Two still roll: the Retro, and a red panda reroll for amplified East Asian features. The method is the retrospective's: one character block and neutral light, wide `|| a | b | c ||` wildcards, then lock the hits.
+Nov 15, 2026 · @AmbiProp · The residents' looks as NovelAI V5 character blocks. Four are locked from the owner's rolls, with the tags read from the images' own settings and narrowed to what came out. Two still roll: Maeve, and a reroll of Pipa with amplified East Asian features. The method is the retrospective's: one character block and neutral light, wide `|| a | b | c ||` wildcards, then lock the hits.
 
 ## Keeping six people apart
 
 | Resident | Owns | Signature mod | Silhouette |
 | --- | --- | --- | --- |
-| **The influencer** | Rose-gold, white, holographic shimmer | Diamond implants on the cheekbones; the eye-camera ring | Slim and long-legged, in fur and holographic fabric |
+| **Lux** | Rose-gold, white, holographic shimmer | Diamond implants on the cheekbones; the eye-camera ring | Slim and long-legged, in fur and holographic fabric |
 | **Primus** | Gold and chrome | The chrome arm with gold fittings | The biggest body in the house, with a top knot |
 | **Nova** | Black with cyan and magenta | The luminous rim and the status ring at her temple | Petite and quick |
-| **The Mole** | Acid green and black | Neural ports with glowing cables; poison-green claws | Slim and narrow-shouldered, in fishnets and a cropped jacket |
-| **The Retro** | Red lips and platinum (screen siren) | The beauty mark on the wrong side | An hourglass in a halter dress; nobody else wears her era |
-| **The red panda** | Russet, cream and neon orange | The numbered ear tag; the glowing tail bands | Ears and a striped tail; the only animal features in the house |
+| **Patch** | Acid green and black | Neural ports with glowing cables; poison-green claws | Slim and narrow-shouldered, in fishnets and a cropped jacket |
+| **Maeve** | Copper red and black leather | A guitarist's hands without the calluses; a lot number behind the ear | Long red hair and an old punk's leather; nobody else wears her era |
+| **Pipa** | Russet, cream and neon orange | The numbered ear tag; the glowing tail bands | Ears and a striped tail in J-pop techwear; the only animal features in the house |
 
 ## The base prompt (the owner's latest)
 
@@ -30,7 +30,7 @@ lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifac
 
 ## Locked
 
-### The influencer
+### Lux
 
 ```
 girl, slim, long legs, 0.4::mature female::. Fair skin.
@@ -73,7 +73,7 @@ Undesired: `large breasts, muscular, tall, thick, tan, dark skin, long hair, blo
 
 *Only the hair, eyes, skin and cosmetics change with her configuration. The rim and the temple ring stay in every version: they're how a reader knows it's still her.*
 
-### The Mole
+### Patch
 
 The roll with the owner's poison-green claws. It read more girl than femboy, so the male cues are weighted up and the undesired tags hold the hips and chest down.
 
@@ -90,22 +90,22 @@ Undesired: `muscular, broad shoulders, facial hair, beard, large breasts, medium
 
 ## Still to roll
 
-### The Retro (screen siren, by default)
+### Maeve
 
-The era is the screen siren unless the owner picks another. The wildcards are on the replica's tell and the body.
+A red-haired Irish punk queen with long hair and Johnny Silverhand's swagger. Her signature is something slightly wrong that only she is sure of, so the replica's tell is a wildcard and stays small.
 
 ```
-girl, 0.6::mature female::, || hourglass figure, curvy | slim, soft curves ||. || Fair skin | Light skin ||.
-short platinum blonde hair, victory curls, red lips, arched brows, pearl earrings. || blue eyes | hazel eyes ||. Face oval, high cheekbones, slightly too symmetrical.
-|| beauty mark on the wrong side of her face, mirrored from old photographs | beauty mark, thin pale scar ring around the base of her neck | beauty mark, tiny lot number printed behind her left ear ||.
-|| fitted white halter dress, pleated skirt, white gloves | black cocktail dress, fur stole, long gloves | silk robe, bare feet, cigarette holder ||
+girl, 0.6::mature female::, || slim, wiry | slim, toned, small breasts | lean, long legs ||. Fair skin, freckles across nose and shoulders.
+very long hair, straight hair, copper red hair, messy bangs. || green eyes | grey-green eyes | pale blue eyes ||, smudged black eyeliner. Face long, high cheekbones, sharp nose, wide mouth, a sneer at one corner.
+|| a tiny lot number printed behind her left ear | a thin pale seam ring at the base of her neck | a beauty mark that sits slightly too low on her cheek ||.
+|| ripped black band t-shirt, studded leather jacket, safety pins, torn fishnets, combat boots | leather trousers, mesh top, spiked choker, silver rings on every finger | oversized vintage tour shirt as a dress, bare feet, guitar strap over one shoulder ||
 ```
 
-Undesired: `cyborg, mechanical arms, animal ears, tail, long hair, child, aged down`
+Undesired: `cyborg, mechanical arms, animal ears, tail, short hair, blonde hair, tsurime, child, aged down`
 
-### The red panda (reroll for East Asian features)
+### Pipa (reroll for East Asian features, J-pop clothes)
 
-Everything that made the old roll a red panda is kept: the colours, the bands, the markings, the LEDs. The face is pushed toward amplified East Asian features, and the skin is a wildcard because the old roll's rusty brown came from another setting.
+Everything that made the old roll a red panda stays: the colours, the bands, the markings, the LEDs. The face is pushed toward amplified East Asian features, the skin is a wildcard because the old roll's came from another setting, and the clothes are J-pop cyberpunk, not lingerie.
 
 ```
 girl, red panda girl, 0.6::mature female::, east asian, toned, medium breasts. || Fair skin | Light skin | Light tan skin ||.
@@ -114,10 +114,10 @@ red panda ears, animal ear fluff, red panda tail, fluffy tail, striped tail. Tai
 || monolid eyes, narrow almond eyes | hooded eyes, long upturned eyes | single eyelids, sharp upturned eyes ||, dark brown eyes, long eyelashes. Face || oval, high cheekbones, small soft nose | heart-shaped, flat nose bridge, small lips | long, sharp cheekbones, small mouth ||.
 White markings arc above each eye, russet tear-track stripes run from inner eye corners down cheeks. Faint subdermal LEDs trace the markings.
 Small numbered yellow tag clipped through her left ear.
-o-ring choker, chest harness, black bikini, garter straps, black thighhighs, platform boots. Bikini and harness edged with thin orange LED lights. Money tucked under garter straps.
+|| oversized techwear jacket, pleated skirt, LED hair clips, platform sneakers, leg warmers | cropped bomber jacket with glowing orange trim, high-waisted shorts, thigh highs, chunky boots | oversized hoodie with a cartoon red panda, bike shorts, headset with glowing orange lights ||
 ```
 
-Undesired: `tall female, fox ears, fox tail, raccoon ears, raccoon tail, cat ears, extra ears, white hair, short hair, see-through, dark-skinned female, round face, child, aged down`
+Undesired: `tall female, fox ears, fox tail, raccoon ears, raccoon tail, cat ears, extra ears, white hair, short hair, see-through, lingerie, bikini, dark-skinned female, round face, child, aged down`
 
 ## After the roll
 
