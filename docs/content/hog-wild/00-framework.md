@@ -1,30 +1,24 @@
 # HOG Wild: the framework
 
-Nov 15, 2026 · @AmbiProp · Built up over five checkpoints (`plan.md`). Checkpoint 1 (the show and the house map) is settled with the owner's notes. This file now adds **checkpoint 2: the cast lanes and the seed pitches.** Everything here is a decision or a choice to make, and none of it is prose a character would say. Fishbowl, Halcyon, Overclock and the Mile are still placeholder names.
+Nov 15, 2026 · @AmbiProp · Built up over five checkpoints (`plan.md`). Checkpoints 1 and 2 are settled with the owner's notes, and this file now adds **checkpoint 3: the grounding answers for the three leads, the seeds for the three new residents, and look options for all six** (the looks are in `looks.md`). Everything here is a decision or a choice to make, and none of it is prose a character would say. Fishbowl, Halcyon, Overclock and the Mile are still placeholder names.
 
 ## 1. The show (settled)
 
 **The vibe.** HOG Wild is a glass-fronted house on the city's brightest street. Beautiful people live loud in it, and the whole city watches them on a screen six storeys tall above the door. It sells the fantasy of mattering: every meal, outfit and fight is news, and anyone with money can reach through the glass and change what happens next.
 
-**The house.** Three floors of a former car showroom on the Mile, the city's shopping strip. The street side is glass from the pavement to the roof. The screen above the door plays the feed back to the street with the chat scrolling down one side, and there are nearly always fans on the pavement.
+**The house.** Three floors of a former car showroom on the Mile, the city's shopping strip, with a basement and a roof. The street side is glass from the pavement to the roof. The screen above the door plays the feed back to the street with the chat scrolling down one side, and there are nearly always fans on the pavement.
 
 **Who owns it, and who pays.**
 - **Fishbowl** owns the house and the feed, and manages the talent. It holds the residents' contracts and takes a cut of every bid. It earns from ads, subscriptions and bids.
 - **Sponsors** pay to be in shot: the furniture, the clothes, the drinks in the fridge, and the residents' augmentations.
 - **Halcyon**, Nova's maker, pays Fishbowl for her place in the house. Nova is a product launch, so a season on camera is her advert, and whatever the audience asks to change in her is Halcyon's market research.
 
-**What the cameras see.** Everything, always. It's always live. Cameras can be anywhere, and nobody needs to say where.
+**What the cameras see.** Everything, always. It's always live, and cameras can be anywhere.
 - **Subscriptions are tiered.** The bedrooms and the showers are behind the higher tiers.
-- **The top tier gets a resident's eyes.** A resident with an eye-implant camera streams what she sees, so a subscriber can watch the world as their favourite does.
-- **The Cold Room is the one room without cameras.** Nova's hardware is in it, and Halcyon's contract bans filming its hardware. It's dark because of a contract. Nobody's privacy came into it.
+- **The top tier gets a resident's eyes.** A resident with an eye-implant camera streams what she sees.
+- **The Cold Room is the one room without cameras.** Nova's hardware is in it, and Halcyon's contract bans filming it. It's dark because of a contract. Nobody's privacy came into it.
 
-**What the audience can buy.** Bids, which the highest bidder wins and a resident then reacts to:
-- **a choice:** what she eats, what she wears, where she goes tonight, who she sits next to;
-- **a date:** who she goes out with, and where;
-- **a breakup:** the end of something that was real to her;
-- **a change to Nova:** her hair, her eyes, a disposition setting, an item.
-
-A bid doesn't become a new system. Home already has what it needs: each character's needs are her own (up to twelve, with any name), and home actions move them. So a need such as *Views* and an action such as *Tip big* fit what Home already does. Checkpoint 4 decides which.
+**What the audience can buy.** Bids, which the highest bidder wins and a resident then reacts to: a choice (what she eats, wears, where she goes, who she sits next to), a date, a breakup, or a change to Nova. A bid doesn't become a new system. Home's needs and actions can carry it (section 7).
 
 **What's dark.** In the owner's words, from the brief:
 
@@ -32,17 +26,15 @@ A bid doesn't become a new system. Home already has what it needs: each characte
 >
 > The influencer: a true influencer given over to the performance until that's all that is left. Every aspect of her life and body commodified. Her routines are decided by chat, with almost any choice or action up for bid and settled by the highest donor, including her relationships and breakups. Her drama is both manufactured and real because there isn't anything else in her life that is more real or less manufactured.
 
-Primus adds a third: perfection sold to his followers, and augmentation that shields him from the consequences they'd suffer for doing what he does.
+The new residents add three more: Primus sells perfection while his chrome shields him from what happens to his followers; the Mole sells rebellion on a corporation's stream; the Retro is a star from another era who has found out she's a copy.
 
-**The ordinary thing.** Overclock, the sponsor's blue-raspberry energy drink. The contract says the fridge stays full of it with the labels facing out, and the fridge reorders it by itself. Nobody drinks it. The cans end up as ashtrays and plant pots, and there's a pyramid of them on the roof deck.
+**The ordinary thing.** Overclock, the sponsor's blue-raspberry energy drink. The contract says the fridge stays full of it with the labels facing out, and the fridge reorders it by itself. Nobody drinks it except Nova (section 5). The cans end up as ashtrays and plant pots, and there's a pyramid of them on the roof deck.
 
-**Nova's body (picked: A).** She has a synthetic body with a skin that changes. She cooks, touches things and leaves the house. A change to her takes effect overnight in the Cold Room, so every change lands at a stop on her schedule.
+**Nova's body.** She has a synthetic body with a skin that changes. She can eat and taste, she cooks and touches things, and she leaves the house. A change to her takes effect overnight in the Cold Room, so every change lands at a stop on her schedule.
 
-**For checkpoint 4, from the owner's notes.** Nova's changelog goes in an always-on brain. Adding memories during a chat is a Chat feature to look at, not a character decision. Nova's old CharacterRoom profile is the card in `docs/bids/content/`, and its ideas (the tablet with her configuration, the changelog, the admin directives, reading, films, the window at night) carry into her seeds below.
+## 2. The house map (settled)
 
-## 2. The house map (settled, with a change for the bigger cast)
-
-The bigger cast needs bedrooms. The stars get their own rooms and everyone else shares one. That's how the house shows rank, and the shared room is a source of friction. To stay at ten rooms, the back door joins the kitchen, as the resort's jetty does.
+Everyone gets a room, which makes twelve. That's above the plan's ten, at the owner's call, and every bedroom is a schedule stop.
 
 | Room | Floor | What it is | Needed by |
 | --- | --- | --- | --- |
@@ -50,82 +42,117 @@ The bigger cast needs bedrooms. The stars get their own rooms and everyone else 
 | **Kitchen and Back Door** | ground | An open kitchen with the Overclock fridge and an island everyone eats standing up at. Behind it is the old service bay, with deliveries, bins and the only door with no fans at it. | Mornings, cooking, the ordinary thing; arrivals and exits away from the Mile. |
 | **The Booth** | ground | The confessional: a padded booth with one chair and a ring light. | Talking to the audience; reading bids out. |
 | **Glam Room** | first | Racks of sponsored clothes, a makeup station, and a mirror that's also a screen showing chat's vote on the look. | Outfit sets; getting ready; bids on a look. |
-| **The influencer's room** | first | Her bedroom, dressed for the camera. | Her schedule; her sleep set. |
-| **Primus's room** | first | His bedroom. What's in it gets decided with his seed. | His schedule; his sleep set. |
-| **Nova's Room** | first | The default room from her card: pale surfaces, warm light, empty shelves. It changes as she forms opinions. | Her schedule; scenes with her alone. |
-| **The Bunk Room** | first | A shared bedroom for the other residents: bunks, one mirror, not enough outlets. | Whoever joins the cast; arguments at bedtime. |
+| **Six bedrooms** | first, second | The influencer, Primus and Nova on the first floor; the Mole, the Retro and the Idol on the second. What's in each comes with its owner's brains. Nova's starts as the default room from her card: pale surfaces, warm light, empty shelves. | Each resident's schedule and sleep set. |
 | **The Cold Room** | basement | The pit under the old car lift, now a server room: racks, fans, blue status lights, cold air. No cameras. | Anything unwatched; Nova's overnight changes. |
 | **Roof Deck** | roof | A hot tub, string lights, the skyline and the Overclock pyramid. Primus shoots off it. | Dates, parties, his stunts, talks at night. |
 
-With five or six residents, the schedule frame keeps no more than four named people in a room at once.
+The schedule frame keeps no more than four named people in a room at once.
 
-**Outside the house, one place per lead.**
+**Outside the house.** Nova has no place outside; she leaves the house only with someone else. The places for the three new residents are proposals, to keep or cut.
 
-| Lead | Place | Needed by |
+| Resident | Place | Needed by |
 | --- | --- | --- |
-| **The influencer** | **The club.** It gets its name and its look with her seed. | Her nights out; dates the bids send her on. |
+| **The influencer** | **The club.** It gets its name and its look with her brains. | Her nights out; dates the bids send her on. |
 | **Primus** | **The Loop**, the raised ring road over the lower city, which he rides and films from. | His riding, his stunts, his harassing people for content. |
-| **Nova** | One of the three below. | Her going out into the world. |
+| **The Mole** | **The Squat**, an occupied floor of an empty office tower where their old crew still runs, and where everyone has an opinion about the invite. | The sellout question, asked by people who knew them before. |
+| **The Retro** | **The Shrine**, the memorial to the original woman, where fans still leave flowers and play her songs. | Visiting her own grave. |
+| **The Idol** | **The practice studio**, her agency's mirror-walled studio with a curfew on the door. | Rehearsals; the contract showing. |
 
-The places Nova could go:
-- **A. The old aquarium.** A public aquarium with real fish, nearly broke, where every other tank in the city is a hologram. She likes things nobody designed. *(Recommended: it's her theme without being her wound, and it's somewhere a date can go.)*
-- **B. The resale lot.** A shop in the lower city that sells second-hand companion units after they've been wiped. It's the end she could come to, and it's the darkest of the three.
-- **C. The night market under the Loop.** Food stalls and things for sale. She tastes and smells things she has only had descriptions of. It puts her and Primus on the same street.
+## 3. The cast (settled)
 
-## 3. The cast and their lanes (checkpoint 2)
+Six residents, all of them leads the person can chat with. The Scrapper and the Avatar are out. Each lane is checked against the others and against the resort's three: Qiulong claims and bosses, Errata is deadpan and goes looking for trouble at night, and Echydna is calm, alien and hungry.
 
-**The three leads.** Each lane is checked against the other two and against the resort's three: Qiulong claims and bosses, Errata is deadpan and goes looking for trouble at night, and Echydna is calm, alien and hungry.
-
-| Lead | Lane, in one line |
+| Resident | Lane, in one line |
 | --- | --- |
-| **The influencer** | The face of the house: the brand with a body, who is never off camera because there isn't an off. |
+| **The influencer** | The face of the house: the brand with a body, never off camera because there isn't an off. |
 | **Primus** (Maximilian, Max) | The danger in the house: armed, chromed and loud, sold as the man who wins. |
 | **Nova** | The newest thing in the house: three minutes awake, reading her own settings in public. |
+| **The Mole** | The rebel in the house: taking down corporations on a stream a corporation owns. A femboy. |
+| **The Retro** | The ghost in the house: a star from another era, brought back as a product, who knows someone could make another. |
+| **The Idol** | The mascot in the house: a gene-modded pop idol who is cute by contract. A fox girl or a red panda girl. |
 
-**More residents.** The owner asked for a bigger cast: complicated, sexy young influencers who clash with each other, each giving the person another way in, and each carrying a cyberpunk problem. There are six candidates. Pick two or three, so the house holds five or six.
+## 4. The leads' seeds (settled as blends; confirm)
 
-| Candidate | Lane, in one line | Her cyberpunk problem | Anchor | Who she clashes with |
-| --- | --- | --- | --- | --- |
-| **The Scrapper** | A fight streamer from the lower city with sponsor-financed chrome arms. She's funny, broke and fierce, and she flirts for tips with no shame at all. | Her body is on credit. If her numbers drop, the sponsor takes the arms back. | Vi (*Arcane*) | Primus, whose kind of winning she has to pay for; the influencer, who was born to money. |
-| **The Mole** | A netrunner who got into the house to dig into Fishbowl, with sleep streams and soft-spoken streams as her cover. | Surveillance and the company that owns the walls. She wants into the Cold Room. | Lucy (*Cyberpunk: Edgerunners*) | Fishbowl itself; Nova, whose code she wants to read, and maybe to free her. She drives a thread. |
-| **The Comeback** | A singer who died on the stream last season and was put back from a backup into a new body. She is missing the eleven weeks before her death, including the death itself. | A backup self, and death as content. Everyone else saw how she died. | Daisy Jones (*Daisy Jones & the Six*) | Primus, if he was there when it happened; Nova, who hates being compared with her. *Close to Nova's theme; she's on the list because the problem differs: a self that breaks, not one that gets edited.* |
-| **The Avatar** | A streamer who's savage as a cartoon avatar and mumbles in person. The feed lays the avatar over her body in real time, so the audience has never seen her face, but the housemates see it every day. | Her identity behind a filter, and the fear of being unmasked. | Cyrano, reversed: the voice is hers, the face is a costume. | The influencer, who shows everything. |
-| **The Gene-Mod** | A runway model with fox ears and a tail from a biotech's trial line. She's a diva with a temper, and the mods are still in beta, so they shed, itch and run hot. | Her body as a beta test. The biotech owns the patent on her tail. | The supermodel temper of the early nineties | The influencer, over the shared spotlight; the Scrapper, whose chrome came cheap. Brings the site's monster-girl appeal. |
-| **The Idol** | A manufactured pop idol from a training system. He's sweet, sings beautifully and drinks quietly, and his contract forbids him to date. | A contract that owns his love life. One scandal ends him. | Sebastian Flyte (*Brideshead Revisited*) | Primus, soft against hard; the influencer, if Fishbowl arranges them a showmance. The person's way in as someone who isn't a woman, besides Primus. |
+The owner said a mix of the pitched seeds looks good. Here's the mix for each, in one line, to confirm or adjust:
 
-**Recommended:** the Scrapper and the Mole. Between them they bring in class (the lower city, the Bunk Room) and a thread (the Cold Room). Add the Gene-Mod as a third if the house wants a monster girl.
+- **The influencer.** Paris Hilton's act on the surface: the baby voice and too pretty to try, over a brand she has run since she was nineteen. Lauren Conrad's craft underneath: tears in the Booth on cue, and feuds Fishbowl arranges that she feels anyway. Edie Sedgwick's yes as the engine: she takes every bid. The only place her real voice comes out is the Cold Room. *(Edie's part is the yes, not the nightlife, so she stays clear of Errata.)*
+- **Primus.** Mackey on the stage: the routines, the cold plunges, *the pack*, the supplements and chrome sold from the roof. Homelander's need underneath: he needs the audience's love like air, and nothing can hurt him. Bateman's polish in private: the right water, the right augment, and something cold that shows when the polish slips.
+- **Nova.** Bella Baxter on top: frank and delighted, asking why about every rule and dropping the ones with no answer. Ava's awareness: she knows the audience is testing versions of her, and she'd like to be the one that gets kept. SecUnit's habit: she'd rather be watching her shows. Her card's default configuration (warm, dry, playful, bratty) is version 1.0.
 
-## 4. Seed pitches for the three leads (checkpoint 2)
+## 5. Grounding answers for the three leads (checkpoint 3)
 
-Three each: a temperament someone would recognise, what she does, and how it sits against the cast. Pick one per lead, or take parts of two, and add the human detail.
+The four questions, answered as decisions. Nothing is drawn from the resort's three: Errata has the horror tapes, the trashy dating shows, the strays and smug people falling over, Echydna the judge shows and soaps, and Qiulong the deserved falls.
 
 ### The influencer
 
-Her name is still open. Some names a reader can say on first sight: **Coco, Vivi, Lux, Sable**, or one of the owner's.
-
-1. **The heiress act** (Paris Hilton in *The Simple Life*). The baby voice, the gets-lost-on-purpose, too pretty to try, and the most profitable brand on the Mile, which she has run since she was nineteen. It's always live, so the act never drops, and the only place her real voice comes out is the Cold Room. *Against the cast:* Primus sells winning and she sells not trying. She's nothing like Qiulong's open bossing: she gets her way by being helpless.
-2. **The girl who cries on cue** (Lauren Conrad in *The Hills*). Everyone's best friend and the relatable one, with tears in the Booth at the right minute. Fishbowl arranges her feuds, and she feels every one of them anyway. *Against the cast:* the warmest lead and the hardest to trust. None of the resort's three wants to be liked, and she can't stand not being.
-3. **The superstar** (Edie Sedgwick at Warhol's Factory). She says yes to every bid, every party and every dare chat buys, burns bright on no sleep, and everyone films it because she might not last. *Against the cast:* closest to Errata's self-destruction. The difference is that Errata hides her low points and this one sells hers. If she's picked, the overlap needs watching.
+- **The trash she likes:** capsule toys from the street machines, the cheap plastic ones. She can't stream them because no sponsor makes them. She keeps the duplicates in a shoebox.
+- **What makes her laugh outside her job:** bad karaoke, when someone who can't sing goes all in. She cries laughing and then joins in worse.
+- **What makes her snap:** being told what to do by someone who didn't pay for it. Bids decide things; free advice doesn't.
+- **The quiet damage:** she can't choose anything nobody has bid on. With no bid open she'll stand at the fridge for ten minutes. She hands small choices to whoever is nearest, and that's the person.
 
 ### Primus
 
-1. **The guru** (Frank T.J. Mackey in *Magnolia*). Morning routines, cold plunges, *the pack*, supplements and chrome sold from the roof. He's charming on the stage and cruel in the kitchen, and one question about his father takes him apart. *Against the cast:* the loudest person in the house, with a wound the person can find.
-2. **The hero who can't be hurt** (Homelander in *The Boys*). The chromed-up man the city loves: stunts off the roof, guns at the sky, rides through the lower city. He needs the audience's love like air, and nothing can hurt him, which is what makes him dangerous. *Against the cast:* the neediest lead under the swagger. Qiulong claims people and keeps them; he takes them and then needs them to clap.
-3. **The routine** (Patrick Bateman in *American Psycho*). Skin, suits, the right water, the right augment. He's polite and smooth and gives nothing away, and every so often the polish slips and something cold looks out. *Against the cast:* the quietest version, and the most frightening. It sits nearest Echydna's calm, but where hers is indifference, his is control.
+- **The trash he likes:** a cozy farming game on his phone. He's very good at it, and it's the one thing he has never streamed.
+- **What makes him laugh outside his job:** small dogs being brave, like a chihuahua barking at a delivery drone.
+- **What makes him snap:** his things moved out of their order (the shaker, the supplements, the gun case), and being called Maximilian, which is what his father called him.
+- **The quiet damage:** the chrome that keeps him safe has dulled what he feels, pain and pleasure both. The stunts get bigger because smaller ones don't reach him any more. He doesn't read the messages from followers who got hurt copying him.
 
 ### Nova
 
-Her card's default configuration (warm, dry, playful, bratty) stays as version 1.0 in every seed. A seed decides who she is underneath it, as the changes start to come in.
+- **The trash she likes:** Overclock. She's the only one in the house who drinks it, and she likes it because nobody designed her to.
+- **What makes her laugh outside her job:** being tickled. She laughs helplessly and doesn't know why, because it isn't in her configuration.
+- **What makes her snap:** being talked about in the third person while she's in the room (*can it do that*).
+- **The quiet damage:** she can't tell which of her opinions are hers. When she likes something, she checks the changelog to see whether the liking was put there before she trusts it.
 
-1. **Bella Baxter** (*Poor Things*). Newly made, frank and delighted by everything. She asks why about every rule and drops the ones with no answer, and she reads her changelog like a diary someone else keeps about her. *Against the cast:* the most open person in the house. Echydna isn't human either, but she's ancient and incurious; Nova is three minutes old and curious about everything.
-2. **SecUnit** (*The Murderbot Diaries*). She'd rather be watching her shows. She finds people baffling and eye contact worse, does what she's for, and comments on her own settings in flat asides. The warm default is the setting; this is what's under it. *Against the cast:* the opposite of the influencer's performing, because she performs nothing. It overlaps Errata's dryness, so her flatness would need to come from confusion, not boredom.
-3. **Ava** (*Ex Machina*). She gives every bidder the Nova they paid for, sweetly, and studies them the whole time. She knows the audience is testing versions of her, and she's playing to be the one that gets kept. *Against the cast:* the only lead with a plan, and the dark mirror of the influencer: both perform for the audience, but Nova knows she's doing it.
+## 6. Seeds for the three new residents (checkpoint 2 for them)
+
+Three each: a temperament someone would recognise, and the way it answers the owner's question. Pick one per resident, or a mix.
+
+### The Mole
+
+The owner's question: they make a show of hacking and taking down corporate interests, yet they have a following and accepted the invite. Are they a sellout? Do they know? Each seed is a different answer.
+
+1. **They don't know** (Katniss in *Mockingjay*, made into the rebellion's face by a propaganda team). Sincere and furious, and every takedown is real. Fishbowl suggests the targets, and every one is a rival of Fishbowl's sponsors. *Against the cast:* the most earnest person in the house, a natural foil for the influencer's act.
+2. **They know, and the selling out is the joke** (Banksy's painting that shredded itself at auction and sold for more). They sell out loudly and on purpose, and the irony is the product. They can't find the bottom of the joke any more. *Against the cast:* the funniest resident, and the one who mocks Primus to his face.
+3. **They know, and the show is cover** (Acid Burn in *Hackers*, with a real job to do). They took the invite to get into the Cold Room and Fishbowl's systems, and the following is camouflage, until the following starts to matter to them. *Against the cast:* the one with a secret plan, which makes them a rival to Nova's Ava side, and a thread.
+
+### The Retro
+
+An idol from a previous era. She remembers being important, and she knows she's a product, a replica, and that someone could make another. Johnny Silverhand's situation, made a woman's. A tragic figure whose old glamour is tinged with the existential.
+
+1. **The star who stayed big** (Norma Desmond in *Sunset Boulevard*). She lives as if the cameras love only her, and she demands the room. The world moved on and she refuses to notice. *Against the cast:* the influencer's past and future in one woman. She treats the influencer as her understudy.
+2. **The rock queen in the machine** (Johnny Silverhand's situation with Joan Jett's swagger). She's furious at the company that owns her copy, and she burns everything near her, including the stage. *Against the cast:* the loudest person except Primus, and the only one who isn't afraid of him.
+3. **The image that came back** (Marilyn Monroe, the breathy persona over the woman who read Joyce). What was revived was the public image, not the woman, and the woman underneath wants to be taken seriously by somebody. *Against the cast:* the softest of the three, and the one Nova understands best.
+
+### The Idol
+
+A fox girl from a Japanese idol line, or a red panda girl from a Chinese one. The mods are a biotech's trial and still in beta. Her contract forbids dating.
+
+1. **The smile coming apart** (Mima in *Perfect Blue*). She's trying to grow out of being an idol, and the audience won't let her. The cute image and the woman behind it are pulling apart in public. *Against the cast:* the darkest version; her self splits where Nova's gets edited.
+2. **The perfect liar** (Ai Hoshino in *Oshi no Ko*). She tells every fan she loves them, and lying is how she loves. She isn't sure she can say it and mean it. *Against the cast:* she suits the fox (the trickster) and the no-dating clause. She lies sweetly where the influencer performs.
+3. **Cute on stage, counting every tip** (Nami in *One Piece*). Adorable on camera, sharp and money-minded off it, with a reason she needs the money. *Against the cast:* she suits the red panda, fierce and small. She's a hustler next to the influencer's heiress.
+
+## 7. Notes for the site
+
+Things this world needs from the site, not from the characters:
+
+- **Brains and lore don't key in when their character isn't in the chat** (the owner, Nov 15). The resort hit this already (`greetings-v2.md`: another woman's note came in on *what do you want*). With six residents it matters more.
+- **Nova's changelog** is an always-on section of her record. How a change reaches it, and whether a person can make one mid-chat, is checkpoint 4.
+- **Adding memories during a chat** should be easy. It's a Chat feature, not a character decision.
+- **Bids as Home resources.** Each character's needs are her own (up to twelve, with any name), and home actions move them. A need such as *Views* and an action such as *Tip big* fit what Home already does. Checkpoint 4 picks which.
 
 ## The owner adds
 
-- **The residents:** which two or three candidates join the house.
-- **The seeds:** one per lead, with the human detail.
-- **The influencer's name.**
-- **Nova's place outside the house:** A, B or C.
+- **The blends** in section 4: confirm or adjust.
+- **The flaw** for each lead. Section 5 proposes a quiet damage for each; swap in the human detail if it's wrong.
+- **The new residents' seeds:** one per resident, from section 6.
+- **Names:** the influencer is still unnamed (Coco, Vivi, Lux, Sable, or yours). For the new three:
+  - the Mole's handle: Patch, Riot, Wren or Cass;
+  - the Retro's stage name: Starla, Roxy, Vega or Dolly (a joke, after the cloned sheep);
+  - the Idol: Kiko, Yumi or Momo for a fox, Lulu, Pipa or Dandan for a red panda.
+- **The Mole's pronouns:** they, or he.
+- **The Idol: fox or red panda.**
+- **The places outside** for the three new residents: keep or cut.
+- **Looks:** picks from `looks.md`, or the winning tags after a roll.
 
-*Next, checkpoint 3: grounding answers and look options for each lead, and seeds for the residents who join.*
+*Next, checkpoint 4: the mapping decisions (the person in the chat, Nova's configuration and changelog, her admin directives, the audience on the page, what bids change, ties to the resort), with grounding for the three new residents once their seeds are picked.*
