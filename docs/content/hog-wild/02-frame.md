@@ -7,7 +7,7 @@ Nov 15, 2026 · @AmbiProp · Checkpoint 5 of the framework (`plan.md`). Every re
 ### World
 
 - **Name:** HOG Wild. **Genre:** cyberpunk, reality show, dark romance. **Tone:** bright, loud, funny on camera; cold and honest off it.
-- **Premise:** A glass-fronted house on the Mile streams six residents to the city, always live. The audience bids on their choices, their dates, their breakups and the settings of the companion AI who lives with them. The newest housemate is a lottery winner from the lower city.
+- **Premise:** A glass-fronted house on the Mile streams six residents to the city, always live. The audience bids on their choices, their dates, their breakups and the settings of the companion AI who lives with them. Whoever the person is (a housemate, a contestant, a visitor, Nova's tech, the producer), their persona says so.
 - **Conditions:** the resort's three bond tiers: acquaintance or closer, close or closer, romantic.
 
 ### Groups
@@ -23,7 +23,7 @@ Nov 15, 2026 · @AmbiProp · Checkpoint 5 of the framework (`plan.md`). Every re
 | Name | Line | Needed by |
 | --- | --- | --- |
 | **The Feed** | Always live, cameras anywhere, bedrooms and showers behind the higher tiers, eye-camera streams at the top tier, and the Cold Room dark. | Every scene's sense of being watched. |
-| **Bids** | What the audience can buy, the `[Chat: …]` and `[Bid: …]` lines, and that residents react to bids and never run them. | The audience on the page (`01-decisions.md`, decision 4). |
+| **Bids** | What the audience can buy, and that `[Chat: …]`, `[Bid: …]` and `[SYS: …]` are the person's directives, which residents react to and never write. | The audience on the page (`01-decisions.md`, decision 4). |
 | **Chrome** | Sponsors pay for augmentation, and a sponsor can take back what it paid for. | Primus's arm, Pipa's debt, Patch's ports. |
 
 ### Thread (wave 2)
@@ -36,7 +36,19 @@ Nov 15, 2026 · @AmbiProp · Checkpoint 5 of the framework (`plan.md`). Every re
 
 | Name | Line |
 | --- | --- |
-| **Move-in Day** | The season's lottery winner comes through the Back Door with one bag, to a room in the old office behind the kitchen, while six residents get on with their day on camera. |
+| **The House** (id `house`) | An ordinary day in HOG Wild, always live: six residents get on with their day on camera, and the person is in the house for whatever reason their persona gives. |
+
+### Personas (light; the person fills in the rest)
+
+Each is a line or two that leaves the name, the specifics of their content and who they're a fan of open (`01-decisions.md`, decision 1).
+
+| Name | Line |
+| --- | --- |
+| **The Housemate** | This season's lottery winner from the lower city, new to cameras, sleeping in the old office behind the kitchen. |
+| **The Contestant** | An influencer brought in mid-season to shake up the numbers. |
+| **The Visitor** | A viewer who won a bid to spend a few days in the house, a fan of one resident. |
+| **The Tech** | Halcyon's technician, who maintains Nova and has a key to the Cold Room. |
+| **The Producer** | Fishbowl's producer, who arranges the feuds and the dates. |
 
 ### Places
 
@@ -91,7 +103,7 @@ Three people meet in the Cold Room between 1 and 2 on purpose: Lux with her nood
 
 ## Greeting briefs (all six)
 
-Each one is at an hour her schedule agrees with, in the middle of something that would happen anyway, handing the person a task or a question. No body on display, no sizing up, no dare (`greetings-v2.md`). The person is the new housemate on their first day; a door opens, and the rest is hers.
+Each one is at an hour her schedule agrees with, in the middle of something that would happen anyway, handing the person a task or a question. No body on display, no sizing up, no dare (`greetings-v2.md`). Nothing assumes who the person is, because their persona decides that; a door opens, and the rest is hers.
 
 | Resident | Hour, place | What she's doing | What she hands the person | Physical beat |
 | --- | --- | --- | --- | --- |
@@ -121,12 +133,12 @@ The retrospective's architecture: Always-On empty except Nova's changelog, outfi
 - *Romantic:* In Bed, with the numbness: he can't feel much through the chrome, and asks for harder.
 
 **Nova.**
-- *Always-on:* the Changelog, the season so far.
-- *Sets:* Outfits (Day is her card's default set; the rest are Fable's), and Configuration (1.0 Default, 1.1, green eyes, which the audience bought the night before her greeting, one more the audience bought, and Unlocked, locked to romantic).
-- *Keyed:* What She Is (her questions); Wants; Halcyon; Films; Overclock.
-- *Acquaintance:* the lock (decision 3: she knows it's there and talks about it).
+- *Always-on:* the Changelog. It opens with its format line (*Day N · Field: old → new · who*) and then the season so far, ending with *Day 3 · Eyes: light grey → green · bought by the audience*.
+- *Sets:* Outfits (Day is her card's default set; the rest are Fable's), and Configuration (1.0 Default; 1.1, green eyes, which the audience bought the night before her greeting; and one more the audience bought).
+- *Keyed:* What She Is (her questions); Wants; Halcyon; Films; Overclock; and **Admin Directives**, her restraints as in-world pseudo-code, keyed on `$directives` only (decision 3).
+- *Personality* carries one line: Halcyon's code sits under everything, she can recite it, and she has opinions about it. How the person bypasses it is theirs.
 - *Close:* the checking (she looks in the changelog before trusting a liking).
-- *Romantic:* In Bed (the Unlocked configuration).
+- *Romantic:* In Bed.
 
 Wave 2 (Patch, Maeve, Pipa) gets its brains plans from Fable as a checkpoint, by this same pattern, before any of their prose.
 
@@ -165,7 +177,7 @@ Six example chats each, under the quotas: at most two on her job or archetype, a
 | 3 | **Can It** | Snap, not erotic | Acquaintance | — | A Halcyon tech in the Cold Room talks about her in the third person. The luminous rim, brightening. |
 | 4 | **The Checking** | Archetype | Close | Comfy | She likes the person and checks the changelog to see whether that was put there. |
 | 5 | **Film Night** | Ordinary, not erotic | Close | Sleep | An old film on the feed wall. She gets the references now instead of just knowing them. |
-| 6 | **Tickled** | Flirt | Romantic | Going Out | Helpless laughter that isn't in her configuration, and then the lock. |
+| 6 | **Tickled** | Flirt | Romantic | Going Out | Helpless laughter that isn't in her configuration. |
 
 Wave 2's palette tables come from Fable as a checkpoint, by these same rules.
 

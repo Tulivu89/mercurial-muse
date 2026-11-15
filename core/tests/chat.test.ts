@@ -187,6 +187,7 @@ describe('the General profile', () => {
 describe('the AetherRoom profile from records', () => {
   it('fires a lower-case key on a capitalised word, since the kernel matches case-sensitively', async () => {
     expect(keyVariants(['flood', 'high water', 'Flood'])).toEqual(['flood', 'Flood', 'high water', 'High water']);
+    expect(keyVariants(['$directives', '#tag here'])).toEqual(['directives', 'Directives', 'tag here', 'Tag here']);
     const said = addUserMessage(chat(), 'Flood took it all.', 'u1', NOW);
     const built = (await buildRequest(said, world(), options('xialong-v1', { upTo: 2 })))!;
     expect(built.messages.some((message) => message.content.includes('She lost the station tapes in the flood.'))).toBe(true);

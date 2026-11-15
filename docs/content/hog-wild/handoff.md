@@ -2,18 +2,16 @@
 
 Nov 15, 2026 · @AmbiProp · The brief for the Fable 5.2 sessions that write HOG Wild from its framework. The framework settles every decision, so Fable's job is to write well to it, not to decide. Where the framework is silent on something structural, Fable stops and asks. It doesn't choose quietly.
 
-## Before Fable starts (the owner, five minutes)
+## Before Fable starts
 
-1. **Read `01-decisions.md`.** Decision 3, Nova's admin directives, is the owner's call. The recommendation is a factory lock Halcyon sells the unlock for, with her bed scenes behind the romantic tier. Veto anything there, or let it stand.
-2. **Merge the pull request** that holds the framework, so the session sees it on `main`.
-3. Paste the prompt at the end of this file into a new session.
+The framework is merged and every decision is settled, including the owner's notes on personas, the changelog's notation, Nova's directives and bracketed directives. Paste the prompt at the end of this file into a new session.
 
 ## What Fable reads, in order
 
 1. `CLAUDE.md`, then `docs/content/process-retrospective.md` (why the pilot landed) and `docs/content/dragons-resort/greetings-v2.md` (what the pilot got wrong at the door).
 2. The framework: `docs/content/hog-wild/00-framework.md`, `01-decisions.md`, `02-frame.md` and `looks.md`.
 3. The standard to meet: the resort's three characters in `content/dragons-resort/world.json`, and `docs/content/standard.md`.
-4. Nova's old card, `docs/bids/content/Character_Nova_…json`. Its configuration, changelog, schedule and tablet carry into her record. Its admin directives are replaced by decision 3.
+4. Nova's old card, `docs/bids/content/Character_Nova_…json`. Its configuration, changelog, schedule and tablet carry into her record. Its admin directives become the pseudo-code section behind `$directives` (decision 3).
 5. The skills: **bot-writing** for every character stage, **pulp-voice** for the greetings and example chats, **inkwyrm-records** for the world file at the end.
 
 ## The rules that don't bend
@@ -24,7 +22,9 @@ Nov 15, 2026 · @AmbiProp · The brief for the Fable 5.2 sessions that write HOG
 - **The palette tables are a contract.** Every prop, outfit and tell appears in the one chat the table gives it, and none repeats the greeting's. At most two chats on her job, at least four not erotic, and the first is never the flirt.
 - **The greetings follow their briefs exactly:** the hour, the place, what she's doing, what she hands the person, and the physical beat. No body on display, no sizing up, no dare. A door opens, and the rest is hers.
 - **Triggers are her own words.** Never *want, past, family, background*, or a body part on a note that isn't intimate. Questions come in as phrases (*what do you want*, *where are you from*).
-- **The audience on the page** is `[Chat: …]` and `[Bid: …]`, at most one line per reply, with no amounts and nothing that keeps count (`01-decisions.md`, decision 4).
+- **Brackets are the person's.** `[Chat: …]`, `[Bid: …]` and `[SYS: …]` are directives the person drops in. Residents react to them in their own way and never write brackets themselves. There are no amounts and nothing keeps count (`01-decisions.md`, decision 4).
+- **Nothing assumes who the person is.** Their persona decides it: housemate, contestant, visitor, Nova's tech or the producer. Greetings and examples use `{{user}}` with no fixed job (decision 1).
+- **Nova's changes use one notation,** *Day N · Field: old → new · who*, in her changelog and anywhere she reads a change out (decision 2).
 - **No reference similes in records.** Similes stay in prose and image prompts (the retrospective's Stage 7 finding).
 - **Budgets:** a named section at most 300 tokens, a whole example chat at most 2,400.
 - **The house format:** speech plain, actions in asterisks, thoughts in parentheses, notes in brackets, single newlines in anything the model reads.
@@ -38,7 +38,7 @@ One character at a time, with two stops each, so the owner reviews each before t
 
 **Stop B: the door and the chats.** The greeting from its brief, then the six example chats from the palette table, and a short note on what changed in critique. Write it to `docs/content/hog-wild/<name>-2-chats.md`.
 
-**After all three:** the house's records from the frame (groups, lore, scenario, places), the schedules from the schedule frame (times of day, sets, rooms), and `content/hog-wild/world.json` as `studio-world/1`.
+**After all three:** the house's records from the frame (groups, lore, the scenario, places, and the five light personas), the schedules from the schedule frame (times of day, sets, rooms), and `content/hog-wild/world.json` as `studio-world/1`.
 - `npm run content:check -- content/hog-wild/world.json` comes back clean: 0 missing, 0 over budget, 0 checks, 0 catches.
 - Then run the lab suite, which is already written:
 
