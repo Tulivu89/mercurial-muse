@@ -64,7 +64,6 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
   const [panel, setPanel] = useState<Panel | null>(null);
   const [face, setFace] = useState(false);
   const [remembering, setRemembering] = useState<string | null>(null);
-  const [asAction, setAsAction] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [lastSent, setLastSent] = useState<Sent | null>(sent);
   const [preview, setPreview] = useState<Built | null>(null);
@@ -215,7 +214,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     if (busy || inFlight.current) return;
     const text = chat.draft.trim();
     let base: Chat = { ...chatRef.current, draft: '' };
-    if (text) base = { ...addUserMessage(base, asAction && !/^\*.*\*$/s.test(text) ? `*${text}*` : text, newId(), Date.now()), draft: '' };
+    if (text) base = { ...addUserMessage(base, text, newId(), Date.now()), draft: '' };
     onChange(base);
     void run('reply', undefined, base);
   }
@@ -377,10 +376,9 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
         </main>
 
         <form className="composer" onSubmit={(event) => { event.preventDefault(); send(); }}>
-          <button type="button" className={`mode${asAction ? ' on' : ''}`} aria-pressed={asAction} aria-label={asAction ? '*Action*' : 'Speech'} onClick={() => setAsAction(!asAction)} title={asAction ? 'Sent as an action, in asterisks. Tap for speech.' : 'Sent as speech. Tap to send an action.'}>{asAction ? '*do*' : 'say'}</button>
           <label className="sr" htmlFor="draft">Your message</label>
           <textarea
-            id="draft" rows={1} value={chat.draft} placeholder={asAction ? 'What you do' : `Message ${charName}`}
+            id="draft" rows={1} value={chat.draft} placeholder={`Message ${charName}`}
             onChange={(event) => onChange({ ...chat, draft: event.target.value })}
             onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); send(); } }}
           />

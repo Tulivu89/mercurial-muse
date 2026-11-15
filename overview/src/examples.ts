@@ -2,25 +2,13 @@
 // (docs/front-page/implementation.md, *Example manifest*). Showing an example installs nothing:
 // a world opens in the Studio only when asked, and a game starts only from the Adventure's own
 // start screen. The lines are taken from the bundled modules' own words; the opening is quoted.
-export { HOUSE_WORLD_ID } from '../../chat/src/errata';
+export { HOUSE_WORLD_ID } from '../../kit/src/included';
 export const IMPORTS_WORLD_ID = 'inkwyrm-imports';
 
 export interface ExampleWorld { worldId: string; name: string; line: string; note: string; href: string; cover: { over: string; title: string } }
 export interface ExampleAdventure { name: string; title: string; opening: string; href: string; note: string }
 
 export const EXAMPLE_WORLDS: ExampleWorld[] = [
-  {
-    worldId: 'abernys-bogwater', name: 'Abernys: Bogwater',
-    line: 'A fen town on an island of layered migrations. Grim, wet and dangerous, with room for hijinks.',
-    note: 'Opens a copy in the Studio, in this browser. Nothing changes until you do.',
-    href: '/studio/#/bring/bogwater', cover: { over: 'Abernys', title: 'Bogwater' },
-  },
-  {
-    worldId: 'abernys-port-covenant', name: 'Abernys: Port Covenant',
-    line: 'A dark-fantasy island port, settled in layers of migration and conquest. Grim, political and uncanny.',
-    note: 'Opens a copy in the Studio, in this browser.',
-    href: '/studio/#/bring/port-covenant', cover: { over: 'Abernys', title: 'Port Covenant' },
-  },
   {
     worldId: 'dragons-resort', name: 'The dragon\'s resort',
     line: 'A teahouse at the edge of myth, run by a dragon whose mother and half-sister have moved in for the season.',

@@ -7,6 +7,7 @@ import { messageText, type Chat } from '../../core/chat/index.js';
 import { KIND_NAMES, type World } from '../../core/records/index.js';
 import { chatWithHref, hrefFor, type NavigationV1, type Target } from '../../kit/src/activity';
 import { EXAMPLE_ADVENTURES, EXAMPLE_WORLDS, HOUSE_WORLD_ID, IMPORTS_WORLD_ID, type ExampleAdventure, type ExampleWorld } from './examples';
+import { ERRATA_ID } from '../../kit/src/included';
 import { characterKey, collectionCharacters, EMPTY_COLLECTION, type Collection, type Member } from '../../kit/src/collection';
 
 export type Read<T> = { state: 'loading' } | { state: 'ready'; value: T } | { state: 'error'; message: string };
@@ -123,7 +124,10 @@ export function selectOverview(library: Library): Overview {
   // A fresh visitor can meet the bundled muse before Chat has seeded her. Once a collection
   // exists, a missing stored house is a deletion, not permission to advertise a broken target.
   if (!curated.initialized && !available.some((world) => world.id === house.id)) available.push(house);
-  for (const { world, record, member, chat } of collectionCharacters(available, chats ?? [], curated).slice(0, 3)) {
+  // Recent chats first; then the house's Errata, who is the site's face; then the rest as Chat orders them.
+  const rank = (entry: { world: World; record: { id: string }; chat?: unknown }) => (entry.chat ? 0 : entry.world.id === HOUSE_WORLD_ID && entry.record.id === ERRATA_ID ? 1 : 2);
+  const listed = [...collectionCharacters(available, chats ?? [], curated)].sort((a, b) => rank(a) - rank(b));
+  for (const { world, record, member, chat } of listed.slice(0, 3)) {
     const key = `${world.id}/${record.id}`;
     cards.push({
       key, name: record.name, line: record.line, world: world.name, owner: `${world.id}:${record.id}`, member,

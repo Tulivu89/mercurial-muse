@@ -205,7 +205,6 @@ export function memberFor(
   if (
     record.chatListed === true ||
     world.id === 'inkwyrm-imports' ||
-    (world.id === 'inkwyrm-house' && record.id === 'errata') ||
     (!collection.initialized &&
       chats.some((chat) => chat.worldId === world.id && chat.characterId === record.id))
   )

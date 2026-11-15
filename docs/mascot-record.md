@@ -2,6 +2,8 @@
 
 Nov 9, 2026 · @AmbiProp · Worked example for `docs/records.md`
 
+**Retired, Nov 15, 2026.** The site's Errata is the dragon's resort's now (`content/dragons-resort/world.json`, built in `docs/content/dragons-resort/`). This mapping and the old mascot record it describes are kept for the record; the record itself is gone from the code.
+
 Errata is Inkwyrm's mascot and house muse. Her card lives in the owner's CharacterVault, and its text is the source; this page doesn't copy it. It shows where each part of her card sits in the record model, so the Studio can be checked against a real character.
 
 **Source:** `Tulivu89/CharacterVault`, on `main`:

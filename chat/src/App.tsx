@@ -8,10 +8,9 @@ import { animationSlot, portraitSource, posterSlot, readImageAsset, readImageDat
 import { recordActivity } from '../../kit/src/activity';
 import { useTheme } from '../../kit/src/theme';
 import { downloadJson, newId, readFileBytes, readJsonFile } from '../../kit/src/util';
-import { listWorlds, putWorld } from '../../kit/src/worlds';
-import { RESORT_WORLD_ID, loadResort } from '../../kit/src/included';
+import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
+import { HOUSE_VERSION, HOUSE_WORLD_ID, RESORT_WORLD_ID, RETIRED_HOUSE_ID, loadResort } from '../../kit/src/included';
 import { ChatView } from './ChatView';
-import { HOUSE_VERSION, HOUSE_WORLD_ID, houseWorld, refreshHouse } from './errata';
 import { Home, type Status } from './Home';
 import { House } from './House';
 import { SettingsView } from './SettingsView';
@@ -88,26 +87,27 @@ export function App() {
     void (async () => {
       try {
         let list = await listWorlds();
-        // Errata comes with the site. She is put in once; delete her world and she stays gone.
+        // The house comes with the site: the dragon's resort, put in once. Delete it and it
+        // stays gone (Home offers it again). The older mascot world it replaced is taken out.
         let seeded = 0;
         try { seeded = Number(localStorage.getItem(SEEDED_KEY)) || 0; } catch { /* storage blocked */ }
-        const stored = list.find((world) => world.id === HOUSE_WORLD_ID);
-        if (!seeded && !stored) {
-          const house = houseWorld(Date.now());
-          await putWorld(house);
-          list = [...list, house];
-        } else if (seeded < HOUSE_VERSION && stored) {
-          // Her bundled record has changed since this browser took it.
-          const house = refreshHouse(stored, Date.now());
-          await putWorld(house);
-          list = list.map((world) => (world.id === HOUSE_WORLD_ID ? house : world));
+        if (seeded < HOUSE_VERSION) {
+          if (list.some((world) => world.id === RETIRED_HOUSE_ID)) {
+            await deleteWorld(RETIRED_HOUSE_ID);
+            list = list.filter((world) => world.id !== RETIRED_HOUSE_ID);
+          }
+          if (!list.some((world) => world.id === HOUSE_WORLD_ID)) {
+            const house = await loadResort(Date.now());
+            await putWorld(house);
+            list = [...list, house];
+          }
         }
         try { localStorage.setItem(SEEDED_KEY, String(HOUSE_VERSION)); } catch { /* storage blocked */ }
         setWorlds(list);
         setWorldsReady(true);
       } catch (error) {
-        // No storage at all: Errata still works for this visit.
-        if (worlds === null) setWorlds([houseWorld(Date.now())]);
+        // No storage at all: the house still works for this visit.
+        if (worlds === null) setWorlds(await loadResort(Date.now()).then((house) => [house]).catch(() => []));
         fail(error);
       }
       listChats().then((list) => { setChats(list); setChatsReady(true); }).catch((error) => { if (chats === null) setChats([]); fail(error); });

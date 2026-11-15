@@ -13,6 +13,7 @@ import { InkMark, type MarkName } from '../../kit/src/Mark';
 import { SiteHeader } from '../../kit/src/SiteHeader';
 import { applyTheme, readTheme } from '../../kit/src/theme';
 import { useCollection } from '../../kit/src/collection';
+import { ERRATA_ID } from '../../kit/src/included';
 import { MediaImage, animationSlot, posterSlot } from '../../kit/src/media';
 import '../../kit/src/media.css';
 import { portraitSets, type Portrait, type PortraitSet } from '../../chat/src/store';
@@ -66,7 +67,7 @@ export function App({ readers }: { readers: Readers }) {
     <>
       <SiteHeader side="overview" homeLabel="Inkwyrm, the front page" />
       <main className="overview">
-        {view.first || view.loading ? <Welcome loading={view.loading} meet={view.characters.find((card) => card.tag === 'Included') ?? null} /> : <Returning />}
+        {view.first || view.loading ? <Welcome loading={view.loading} meet={view.characters.find((card) => card.tag === 'Included' && card.owner?.endsWith(`:${ERRATA_ID}`)) ?? view.characters.find((card) => card.tag === 'Included') ?? null} /> : <Returning />}
         {view.failed.length > 0 && (
           <p className="status bad" role="status">
             This browser couldn&rsquo;t read your {view.failed.join(' or ')}. Nothing has been lost; the rest of the page is as it stands.
