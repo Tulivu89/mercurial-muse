@@ -134,7 +134,7 @@ export function App({ readers }: { readers: Readers }) {
 
         <section className="home-strip" aria-label="Home">
           <InkMark name="main" size={28} />
-          <p><b>Home</b> puts the people you chat with in one place, going about their day by their own clocks. The first example household is still being written. <a href="/chat/#/home">Open Home in Chat</a></p>
+          <p><b>Home</b> puts the people you chat with in one place, going about their day by their own clocks. The first household is the dragon&rsquo;s resort: Qiulong, Errata and Echydna at Autumn&rsquo;s Leaves. <a href="/chat/#/home">Open Home in Chat</a> to bring them in.</p>
         </section>
 
         <footer className="overview-foot">

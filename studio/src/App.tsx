@@ -9,6 +9,7 @@ import { THEME_NAMES, useTheme, type Theme } from '../../kit/src/theme';
 import { WorldView } from './WorldView';
 import { NOWHERE, navigate, useRoute } from './route';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
+import { RESORT_NAME, RESORT_WORLD_ID, loadResort } from '../../kit/src/included';
 import { ago, newId, readJsonFile } from '../../kit/src/util';
 import { isModule, moduleToWorld } from '../../core/convert/index.js';
 import { AuthorProvider, authorFor, readHelperPrefs, saveHelperPrefs, type HelperPrefs } from './author/context';
@@ -177,13 +178,26 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
       onStatus({ text: (error as Error).message, bad: true });
     }
   };
+  // The site's own world files, such as the dragon's resort: opened as they are, no module in between.
+  const bringResort = async (again = false) => {
+    try {
+      const resort = await loadResort(Date.now());
+      const taken = worlds?.some((world) => world.id === RESORT_WORLD_ID);
+      if (taken && again) { onOpen(RESORT_WORLD_ID); return; }
+      const world = taken ? { ...resort, id: newId(), name: `${resort.name} (copy)` } : resort;
+      onCreate(world);
+      onStatus({ text: `Opened ${world.name}. Its three can be met in Chat, and its Home is in Chat's Home.` });
+    } catch (error) {
+      onStatus({ text: (error as Error).message, bad: true });
+    }
+  };
   // `#/bring/bogwater` from the Overview: open the example, bringing it in only if it isn't here.
   useEffect(() => {
     if (worlds === null) return;
-    const asked = /^#\/bring\/(bogwater|port-covenant)$/.exec(window.location.hash)?.[1] as 'bogwater' | 'port-covenant' | undefined;
+    const asked = /^#\/bring\/(bogwater|port-covenant|dragons-resort)$/.exec(window.location.hash)?.[1] as 'bogwater' | 'port-covenant' | 'dragons-resort' | undefined;
     if (!asked) return;
     window.history.replaceState(null, '', `${window.location.pathname}#/`);
-    void bringModule(asked, true);
+    void (asked === 'dragons-resort' ? bringResort(true) : bringModule(asked, true));
   }, [worlds === null]);
 
   return (
@@ -211,6 +225,10 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
         <span className="hint">Or bring in one of the adventure&rsquo;s:</span>
         <button type="button" className="btn small quiet" onClick={() => void bringModule('bogwater')}>Abernys: Bogwater</button>
         <button type="button" className="btn small quiet" onClick={() => void bringModule('port-covenant')}>Abernys: Port Covenant</button>
+      </div>
+      <div className="row">
+        <span className="hint">Or the site&rsquo;s own:</span>
+        <button type="button" className="btn small quiet" onClick={() => void bringResort()}>{RESORT_NAME}</button>
       </div>
       {worlds === null && <p className="hint">Opening your worlds…</p>}
       {worlds?.length === 0 && <p className="hint">No worlds in this browser yet. Make one above, or open a world file.</p>}
