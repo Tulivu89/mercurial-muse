@@ -205,8 +205,4 @@ The world is never changed by play. A save (adventure) or a chat holds:
 
 ## Pinned
 
-1. **Group chats.** CharacterRoom and the Discord bot make one call per character, because swapping one shared cache between characters is expensive. Two ways for Inkwyrm:
-   - **One call per speaker.** Each character keeps a fixed prefix of their own (the rules, their card, their examples), then the shared world and transcript. Each prefix stays warm in the provider's cache, the voices stay strongest, and each reply costs a call.
-   - **One narrator call** that writes everyone, the adventure's way. One cache and the cheapest, but no per-character examples, so the voices are weaker.
-
-   Pinned on Nov 9: there is plenty else to build for chat first. Which providers keep several prefixes warm at once is a question for the generation test.
+1. **Group chats.** CharacterRoom and the Discord bot make one call per character, because swapping one shared cache between characters is expensive. Pinned on Nov 9 with two ways for Inkwyrm: one call per speaker, or one narrator call. **Unpinned for testing on Nov 15:** the owner chose two layouts to try in the chat lab before any chat screen is built. One is **a call per speaker**, each with their own prefix. The other is **a shared prefix with the speaker last**: the cast by their lines and the transcript first, then the speaker's own entry, examples and memories. The one-narrator way stays the adventure's. The design, the shared plumbing with the model jobs and the lab test are in `docs/model-jobs.md`, under Group chat.

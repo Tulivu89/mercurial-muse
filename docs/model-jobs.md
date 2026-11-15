@@ -1,8 +1,8 @@
-# Models for each job: design
+# Models for each job, and group chat: design
 
-Nov 15, 2026 · @AmbiProp · Proposal for the owner's review. Nothing here is built yet.
+Nov 15, 2026 · @AmbiProp · Proposal for the owner's review. Nothing here is built yet. Group chat was added the same day: the owner picked two layouts to test, and they share their plumbing with the jobs.
 
-The site sends a model many kinds of work: a chat reply, a narrated turn, a diary entry, a drafted record, and later posts, openers and a helper with search. Today all of it goes to one model on one connection. This page splits that work into three jobs. A player can give each job its own provider and model, or leave the jobs alone and change nothing.
+The site sends a model many kinds of work: a chat reply, a narrated turn, a diary entry, a drafted record, and later posts, openers and a helper with search. Today all of it goes to one model on one connection. This page splits that work into three jobs. A player can give each job its own provider and model, or leave the jobs alone and change nothing. Group chat, further down, uses the same pieces: a character can have a Voice of its own, and a speaker's turn is built the way a side task will be.
 
 ## What's there now
 
@@ -85,18 +85,83 @@ This is the explainer, written to sit under the Models settings and in the help.
 >
 > Each job is billed to the key of the provider it uses.
 
+## Group chat
+
+Several characters in one chat, with the player. Two things make it hard. Every character's sheet in context at once makes them bleed into each other and eats the window. Swapping one character's sheet for another's at the top of the context breaks the cache every time the speaker changes. Four layouts were weighed:
+
+| | Layout | Cache | Bleed | Voice |
+| --- | --- | --- | --- | --- |
+| A. Joined cards | Every sheet at the top | One cache | Worst; the window fills | Muddy |
+| **B. A call per speaker** | Each character's own prefix (rules, their sheet, their examples), then the shared transcript | One cache per character; a quiet one goes cold | Low | Strongest |
+| **C. Shared prefix, speaker at the end** | Rules › scenario, persona, every present character's line › the transcript › the speaker's block › the moment | One cache that grows each turn, whoever speaks | Low, if the code enforces it | Strong |
+| D. One narrator | One call writes everyone | Cheapest | None to speak of | Weakest |
+
+**B and C go to the lab.** A muddies the voices. D stays the adventure's way. B is what CharacterRoom and the Discord bot do. C is new.
+
+Neither costs more per message than a one-to-one chat: each reply is still one call. In C, the only part read fresh each turn is the speaker's block, about 1,000 to 3,000 tokens. Everything before it is one stream that only grows, so it stays cached, even on a server that keeps one context.
+
+### What each layout sends
+
+**B**, for the speaker: the General rules, the speaker's standing sections and examples, the persona, the scenario, a cast list of the others present by their **line** (`docs/records.md`, Line and entry), the transcript with every message under its speaker's name, then the moment. Today's one-to-one builder does nearly all of this already. What's new is the cast list and the names on the transcript.
+
+**C**, for every speaker alike: the rules, which say once that *the last block names who you write as, and you write only as them*; the persona, the scenario and the cast list by line; then the transcript with names. Then, for the speaker alone: their full entry, a few lines from their examples, their own diary and feelings, the moment, and the cue to write as them.
+
+Both keep these the same:
+- **Private things live only in the speaker's part.** A diary, a feeling or a plan is sent only while its owner speaks. `docs/records.md` already says a memory is sent only while its owner is here. Group chat narrows that to *while its owner speaks*. This is enforced by what the code puts in, never asked of the model.
+- **Examples are never shared.** They steer the voice hardest, so they go only with their owner.
+- **Stop sequences on every other participant's name** and the player's, and a parser that cuts a reply at another speaker's label.
+- **The reply is started with the speaker's name** where the provider can continue text. Elsewhere, the last line asks for that character's next message alone.
+- **At most four named characters present**, as the writing rules already say.
+- **The code picks the speaker.** If the player names someone, they answer; otherwise whoever has been quiet longest among those the schedule puts in the room. If that proves too blunt, a Side call picks one name from the list of those present.
+- **Xialong uses B.** CharacterRoom's kernel is held byte for byte, and it is built for one character's prefix.
+
+### The plumbing it shares with the jobs
+
+- **One way to send.** Every call goes through one `send({ job, target, built, options })` in `kit/src/connection.ts`. It names the job and model in Under the hood, gives the error its job's name, and offers **Try it on Voice**. Side tasks, the Studio helper and a group speaker's turn all use it.
+- **A Voice per character.** `targetFor('voice', characterId)` gives that character's own model when the chat sets one, and the chat's Voice otherwise. It's stored with the chat in this browser, never in the world file: a world someone shares can't choose the reader's provider. With B or C, each model keeps its own cache. Each character on a different model also gives the voices more distance from each other.
+- **One builder for "the task goes last".** C's speaker block and the side task's instruction are the same piece: something added after the transcript, with everything before it unchanged. The General builder gets this once. Side tasks then share the chat's prefix on the same model, which is the cheaper Same as Voice raised under *The cache*, and C's speaker block uses the same code.
+- **Names on messages.** A chat message gets an optional `speaker`, the character's id. A one-to-one chat leaves it out and reads as it does now.
+
+### The lab test
+
+The chat lab (`docs/testing/chat-lab.md`) gets group cases and three variants:
+
+- `group-b`: the B layout.
+- `group-c`: the C layout.
+- `group-c-anchor`: C with one extra line straight after the transcript, *You are writing as Errata*, before her block.
+
+A group case names the characters present, the speaker, a short scripted exchange before the turn (bleed shows after a few lines of back and forth, not on the first), what the player says, and what to watch for. The resort's three, Qiulong, Errata and Echydna, are the cast. The cases themselves are written in a content session, like the standing suite. They cover:
+- the player speaking to one character by name;
+- the player speaking to nobody in particular;
+- two characters who disagree;
+- a character who knows something the others don't.
+
+The scorer already counts other characters named. It adds:
+- **A reply that writes another participant's line**: a hard fail, caught by code.
+- **Words copied from another present character's sheet or examples**: the same six-word check it runs on the speaker's own sheet, run against the others.
+- **Tokens in the shared part and in the speaker's part**, for each variant.
+
+A code test needs no model at all: in C, the requests for two different speakers on the same turn are identical up to the end of the transcript.
+
+**Models:** GLM-4.6 on NovelAI, DeepSeek, one OpenRouter model and a local model run all three variants. Xialong runs B only.
+
+**What decides it:** C needs to match B on bleed and come close on voice. If it does, C is the default for General models, and B stays for Xialong and as a setting. If C bleeds or reads flatter, B is the default everywhere, and the shared prefix waits for a better idea.
+
 ## Phases
 
 | Phase | What it builds | Done when |
 | --- | --- | --- |
-| **J1** | `targetFor` and the stored jobs in `kit/src/connection.ts`; the Models settings with Test; the Studio helper on Build, with `inkwyrm.helper.model` read in and removed | Tests: an unset job gives Voice's target; a job on another provider sends that provider's key and no other; the old helper model comes across. The Studio drafts on Build while Voice is a different provider. |
-| **J2** | Reflect, Process and Plan on Side, with the job's window and profile; the job named in Under the hood; **Try it on Voice** on a failed job | Tests: Voice on Xialong with Side on GLM builds the General side request inside Side's window. A live check with Voice on a local server: a Reflect leaves the next chat turn's prompt cached. |
+| **J1** | `targetFor` and the stored jobs in `kit/src/connection.ts`; `send`; the Models settings with Test; the Studio helper on Build, with `inkwyrm.helper.model` read in and removed | Tests: an unset job gives Voice's target; a job on another provider sends that provider's key and no other; the old helper model comes across. The Studio drafts on Build while Voice is a different provider. |
+| **J2** | Reflect, Process and Plan on Side, with the job's window and profile; the General builder's "task goes last", which the side task uses; the job named in Under the hood; **Try it on Voice** on a failed job | Tests: Voice on Xialong with Side on GLM builds the General side request inside Side's window; on the same model, a side request shares the chat's prefix up to the end of the transcript. A live check with Voice on a local server: a Reflect leaves the next chat turn's prompt cached. |
+| **G1** | Group chat in the core and the lab only: `speaker` on messages, the cast list, the B and C builders, stops and the cut-off parser, the lab's group variants and scoring | Tests: the prefix test above; a one-to-one chat builds byte for byte as before; the AetherRoom parity test still passes. Lab runs on the models above, with the scores in `docs/testing/`. |
+| **G2** | After the owner reads G1's scores: the default layout for each profile, Chat's group screen, who speaks next, and a Voice per character | Set by G1's results. |
 | **J3** | Each later feature takes its job when it is built: posts, openers, the evaluator, the helper with search | Each feature's own phase says its job. |
 
-The tests run in `kit/` and `chat/`; nothing in `core/` changes except, if the owner takes it, the side task's instruction moving to the end.
+The jobs' tests run in `kit/` and `chat/`. G1's run in `core/` and the lab. J2 and G1 both touch the General builder, so J2 goes first.
 
 ## Questions for the owner
 
 1. Are three jobs right, or should posts get a job of their own once they exist?
 2. Reflect, Process and Plan: on Side, with a switch back to Voice if they drift (proposed), or on Voice from the start?
 3. Should J1 also bring a second key for the same provider, or wait until someone asks?
+4. Group chat: is "whoever has been quiet longest" a good enough way to pick the next speaker when the player names nobody, or do you want the Side call from the start?
