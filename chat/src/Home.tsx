@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { CollectionView, type CollectionViewProps } from './CollectionView';
 import { Sheet } from '../../kit/src/Sheet';
 import {
-  RESPONSE_LENGTHS, STYLES, STYLE_HINTS, STYLE_NAMES, newChat, responseLengthName, setClockMode, hasSchedule, type Chat, type NewChat,
+  RESPONSE_LENGTHS, STYLES, STYLE_HINTS, STYLE_NAMES, newChat, responseLengthName, setClockMode, hasSchedule, livesIn, type Chat, type NewChat,
 } from '../../core/chat/index.js';
 import { RELATIONSHIPS, type StoryRecord, type World } from '../../core/records/index.js';
 import { newId } from '../../kit/src/util';
@@ -43,7 +43,12 @@ function NewChatSheet({ cast, worlds, userName, onCancel, onStart }: { cast: Cas
   const of = (kind: 'persona' | 'scenario') => ordered.flatMap((entry) => entry.records.filter((candidate) => candidate.kind === kind).map((candidate) => ({ world: entry, record: candidate })));
   const personas = of('persona');
   const scenarios = of('scenario');
-  const own = scenarios.find((entry) => entry.world.id === world.id && entry.record.name === `${record.name}: scenario`);
+  // Her own card's scenario, else the place in her world where her schedule puts her, else her
+  // world's only scenario. Without one she doesn't know where she is or who else lives there.
+  const home = scenarios.filter((entry) => entry.world.id === world.id);
+  const own = home.find((entry) => entry.record.name === `${record.name}: scenario`)
+    ?? home.find((entry) => livesIn(record, entry.record))
+    ?? (home.length === 1 ? home[0] : undefined);
 
   const [personaId, setPersonaId] = useState(personas[0]?.record.id ?? '');
   const [name, setName] = useState(userName);

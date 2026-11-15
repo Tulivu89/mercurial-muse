@@ -229,6 +229,44 @@ describe('the chat screen', () => {
     expect(within(panel).getByText(/deadpan and unhurried/)).toBeInTheDocument();
   });
 
+  it('saves the chat, the settings and everything for a test from under the hood', async () => {
+    const saved: { name: string; data: unknown }[] = [];
+    const util = await import('../../kit/src/util');
+    const spy = vi.spyOn(util, 'downloadJson').mockImplementation((name, data) => { saved.push({ name, data }); });
+    const { impl } = provider(['Errata: Ink.\n  Emotion: neutral']);
+    render(<Harness impl={impl} />);
+    fireEvent.change(screen.getByLabelText('Your message'), { target: { value: 'Is that ink on my sleeve?' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    await screen.findByText('Ink.');
+    fireEvent.click(screen.getByRole('button', { name: 'Under the hood' }));
+    const bar = within(screen.getByRole('complementary', { name: 'Under the hood' })).getByRole('region', { name: 'Save for a test' });
+    expect(within(screen.getByRole('complementary', { name: 'Under the hood' })).getByRole('button', { name: 'Copy as text' })).toBeInTheDocument();
+    fireEvent.click(within(bar).getByRole('button', { name: 'Everything' }));
+    await waitFor(() => expect(saved).toHaveLength(1));
+    fireEvent.click(within(bar).getByRole('button', { name: 'Settings' }));
+    fireEvent.click(within(bar).getByRole('button', { name: 'The chat' }));
+    expect(saved.map((entry) => entry.name)).toEqual(['errata-test.json', 'chat-settings.json', 'errata.chat.json']);
+    const pack = saved[0]!.data as { format: string; world: { id: string }; next: { messages: unknown[] } | null; last: { reply: string } | null; settings: Record<string, unknown> };
+    expect(pack.format).toBe('inkwyrm-chat-test/1');
+    expect(pack.world.id).toBe(HOUSE_WORLD_ID);
+    expect(pack.next?.messages.length).toBeGreaterThan(1);
+    expect(pack.last?.reply).toContain('Ink.');
+    expect(pack.settings).toMatchObject({ provider: 'openrouter', model: 'test/model', profile: 'general' });
+    spy.mockRestore();
+  });
+
+  it('starts a new chat in the scenario where her schedule puts her', () => {
+    const scenario = { ...newRecord('scenario', 'house', 'The house', () => 'x'), sets: [{ id: 'rooms', title: 'Locations', reach: 'here' as const, active: 'den', members: [{ id: 'den', name: 'Den', text: 'A den.', lock: null, layers: [] }] }] };
+    const other = newRecord('scenario', 'elsewhere', 'Elsewhere', () => 'y');
+    const errata = { ...ERRATA, idle: { house: { room: 'den', pic: '', x: 0.5, y: 0.5, scale: 0.3 } } };
+    const housed = { ...world, records: [other, scenario, ...world.records.map((record) => (record.id === ERRATA_ID ? errata : record))] };
+    const onStart = vi.fn();
+    render(<Home worlds={[housed]} chats={[]} portraits={{}} status={null} userName="Sam" onOpen={() => {}} onStart={onStart} onImport={() => {}} />);
+    fireEvent.click(within(screen.getByRole('article', { name: 'Errata' })).getByRole('button', { name: 'Start chat' }));
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'New chat with Errata' })).getByRole('button', { name: 'Start the chat' }));
+    expect((onStart.mock.calls[0]![0] as Chat).scenarioId).toBe('house');
+  });
+
   it('keeps story time, moved by hand, and shows it under the hood', () => {
     const { impl } = provider(['x']);
     render(<Harness impl={impl} />);

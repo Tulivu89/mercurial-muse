@@ -15,6 +15,16 @@ export function downloadJson(name: string, data: unknown): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+export function downloadText(name: string, text: string, type = 'text/markdown'): void {
+  const blob = new Blob([text], { type: `${type};charset=utf-8` });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 export async function readJsonFile(file: File): Promise<unknown> {
   try {
     return JSON.parse(await file.text());

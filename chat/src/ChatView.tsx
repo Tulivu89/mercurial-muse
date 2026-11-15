@@ -6,13 +6,13 @@ import { useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import {
   PROFILE_NAMES, XIALONG, addAlternative, addReply, addUserMessage, buildRequest, buildSide, clockNow, clockTracks, deleteMessage, editMessage, editableText, formatMinutes,
   hasSchedule, lastEmotion, messageText, pickedAlt, profileFor, readReply, readSide, recentEmotions, remember, replacePicked, sceneFor, setWhyText, sideTask,
-  statusText, stepAlternative, type Built, type Chat, type ChatMessage, type ReplyPart, type SideKind,
+  SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type PackSettings, type ReplyPart, type SideKind,
 } from '../../core/chat/index.js';
 import type { World } from '../../core/records/index.js';
 import { canPrefill, generate, requestFor, type Connection, type GenerateOptions, type NarrationError } from '../../kit/src/connection';
-import { clock as clockText, newId } from '../../kit/src/util';
+import { clock as clockText, downloadJson, fileSafe, newId } from '../../kit/src/util';
 import { AgainIcon, BackIcon, BinIcon, CloseIcon, ContinueIcon, CopyIcon, EditIcon, KeepIcon, NextIcon, SendIcon, StopIcon } from './icons';
-import { ContextPanel, DetailsPanel, MemoryPanel, SentPanel, TimePanel, type SideApi } from './Panels';
+import { ContextPanel, DetailsPanel, MemoryPanel, SentPanel, TimePanel, type ExportApi, type SideApi } from './Panels';
 import { Portrait } from './Portrait';
 import { InkMark } from '../../kit/src/Mark';
 import { RichText } from './RichText';
@@ -119,6 +119,22 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     if (!world || !scene) return `${charName} is no longer in your worlds, so this chat can be read but not continued.`;
     if (!connection.connected || !connection.model) return 'Connect a model first, under Settings.';
     return '';
+  };
+
+  // The three files for a test: the chat, the settings, and everything in one pack.
+  const packSettings = (): PackSettings => ({
+    provider: connection.provider, model: connection.model, mode: target.mode, format: target.format, profile,
+    contextTokens: contextTokensFor(settings, connection), replyTokens: settings.replyTokens, samplers: samplersFor(connection.model, settings.temperature),
+  });
+  const exports: ExportApi = {
+    chat: () => downloadJson(`${fileSafe(charName)}.chat.json`, exportChat(chat, Date.now())),
+    settings: () => downloadJson('chat-settings.json', { format: SETTINGS_EXPORT_FORMAT, exportedAt: Date.now(), request: packSettings(), chat: settings }),
+    pack: async () => {
+      const next = world ? await buildRequest(chat, world, { ...buildOptions(chat.messages.length, false, true, chat.draft), firstBuild: false }) : null;
+      const last = lastSent ? { at: lastSent.at, profile: lastSent.profile, request: lastSent.request, reply: lastSent.reply, tokens: lastSent.tokens, ...(lastSent.error ? { error: lastSent.error } : {}) } : null;
+      if (!world) return;
+      downloadJson(`${fileSafe(charName)}-test.json`, makeTestPack({ chat, world, settings: packSettings(), needs, next, last, now: Date.now() }));
+    },
   };
 
   // What the next reply would be sent, for the In context now panel.
@@ -402,11 +418,11 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
             ))}
             <button type="button" className="icon-btn plain" style={{ marginLeft: 'auto' }} onClick={() => setPanel(null)} aria-label="Close"><CloseIcon /></button>
           </div>
-          {panel === 'sent' && <SentPanel sent={lastSent} />}
-          {panel === 'context' && <ContextPanel preview={preview} budget={contextTokensFor(settings, connection)} gone={!world} />}
+          {panel === 'sent' && <SentPanel sent={lastSent} exports={world ? exports : undefined} charName={charName} />}
+          {panel === 'context' && <ContextPanel preview={preview} budget={contextTokensFor(settings, connection)} gone={!world} model={connection.model} charName={charName} />}
           {panel === 'memory' && <MemoryPanel chat={chat} onChange={onChange} charName={charName} userName={userName} model={connection.model} side={side} onRemember={() => setRemembering('')} />}
           {panel === 'time' && <TimePanel chat={chat} onChange={onChange} scene={scene} charName={charName} />}
-          {panel === 'details' && <DetailsPanel chat={chat} onChange={onChange} scene={scene} world={world} charName={charName} onDelete={onDelete} />}
+          {panel === 'details' && <DetailsPanel chat={chat} onChange={onChange} scene={scene} world={world} charName={charName} onDelete={onDelete} exports={world ? exports : undefined} />}
         </aside>
       )}
     </div>

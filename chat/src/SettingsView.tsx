@@ -2,7 +2,8 @@
 // window, display, each character's portraits, and files.
 import { IMAGE_TYPES, MediaImage, animationSlot, posterSlot } from '../../kit/src/media';
 import { useState, type ChangeEvent } from 'react';
-import { AVATAR_SLOT, EMOTIONS, PROFILE_NAMES, XIALONG, profileFor, resolvePortrait } from '../../core/chat/index.js';
+import { AVATAR_SLOT, EMOTIONS, PROFILE_NAMES, SETTINGS_EXPORT_FORMAT, XIALONG, profileFor, resolvePortrait, samplersFor } from '../../core/chat/index.js';
+import { downloadJson } from '../../kit/src/util';
 import { ConnectForm, ModelFields } from '../../kit/src/Connect';
 import type { Connection } from '../../kit/src/connection';
 import { THEME_NAMES, type Theme } from '../../kit/src/theme';
@@ -138,7 +139,13 @@ export function SettingsView({ connection, onConnection, settings, onSettings, t
           <button type="button" className="btn" onClick={onBackup}>Back up everything</button>
           <span className="btn quiet file-btn">Restore a backup<input type="file" accept="application/json,.json" aria-label="Restore a backup" onChange={file(onRestore)} /></span>
           <span className="btn quiet file-btn">Import a chat<input type="file" accept="application/json,.json" aria-label="Import a chat" onChange={file(onImportChat)} /></span>
+          <button type="button" className="btn quiet" onClick={() => downloadJson('chat-settings.json', {
+            format: SETTINGS_EXPORT_FORMAT, exportedAt: Date.now(),
+            request: { provider: connection.provider, model: connection.model, mode: connection.mode, format: connection.format, profile: profileFor(connection.model), contextTokens: contextTokensFor(settings, connection), replyTokens: settings.replyTokens, samplers: samplersFor(connection.model, settings.temperature) },
+            chat: settings,
+          })}>Save settings</button>
         </div>
+        <p className="hint">Save settings writes the model, context size and samplers in a file, never your key. A chat&rsquo;s own Save for a test, under What was sent, puts them in one file with the chat and what it was sent.</p>
       </section>
     </main>
   );

@@ -30,7 +30,7 @@ The whole point of the pilot is to learn what plays on a weak model before anyth
 | **How long she holds** | In a long chat, note the turn where she forgets her outfit, her room, or how she talks. Chat's **In context now** shows what she costs. | Are the budgets right for 28k? (A2) |
 | **The day** | Home with story time on: step the clock through a day. | Does everyone sit where the schedule says, wearing what it says? |
 
-Then the same openings on a 128k model. **Send back:** Chat › Settings › back up (it holds the chats), plus one line per bad reply saying what was wrong. That file is the brief for the resort's fix pass (stream 5).
+Then the same openings on a 128k model. **Send back:** for each chat with a bad reply, Under the hood › Sent › Save for a test › **Everything**, plus one line per bad reply saying what was wrong. Those files are the brief for the resort's fix pass (stream 5), and `npm run chat:lab` turns each one into a test another app's model can run (`docs/testing/chat-lab.md`). Start each chat from Chat › Home, or pick Autumn's Leaves as its scenario; without one, she doesn't know where she is.
 
 ## Three days of Fable 5.2
 
@@ -96,7 +96,7 @@ Paste one into a new session per stream. Each assumes the repository is attached
 > Read `CLAUDE.md`, `docs/content/next.md` (Stream 4), `docs/content/standard.md` (seed, frame, fill) and the sources it names for one world at a time. For Mythic Overdrive, answer its open questions as options first and stop. Each seed is one checkpoint document; don't write records until the owner approves it.
 
 **Stream 5.**
-> Read `CLAUDE.md`, `docs/content/next.md` (Stream 5), `docs/content/standard.md`, the `inkwyrm-records` skill and `content/dragons-resort/world.json`, then the owner's play-test file. List each problem with the record and section it comes from and the fix, and stop. After approval, fix the records, update the standard's budgets and assumptions from what played, and keep `studio/tests/resort.test.ts` green.
+> Read `CLAUDE.md`, `docs/content/next.md` (Stream 5), `docs/testing/chat-lab.md` (its first run lists what's known), `docs/content/standard.md`, the `inkwyrm-records` skill and `content/dragons-resort/world.json`, then the owner's test packs, running `npm run chat:lab` on each. List each problem with the record and section it comes from and the fix, and stop. After approval, fix the records, update the standard's budgets and assumptions from what played, and keep `studio/tests/resort.test.ts` green.
 
 ## Not in the window
 
