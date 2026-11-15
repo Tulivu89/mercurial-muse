@@ -19,6 +19,7 @@
     "dev:chat": "npm run dev -w chat",
     "prompts:live": "npm run prompts:live -w studio",
     "dev:overview": "npm run dev -w overview",
-    "content:check": "npm run content:check -w studio --"
+    "content:check": "npm run content:check -w studio --",
+    "chat:lab": "npm run chat:lab -w studio --"
   }
 }

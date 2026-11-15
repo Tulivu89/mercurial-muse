@@ -21,3 +21,6 @@ target/
 
 # The live prompt tests keep their last results on the machine that ran them.
 studio/live/results.json
+
+# Chat lab packs and runs hold real chats (docs/testing/chat-lab.md).
+lab/

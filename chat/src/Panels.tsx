@@ -4,26 +4,61 @@ import { useState } from 'react';
 import {
   CLOCK_STEPS, PLAN_TURNS, PROFILE_NAMES, RESPONSE_LENGTHS, SIDE_NAMES, STYLES, STYLE_HINTS, STYLE_NAMES, addPlan, clockTracks, exportChat, formatDate,
   formatMinutes, formatStamp, hasSchedule, levelReaches, lorePool, minutesOfDay, moveClock, nextMorningMs, pinKey, responseLengthName, roundToHalfHour,
-  setClockMode, setJournalEntry, setMemory, setPlan, setWhyText, statusText, storyActive, timeOfDayMs,
+  requestText, setClockMode, setJournalEntry, setMemory, setPlan, setWhyText, statusText, storyActive, timeOfDayMs,
   type Built, type Chat, type MemoryKind, type Scene, type SideEntry, type SideKind,
 } from '../../core/chat/index.js';
 import { BOND_CONDITIONS, KIND_NAMES, RELATIONSHIPS, type World } from '../../core/records/index.js';
 import { KeysField } from '../../kit/src/Fields';
-import { downloadJson, fileSafe, newId } from '../../kit/src/util';
+import { downloadJson, downloadText, fileSafe, newId } from '../../kit/src/util';
 import type { Sent } from './store';
 
 const WHY: Record<string, string> = { always: 'Always', here: 'Here', named: 'Named', when: 'When', line: 'Line' };
 const capital = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 type Change = (chat: Chat) => void;
 
+// What ChatView saves: the chat, the settings, and everything for a test in one file.
+export interface ExportApi { chat: () => void; settings: () => void; pack: () => Promise<void> }
+
+// The three files a bad reply gets looked at with, in one place.
+export function ExportBar({ api }: { api: ExportApi }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <section className="block" aria-label="Save for a test">
+      <div className="block-head"><span>Save for a test</span></div>
+      <div className="row">
+        <button type="button" className="btn small" disabled={busy} onClick={() => { setBusy(true); void api.pack().finally(() => setBusy(false)); }}>{busy ? 'Saving…' : 'Everything'}</button>
+        <button type="button" className="btn small quiet" onClick={api.chat}>The chat</button>
+        <button type="button" className="btn small quiet" onClick={api.settings}>Settings</button>
+      </div>
+      <p className="hint">Everything is one file: this chat, its world, the settings (never your key), what the next reply would be sent, and the last request with what came back. <code>npm run chat:lab</code> rebuilds and tests it, and another app&rsquo;s model can read it.</p>
+    </section>
+  );
+}
+
+// A whole request as text: copied to paste into another app, or saved as a file.
+function RequestButtons({ text, file }: { text: string; file: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => void navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }).catch(() => undefined);
+  return (
+    <div className="row">
+      <button type="button" className="btn small quiet" onClick={copy}>{copied ? 'Copied' : 'Copy as text'}</button>
+      <button type="button" className="btn small quiet" onClick={() => downloadText(file, text)}>Save as text</button>
+    </div>
+  );
+}
+
 // The exact request for the last reply, and what came back. This is how a bad reply gets debugged.
-export function SentPanel({ sent }: { sent: Sent | null }) {
-  if (!sent) return <p className="empty">Nothing has been sent in this chat yet. After the next reply, the whole request shows here.</p>;
+export function SentPanel({ sent, exports, charName }: { sent: Sent | null; exports?: ExportApi; charName?: string }) {
+  if (!sent) return <>{exports && <ExportBar api={exports} />}<p className="empty">Nothing has been sent in this chat yet. After the next reply, the whole request shows here.</p></>;
   const request = sent.request as { model?: string; messages?: { role: string; content: string }[]; prefill?: string } & Record<string, unknown>;
   const { messages = [], prefill, ...rest } = request;
   const usage = (sent.diagnostics as { usage?: { prompt_tokens?: number } } | null)?.usage?.prompt_tokens;
+  const name = charName || 'the character';
+  const text = `${requestText({ profile: sent.profile, model: String(request.model ?? ''), messages: messages as { role: 'system' | 'user' | 'assistant'; content: string }[], prefill, parts: sent.parts, tokens: sent.tokens }, `What ${name} was sent for the last reply`)}\n## What came back\n\n${sent.reply || '(nothing)'}\n`;
   return (
     <>
+      {exports && <ExportBar api={exports} />}
+      <RequestButtons text={text} file={`${fileSafe(name)}-sent.md`} />
       <p className="meter">
         {PROFILE_NAMES[sent.profile as keyof typeof PROFILE_NAMES] ?? sent.profile} · {request.model} · {new Date(sent.at).toLocaleTimeString()} · about {sent.tokens.toLocaleString()} tokens{typeof usage === 'number' ? ` (the provider counted ${usage.toLocaleString()})` : ''}
       </p>
@@ -54,13 +89,15 @@ function Messages({ messages, prefill }: { messages: { role: string; content: st
   );
 }
 
-export function ContextPanel({ preview, budget, gone }: { preview: Built | null; budget: number; gone: boolean }) {
+export function ContextPanel({ preview, budget, gone, model = '', charName = '' }: { preview: Built | null; budget: number; gone: boolean; model?: string; charName?: string }) {
+  const name = charName || 'the character';
   return (
     <>
-      <p className="hint">What the next reply would be sent, by reach. Type in the message box and Named parts come in as their keys appear.</p>
+      <p className="hint">What the next reply would be sent, by reach. Type in the message box and Named parts come in as their keys appear. Copy as text gives the whole request, exactly as it would go.</p>
       {!preview && <p className="empty">{gone ? 'This chat\'s world is gone.' : 'Working it out…'}</p>}
       {preview && (
         <>
+          <RequestButtons text={requestText({ ...preview, model }, `What ${name} would be sent for the next reply`)} file={`${fileSafe(name)}-next.md`} />
           <p className="meter">{PROFILE_NAMES[preview.profile]} · about {preview.tokens.toLocaleString()} of {budget.toLocaleString()} tokens · {preview.parts.map((part) => `${part.label} ${part.tokens.toLocaleString()}`).join(' · ')}</p>
           {preview.notes.map((note) => <p key={note} className="status">{note}</p>)}
           {preview.answer.blocks.map((block) => (
@@ -259,7 +296,7 @@ export function TimePanel({ chat, onChange, scene, charName }: { chat: Chat; onC
   );
 }
 
-export function DetailsPanel({ chat, onChange, scene, world, charName, onDelete }: { chat: Chat; onChange: Change; scene: Scene | null; world: World | null; charName: string; onDelete: () => void }) {
+export function DetailsPanel({ chat, onChange, scene, world, charName, onDelete, exports }: { chat: Chat; onChange: Change; scene: Scene | null; world: World | null; charName: string; onDelete: () => void; exports?: ExportApi }) {
   const lore = world ? lorePool(world) : [];
   const owners = scene ? [scene.character, scene.persona, scene.scenario].filter(Boolean) : [];
   const tier = (lock: string | null) => BOND_CONDITIONS.find((condition) => condition.id === lock)?.tier;
@@ -326,8 +363,10 @@ export function DetailsPanel({ chat, onChange, scene, world, charName, onDelete 
           </div>
         </fieldset>
       )}
+      {exports ? <ExportBar api={exports} /> : (
+        <div className="row"><button type="button" className="btn small quiet" onClick={() => downloadJson(`${fileSafe(charName)}.chat.json`, exportChat(chat, Date.now()))}>Export this chat</button></div>
+      )}
       <div className="row">
-        <button type="button" className="btn small quiet" onClick={() => downloadJson(`${fileSafe(charName)}.chat.json`, exportChat(chat, Date.now()))}>Export this chat</button>
         <button type="button" className="btn small danger" onClick={onDelete}>Delete this chat</button>
       </div>
     </>

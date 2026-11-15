@@ -8,6 +8,10 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.27.4 - Gemini - 2026-11-15
+
+- **Google AI Studio (Gemini)** is on the provider list, through Google's OpenAI-compatible door. Its keys have come with a free daily allowance. The server relays to it once it's deployed.
+
 ## 0.25.2 - The mark - 2026-11-12
 
 - The tab shows Inkwyrm's mark (`public/favicon.svg`): flat ink by day, bone at night, by the

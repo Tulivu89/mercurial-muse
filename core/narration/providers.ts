@@ -61,6 +61,11 @@ export const BUILT_IN_PROVIDERS: ProviderInfo[] = [
     id: 'zai', name: 'Z.ai (GLM)', base: 'https://api.z.ai/api/paas/v4', completions: false, chatPrefill: 'system',
     thinkingOff: { thinking: { type: 'disabled' } }, keyLabel: 'API key', keyHint: '', keyNote: 'On z.ai under API keys.',
   },
+  {
+    // Google's OpenAI-compatible door to Gemini. Its keys come with a free daily allowance.
+    id: 'google', name: 'Google AI Studio (Gemini)', base: 'https://generativelanguage.googleapis.com/v1beta/openai', completions: false, chatPrefill: 'system',
+    keyLabel: 'API key', keyHint: 'AIza…', keyNote: 'On aistudio.google.com under Get API key.',
+  },
 ];
 
 // The providers this server relays to: the built-in ones, then any from NARRATION_PROVIDERS, a

@@ -131,6 +131,13 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.4.2 - Save for a test - 2026-11-15
+
+- **Save for a test**, at the top of Under the hood › Sent and in › Chat: **Everything** (one file with the chat, its world as the chat sees it, the settings without the key, what the next reply would be sent, and the last request with its reply), **The chat** and **Settings**. Settings has its own **Save settings** too.
+- **Copy as text** and **Save as text** for the last request and its reply (Sent), and for the whole next request (Context), laid out to paste into another app.
+- A new chat starts in the scenario where the character's schedule puts her, or her world's only scenario, instead of none. Without one, she didn't know where she was.
+- `npm run chat:lab` turns a saved file into the same turn under several setups, for another app's model to play and the lab to score (`docs/testing/chat-lab.md`).
+
 ### 0.4.1 - The dragon's resort - 2026-11-15
 
 - **Home's first household:** Qiulong, Errata and Echydna at Autumn's Leaves, from `content/dragons-resort/world.json`. Home offers **Bring in The dragon's resort** until this browser has it; the three join the collection. It's the pilot's world, put here for its play-test (stage 8 of `docs/content/pilot-brief.md`).
