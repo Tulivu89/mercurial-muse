@@ -53,10 +53,14 @@ export interface Sheet { char: KernelCard; user: KernelCard; scenario?: KernelCa
 // CharacterRoom's kernel matches keys case-sensitively, so a key written "echydna" never fires on
 // "Echydna", and "what do you want" never fires at the start of a sentence. Authors write keys in
 // lower case (the General profile matches without case), so each key also goes in capitalised.
+// The kernel also strips symbols from the ends of every word it reads, so a tag key such as
+// "$directives" could never fire there: it goes in as the word the kernel sees ("directives").
+const kernelWords = (key: string) => key.trim().split(/\s+/).map((word) => word.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '')).filter(Boolean).join(' ');
 export function keyVariants(keys: readonly string[]): string[] {
   const out: string[] = [];
   for (const key of keys) {
-    for (const form of [key, key.charAt(0).toUpperCase() + key.slice(1)]) if (form.trim() && !out.includes(form)) out.push(form);
+    const seen = kernelWords(key);
+    for (const form of [seen, seen.charAt(0).toUpperCase() + seen.slice(1)]) if (form.trim() && !out.includes(form)) out.push(form);
   }
   return out;
 }

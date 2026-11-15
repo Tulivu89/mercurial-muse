@@ -131,6 +131,10 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.4.5 - Tag triggers on Xialong - 2026-11-15
+
+- **A trigger with a symbol on it now fires with Xialong.** CharacterRoom's kernel strips symbols from the ends of words before matching, so a tag such as `$directives` never fired. Chat now sends each trigger the way the kernel reads it (`keyVariants` in `core/chat/sheet.ts`). HOG Wild keys Nova's admin directives on `$directives` (`docs/content/hog-wild/01-decisions.md`).
+
 ### 0.4.4 - New greetings, triggers that fire - 2026-11-15
 
 - **The resort's greetings are rewritten** (`docs/content/dragons-resort/greetings-v2.md`): each woman in the middle of her own day, at an hour her schedule agrees with, handing the person something to do. A browser that has the resort takes the new version; chats already started keep their greeting.
