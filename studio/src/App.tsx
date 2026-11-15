@@ -169,15 +169,6 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
     onCreate(world);
     onStatus({ text: [`Brought in ${world.name}: ${read.notes.join(' ')}`, 'It goes back out as the same module, with whatever you change.'].join(' ') });
   };
-  // The adventure's own modules, fetched only when asked for.
-  const bringModule = async (which: 'bogwater' | 'port-covenant', again = false) => {
-    try {
-      const loaded = which === 'bogwater' ? await import('../../adventure/modules/abernys-bogwater.json') : await import('../../adventure/modules/abernys-port-covenant.json');
-      bringIn(loaded.default, again);
-    } catch (error) {
-      onStatus({ text: (error as Error).message, bad: true });
-    }
-  };
   // The site's own world files, such as the dragon's resort: opened as they are, no module in between.
   const bringResort = async (again = false) => {
     try {
@@ -191,13 +182,12 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
       onStatus({ text: (error as Error).message, bad: true });
     }
   };
-  // `#/bring/bogwater` from the Overview: open the example, bringing it in only if it isn't here.
+  // `#/bring/dragons-resort` from the Overview: open the example, bringing it in only if it isn't here.
   useEffect(() => {
     if (worlds === null) return;
-    const asked = /^#\/bring\/(bogwater|port-covenant|dragons-resort)$/.exec(window.location.hash)?.[1] as 'bogwater' | 'port-covenant' | 'dragons-resort' | undefined;
-    if (!asked) return;
+    if (window.location.hash !== '#/bring/dragons-resort') return;
     window.history.replaceState(null, '', `${window.location.pathname}#/`);
-    void (asked === 'dragons-resort' ? bringResort(true) : bringModule(asked, true));
+    void bringResort(true);
   }, [worlds === null]);
 
   return (
@@ -222,12 +212,7 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
         </span>
       </form>
       <div className="row">
-        <span className="hint">Or bring in one of the adventure&rsquo;s:</span>
-        <button type="button" className="btn small quiet" onClick={() => void bringModule('bogwater')}>Abernys: Bogwater</button>
-        <button type="button" className="btn small quiet" onClick={() => void bringModule('port-covenant')}>Abernys: Port Covenant</button>
-      </div>
-      <div className="row">
-        <span className="hint">Or the site&rsquo;s own:</span>
+        <span className="hint">Or bring in the site&rsquo;s own:</span>
         <button type="button" className="btn small quiet" onClick={() => void bringResort()}>{RESORT_NAME}</button>
       </div>
       {worlds === null && <p className="hint">Opening your worlds…</p>}

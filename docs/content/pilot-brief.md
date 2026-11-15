@@ -76,7 +76,7 @@ Each follows bot-writing: draft privately, critique, revise, hand back that stag
 ## Open questions
 
 - Echydna's want, if she has one.
-- Errata on the site: is the resort's Errata the mascot in Chat (`chat/src/errata.ts`), or a second version of her?
+- ~~Errata on the site~~ Settled Nov 15: the resort's Errata is the site's Errata. The older mascot is gone.
 
 ## The prompt for the next session
 

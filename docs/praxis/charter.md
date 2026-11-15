@@ -163,25 +163,18 @@ Saves are `praxis-save/1`, exports `praxis-export/1` (a save with its module), a
 
 **v0.3** is done with 0.10.0 except the evaluator, which waits on the generation test. The evaluator also lets free text propose a check instead of the player choosing one.
 
-**Next, in order:**
-1. Compare narrators on the same Bogwater turn with "Try this turn 5 more times": GLM-4.6 on NovelAI against the same model on another provider, then one or two other large models. Count how often each follows the ruling and the conditions.
-2. Play Bogwater from the opening, in the net at the long fence:
-   - earn a coin at the smokehouse or on the fence, and hire Gethin and his flatboat;
-   - load Cadfan's barrels on boat day (day 4, a Monday);
-   - get tamecap from the Woed's edge to Morwen before day 8, or see Lowri get loose on day 9;
-   - expose Corran before the raid on day 13, or see the raid;
-   - end the Pact's claim one way: the buyout, the drowned man, or the Low Road.
-3. The checks from 0.16 to 0.19, on Port Covenant before it retires: quiet moves and a fight that ends; earning and spending experience; trade at the Tarred Rope (buy, haggle with Pell, take from Garrick or the dock toughs once they are down, bribe the gate guard); making lockpicks; hiring Garrick, buying Wren's contract, and following Tomas through his day.
-4. Balance from play: the numbers in *Growth, Challenge and Economy* are first guesses.
-5. What Bogwater asks of the engine, listed on its tab under Where it stands: partitions; calendar events that call people by group; weather that shuts a crossing or slows a journey (ways of travel and conditions, `docs/bids/maps/decision.md`); rumour lines on world states. (Milestones without a scene action came with threads in 0.25.0.) Then the coverage audit, and Port Covenant retires.
-6. Still open from the growth proposal:
+**Next, in order:** (Nov 15: Abernys is retired. Bogwater stays the test module until a replacement comes, with no more work for its own sake, and Port Covenant is a test fixture only. The play-throughs, the Port Covenant checks and Bogwater's engine asks are dropped.)
+1. Compare narrators on the same turn with "Try this turn 5 more times": GLM-4.6 on NovelAI against the same model on another provider, then one or two other large models. Count how often each follows the ruling and the conditions.
+2. Balance from play: the numbers in *Growth, Challenge and Economy* are first guesses.
+3. Still open from the growth proposal:
    - item wear and mending;
    - knacks;
    - holdings;
    - a key that opens its lock;
    - NPC opposition dice (opponents' approaches set the difficulty).
-7. The evaluator: reads free text, proposes a check, and fills in what you want. It waits on the generation test results.
-8. Transcript branches.
+4. The evaluator: reads free text, proposes a check, and fills in what you want. It waits on the generation test results.
+5. Transcript branches.
+6. A game of its own to replace Bogwater, from a seed (`docs/content/next.md`).
 Xialong stays on hold.
 
 ## Abernys: Bogwater

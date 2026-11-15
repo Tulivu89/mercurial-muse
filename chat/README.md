@@ -131,6 +131,11 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.4.3 - The resort is the house - 2026-11-15
+
+- **The resort's Errata is the site's Errata.** A first visit gets the dragon's resort (Qiulong, Errata and Echydna) instead of the old mascot's world, and a browser that has the old world loses it. Chats with the old Errata stay readable until deleted.
+- **No say/do switch.** Actions are written in asterisks, as the house format already has them.
+
 ### 0.4.2 - Save for a test - 2026-11-15
 
 - **Save for a test**, at the top of Under the hood › Sent and in › Chat: **Everything** (one file with the chat, its world as the chat sees it, the settings without the key, what the next reply would be sent, and the last request with its reply), **The chat** and **Settings**. Settings has its own **Save settings** too.

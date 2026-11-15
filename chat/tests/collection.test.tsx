@@ -15,10 +15,11 @@ import {
   saveCollection,
 } from '../../kit/src/collection';
 import { animatedBytes, MediaImage } from '../../kit/src/media';
-import { houseWorld } from '../src/errata';
+import { resortFrom } from '../../kit/src/included';
+import resortFile from '../../content/dragons-resort/world.json';
 import { Home } from '../src/Home';
 
-const house = houseWorld(1);
+const house = resortFrom(resortFile, 1);
 const bog = putRecord(
   putRecord(
     newWorld('bog', 'Bogwater', 1),
@@ -59,7 +60,7 @@ describe('personal collection membership', () => {
       collectionCharacters([house, bog], [], saved)
         .map((c) => c.record.name)
         .sort(),
-    ).toEqual(['Errata', 'Morwen']);
+    ).toEqual(['Echydna', 'Errata', 'Morwen', 'Qiulong']);
     expect(memberFor(saved, bog, bog.records[1]!, [chat('new', 'ellis', 2)])).toBeNull();
     expect(memberFor(saved, imported, imported.records[1]!)?.state).toBe('active');
     expect(bog.records.every((record) => record.chatListed === undefined)).toBe(true);

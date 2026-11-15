@@ -91,8 +91,6 @@
 
 .composer { display: flex; align-items: flex-end; gap: 6px; padding: 8px clamp(6px, 2vw, 14px) max(8px, env(safe-area-inset-bottom)); border-top: 1px solid var(--rule); background: var(--surface); }
 .composer textarea { flex: 1; min-width: 0; min-height: 44px; max-height: 40dvh; field-sizing: content; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--rule); background: var(--raised); color: var(--text); font-family: var(--read); font-size: var(--story); line-height: 1.4; resize: none; }
-.mode { flex: none; min-width: 44px; height: 44px; padding: 0 6px; border-radius: 6px; border: 1px solid transparent; background: none; color: var(--text-2); font-size: 13px; font-weight: 700; }
-.mode.on { color: var(--blue); border-color: var(--blue); font-style: italic; }
 .send { flex: none; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 0; background: var(--seal); color: var(--on-seal); }
 
 /* The portrait, large: in its own column on a wide screen, in a sheet on a phone. */

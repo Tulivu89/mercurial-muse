@@ -2,6 +2,8 @@
 
 Oct 18, 2026 · @AmbiProp
 
+**Retired, Nov 15, 2026.** Abernys isn't developed any more. Bogwater stays the adventure's test module until a replacement comes, and its JSON stays a test fixture; nothing here gets new work. Kept for the record.
+
 ## Decided
 
 Bogwater, with a runaway from a Port Covenant indenture as the protagonist and the autumn eel run as the start. Port Covenant retires as the test module once Bogwater covers its tests, since its content was shaped by them. The Dyffryn waits for the owner's core idea.

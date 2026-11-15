@@ -8,6 +8,10 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.27.5 - Abernys retired - 2026-11-15
+
+- New game offers Bogwater only, until a game of its own replaces it. Port Covenant stays as a test fixture and isn't offered.
+
 ## 0.27.4 - Gemini - 2026-11-15
 
 - **Google AI Studio (Gemini)** is on the provider list, through Google's OpenAI-compatible door. Its keys have come with a free daily allowance. The server relays to it once it's deployed.

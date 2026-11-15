@@ -5,13 +5,17 @@ import { newChat, type Chat } from '../../core/chat/index.js';
 import type { Connection, Generated, GenerateOptions } from '../../kit/src/connection';
 import { ChatView } from '../src/ChatView';
 import { worldFor } from '../src/App';
-import { ERRATA, ERRATA_ID, HOUSE_WORLD_ID, houseWorld, refreshHouse } from '../src/errata';
+import { ERRATA_ID, HOUSE_WORLD_ID, resortFrom } from '../../kit/src/included';
+import resortFile from '../../content/dragons-resort/world.json';
 import { Home } from '../src/Home';
 import { RichText } from '../src/RichText';
 import { DEFAULT_SETTINGS } from '../src/settings';
 import { newRecord, parseWorld, putRecord, newWorld } from '../../core/records/index.js';
 
+// The house that comes with the site: the dragon's resort, and its Errata.
+const houseWorld = (now: number) => resortFrom(resortFile, now);
 const world = houseWorld(1);
+const ERRATA = world.records.find((record) => record.id === ERRATA_ID)!;
 const connection: Connection = { connected: true, provider: 'openrouter', model: 'test/model', mode: 'chat', format: 'auto', base: '', models: ['test/model'], contexts: {}, unlisted: false, providers: [] };
 
 function start(): Chat {
@@ -51,19 +55,10 @@ describe('the house format', () => {
 });
 
 describe('the bundled world', () => {
-  it('is a valid world with Errata in it', () => {
-    const read = parseWorld(JSON.parse(JSON.stringify(world)));
-    expect(read.ok).toBe(true);
-    expect(ERRATA.examples).toHaveLength(5);
-    for (const text of [...ERRATA.sections.map((section) => section.text), ...ERRATA.greetings.map((greeting) => greeting.text), ...ERRATA.examples.flatMap((example) => example.messages.map((message) => message.text))]) expect(text).not.toContain('\n\n');
-  });
-  it('swaps an older bundled Errata for the current one and leaves the rest of her world alone', () => {
-    const mine = { ...newRecord('lore', 'mine', 'My note', () => 'x') };
-    const old = { ...world, records: [{ ...ERRATA, line: 'An old draft.', examples: [] }, mine], conditions: [] };
-    const fresh = refreshHouse(old, 9);
-    expect(fresh.records.find((record) => record.id === ERRATA_ID)).toEqual(ERRATA);
-    expect(fresh.records.map((record) => record.id)).toContain('mine');
-    expect(parseWorld(JSON.parse(JSON.stringify(fresh))).ok).toBe(true);
+  it('is the dragon\'s resort, with Errata in it', () => {
+    expect(parseWorld(JSON.parse(JSON.stringify(world))).ok).toBe(true);
+    expect(world.id).toBe(HOUSE_WORLD_ID);
+    expect(ERRATA.examples).toHaveLength(6);
   });
   it('lends a chat a persona from another world', () => {
     const other = putRecord(newWorld('other', 'Other', 1), { ...newRecord('persona', 'p1', 'Robin', () => 'x') }, 2);
@@ -94,7 +89,7 @@ describe('the home screen', () => {
     const onOpen = vi.fn();
     render(<Home worlds={[world]} chats={[start()]} portraits={{}} status={null} userName="" onOpen={onOpen} onStart={() => {}} onImport={() => {}} />);
     const recent = screen.getByRole('region', { name: 'Continue' });
-    expect(within(recent).getByText(/Loose pages cover the floor/)).toBeInTheDocument();
+    expect(within(recent).getByText(/rain ticking on the eaves/)).toBeInTheDocument();
     fireEvent.click(within(recent).getByRole('button'));
     expect(onOpen).toHaveBeenCalledWith('c1');
   });
@@ -125,7 +120,7 @@ describe('the chat screen', () => {
   it('sends a message, streams the reply into a bubble and shows the emotion on the portrait', async () => {
     const { calls, impl } = provider(['Errata: *I take the page.*\nThis line is yours.\n  Emotion: smug']);
     const { container } = render(<Harness impl={impl} />);
-    expect(screen.getByText(/Give it here\./)).toBeInTheDocument();
+    expect(screen.getByText(/rain ticking on the eaves/)).toBeInTheDocument();
     expect(container.querySelector('.chat-head .portrait')).toHaveAttribute('data-emotion', 'bored');
     fireEvent.change(screen.getByLabelText('Your message'), { target: { value: 'Here is my draft.' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
@@ -139,16 +134,6 @@ describe('the chat screen', () => {
     expect(sent[0]!.content).toContain('You are Errata');
     expect(sent.at(-1)!.content).toContain('Here is my draft.');
     expect(calls[0]!.options.stop).toEqual(['\nSam:']);
-  });
-
-  it('wraps an action in asterisks', async () => {
-    const { calls, impl } = provider(['Errata: Fine.\n  Emotion: bored']);
-    render(<Harness impl={impl} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Speech' }));
-    fireEvent.change(screen.getByLabelText('Your message'), { target: { value: 'I hand it over' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
-    await screen.findByText('Fine.');
-    expect(calls[0]!.messages.at(-1)!.content.startsWith('*I hand it over*')).toBe(true);
   });
 
   it('keeps every alternative reply and steps between them', async () => {
@@ -222,11 +207,11 @@ describe('the chat screen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Under the hood' }));
     const panel = screen.getByRole('complementary', { name: 'Under the hood' });
     expect(within(panel).getByText(/You are Errata, in a private one-on-one chat with Sam/)).toBeInTheDocument();
-    expect(within(panel).getByText(/The ink: Ink comes off her/)).toBeInTheDocument();
+    expect(within(panel).getByText(/Paper-pale skin carries cool grey shading/)).toBeInTheDocument();
     expect(within(panel).getByText('Errata: Ink.', { exact: false })).toBeInTheDocument();
     fireEvent.click(within(panel).getByRole('tab', { name: 'In context now' }));
     await waitFor(() => expect(within(panel).getByRole('region', { name: 'Errata' })).toBeInTheDocument());
-    expect(within(panel).getByText(/deadpan and unhurried/)).toBeInTheDocument();
+    expect(within(panel).getByText(/stays at arm's length/)).toBeInTheDocument();
   });
 
   it('saves the chat, the settings and everything for a test from under the hood', async () => {
@@ -256,15 +241,11 @@ describe('the chat screen', () => {
   });
 
   it('starts a new chat in the scenario where her schedule puts her', () => {
-    const scenario = { ...newRecord('scenario', 'house', 'The house', () => 'x'), sets: [{ id: 'rooms', title: 'Locations', reach: 'here' as const, active: 'den', members: [{ id: 'den', name: 'Den', text: 'A den.', lock: null, layers: [] }] }] };
-    const other = newRecord('scenario', 'elsewhere', 'Elsewhere', () => 'y');
-    const errata = { ...ERRATA, idle: { house: { room: 'den', pic: '', x: 0.5, y: 0.5, scale: 0.3 } } };
-    const housed = { ...world, records: [other, scenario, ...world.records.map((record) => (record.id === ERRATA_ID ? errata : record))] };
     const onStart = vi.fn();
-    render(<Home worlds={[housed]} chats={[]} portraits={{}} status={null} userName="Sam" onOpen={() => {}} onStart={onStart} onImport={() => {}} />);
+    render(<Home worlds={[world]} chats={[]} portraits={{}} status={null} userName="Sam" onOpen={() => {}} onStart={onStart} onImport={() => {}} />);
     fireEvent.click(within(screen.getByRole('article', { name: 'Errata' })).getByRole('button', { name: 'Start chat' }));
     fireEvent.click(within(screen.getByRole('dialog', { name: 'New chat with Errata' })).getByRole('button', { name: 'Start the chat' }));
-    expect((onStart.mock.calls[0]![0] as Chat).scenarioId).toBe('house');
+    expect((onStart.mock.calls[0]![0] as Chat).scenarioId).toBe('resort-arrival');
   });
 
   it('keeps story time, moved by hand, and shows it under the hood', () => {
@@ -280,7 +261,7 @@ describe('the chat screen', () => {
     expect(story.querySelector('.stamp')).toHaveTextContent(/ 08:00/);
     fireEvent.click(within(story).getByRole('button', { name: '+1 h' }));
     expect(story.querySelector('.stamp')).toHaveTextContent(/ 09:00/);
-    expect(within(panel).getByText(/Errata has no schedule/)).toBeInTheDocument();
+    expect(within(panel).getAllByText(/Dead asleep in her spare room/).length).toBeGreaterThan(0);
   });
 
   it('writes a plan when asked, showing what it will send first, and the plan rides on the next reply', async () => {
@@ -324,7 +305,7 @@ describe('the chat screen', () => {
 describe('a character asked for by address', () => {
   it('reads #/with/<world>/<record>, and nothing else, as a character to start with', async () => {
     const { viewFromHash } = await import('../src/App');
-    expect(viewFromHash('#/with/inkwyrm-house/errata')).toEqual({ name: 'home', with: { worldId: 'inkwyrm-house', recordId: 'errata' } });
+    expect(viewFromHash('#/with/dragons-resort/errata')).toEqual({ name: 'home', with: { worldId: 'dragons-resort', recordId: 'errata' } });
     expect(viewFromHash('#/with/low%20water/dee')).toEqual({ name: 'home', with: { worldId: 'low water', recordId: 'dee' } });
     expect(viewFromHash('#/with/only-one')).toEqual({ name: 'home' });
     expect(viewFromHash('#/chat/abc')).toEqual({ name: 'chat', id: 'abc' });

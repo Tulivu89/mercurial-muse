@@ -1029,7 +1029,7 @@ export function CollectionView({
                 value={shelfName}
                 maxLength={80}
                 onChange={(e) => setShelfName(e.target.value)}
-                placeholder="Companions, Menagerie, Bogwater…"
+                placeholder="Companions, Late nights, Rivals…"
               />
             </label>
             <button type="submit" className="btn" disabled={!shelfName.trim()}>

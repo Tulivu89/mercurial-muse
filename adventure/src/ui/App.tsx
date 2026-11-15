@@ -1,7 +1,6 @@
 // The title screen (saved games, a new game, importing) and the game itself.
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import bogwaterRaw from '../../modules/abernys-bogwater.json';
-import abernysRaw from '../../modules/abernys-port-covenant.json';
 import { loadModule, readSaveFile, sceneOf, startSave, type PraxisModule, type Save } from '../engine';
 import { LAUNCH_KEY, readLaunches, withoutLaunch, type Launched } from '../../../core/convert/launch';
 import { ConnectForm, initialConnection, reconnect, type Connection } from './Connect';
@@ -224,7 +223,6 @@ export function App() {
           <h2>New game</h2>
           <div className="card pad" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <button type="button" className={lead === 'new' ? 'btn seal wide' : 'btn wide'} style={{ minHeight: 52, justifyContent: 'flex-start' }} onClick={() => newGame(bogwaterRaw)}>Abernys: Bogwater</button>
-            <button type="button" className="btn wide" style={{ minHeight: 52, justifyContent: 'flex-start' }} onClick={() => newGame(abernysRaw)}>Abernys: Port Covenant</button>
             <label className="file-pick">
               <span className="meta">Or a module file</span>
               <input type="file" accept="application/json,.json" onChange={(event) => void onModuleFile(event)} />

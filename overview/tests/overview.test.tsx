@@ -4,10 +4,17 @@ import { describe, expect, it } from 'vitest';
 import { newChat, type Chat } from '../../core/chat/index.js';
 import { newRecord, newWorld, putRecord, type World } from '../../core/records/index.js';
 import { NAVIGATION_KEY, withActivity, type NavigationV1 } from '../../kit/src/activity';
-import { houseWorld } from '../../chat/src/errata';
+import { resortFrom } from '../../kit/src/included';
+import resortFile from '../../content/dragons-resort/world.json';
 import { App, type Readers } from '../src/App';
 import { selectOverview, type Library, type SaveSummary } from '../src/select';
 import { EMPTY_COLLECTION, patchMember } from '../../kit/src/collection';
+
+// The house that comes with the site: the dragon's resort.
+const houseWorld = (now: number) => resortFrom(resortFile, now);
+const included = (id: string, name: string) => [name, 'Included', `/chat/#/with/dragons-resort/${id}`];
+// Errata leads the house's three; the others follow as Chat orders them (A to Z).
+const THREE = [included('errata', 'Errata'), included('echydna', 'Echydna'), included('qiulong', 'Qiulong')];
 
 const none: NavigationV1 = { version: 1, recent: [] };
 const ok = <T,>(value: T) => ({ state: 'ready' as const, value });
@@ -31,8 +38,8 @@ describe('choosing what to show', () => {
     const view = selectOverview(library());
     expect(view.first).toBe(true);
     expect(view.continueWith).toBeNull();
-    expect(view.characters.map((card) => [card.name, card.tag, card.href])).toEqual([['Errata', 'Included', '/chat/#/with/inkwyrm-house/errata']]);
-    expect(view.worlds.map((card) => [card.name, card.tag])).toEqual([['Abernys: Bogwater', 'Included'], ['Abernys: Port Covenant', 'Included']]);
+    expect(view.characters.map((card) => [card.name, card.tag, card.href])).toEqual(THREE);
+    expect(view.worlds.map((card) => [card.name, card.tag])).toEqual([['The dragon\'s resort', 'Included']]);
     expect(view.adventure).toMatchObject({ kind: 'example' });
   });
 
@@ -55,12 +62,12 @@ describe('choosing what to show', () => {
     expect(view.worlds.map((card) => card.tag)).toEqual(['Your world', 'Included']);
   });
 
-  it('puts recent conversations first, one card per character, then Errata', () => {
+  it('puts recent conversations first, one card per character, then the house', () => {
     const world = lowWater();
     const view = selectOverview(library({ worlds: ok([houseWorld(0), world]), chats: ok([chatWith(world, 'a', 4), chatWith(world, 'b', 8)]) }));
     expect(view.characters.map((card) => [card.name, card.tag, card.href])).toEqual([
       ['Dee Harlow', 'Recent chat', '/chat/#/chat/b'],
-      ['Errata', 'Included', '/chat/#/with/inkwyrm-house/errata'],
+      ...THREE.slice(0, 2),
     ]);
   });
 
@@ -74,13 +81,13 @@ describe('choosing what to show', () => {
   it('respects hidden and archived collection members in recommendations and Continue', () => {
     const world = lowWater(); const saved = chatWith(world, 'a', 4);
     let collection = patchMember(EMPTY_COLLECTION, world.id, 'dee', { state: 'hidden' });
-    collection = patchMember(collection, 'inkwyrm-house', 'errata', { state: 'archived' });
+    for (const id of ['qiulong', 'errata', 'echydna']) collection = patchMember(collection, 'dragons-resort', id, { state: 'archived' });
     const view = selectOverview(library({ worlds: ok([houseWorld(0), world]), chats: ok([saved]), collection, navigation: withActivity(none, { kind: 'chat', chatId: saved.id }, 5) }));
     expect(view.characters).toHaveLength(0);
     expect(view.continueWith).toBeNull();
   });
   it('does not resurrect a deleted bundled world after collection initialization', () => {
-    const collection = { ...patchMember(EMPTY_COLLECTION, 'inkwyrm-house', 'errata', { state: 'active' }), initialized: true };
+    const collection = { ...patchMember(EMPTY_COLLECTION, 'dragons-resort', 'errata', { state: 'active' }), initialized: true };
     expect(selectOverview(library({ worlds: ok([]), collection })).characters).toHaveLength(0);
   });
 });
@@ -94,8 +101,8 @@ describe('the page', () => {
     render(<App readers={readers()} />);
     expect(await screen.findByRole('heading', { level: 1, name: /Characters who remember you/ })).toBeInTheDocument();
     const characters = within(await screen.findByRole('region', { name: 'Characters' }));
-    expect(await characters.findByRole('link', { name: 'Meet Errata' })).toHaveAttribute('href', '/chat/#/with/inkwyrm-house/errata');
-    expect(within(screen.getByRole('region', { name: 'Worlds' })).getAllByRole('link', { name: 'Look inside' })[0]).toHaveAttribute('href', '/studio/#/bring/bogwater');
+    expect(await characters.findByRole('link', { name: 'Meet Errata' })).toHaveAttribute('href', '/chat/#/with/dragons-resort/errata');
+    expect(within(screen.getByRole('region', { name: 'Worlds' })).getAllByRole('link', { name: 'Look inside' })[0]).toHaveAttribute('href', '/studio/#/bring/dragons-resort');
     expect(screen.queryByRole('region', { name: 'Continue' })).toBeNull();
   });
 
@@ -112,6 +119,6 @@ describe('the page', () => {
   it('says which store failed, and keeps the rest', async () => {
     render(<App readers={readers({ chats: async () => { throw new Error('blocked'); } })} />);
     expect(await screen.findByText(/couldn.t read your chats/)).toBeInTheDocument();
-    await waitFor(() => expect(within(screen.getByRole('region', { name: 'Worlds' })).getAllByRole('link', { name: 'Look inside' })).toHaveLength(2));
+    await waitFor(() => expect(within(screen.getByRole('region', { name: 'Worlds' })).getAllByRole('link', { name: 'Look inside' })).toHaveLength(1));
   });
 });

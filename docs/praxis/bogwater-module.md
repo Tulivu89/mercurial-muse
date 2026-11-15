@@ -1,5 +1,7 @@
 # Bogwater
 
+
+**Retired, Nov 15, 2026.** Abernys isn't developed any more. Bogwater stays the adventure's test module until a replacement comes, and its JSON stays a test fixture; nothing here gets new work. Kept for the record.
 The frame for Bogwater in the eel run: nine places, twelve people who matter, four threads on clocks that meet on sitting day, and a runaway with a contract inked on their skin. Everything here is a Suggestion built on the Fenmire, Woed, Cairn Maw and Port Covenant docs, written in plain words so nobody needs a glossary.
 
 ## The runaway
