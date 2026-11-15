@@ -2,7 +2,7 @@
 
 Nov 15, 2026 · @AmbiProp · The brief for the Fable 5.2 sessions that write HOG Wild from its framework. The framework settles every decision, so Fable's job is to write well to it, not to decide. Where the framework is silent on something structural, Fable stops and asks. It doesn't choose quietly.
 
-**Status, Nov 15:** wave 1 is written and checked (`wave-1-report.md`). The owner asked for it in one batch, not stop by stop, and for the short keyed notes to be folded into each profile. Wave 2 waits for the owner to play wave 1 or read a blind lab run.
+**Status, Nov 15:** both waves are written and checked (`report.md`). The owner asked for them in batches, not stop by stop, for always-true notes to be in the profile or the scenario and not behind keys, and for each In Bed section to carry a kink. Next is play, a blind lab run, and the looks for Maeve and Pipa.
 
 ## Before Fable starts
 

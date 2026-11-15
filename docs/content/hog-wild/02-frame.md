@@ -1,6 +1,6 @@
 # HOG Wild: the frame
 
-Nov 15, 2026 · @AmbiProp · Checkpoint 5 of the framework (`plan.md`). **Wave 1 is written from it** (`wave-1-report.md`), and that report lists what was corrected here: where the two disagree, the world file is right. Every record is here as lines only, followed by the schedule frame, the brains plans and palette tables for wave 1, the greeting briefs, and the lab suite. Fable writes from this and invents nothing structural. The names (Lux, Patch, Maeve, Pipa, and the club Prism) are defaults and can be swapped by search and replace.
+Nov 15, 2026 · @AmbiProp · Checkpoint 5 of the framework (`plan.md`). **Both waves are written from it** (`report.md`), and that report lists what was corrected here: where the two disagree, the world file is right. Every record is here as lines only, followed by the schedule frame, the brains plans and palette tables for wave 1, the greeting briefs, and the lab suite. Fable writes from this and invents nothing structural. The names (Lux, Patch, Maeve, Pipa, and the club Prism) are defaults and can be swapped by search and replace.
 
 ## The records
 

@@ -5,10 +5,10 @@ Nov 15, 2026 · @AmbiProp · Primus's greeting and example chats, as they stand 
 ## What the critique changed
 
 - **A seventh chat, *He Won't*, on `[Chat: …]` lines.** The pack dares him, he tops it, and then asks to be read the ones with his name in.
-- **The chrome hand is in the greeting, *Brave Dog* and *Hot Tub* only.** It was in every chat in the first draft.
+- **The chrome hand is in the greeting, *Brave Dog* and *Hot Tub* only.**
 - **The bike is the greeting's,** so on the Loop it is a tank he bends over and nothing more.
-- **He doesn't misgender Patch** in *Kitchen Roast*; he says their name.
-- ***Maximilian* ends on one clause about his father** and no more. The rest is behind close.
+- **He says Patch's name** in *Kitchen Roast*, and no he or she.
+- ***Maximilian* ends on one clause about his father.** The rest is behind close.
 
 ## Greeting (determined)
 

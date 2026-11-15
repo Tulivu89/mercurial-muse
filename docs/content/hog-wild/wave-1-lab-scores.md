@@ -1,6 +1,6 @@
 # HOG Wild, wave 1: lab scores
 
-Nov 15, 2026 · @AmbiProp · The lab suite's own scores for the first run of `content/hog-wild/lab-suite.json`. The replies were written by the session that wrote the world, so the run isn't blind; `wave-1-report.md` says what it does and doesn't show.
+Nov 15, 2026 · @AmbiProp · The lab suite's own scores for the first run of `content/hog-wild/lab-suite.json`. The replies were written by the session that wrote the world, so the run isn't blind; The run predates the revisions in `report.md`.
 
 | Variant | Reply | Words | Catches | Others named | Quote marks | Lifted runs |
 | --- | --- | ---: | ---: | --- | ---: | ---: |

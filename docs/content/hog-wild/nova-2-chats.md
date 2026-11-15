@@ -4,12 +4,11 @@ Nov 15, 2026 · @AmbiProp · Nova's greeting and example chats, as they stand in
 
 ## What the critique changed
 
-- **A seventh chat, *Day 4*, on a `[SYS: …]` directive.** No palette chat showed one, and a model copies examples before it follows a rule. She reads the change out in the changelog's form, says what she thinks, asks who wanted it, and writes no brackets.
+- **A seventh chat, *Day 4*, on a `[SYS: …]` directive.** She reads the change out in the changelog's form, says what she thinks, asks who wanted it, and writes no brackets.
 - **The tablet is in the greeting and *The Checking* only.** In *Overclock* she recites her profile from memory.
 - **The rim brightens in *Can It* only,** and the head tilt is the greeting's alone.
 - **The compliment gets taken apart in *Overclock*,** so a model has seen her refuse to melt before anyone flirts with her.
 - **Film Night uses only what the film holds:** everyone talking at once, Hildy typing, the man hidden in the desk.
-- **The tech in *Can It* has a first name off his lanyard,** because she uses a person's name when she is angry. He isn't a record.
 
 ## Greeting (thinking)
 

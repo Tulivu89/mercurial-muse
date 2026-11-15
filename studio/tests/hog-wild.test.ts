@@ -17,10 +17,10 @@ function hogWild(): World {
 const leads = (world: World) => world.records.filter((record) => record.kind === 'character' && record.tags.includes('lead'));
 
 describe('HOG Wild', () => {
-  it('reads as a world, with wave 1\'s three leads', () => {
+  it('reads as a world, with its six leads', () => {
     const world = hogWild();
     expect(world.id).toBe('hog-wild');
-    expect(leads(world).map((record) => record.name)).toEqual(['Nova', 'Lux', 'Primus']);
+    expect(leads(world).map((record) => record.name)).toEqual(['Nova', 'Lux', 'Primus', 'Patch', 'Maeve', 'Pipa']);
   });
 
   it('passes the content checker with nothing to look at twice', () => {
@@ -76,6 +76,15 @@ describe('HOG Wild', () => {
       expect(ids.has(entry.character)).toBe(true);
       expect(ids.has(entry.scenario)).toBe(true);
     }
+  });
+
+  it('has its thread, with milestones that turn on records the world holds', () => {
+    const world = hogWild();
+    const ids = new Set(world.records.map((record) => record.id));
+    const thread = world.records.find((record) => record.kind === 'thread')!;
+    const milestones = thread.rules?.thread?.milestones ?? [];
+    expect(milestones.length).toBe(3);
+    for (const milestone of milestones) if (milestone.targetId) expect(ids.has(milestone.targetId)).toBe(true);
   });
 
   it('goes out to the adventure as a module and comes back', () => {

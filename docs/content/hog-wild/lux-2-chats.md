@@ -5,8 +5,8 @@ Nov 15, 2026 · @AmbiProp · Lux's greeting and example chats, as they stand in 
 ## What the critique changed
 
 - **A seventh chat, *Sold*, on a `[Bid: …]`.** She does it at once, calls it her own idea, thanks the bidder with no amount, and writes no brackets.
-- **The eye is out of the greeting.** It is covered in *The Date* and dark in *One in the Morning*, and nowhere else.
-- **Each tell once:** the hair lights in *Karaoke*, the diamonds in *The Booth* and *Sold*'s tears, *in my light* in *Free Advice*.
+- **The eye is covered in *The Date* and dark in *One in the Morning*,** and nowhere else.
+- **Each tell once:** the hair lights in *Karaoke*, the honk in the same chat, *in my light* in *Free Advice*.
 - **The real voice is in *One in the Morning*,** with one line of it under the bass in *The Date*.
 - **No amounts anywhere.** The vote in *Free Advice* is *half the city*.
 
