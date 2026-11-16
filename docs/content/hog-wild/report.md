@@ -94,13 +94,19 @@ npm run content:check -- "$PWD/content/hog-wild/world.json"
 
 > Read `AGENTS.md`. Run `npm ci`, then `npm run chat:lab -- suite content/hog-wild/lab-suite.json`, and follow the `README.md` it writes, blind. Then score it, write `findings.md`, and hand back `findings.md` and `scores.md` as files. Don't commit anything.
 
-## For the site, not done here
+## For the site
 
-- **`npm run content:check -- <file>` needs a full path.** It runs from `studio/`, so `content/hog-wild/world.json` on its own isn't found.
-- **The checker adds a lead's keyed sections together against 300 tokens.** The standard and the handoff both read as 300 each.
-- **HOG Wild isn't in Chat's Home or the Studio's buttons.**
+Done Nov 16:
+
+- **HOG Wild is on the site.** Chat's Home and Add characters, the Studio's home and the Overview's examples each bring it in. The resort stays the house, so a first visitor doesn't get HOG Wild without asking.
+- **Residents' notes stay in their own chats.** In a chat with Nova, *kiss* brought in all six In Bed sections, opened by the bond with Nova, and *where are you from* brought in four Backgrounds. A chat character now brings nothing into another's chat; The House's entry carries who they are to each other. This was the decisions' item 2.
+- **`npm run content:check` takes a path from wherever it's typed,** as `chat:lab` already did.
+- **The checker holds a lead's Named sections to 300 each,** as the standard says. Other tiers keep their budget for all their Named sections together.
+
+Still open:
+
 - **A thread's Next beat doesn't reach a chat.** That is right for this thread; it is worth deciding on purpose.
-- The three Chat features in `01-decisions.md` are still to build. The world plays without them.
+- **Items 1, 3 and 4 in `01-decisions.md`.** The world plays without them.
 
 ## Next
 

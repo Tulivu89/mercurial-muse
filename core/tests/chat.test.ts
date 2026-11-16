@@ -143,6 +143,25 @@ describe('the General profile', () => {
     expect(off.messages[0]!.content).not.toContain('Nobody is out after two.');
   });
 
+  it('keeps another chat character\'s brains out, and nobody else\'s bond-gated section reads this chat\'s bond', async () => {
+    const next = ids();
+    const notes = (who: string) => [
+      { id: `${who}-n`, title: 'Background', reach: 'named' as const, keys: ['where are you from'], when: null, text: `${who.toUpperCase()} BACKGROUND.` },
+      { id: `${who}-w`, title: 'In Bed', reach: 'when' as const, keys: ['kiss'], when: 'bond-close', text: `${who.toUpperCase()} IN BED.` },
+    ];
+    let w = world();
+    w = putRecord(w, { ...newRecord('character', 'lux', 'Lux', next), chatListed: true, sections: notes('lux') }, 3);
+    w = putRecord(w, { ...newRecord('character', 'bram', 'Bram', next), sections: notes('bram') }, 3);
+    const asked = chat({ relationship: 'romantic', draft: 'Where are you from? Kiss me.' });
+    for (const model of ['glm-4-6', 'xialong-v1']) {
+      const built = (await buildRequest(asked, w, options(model, { draft: asked.draft })))!;
+      const sent = built.messages.map((message) => message.content).join('\n');
+      expect(sent).not.toContain('LUX');
+      expect(sent).not.toContain('BRAM IN BED.');
+      expect(sent).toContain('BRAM BACKGROUND.');
+    }
+  });
+
   it('carries a message on with a prefill, or asks for it where there is none', async () => {
     const withPrefill = (await buildRequest(chat(), world(), options('glm-4-6', { continuing: true })))!;
     expect(withPrefill.prefill).toBe('Ada Moss: *The ON AIR light is off.*\nYou lost, pal?');

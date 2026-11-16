@@ -2,11 +2,15 @@
 // Checks a world file (studio-world/1) or an adventure module against the content standard
 // (docs/content/standard.md) and prints what it costs and what to look at twice.
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { isModule, moduleToWorld } from '../../core/convert/index.js';
 import { parseWorld, type World } from '../../core/records/index.js';
 import { lintWorld, reportText } from '../src/content/lint';
 
-declare const process: { argv: string[]; exit: (code: number) => never; cwd: () => string };
+declare const process: { argv: string[]; exit: (code: number) => never; cwd: () => string; env: Record<string, string | undefined> };
+
+// npm runs this from studio/; a path is read from where the command was typed, as chat:lab does.
+const from = process.env.INIT_CWD ?? '.';
 
 const args = process.argv.slice(2);
 const files = args.filter((arg) => !arg.startsWith('--'));
@@ -15,7 +19,7 @@ if (!files.length) {
   process.exit(1);
 }
 for (const file of files) {
-  const raw: unknown = JSON.parse(readFileSync(file, 'utf8'));
+  const raw: unknown = JSON.parse(readFileSync(resolve(from, file), 'utf8'));
   let world: World;
   if (isModule(raw)) {
     const read = moduleToWorld(raw, Date.now());

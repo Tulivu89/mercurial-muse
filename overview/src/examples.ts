@@ -15,6 +15,12 @@ export const EXAMPLE_WORLDS: ExampleWorld[] = [
     note: 'Opens a copy in the Studio, in this browser. Its three are in Chat and Home.',
     href: '/studio/#/bring/dragons-resort', cover: { over: 'Autumn\'s Leaves', title: 'The dragon\'s resort' },
   },
+  {
+    worldId: 'hog-wild', name: 'HOG Wild',
+    line: 'A glass-fronted house on the Mile streams six residents to the city, always live, and the audience bids on their choices.',
+    note: 'Opens a copy in the Studio, in this browser. Its six are in Chat and Home.',
+    href: '/studio/#/bring/hog-wild', cover: { over: 'The Mile', title: 'HOG Wild' },
+  },
 ];
 
 export const EXAMPLE_ADVENTURES: ExampleAdventure[] = [

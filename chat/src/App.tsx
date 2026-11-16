@@ -9,7 +9,7 @@ import { recordActivity } from '../../kit/src/activity';
 import { useTheme } from '../../kit/src/theme';
 import { downloadJson, newId, readFileBytes, readJsonFile } from '../../kit/src/util';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
-import { HOUSE_VERSION, HOUSE_WORLD_ID, RESORT_WORLD_ID, RETIRED_HOUSE_ID, loadResort } from '../../kit/src/included';
+import { HOUSE_VERSION, HOUSE_WORLD_ID, INCLUDED_WORLDS, RETIRED_HOUSE_ID, loadIncluded, loadResort } from '../../kit/src/included';
 import { ChatView } from './ChatView';
 import { Home, type Status } from './Home';
 import { House } from './House';
@@ -207,18 +207,20 @@ export function App() {
     } catch (error) { fail(error); }
   };
 
-  // The dragon's resort, from the site's own world files, put in this browser once on request.
-  const bringResort = async () => {
-    if (!worldsReady) { fail(new Error('Your worlds could not be read yet. Retry the library before bringing in the resort.')); return; }
+  // A world that comes with the site (the dragon's resort, HOG Wild), put in this browser once on
+  // request, with its chat characters in the collection.
+  const bringIncluded = async (id: string) => {
+    if (!worldsReady) { fail(new Error('Your worlds could not be read yet. Retry the library before bringing in a world.')); return; }
     try {
-      const resort = await loadResort(Date.now());
-      await putWorld(resort);
-      setWorlds([...(worlds ?? []).filter((world) => world.id !== resort.id), resort]);
+      const brought = await loadIncluded(id, Date.now());
+      await putWorld(brought);
+      setWorlds([...(worlds ?? []).filter((world) => world.id !== brought.id), brought]);
       let collection = loadCollection();
-      for (const record of resort.records.filter((entry) => entry.kind === 'character' && entry.chatListed)) collection = patchMember(collection, resort.id, record.id, { state: 'active' });
+      for (const record of brought.records.filter((entry) => entry.kind === 'character' && entry.chatListed)) collection = patchMember(collection, brought.id, record.id, { state: 'active' });
       saveCollection(collection);
     } catch (error) { fail(error); }
   };
+  const missingIncluded = worldsReady ? INCLUDED_WORLDS.filter((entry) => !worlds?.some((world) => world.id === entry.id)) : [];
 
   const createCharacter = async (name: string) => {
     if (!worldsReady) throw new Error('Retry the library before creating a character.');
@@ -339,7 +341,7 @@ export function App() {
         <House
           worlds={worlds ?? []} chats={chats ?? []} portraits={portraits} lives={lives} userName={settings.userName}
           onLife={saveLife} onWorld={saveWorld} onPicture={(owner, slot, file) => void setPortrait(owner, slot, file)} onChat={chatFrom}
-          onBringResort={worldsReady && !worlds?.some((world) => world.id === RESORT_WORLD_ID) ? () => void bringResort() : undefined}
+          bringable={missingIncluded} onBring={(id) => void bringIncluded(id)}
         />
       ) : view.name === 'settings' ? (
         <SettingsView
@@ -359,6 +361,7 @@ export function App() {
             mode={view.name === 'conversations' ? 'conversations' : 'collection'}
             profile={view.name === 'character' ? { worldId: view.worldId, recordId: view.recordId } : undefined}
             onPortrait={(owner, slot, file) => void setPortrait(owner, slot, file)} onCreate={worldsReady ? createCharacter : undefined} onBackup={() => void backup()}
+            bringable={missingIncluded} onBring={(id) => void bringIncluded(id)}
             startWith={view.name === 'home' ? view.with ?? null : null}
             onStartWithDone={(found) => {
               window.history.replaceState(null, '', `${window.location.pathname}#/`);

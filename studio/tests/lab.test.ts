@@ -68,12 +68,13 @@ describe('the chat lab', () => {
 
   it('builds each variant, changing only what it says', async () => {
     const variants = await labVariants(pack(), 2);
-    expect(variants.map((variant) => variant.id)).toEqual(['as-sent', 'general', 'no-examples', 'only-her', 'with-scenario']);
+    // The resort's others are all chat characters, who bring nothing into her chat, so there is no
+    // world without them to try.
+    expect(variants.map((variant) => variant.id)).toEqual(['as-sent', 'general', 'no-examples', 'with-scenario']);
     const text = (id: string) => variants.find((variant) => variant.id === id)!.request.messages.map((message) => message.content).join('\n');
-    // Asking what she wants brings in her Wants, and, with the others in the world, theirs too.
-    expect(text('as-sent')).toContain('Qiulong: Wants');
-    expect(text('only-her')).not.toContain('Qiulong: Wants');
-    expect(text('only-her')).toContain('Chases loud distraction');
+    // Asking what she wants brings in her Wants, and nobody else's.
+    expect(text('as-sent')).not.toContain('Qiulong: Wants');
+    expect(text('as-sent')).toContain('Chases loud distraction');
     expect(text('as-sent')).toContain('Example quotes');
     expect(text('no-examples')).not.toContain('Example quotes');
     expect(text('as-sent')).not.toContain('Scene:');

@@ -125,13 +125,17 @@ export function lintWorld(world: World): Report {
     const budget = BUDGETS[cost.tier];
     if (!record.line.trim()) findings.push({ recordId: record.id, record: record.name, where: 'line', kind: 'missing', rule: 'every record needs a line: in a big world it is all most records send', excerpt: '' });
     else if (cost.lineWords > LINE_WORDS) findings.push({ recordId: record.id, record: record.name, where: 'line', kind: 'over', rule: `line ${cost.lineWords} words, budget ${LINE_WORDS}`, excerpt: record.line });
+    // A lead's Named budget is for each section (the standard's *each Named 300*), so only the
+    // loop below judges it; other tiers' Named budget is for the record's Named sections together.
+    const each = cost.tier === 'lead';
     for (const [reach, spent] of [['here', cost.here], ['named', cost.named], ['always', cost.always], ['chat', cost.chat]] as const) {
+      if (reach === 'named' && each) continue;
       const most = budget[reach];
       if (most && spent > most) findings.push({ recordId: record.id, record: record.name, where: reach, kind: 'over', rule: `${cost.tier} ${reach} ${spent} t, budget ${most}`, excerpt: '' });
     }
     // Named sections are judged one by one: each arrives on its own key.
     for (const section of record.sections) {
-      if (section.reach === 'named' && budget.named && roughTokens(section.text) > budget.named && cost.named <= budget.named) {
+      if (section.reach === 'named' && budget.named && roughTokens(section.text) > budget.named && (each || cost.named <= budget.named)) {
         findings.push({ recordId: record.id, record: record.name, where: section.title, kind: 'over', rule: `one named section ${roughTokens(section.text)} t, budget ${budget.named}`, excerpt: '' });
       }
     }

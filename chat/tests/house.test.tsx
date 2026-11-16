@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Life } from '../../core/chat/index.js';
 import { importCardJson, newWorld, type World } from '../../core/records/index.js';
 import { House } from '../src/House';
+import { INCLUDED_WORLDS } from '../../kit/src/included';
 
 const contact = {
   cardType: 'contact', id: 'card-mira', name: 'Mira', persona: 'Wry.', greeting: 'Hey.', relationship: 'acquaintance',
@@ -36,6 +37,14 @@ describe('Home', () => {
   it('says what it needs when there is no place yet', () => {
     render(<House worlds={[newWorld('w', 'Empty', 1)]} chats={[]} portraits={{}} lives={{}} userName="" onLife={() => {}} onWorld={() => {}} onPicture={() => {}} onChat={() => {}} />);
     expect(screen.getByText(/Home needs a scenario with rooms/)).toBeInTheDocument();
+  });
+
+  it('offers each world that comes with the site and isn\'t here yet', () => {
+    const onBring = vi.fn();
+    render(<House worlds={[]} chats={[]} portraits={{}} lives={{}} userName="" onLife={() => {}} onWorld={() => {}} onPicture={() => {}} onChat={() => {}} bringable={INCLUDED_WORLDS} onBring={onBring} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Bring in HOG Wild' }));
+    expect(onBring).toHaveBeenCalledWith('hog-wild');
+    expect(screen.getByRole('button', { name: 'Bring in The dragon\'s resort' })).toBeInTheDocument();
   });
 
   it('shows the room a character is in, with them standing where the schedule puts them', () => {

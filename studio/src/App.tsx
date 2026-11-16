@@ -9,7 +9,7 @@ import { THEME_NAMES, useTheme, type Theme } from '../../kit/src/theme';
 import { WorldView } from './WorldView';
 import { NOWHERE, navigate, useRoute } from './route';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
-import { RESORT_NAME, RESORT_WORLD_ID, loadResort } from '../../kit/src/included';
+import { INCLUDED_WORLDS, includedWorld, loadIncluded } from '../../kit/src/included';
 import { ago, newId, readJsonFile } from '../../kit/src/util';
 import { isModule, moduleToWorld } from '../../core/convert/index.js';
 import { AuthorProvider, authorFor, readHelperPrefs, saveHelperPrefs, type HelperPrefs } from './author/context';
@@ -169,25 +169,27 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
     onCreate(world);
     onStatus({ text: [`Brought in ${world.name}: ${read.notes.join(' ')}`, 'It goes back out as the same module, with whatever you change.'].join(' ') });
   };
-  // The site's own world files, such as the dragon's resort: opened as they are, no module in between.
-  const bringResort = async (again = false) => {
+  // The site's own world files, such as the dragon's resort and HOG Wild: opened as they are, no
+  // module in between.
+  const bringIncluded = async (id: string, again = false) => {
     try {
-      const resort = await loadResort(Date.now());
-      const taken = worlds?.some((world) => world.id === RESORT_WORLD_ID);
-      if (taken && again) { onOpen(RESORT_WORLD_ID); return; }
-      const world = taken ? { ...resort, id: newId(), name: `${resort.name} (copy)` } : resort;
+      const brought = await loadIncluded(id, Date.now());
+      const taken = worlds?.some((world) => world.id === brought.id);
+      if (taken && again) { onOpen(brought.id); return; }
+      const world = taken ? { ...brought, id: newId(), name: `${brought.name} (copy)` } : brought;
       onCreate(world);
-      onStatus({ text: `Opened ${world.name}. Its three can be met in Chat, and its Home is in Chat's Home.` });
+      onStatus({ text: `Opened ${world.name}. Its people can be met in Chat, and its Home is in Chat's Home.` });
     } catch (error) {
       onStatus({ text: (error as Error).message, bad: true });
     }
   };
-  // `#/bring/dragons-resort` from the Overview: open the example, bringing it in only if it isn't here.
+  // `#/bring/<id>` from the Overview: open the example, bringing it in only if it isn't here.
   useEffect(() => {
     if (worlds === null) return;
-    if (window.location.hash !== '#/bring/dragons-resort') return;
+    const asked = /^#\/bring\/([\w-]+)$/.exec(window.location.hash)?.[1];
+    if (!asked || !includedWorld(asked)) return;
     window.history.replaceState(null, '', `${window.location.pathname}#/`);
-    void bringResort(true);
+    void bringIncluded(asked, true);
   }, [worlds === null]);
 
   return (
@@ -213,7 +215,7 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
       </form>
       <div className="row">
         <span className="hint">Or bring in the site&rsquo;s own:</span>
-        <button type="button" className="btn small quiet" onClick={() => void bringResort()}>{RESORT_NAME}</button>
+        {INCLUDED_WORLDS.map((entry) => <button key={entry.id} type="button" className="btn small quiet" onClick={() => void bringIncluded(entry.id)} title={entry.who}>{entry.name}</button>)}
       </div>
       {worlds === null && <p className="hint">Opening your worlds…</p>}
       {worlds?.length === 0 && <p className="hint">No worlds in this browser yet. Make one above, or open a world file.</p>}

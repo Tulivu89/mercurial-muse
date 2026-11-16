@@ -44,4 +44,16 @@ describe('the content checker', () => {
     expect(report.findings.filter((finding) => finding.kind === 'over').map((finding) => finding.rule)).toEqual(expect.arrayContaining(['line 30 words, budget 25', expect.stringMatching(/^person here \d+ t, budget 200$/)]));
     expect(reportText(report)).toContain('## Over budget: ');
   });
+
+  it('holds a lead\'s Named sections to 300 each, not together', () => {
+    const lead = world();
+    const dee = lead.records.find((record) => record.id === 'dee')!;
+    dee.tags = ['lead'];
+    const named = (id: string, words: number) => ({ id, title: id, reach: 'named' as const, keys: [id], when: null, text: 'Keeps the ledger. '.repeat(words) });
+    dee.sections = [...dee.sections, named('a', 50), named('b', 50)];
+    const over = (world: World) => lintWorld(world).findings.filter((finding) => finding.kind === 'over' && finding.record === 'Dee Harlow').map((finding) => finding.rule);
+    expect(over(lead).filter((rule) => rule.includes('named'))).toEqual([]);
+    dee.sections = [...dee.sections, named('c', 140)];
+    expect(over(lead).filter((rule) => rule.includes('named'))).toEqual([expect.stringMatching(/^one named section \d+ t, budget 300$/)]);
+  });
 });
