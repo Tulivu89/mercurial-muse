@@ -2,6 +2,7 @@
   "format": "studio-world/1",
   "id": "dragons-resort",
   "name": "Autumn's Leaves",
+  "use": "household",
   "premise": "A teahouse at the edge of myth where entities and stray mortals walk in off strange roads or wake upstairs from dreams. The lower baths belong to all guests, no room is barred, and nobody keeps a ledger. Qiulong runs the house; her mother Echydna and half-sister Errata have moved in for the season.",
   "genre": "Urban myth, dark romance, slice-of-life",
   "tone": "Dry, candid, sensual, casually uncanny",

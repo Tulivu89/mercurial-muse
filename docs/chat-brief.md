@@ -139,7 +139,7 @@ Changed by the owner on Nov 10: dice, sheets and small games are no part of the 
   - a character's day belongs to the character, on this device: one clock, one relationship, their needs and where they are, shared by Home and every chat with them;
   - needs that fall with the clock and move with the schedule, actions that change them, a bond that follows how well they are kept, and a replay of what happened while you were away;
   - pictures are uploaded. Image generation comes with roadmap step 7.
-- **Socials** (F-21, Posts): a feed about the chat or the character's day, with comments from other characters, the player and strangers the model names; a post can be kept on the profile. Next, as its own pull request. The away replay gets its one-press narration here.
+- **Socials** (F-21, Posts): a feed about the chat or the character's day, with comments from other characters, the player and strangers the model names; a post can be kept on the profile. **Built Nov 16, as Chat 0.5.0** (`core/chat/posts.ts`), with CharacterRoom's own prompts, time frame and one-press comments. The away replay's one-press narration is still to do.
 - **Later, if wanted:** Stage mode (CR-PLAN §6.8b), bubble styling per character (§6.8c), the emoji set (F-04), Imitate (F-22), the farewell on delete (F-29), a place's atmosphere lines.
 
 ## Gotchas already found

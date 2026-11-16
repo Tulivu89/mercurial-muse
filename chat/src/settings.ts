@@ -15,10 +15,12 @@ export interface Settings {
   // On a wide screen, the character's portrait in a column beside the chat.
   rail: boolean;
   userName: string;
+  // The persona a new chat starts with: "worldId:recordId", or empty for just a name.
+  persona: string;
 }
 
 const KEY = 'inkwyrm.chat.settings';
-export const DEFAULT_SETTINGS: Settings = { contextTokens: 0, replyTokens: 1000, temperature: 0.8, textSize: 'medium', layout: 'bubbles', rail: true, userName: '' };
+export const DEFAULT_SETTINGS: Settings = { contextTokens: 0, replyTokens: 1000, temperature: 0.8, textSize: 'medium', layout: 'bubbles', rail: true, userName: '', persona: '' };
 
 export function readSettings(): Settings {
   try {
@@ -32,6 +34,7 @@ export function readSettings(): Settings {
       layout: stored.layout === 'page' ? 'page' : 'bubbles',
       rail: stored.rail !== false,
       userName: typeof stored.userName === 'string' ? stored.userName.slice(0, 120) : '',
+      persona: typeof stored.persona === 'string' ? stored.persona.slice(0, 200) : '',
     };
   } catch {
     return DEFAULT_SETTINGS;

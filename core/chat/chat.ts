@@ -29,7 +29,9 @@ const partSchema = z.object({ text: z.string().max(40_000), emotion: z.enum(EMOT
 const altSchema = z.object({ parts: z.array(partSchema).max(40), at: z.number().nonnegative().default(0), model: z.string().max(200).default('') });
 export const messageSchema = z.object({
   id,
-  from: z.enum(['user', 'character']),
+  // A note is a directive in square brackets, from outside the story: it sets the scene or
+  // changes something, and is nobody's turn.
+  from: z.enum(['user', 'character', 'note']),
   at: z.number().nonnegative().default(0),
   // Every reply written for this turn is kept; `pick` is the one in the story.
   alts: z.array(altSchema).min(1).max(200),
@@ -153,6 +155,29 @@ export function addUserMessage(chat: Chat, text: string, messageId: string, now:
   return touch(chat, now, [...chat.messages, { id: messageId, from: 'user', at: now, alts: [{ parts: [{ text, emotion: FALLBACK_EMOTION }], at: now, model: '' }], pick: 0 }]);
 }
 
+// --- Notes: the house's square brackets, used as directives (docs/content/hog-wild/01-decisions.md,
+// decision 4): [Chat: …], [Bid: …], [SYS: …], or any other line from outside the story. A note
+// goes into the transcript without asking for a reply.
+
+const BRACKETED = /^(?:\s*\[[^[\]]*\]\s*)+$/;
+// Whether text is nothing but bracketed lines, so it reads as a note however it was entered.
+export const isNoteText = (text: string): boolean => {
+  const lines = text.split('\n').filter((line) => line.trim());
+  return lines.length > 0 && lines.every((line) => BRACKETED.test(line));
+};
+// Text as a note: each line in its own square brackets, unless it already is.
+export function noteText(text: string): string {
+  return text.split('\n').map((line) => line.trim()).filter(Boolean)
+    .map((line) => (BRACKETED.test(line) ? line : `[${line.replace(/^\[+|\]+$/g, '').trim()}]`))
+    .filter((line) => line !== '[]').join('\n');
+}
+
+export function addNote(chat: Chat, text: string, messageId: string, now: number): Chat {
+  const clean = noteText(text);
+  if (!clean) return chat;
+  return touch(chat, now, [...chat.messages, { id: messageId, from: 'note', at: now, alts: [{ parts: [{ text: clean, emotion: FALLBACK_EMOTION }], at: now, model: '' }], pick: 0 }]);
+}
+
 export function addReply(chat: Chat, parts: ReplyPart[], messageId: string, now: number, model = ''): Chat {
   // In story time the reply is stamped with the clock, and the clock then takes its step.
   const story = storyActive(chat.clock);
@@ -177,7 +202,7 @@ export function stepAlternative(chat: Chat, messageId: string, by: number, now: 
 // as the model wrote it, less its leading name.
 export function editableText(message: ChatMessage, charName: string): string {
   const parts = pickedAlt(message).parts;
-  if (message.from === 'user') return parts.map((part) => part.text).join('\n');
+  if (message.from !== 'character') return parts.map((part) => part.text).join('\n');
   return parts.map((part, index) => `${index ? `${charName}: ` : ''}${part.text}\n  Emotion: ${part.emotion}`).join('\n');
 }
 
@@ -185,6 +210,7 @@ export function editMessage(chat: Chat, messageId: string, text: string, charNam
   const message = chat.messages.find((entry) => entry.id === messageId);
   if (!message) return chat;
   if (message.from === 'user') return text.trim() ? replacePicked(chat, messageId, [{ text: text.trim(), emotion: FALLBACK_EMOTION }], now) : chat;
+  if (message.from === 'note') return noteText(text) ? replacePicked(chat, messageId, [{ text: noteText(text), emotion: FALLBACK_EMOTION }], now) : chat;
   const parts = parseReply(`${charName}: ${text}`, charName);
   return parts.length ? replacePicked(chat, messageId, parts, now) : chat;
 }
@@ -247,6 +273,11 @@ export function addPlan(chat: Chat, plan: Pick<Plan, 'id' | 'name' | 'content'> 
 export function setPlan(chat: Chat, planId: string, patch: Partial<Plan> | null, now: number): Chat {
   const plans = patch === null ? chat.plans.filter((plan) => plan.id !== planId) : chat.plans.map((plan) => (plan.id === planId ? { ...plan, ...patch } : plan));
   return { ...chat, plans, updatedAt: now };
+}
+
+// Who the player is in this chat: one of their personas, or just a name.
+export function setPersona(chat: Chat, personaId: string | null, userName: string, now: number): Chat {
+  return { ...chat, personaId, userName: userName.trim() || chat.userName, updatedAt: now };
 }
 
 export const lastLine = (chat: Chat): string => {

@@ -45,7 +45,7 @@ The shared image component is used for gallery covers, avatars, emotion portrait
 
 Automatic playback respects operating-system reduced motion. Explicit image controls can play a selected image, and global display options choose Still, Selected or Visible. Offscreen or hidden-tab images release playback. GIF/APNG/WebP playback is stopped by changing the image source to its poster, rather than trying to pause it with CSS. External conversation images without a local poster use a manual-play placeholder in Still/reduced-motion mode; they are not fetched through a cross-origin canvas.
 
-Chat backups include original image bytes, posters, animation metadata, lives, worlds, chats and collection curation. Restoring an older backup without collection data leaves current curation intact. Adventure saves and Studio authoring talks/drafts keep their own existing exports.
+Chat backups include original image bytes, posters, animation metadata, lives, posts, worlds, chats and collection curation. Restoring an older backup without collection data leaves current curation intact. Adventure saves and Studio authoring talks/drafts keep their own existing exports.
 
 ## Navigation
 

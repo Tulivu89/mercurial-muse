@@ -8,5 +8,6 @@ export * from './general.js';
 export * from './moment.js';
 export * from './build.js';
 export * from './home.js';
+export * from './posts.js';
 export * as aetherroom from './aetherroom.js';
 export * from './testpack.js';

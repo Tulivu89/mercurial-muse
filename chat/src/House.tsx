@@ -5,20 +5,26 @@
 import { IMAGE_TYPES, MediaImage, animationSlot, posterSlot } from '../../kit/src/media';
 import { useEffect, useRef, useState, type ChangeEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import {
-  CLOCK_STEPS, actionBlocked, careAt, clockTracks, doAction, formatDate, formatStamp, lastEmotion, levelReaches, lifeKey, lifeNow, livesIn, moveClock, needEmotion,
-  newLife, nextMorningMs, placeIn, readSchedule, resolvePortrait, setClockMode, stampOf, statusText, storyActive, whileAway,
-  type Chat, type Life, type Placement,
+  CLOCK_STEPS, actionBlocked, careAt, clockTracks, doAction, formatDate, formatStamp, homesOf, lastEmotion, levelReaches, lifeKey, lifeNow, livesIn, moveClock, needEmotion,
+  newLife, nextMorningMs, placeIn, readSchedule, resolvePortrait, roomsOf, setClockMode, stampOf, statusText, storyActive, whereabouts, whileAway,
+  type Chat, type HomeRef, type Life, type Placement,
 } from '../../core/chat/index.js';
 import { BOND_CONDITIONS, LAYER_BLENDS, LAYER_MOTIONS, RELATIONSHIPS, putRecord, type Layer, type RecordSet, type Spot, type StoryRecord, type World } from '../../core/records/index.js';
 import { newId } from '../../kit/src/util';
 import { figureSlot, layerSlot, portraitOwner, roomSlot, type PortraitSet } from './store';
 import type { IncludedWorld } from '../../kit/src/included';
+import { BackIcon } from './icons';
+import { Feed } from './Posts';
+import type { PostApi } from './posting';
 
 const capital = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 const DEFAULT_SPOT: Spot = { x: 0.5, y: 0.62, scale: 0.3, pic: '' };
 type Member = RecordSet['members'][number];
 
 interface Resident { record: StoryRecord; life: Life; now: number; place: Placement | null; status: string; emotion: string; low: string[]; hidden: boolean }
+
+export type HouseTab = 'rooms' | 'posts';
+export interface HouseAt { worldId: string; scenarioId: string; tab?: HouseTab; who?: string }
 
 export interface HouseProps {
   worlds: World[];
@@ -33,41 +39,93 @@ export interface HouseProps {
   // The worlds that come with the site and aren't in this browser yet, and how to bring one in.
   bringable?: readonly IncludedWorld[];
   onBring?: (id: string) => void;
+  // The home that is open, or none for the list of homes.
+  at?: HouseAt | null;
+  onGo?: (at: HouseAt | null) => void;
+  posting?: PostApi;
 }
 
-// The scenarios that are places: those with a set of rooms.
-const placesOf = (worlds: World[]) => worlds.flatMap((world) => world.records.filter((record) => record.kind === 'scenario' && record.sets.some((set) => set.members.length)).map((scenario) => ({ world, scenario })));
+const homeHref = (home: HomeRef) => `#/home/${encodeURIComponent(home.world.id)}/${encodeURIComponent(home.scenario.id)}`;
+const studioHref = (home: HomeRef) => `/studio/#/w/${encodeURIComponent(home.world.id)}?rec=${encodeURIComponent(home.scenario.id)}&door=home`;
 
-export function House({ worlds, chats, portraits, lives, userName, onLife, onWorld, onPicture, onChat, bringable = [], onBring }: HouseProps) {
+// Home: the homes this browser has, each a card that says who is in and what they are doing,
+// or the one that is open.
+export function House(props: HouseProps) {
+  const homes = homesOf(props.worlds);
+  const open = props.at ? homes.find((home) => home.world.id === props.at!.worldId && home.scenario.id === props.at!.scenarioId) : undefined;
+  if (open) return <HouseView {...props} home={open} tab={props.at?.tab ?? 'rooms'} who={props.at?.who} />;
+  return <Homes {...props} homes={homes} missing={!!props.at} />;
+}
+
+function Homes({ homes, missing, portraits, lives, bringable = [], onBring, onGo }: HouseProps & { homes: HomeRef[]; missing: boolean }) {
   const bring = onBring ? bringable : [];
-  const places = placesOf(worlds);
-  const [placeKey, setPlaceKey] = useState('');
+  const [tick, setTick] = useState(() => Date.now());
+  useEffect(() => { const timer = setInterval(() => setTick(Date.now()), 30_000); return () => clearInterval(timer); }, []);
+  return (
+    <main className="home homes">
+      <div>
+        <p className="sub">Inkwyrm Chat</p>
+        <h1>Homes</h1>
+        <p className="lede">A home is a place your characters live in. Each of them keeps their own day there, by their own clock: look in to see where they are and what they are doing, do something for them, read what they have posted, or sit down and talk.</p>
+      </div>
+      {missing && <p className="status bad" role="status">That home is not in this browser.</p>}
+      <div className="home-cards">
+        {homes.map((home) => {
+          const rooms = roomsOf(home.scenario)!;
+          const pictures = portraits[portraitOwner(home.world.id, home.scenario.id)] ?? {};
+          const cover = rooms.members.map((member) => roomSlot(member.id)).find((slot) => pictures[slot]);
+          const people = whereabouts(home, lives, tick);
+          return (
+            <a key={`${home.world.id}:${home.scenario.id}`} className="home-card" href={homeHref(home)} onClick={(event) => { if (!onGo || event.metaKey || event.ctrlKey || event.shiftKey) return; event.preventDefault(); onGo({ worldId: home.world.id, scenarioId: home.scenario.id }); }} aria-label={`Open ${home.scenario.name}`}>
+              <span className={`home-cover${cover ? '' : ' bare'}`}>
+                {cover ? <MediaImage src={pictures[cover]!} poster={pictures[posterSlot(cover)]} animated={pictures[animationSlot(cover)] === 'true'} alt="" /> : <span aria-hidden="true">{home.scenario.name.charAt(0)}</span>}
+              </span>
+              <span className="home-card-text">
+                <span className="sub">{home.world.name}</span>
+                <b className="home-name">{home.scenario.name}</b>
+                {home.scenario.line && <span className="home-line">{home.scenario.line}</span>}
+                <span className="home-who">
+                  {people.slice(0, 4).map((entry) => (
+                    <span key={entry.record.id}><b>{entry.record.name}</b>{entry.hidden ? ' · somewhere private' : `${entry.room ? ` · ${entry.room}` : ' · out'}${entry.doing ? ` · ${entry.doing.replace(/\{\{user\}\}/gi, 'you').replace(/\{\{char\}\}/gi, entry.record.name)}` : ''}`}</span>
+                  ))}
+                  {people.length > 4 && <span>and {people.length - 4} more</span>}
+                  {people.length === 0 && <span>Nobody lives here yet.</span>}
+                </span>
+                <span className="home-facts">{rooms.members.length} room{rooms.members.length === 1 ? '' : 's'} · {people.length} living here</span>
+              </span>
+            </a>
+          );
+        })}
+        {bring.map((entry) => (
+          <div key={entry.id} className="home-card offered">
+            <span className="home-cover bare"><span aria-hidden="true">{entry.name.replace(/^The /, '').charAt(0).toUpperCase()}</span></span>
+            <span className="home-card-text">
+              <span className="sub">Comes with the site</span>
+              <b className="home-name">{entry.name}</b>
+              <span className="home-line">{entry.who}</span>
+              <button type="button" className="btn primary" onClick={() => onBring!(entry.id)}>Bring in {entry.name}</button>
+            </span>
+          </div>
+        ))}
+      </div>
+      {homes.length === 0 && bring.length === 0 && <p className="hint">No homes in this browser yet.</p>}
+      <p className="hint">Build your own in the <a href="/studio/">Studio</a>: make a household, give its house rooms, and say who lives there. A CharacterRoom scenario card with locations comes in as a home too. Pictures are added here, under Arrange.</p>
+    </main>
+  );
+}
+
+function HouseView({ home, tab, who, worlds: _worlds, chats, portraits, lives, userName, onLife, onWorld, onPicture, onChat, onGo, posting }: HouseProps & { home: HomeRef; tab: HouseTab; who?: string }) {
   const [looking, setLooking] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(who ?? null);
   const [arranging, setArranging] = useState(false);
   const [tick, setTick] = useState(() => Date.now());
   useEffect(() => { const timer = setInterval(() => setTick(Date.now()), 30_000); return () => clearInterval(timer); }, []);
   const box = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
-
-  const at = places.find((entry) => `${entry.world.id}:${entry.scenario.id}` === placeKey) ?? places[0];
-  if (!at) {
-    return (
-      <main className="home">
-        <h1>Home</h1>
-        <p className="lede">A place, with everyone in it, going about their day.</p>
-        {bring.map((entry) => (
-          <div key={entry.id} className="row">
-            <button type="button" className="btn primary" onClick={() => onBring!(entry.id)}>Bring in {entry.name}</button>
-            <span className="hint">{entry.who}</span>
-          </div>
-        ))}
-        <p className="hint">Home needs a scenario with rooms: a set on the scenario, one member a room. Import a CharacterRoom scenario card with locations, or add a set to a scenario in the <a href="/studio/">Studio</a>. A character lives there once a schedule event happens in one of its rooms, or you bring them in here.</p>
-      </main>
-    );
-  }
+  const at = home;
   const { world, scenario } = at;
-  const rooms = scenario.sets.find((set) => set.members.length)!;
+  const rooms = roomsOf(scenario)!;
+  const go = (next: Partial<HouseAt> | null) => onGo?.(next ? { worldId: world.id, scenarioId: scenario.id, ...next } : null);
   const owner = portraitOwner(world.id, scenario.id);
   const pictures = portraits[owner] ?? {};
   // Actions name the player; with no name set, the one their latest chat here used.
@@ -124,17 +182,27 @@ export function House({ worlds, chats, portraits, lives, userName, onLife, onWor
 
   return (
     <main className="house">
-      <div className="row between">
-        <label className="field grow" style={{ maxWidth: 360 }}>
-          <span className="sr">Place</span>
-          <select aria-label="Place" value={`${world.id}:${scenario.id}`} onChange={(event) => { setPlaceKey(event.target.value); setLooking(null); setSelectedId(null); }}>
-            {places.map((entry) => <option key={`${entry.world.id}:${entry.scenario.id}`} value={`${entry.world.id}:${entry.scenario.id}`}>{entry.scenario.name}</option>)}
-          </select>
-        </label>
-        {bring.map((entry) => <button key={entry.id} type="button" className="btn small quiet" onClick={() => onBring!(entry.id)} title={entry.who}>Bring in {entry.name}</button>)}
-        <button type="button" className={`btn small ${arranging ? '' : 'quiet'}`} aria-pressed={arranging} onClick={() => setArranging(!arranging)}>{arranging ? 'Done arranging' : 'Arrange'}</button>
-      </div>
+      <header className="house-head">
+        <button type="button" className="btn small quiet back" onClick={() => go(null)}><BackIcon size={16} /> Homes</button>
+        <div className="house-title">
+          <span className="sub">{world.name}</span>
+          <h1>{scenario.name}</h1>
+        </div>
+        <span className="row">
+          {tab === 'rooms' && <button type="button" className={`btn small ${arranging ? '' : 'quiet'}`} aria-pressed={arranging} onClick={() => setArranging(!arranging)}>{arranging ? 'Done arranging' : 'Arrange'}</button>}
+          <a className="btn small quiet" href={studioHref(home)}>Edit in the Studio</a>
+        </span>
+      </header>
+      <nav className="collection-tabs" aria-label={scenario.name}>
+        <button type="button" aria-pressed={tab === 'rooms'} onClick={() => go({ tab: 'rooms' })}>The house</button>
+        <button type="button" aria-pressed={tab === 'posts'} onClick={() => go({ tab: 'posts' })}>Posts{posting ? ` (${posting.posts.filter((post) => post.worldId === world.id && residents.some((resident) => resident.record.id === post.characterId)).length})` : ''}</button>
+      </nav>
 
+      {tab === 'posts' && (posting
+        ? <Feed api={posting} portraits={portraits} onPicture={onPicture} subjects={residents.map((resident) => ({ world, record: resident.record, life: resident.life, chat: chats.find((chat) => chat.worldId === world.id && chat.characterId === resident.record.id) }))} />
+        : <p className="hint">Posts are not available here.</p>)}
+
+      {tab === 'rooms' && <>
       <div className="rooms" role="tablist" aria-label="Rooms">
         {rooms.members.map((member) => {
           // Someone in a room you can't yet enter isn't given away by its count.
@@ -200,17 +268,20 @@ export function House({ worlds, chats, portraits, lives, userName, onLife, onWor
               </select>
             </label>
           )}
-          {selected && <Keeper key={selected.record.id} resident={selected} userName={name} onLife={onLife} onChat={() => onChat(world, selected.record, scenario)} />}
+          {selected && <Keeper key={selected.record.id} record={selected.record} life={selected.life} now={selected.now} doing={selected.hidden ? 'Somewhere private.' : selected.place?.event || selected.status} busy={!!selected.place && !selected.place.idle} emotion={selected.emotion} userName={name} onLife={onLife} onChat={() => onChat(world, selected.record, scenario)} />}
           {!residents.length && <p className="hint">Nobody lives here yet. Bring someone in, or give a character's schedule events a room here in the Studio.</p>}
         </aside>
       </div>
+      </>}
     </main>
   );
 }
 
 // One character: what they're doing, how they are, what you can do for them, and the way into a chat.
-function Keeper({ resident, userName, onLife, onChat }: { resident: Resident; userName: string; onLife: (life: Life) => void; onChat: () => void }) {
-  const { record, life, now } = resident;
+// A chat's character sheet draws the same card, without the way into the chat it is already in.
+export function Keeper({ record, life, now, doing, busy, emotion, userName, onLife, onChat }: {
+  record: StoryRecord; life: Life; now: number; doing: string; busy: boolean; emotion: string; userName: string; onLife: (life: Life) => void; onChat?: () => void;
+}) {
   const care = careAt(record, life, now);
   const keeping = Object.keys(life.levels).length > 0;
   const away = whileAway(record, life, life.seenAt || now, now, userName);
@@ -220,10 +291,10 @@ function Keeper({ resident, userName, onLife, onChat }: { resident: Resident; us
     <section className="card" aria-label={record.name}>
       <div className="row between">
         <h2>{record.name}</h2>
-        <button type="button" className="btn small primary" onClick={onChat}>Chat</button>
+        {onChat && <button type="button" className="btn small primary" onClick={onChat}>Chat</button>}
       </div>
-      <p className="now"><span className={`dot${resident.place && !resident.place.idle ? ' on' : ''}`} />{resident.hidden ? 'Somewhere private.' : resident.place?.event || resident.status} <span className="hint">{stampOf(now)}</span></p>
-      <p className="hint">Looking {resident.emotion}.{clockTracks(clock) ? '' : ' In chat, the time is not sent: turn on story time, or tell them the time under Time.'}</p>
+      <p className="now"><span className={`dot${busy ? ' on' : ''}`} />{doing} <span className="hint">{stampOf(now)}</span></p>
+      <p className="hint">Looking {emotion}.{clockTracks(clock) ? '' : ' In chat, the time is not sent: turn on story time, or tell them the time under Time.'}</p>
 
       <div className="row">
         <label className="field grow"><span>You are to them</span>

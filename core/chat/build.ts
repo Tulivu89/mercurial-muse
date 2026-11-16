@@ -64,7 +64,21 @@ export interface Built {
 // Process and Plan). Each uses CharacterRoom's own prompt and budget, and is started by the player.
 
 export type SideKind = 'diary' | 'process' | 'plan';
-export interface SideTask { kind: SideKind; shape: string; style: string; maxTokens: number }
+// A side task: its shape and style as CharacterRoom words them, and for a task that isn't a
+// memory (a post), what else it is told, what its reply is started on, and how other models are
+// asked for it.
+export interface SideTask {
+  kind: SideKind | 'post';
+  shape: string;
+  style: string;
+  maxTokens: number;
+  // More the task is told, between the shape and the style: a post's time frame, what it is not about.
+  frame?: string[];
+  // What the reply is started on. Memories start on "Title:".
+  lead?: string;
+  // For models other than xialong: how the reply should be laid out, said in a sentence.
+  layout?: string;
+}
 export const SIDE_NAMES: Record<SideKind, { button: string; what: string }> = {
   diary: { button: 'Reflect', what: 'a diary entry about the chat so far' },
   process: { button: 'Process', what: 'a short memory of how one moment felt' },
@@ -125,9 +139,11 @@ async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, 
   const story = [...history.map((message) => pickedAlt(message).parts.map((part) => part.text).join('\n')), options.draft ?? ''].join('\n');
   const brains = brainEntries(AETHERROOM_MODEL, story, ctx)?.temporaryLorebookEntries.filter((entry) => entry.active !== false) ?? [];
 
-  const turns: KernelMessage[] = history.map((message) => (message.from === 'user'
-    ? { role: 'user', content: pickedAlt(message).parts.map((part) => part.text).join('\n') }
-    : { role: 'assistant', content: `${replyText(pickedAlt(message).parts, scene.charName, true)}\n` }));
+  // A note is an in-chat system message: xialong reads square-bracketed system lines as
+  // directions, the way it reads the style line.
+  const turns: KernelMessage[] = history.map((message) => (message.from === 'character'
+    ? { role: 'assistant', content: `${replyText(pickedAlt(message).parts, scene.charName, true)}\n` }
+    : { role: message.from === 'note' ? 'system' : 'user', content: pickedAlt(message).parts.map((part) => part.text).join('\n') }));
   const input: KernelMessage[] = [...brains.map((entry): KernelMessage => ({ role: 'system', content: entry.content })), ...turns, { role: 'assistant', content: slot }];
 
   const rollover = Math.min(XIALONG.rolloverTokens, Math.floor(options.contextTokens * 0.28));
@@ -153,8 +169,8 @@ async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, 
     for (let index = built.length - 1; index >= 0; index -= 1) {
       if (built[index]!.role === 'system' && built[index]!.content.startsWith('[ Style:')) { built.splice(index, 1); break; }
     }
-    lead = `${scene.charName}: Title:`;
-    built.push({ role: 'system', content: side.shape }, { role: 'system', content: side.style }, { role: 'assistant', content: lead });
+    lead = side.lead ?? `${scene.charName}: Title:`;
+    built.push({ role: 'system', content: side.shape }, ...(side.frame ?? []).map((content) => ({ role: 'system' as const, content })), { role: 'system', content: side.style }, { role: 'assistant', content: lead });
   }
   const parts: BuiltPart[] = [
     { label: 'Sheet', tokens: estimateTokens(built[0]?.content ?? '') },
@@ -203,8 +219,8 @@ function buildGeneralProfile(chat: Chat, scene: Scene, options: BuildOptions, si
   const base = { upTo: options.upTo, canPrefill: options.canPrefill, continuing: !side && options.continuing, nowMs: scene.nowMs, draft: options.draft };
   const task = side ? {
     rules: `You are ${scene.charName}. Below is who you are, who ${scene.userName} is, and your chat with them so far. After it you will be asked to write something of your own, in your own voice. Write only that, in the form asked for, and nothing after it.`,
-    ask: `${side.shape}\n${side.style}\nWrite it now as ${scene.charName}. Start with "Title:", then "Content:"${side.kind === 'plan' ? '' : ', then "Activation Keys:" with a few comma-separated words or names from the chat that should bring it back to mind'}.`,
-    lead: 'Title:',
+    ask: [side.shape, ...(side.frame ?? []), side.style, `Write it now as ${scene.charName}. ${side.layout ?? `Start with "Title:", then "Content:"${side.kind === 'plan' ? '' : ', then "Activation Keys:" with a few comma-separated words or names from the chat that should bring it back to mind'}.`}`].join('\n'),
+    lead: side.lead ?? 'Title:',
   } : undefined;
   const sized = buildGeneral(chat, scene, { ...base, windowStart: 0, task });
   const budget = budgetFor(options.contextTokens, side ? side.maxTokens : options.replyTokens, sized.prefixTokens);
@@ -229,9 +245,10 @@ export async function buildRequest(chat: Chat, world: World, options: BuildOptio
   return profileFor(options.model) === 'aetherroom' ? buildAetherRoom(chat, scene, options) : buildGeneralProfile(chat, scene, options);
 }
 
-// The request for a diary entry, a memory or a plan, over the whole chat so far.
-export async function buildSide(task: SideTask, chat: Chat, world: World, options: BuildOptions): Promise<Built | null> {
-  const whole = { ...options, upTo: chat.messages.length, continuing: false, dryRun: true };
+// The request for a diary entry, a memory, a plan or a post, over the whole chat so far, or with
+// `upTo` over the chat as it stood after that many messages.
+export async function buildSide(task: SideTask, chat: Chat, world: World, options: BuildOptions, upTo = chat.messages.length): Promise<Built | null> {
+  const whole = { ...options, upTo: Math.max(0, Math.min(upTo, chat.messages.length)), continuing: false, dryRun: true };
   const scene = sceneFor(world, chat, chatNow(chat, whole));
   if (!scene) return null;
   return profileFor(options.model) === 'aetherroom' ? buildAetherRoom(chat, scene, whole, task) : buildGeneralProfile(chat, scene, whole, task);

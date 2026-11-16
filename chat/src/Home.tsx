@@ -14,8 +14,10 @@ export interface Cast { world: World; record: StoryRecord }
 export const castOf = (worlds: World[]): Cast[] => worlds.flatMap((world) => world.records.filter((record) => record.kind === 'character').map((record) => ({ world, record })));
 const capital = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 
-export function Home({ worlds, chats, portraits, status, userName, startWith = null, onStartWithDone, onOpen, onStart, onImport, onRetry, ...collectionProps }: Omit<CollectionViewProps, 'onNewChat'> & {
+export function Home({ worlds, chats, portraits, status, userName, persona = '', startWith = null, onStartWithDone, onOpen, onStart, onImport, onRetry, ...collectionProps }: Omit<CollectionViewProps, 'onNewChat'> & {
   status: Status; userName: string; onStart: (chat: Chat) => void;
+  // Your usual persona, as "worldId:recordId": who a new chat starts as.
+  persona?: string;
   startWith?: { worldId: string; recordId: string } | null;
   onStartWithDone?: (found: boolean) => void; onRetry?: () => void;
 }) {
@@ -30,13 +32,13 @@ export function Home({ worlds, chats, portraits, status, userName, startWith = n
   return <>
     {status && <p className={`status${status.bad ? ' bad' : ''}`} style={{ margin: '16px 28px' }} role="status">{status.text}{onRetry && <button type="button" className="btn quiet" onClick={onRetry}>Retry library</button>}</p>}
     <CollectionView worlds={worlds} chats={chats} portraits={portraits} onOpen={onOpen} onNewChat={setStarting} onImport={onImport} {...collectionProps} />
-    {starting && worlds && <NewChatSheet cast={starting} worlds={worlds} userName={userName} onCancel={() => setStarting(null)} onStart={(chat) => { setStarting(null); onStart(chat); }} />}
+    {starting && worlds && <NewChatSheet cast={starting} worlds={worlds} userName={userName} persona={persona} onCancel={() => setStarting(null)} onStart={(chat) => { setStarting(null); onStart(chat); }} />}
   </>;
 }
 
 // A new chat asks what CharacterRoom's chat settings ask: persona, scenario, relationship, style,
 // response length and which greeting.
-function NewChatSheet({ cast, worlds, userName, onCancel, onStart }: { cast: Cast; worlds: World[]; userName: string; onCancel: () => void; onStart: (chat: Chat) => void }) {
+function NewChatSheet({ cast, worlds, userName, persona, onCancel, onStart }: { cast: Cast; worlds: World[]; userName: string; persona: string; onCancel: () => void; onStart: (chat: Chat) => void }) {
   const { world, record } = cast;
   // This character's own world first, then the rest: a persona made once serves every chat.
   const ordered = [world, ...worlds.filter((other) => other.id !== world.id)];
@@ -50,7 +52,9 @@ function NewChatSheet({ cast, worlds, userName, onCancel, onStart }: { cast: Cas
     ?? home.find((entry) => livesIn(record, entry.record))
     ?? (home.length === 1 ? home[0] : undefined);
 
-  const [personaId, setPersonaId] = useState(personas[0]?.record.id ?? '');
+  // Your usual persona, if you have set one; else the first one this character's world has.
+  const usual = personas.find((entry) => `${entry.world.id}:${entry.record.id}` === persona);
+  const [personaId, setPersonaId] = useState((usual ?? personas[0])?.record.id ?? '');
   const [name, setName] = useState(userName);
   const [scenarioId, setScenarioId] = useState(own?.record.id ?? '');
   // The card's own defaults, where it has them.
@@ -95,6 +99,7 @@ function NewChatSheet({ cast, worlds, userName, onCancel, onStart }: { cast: Cas
           </label>
         )}
       </div>
+      <p className="hint">Personas are made and kept under <a href="#/you" onClick={onCancel}>You</a>.</p>
       <label className="field">
         <span>Scenario</span>
         <select value={scenarioId} onChange={(event) => setScenarioId(event.target.value)}>

@@ -278,3 +278,8 @@ details.sent pre.raw { margin: 0; font: 13px/1.5 ui-monospace, Menlo, Consolas, 
 .door-draft > .hint { margin: 0; font-weight: 700; }
 .settled .settled-line { align-items: flex-start; }
 .settled .settled-line textarea { min-height: 44px; resize: vertical; font-family: var(--read); line-height: 1.45; }
+
+/* A household on the list of worlds: what it is for, said under its name. */
+.world-use { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
+fieldset.card { margin: 0; min-width: 0; }
+fieldset.card .check { align-items: flex-start; }

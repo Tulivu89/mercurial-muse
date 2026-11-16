@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
-import { KIND_NAMES, RECORD_KINDS, newWorld, parseWorld, type World } from '../../core/records/index.js';
+import { KIND_NAMES, RECORD_KINDS, newRecord, newWorld, parseWorld, putRecord, type World } from '../../core/records/index.js';
+import { homesOf } from '../../core/chat/home.js';
 import { InkMark } from '../../kit/src/Mark';
 import { Sheet } from '../../kit/src/Sheet';
 import { SiteHeader } from '../../kit/src/SiteHeader';
@@ -7,7 +8,7 @@ import { ConnectForm } from '../../kit/src/Connect';
 import { initialConnection, reconnect, type Connection } from '../../kit/src/connection';
 import { THEME_NAMES, useTheme, type Theme } from '../../kit/src/theme';
 import { WorldView } from './WorldView';
-import { NOWHERE, navigate, useRoute } from './route';
+import { NOWHERE, navigate, useRoute, type Route } from './route';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
 import { INCLUDED_WORLDS, includedWorld, loadIncluded } from '../../kit/src/included';
 import { ago, newId, readJsonFile } from '../../kit/src/util';
@@ -81,7 +82,7 @@ export function App({ generate }: { generate?: Generate } = {}) {
       <SiteHeader onOverview={async () => { flush(); await Promise.all([...writes.current]); }} side="studio" homeLabel="Inkwyrm Studio, your worlds" onHome={() => { flush(); navigate(NOWHERE); }} onSettings={() => setSettings(true)} />
       {open
         ? <WorldView key={open.id} world={open} onChange={save} onDelete={() => void remove(open)} onStatus={setStatus} status={status} />
-        : <Home worlds={worlds} status={status} onOpen={(id) => { setStatus(null); navigate({ ...NOWHERE, worldId: id }); }} onCreate={(world) => { save(world); navigate({ ...NOWHERE, worldId: world.id, page: world.records.length ? null : 'about' }); }} onStatus={setStatus} />}
+        : <Home worlds={worlds} status={status} onOpen={(id) => { setStatus(null); navigate({ ...NOWHERE, worldId: id }); }} onCreate={(world, at) => { save(world); navigate({ ...NOWHERE, worldId: world.id, page: world.records.length ? null : 'about', ...at }); }} onStatus={setStatus} />}
       {settings && <Settings theme={theme} onTheme={setTheme} connection={connection} onConnection={setConnection} helper={helper} onHelper={changeHelper} onClose={() => setSettings(false)} />}
     </AuthorProvider>
   );
@@ -126,7 +127,8 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
   worlds: World[] | null;
   status: { text: string; bad?: boolean } | null;
   onOpen: (id: string) => void;
-  onCreate: (world: World) => void;
+  // `at`: where in the new world to open, when not its first page.
+  onCreate: (world: World, at?: Partial<Route>) => void;
   onStatus: (status: { text: string; bad?: boolean } | null) => void;
 }) {
   const [name, setName] = useState('');
@@ -137,6 +139,19 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
     if (!name.trim()) return;
     onCreate(newWorld(newId(), name.trim(), Date.now()));
     setName('');
+  };
+
+  // A household: a world made for Chat, started with the house its people live in. It opens on
+  // that house's Home door, where the rooms and the residents are set.
+  const [house, setHouse] = useState('');
+  const createHousehold = (event: FormEvent) => {
+    event.preventDefault();
+    if (!house.trim()) return;
+    const room = { id: newId(), name: 'Main room', text: '', lock: null, layers: [] };
+    const scenario = { ...newRecord('scenario', newId(), house.trim(), newId), sets: [{ id: newId(), title: 'Rooms', reach: 'here' as const, active: room.id, members: [room] }] };
+    const world = putRecord({ ...newWorld(newId(), house.trim(), Date.now()), use: 'household' as const }, scenario, Date.now());
+    onCreate(world, { rec: scenario.id, door: 'home', page: null });
+    setHouse('');
   };
 
   const openFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -213,6 +228,14 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
           <input type="file" accept="application/json,.json" aria-label="Open a world or module file" onChange={(event) => void openFile(event)} />
         </span>
       </form>
+      <form className="row" onSubmit={createHousehold}>
+        <label className="field grow">
+          <span>New household</span>
+          <input value={house} onChange={(event) => setHouse(event.target.value)} placeholder="The house's name, such as Number Nine" />
+        </label>
+        <button type="submit" className="btn" style={{ alignSelf: 'flex-end' }} disabled={!house.trim()}>Make a home</button>
+        <span className="hint" style={{ flex: '1 1 260px', alignSelf: 'flex-end' }}>A household is for Chat: people to talk to and the home they live in, with rooms. It shows under Homes in Chat.</span>
+      </form>
       <div className="row">
         <span className="hint">Or bring in the site&rsquo;s own:</span>
         {INCLUDED_WORLDS.map((entry) => <button key={entry.id} type="button" className="btn small quiet" onClick={() => void bringIncluded(entry.id)} title={entry.who}>{entry.name}</button>)}
@@ -226,6 +249,7 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
             return (
               <button type="button" key={world.id} className="world-card" onClick={() => onOpen(world.id)}>
                 <h2>{world.name}</h2>
+                {world.use === 'household' && <p className="world-use"><span className="chip line">Household</span> {homesOf([world]).length ? `Home: ${homesOf([world]).map((home) => home.scenario.name).join(', ')}` : 'For Chat'}</p>}
                 {world.premise && <p>{world.premise.length > 140 ? `${world.premise.slice(0, 140)}…` : world.premise}</p>}
                 <p>{counts.length ? counts.map(([kind, count]) => `${count} ${(count === 1 ? KIND_NAMES[kind].one : KIND_NAMES[kind].many).toLowerCase()}`).join(' · ') : 'Empty'} · {ago(world.updatedAt, now)}</p>
               </button>

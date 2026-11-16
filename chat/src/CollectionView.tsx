@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import type { IncludedWorld } from '../../kit/src/included';
-import { EMOTIONS, lastLine, type Chat } from '../../core/chat/index.js';
+import { EMOTIONS, homeOf, lastLine, type Chat } from '../../core/chat/index.js';
 import type { StoryRecord, World } from '../../core/records/index.js';
 import {
   characterKey,
@@ -30,6 +30,7 @@ export const characterHref = (worldId: string, recordId: string) =>
 const studioHref = ({ world, record }: Cast) =>
   `/studio/#/w/${encodeURIComponent(world.id)}?rec=${encodeURIComponent(record.id)}`;
 const keyOf = ({ world, record }: Cast) => characterKey(world.id, record.id);
+const homeHrefOf = (worldId: string, scenarioId: string) => `#/home/${encodeURIComponent(worldId)}/${encodeURIComponent(scenarioId)}`;
 const positions = new Map<string, number>();
 const searches = new Map<string, string>();
 const animatedArtwork = (set: PortraitSet = {}) => {
@@ -439,6 +440,11 @@ export function CollectionView({
                   >
                     New chat
                   </button>
+                  {homeOf(profileCast.world, profileCast.record) && (
+                    <a className="btn" href={homeHrefOf(profileCast.world.id, homeOf(profileCast.world, profileCast.record)!.scenario.id)}>
+                      See them at home
+                    </a>
+                  )}
                   <button type="button" className="btn quiet" onClick={() => setManage(profileCast)}>
                     Manage character
                   </button>
@@ -643,7 +649,11 @@ export function CollectionView({
                         {collection.display.descriptions && (
                           <p className="card-description">{entry.record.line}</p>
                         )}
-                        {collection.display.worlds && <p className="card-source">{entry.world.name}</p>}
+                        {collection.display.worlds && (() => {
+                          // Where they live says more than which file they came from.
+                          const home = homeOf(entry.world, entry.record);
+                          return <p className="card-source">{home ? <>Lives at <a href={homeHrefOf(home.world.id, home.scenario.id)}>{home.scenario.name}</a></> : entry.world.name}</p>;
+                        })()}
                         <div className="card-actions">
                           {animatedArtwork(portraits[portraitOwner(entry.world.id, entry.record.id)]) && (
                             <button

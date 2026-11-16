@@ -1,7 +1,7 @@
 // Chats live in this browser's IndexedDB, beside the Studio's worlds and never on the server.
 // Portraits (an avatar and up to 24 emotion pictures per character) are kept here too, since
 // records hold no images. A chat file or a Back up everything file is the backup.
-import { BACKUP_FORMAT, parseChat, parseLife, type Chat, type Life } from '../../core/chat/index.js';
+import { BACKUP_FORMAT, parseChat, parseLife, parsePost, type Chat, type Life, type Post } from '../../core/chat/index.js';
 import { parseWorld, type World } from '../../core/records/index.js';
 import { loadCollection, parseCollection, saveCollection, type Collection } from '../../kit/src/collection';
 import { animationSlot, forgetOriginal, portraitSource, posterSlot, type ImageAsset } from '../../kit/src/media';
@@ -9,8 +9,8 @@ import { newId } from '../../kit/src/util';
 import { listWorlds, putWorld } from '../../kit/src/worlds';
 
 const DB_NAME = 'inkwyrm-chat';
-const DB_VERSION = 2;
-const STORES = ['chats', 'portraits', 'sent', 'lives'] as const;
+const DB_VERSION = 3;
+const STORES = ['chats', 'portraits', 'sent', 'lives', 'posts'] as const;
 type Store = (typeof STORES)[number];
 
 function openDb(): Promise<IDBDatabase> {
@@ -23,6 +23,7 @@ function openDb(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains('portraits')) db.createObjectStore('portraits', { keyPath: 'key' });
       if (!db.objectStoreNames.contains('sent')) db.createObjectStore('sent', { keyPath: 'chatId' });
       if (!db.objectStoreNames.contains('lives')) db.createObjectStore('lives', { keyPath: 'key' });
+      if (!db.objectStoreNames.contains('posts')) db.createObjectStore('posts', { keyPath: 'id' });
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error ?? new Error('Could not open your chats.'));
@@ -64,6 +65,15 @@ export async function listLives(): Promise<Record<string, Life>> {
   return out;
 }
 export const putLife = (life: Life) => run('lives', 'readwrite', (store) => store.put(life));
+
+// --- Posts: what a character has put on their feed, newest first.
+
+export async function listPosts(): Promise<Post[]> {
+  const raw = await run<unknown[]>('posts', 'readonly', (store) => store.getAll() as IDBRequest<unknown[]>);
+  return raw.flatMap((entry) => { const post = parsePost(entry); return post ? [post] : []; }).sort((a, b) => b.madeAt - a.madeAt);
+}
+export const putPost = (post: Post) => run('posts', 'readwrite', (store) => store.put(post));
+export const deletePost = (id: string) => run('posts', 'readwrite', (store) => store.delete(id));
 
 // Home keeps its pictures beside the portraits: a room's picture and layers under the scenario,
 // a character's figures under the character.
@@ -123,10 +133,10 @@ export const getSent = (chatId: string) => run<Sent | undefined>('sent', 'readon
 
 // --- Back up everything: every world, chat and portrait in this browser, as one file.
 
-export interface Backup { format: typeof BACKUP_FORMAT; at: number; worlds: World[]; chats: Chat[]; portraits: Portrait[]; lives?: Life[]; collection?: Collection }
+export interface Backup { format: typeof BACKUP_FORMAT; at: number; worlds: World[]; chats: Chat[]; portraits: Portrait[]; lives?: Life[]; posts?: Post[]; collection?: Collection }
 
 export async function makeBackup(now: number): Promise<Backup> {
-  return { format: BACKUP_FORMAT, at: now, worlds: await listWorlds(), chats: await listChats(), portraits: await allPortraits(), lives: Object.values(await listLives()), collection: loadCollection() };
+  return { format: BACKUP_FORMAT, at: now, worlds: await listWorlds(), chats: await listChats(), portraits: await allPortraits(), lives: Object.values(await listLives()), posts: await listPosts().catch(() => []), collection: loadCollection() };
 }
 
 // Puts a backup's contents into this browser. Anything with the same id is replaced.
@@ -150,6 +160,7 @@ export async function restoreBackup(raw: unknown): Promise<{ worlds: number; cha
     }
   }
   for (const entry of Array.isArray(top.lives) ? top.lives : []) { const life = parseLife(entry); if (life) await putLife(life); }
+  for (const entry of Array.isArray(top.posts) ? top.posts : []) { const post = parsePost(entry); if (post) await putPost(post); }
   if (top.collection !== undefined) {
     saveCollection(parseCollection(top.collection));
   }

@@ -83,7 +83,7 @@ Always text and the moment's core (place, the player, the outcome) are never cut
 
 | Kind | For | Entry reach by default | Notes |
 | --- | --- | --- | --- |
-| **World** | The container: premise, genre, tone, calendar, ruleset, and every record inside. | Premise: Always | Any genre. Nothing assumes swords or species. |
+| **World** | The container: premise, genre, tone, calendar, ruleset, and every record inside. | Premise: Always | Any genre. Nothing assumes swords or species. It can say it is a household: made for Chat, with its people met there and its house a Home, and never offered as an adventure. |
 | **Place** | Anywhere you can be, nested to any depth: region, town, building, room. | Here | The place you're in sends its entry; its parent sends its entry, cut first; further up, lines only. Siblings and children appear as exits by name. |
 | **Character** | Anyone: chat partner, adventure NPC, companion. One record for both sides. | Here | Below. |
 | **Persona** | The player's own card. Several per player, one chosen per chat or save. | Line: Always. Entry: Here in chat | CharacterRoom's user card and the bot's personas. |
@@ -91,7 +91,7 @@ Always text and the moment's core (place, the player, the outcome) are never cut
 | **Group** | Anything a person belongs to: species, family, faction, crew, profession. A person belongs to as many as fit. Factions carry a standing ladder and resources. | Line when a member is present; entry Named | Character Engine's species and bestiary are groups of the kind species, so a character shows their species in a trait or two and the group holds the rest. |
 | **Lore** | Any free entry: history, a custom, a rumour, a rule of the world. | Named | CharacterRoom's brains are Lore with Always, Named or When. |
 | **Thread** | What's pushing the story: the five questions (pressure, objective, opposition, cost, consequence), a kind, milestones, a status. | The active thread's current milestone: Always. Others: Named | From Character Engine. |
-| **Scenario** | A starting situation: where, when, who, and what's happening. | Always for the chat or save it starts, until replaced | CharacterRoom's scenario cards; the bot's scenes. |
+| **Scenario** | A starting situation: where, when, who, and what's happening. | Always for the chat or save it starts, until replaced | CharacterRoom's scenario cards; the bot's scenes. One with a set of rooms is a Home in Chat, unless its author keeps it out. |
 | **Ruleset** | State definitions, how a roll is built and judged, outcomes, terminals. | Not text: its numbers reach context as band sentences | The four approaches or a preset (Blades, Year Zero and the rest). |
 
 ## Character
@@ -162,7 +162,8 @@ A world brought in from an adventure module (`core/convert/`) keeps what the rec
 
 The world is never changed by play. A save (adventure) or a chat holds:
 
-- **Transcript.**
+- **Transcript.** In chat, a message is the player's, the character's, or a note: a directive in square brackets from outside the story, which is nobody's turn.
+- **Posts:** what a character has put on their feed, per character like their day, never per chat: the post, when it was written on their clock, its comments, and the line a photo is made from.
 - **Journal:** active entries (sent) and archived (kept, never sent), for the story and per character.
 - **Character journals:** what a character keeps about the player, per pairing. CharacterRoom's Jots fold in here: they work like the adventure's journal, with the same active and archived entries, budget and suggestions to combine.
 - **Memories:** diary entries and feelings with keys (Named), and plans with a countdown (When). They are the same reaches as everything else. In the adventure, with several people present, each one is written in the third person under its owner's name and sent only while its owner is here, so one person's memory never reads as another's.

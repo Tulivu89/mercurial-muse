@@ -201,3 +201,110 @@ details.block summary, .ask summary { cursor: pointer; min-height: 36px; font-we
 .room-backdrop > img { height: auto; }
 .figure > .media-image, .slot-face > .media-image { width: 100%; height: 100%; }
 .local-nav { flex-wrap: wrap; }
+
+/* --- Notes: a directive in square brackets, nobody's turn. Set in the middle, in the
+   interface's face, so it never reads as speech. */
+.turn.note { align-self: center; align-items: center; max-width: min(96%, 620px); }
+.turn.note .bubble { background: none; border: 1px dashed var(--rule); border-radius: 6px; padding: 6px 12px; font-family: var(--ui); font-size: calc(var(--story) * 0.85); color: var(--text-2); text-align: center; }
+.turn.note .bubble .note { font-size: 1em; opacity: 1; }
+.turn.note .actions { justify-content: center; }
+.chat[data-layout='page'] .turn.note { align-self: center; align-items: center; max-width: min(96%, 620px); }
+.chat[data-layout='page'] .turn.note .bubble { border: 1px dashed var(--rule); border-radius: 6px; padding: 6px 12px; }
+.chat[data-layout='page'] .turn.note .speaker { display: none; }
+
+/* The prompt bar's two small buttons: memory and a note. */
+.bar-btn { flex: none; width: 40px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--rule); background: var(--raised); color: var(--text-2); padding: 0; }
+.bar-btn[aria-expanded='true'] { color: var(--text); border-color: var(--text); }
+.bar-btn:disabled { opacity: 0.45; cursor: default; }
+.send.noting { background: var(--blue); color: var(--on-blue); }
+.composer-hint { margin: 0; padding: 6px clamp(10px, 2vw, 18px); border-top: 1px solid var(--rule); background: var(--surface); font-size: 13px; color: var(--text-2); }
+@media (max-width: 380px) { .bar-btn { width: 36px; } .composer { gap: 4px; } }
+
+/* A row that opens onto something and says what it is: memory's four, who you are. */
+.doors-list { display: flex; flex-direction: column; gap: 6px; }
+.door-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; text-align: left; padding: 10px 12px; min-height: 44px; border-radius: 6px; border: 1px solid var(--rule); background: var(--surface); color: var(--text); }
+.door-row b { font-weight: 700; }
+.door-row > span:last-child { font-size: 13px; color: var(--text-2); }
+.door-row[aria-pressed='true'], .door-row[aria-checked='true'] { border-color: var(--text); background: var(--raised); box-shadow: inset 3px 0 0 var(--seal); }
+.door-row.with-face { grid-template-columns: 36px minmax(0, 1fr); column-gap: 10px; align-items: center; }
+.door-row.with-face .portrait { grid-row: span 2; }
+.door-row:disabled { opacity: 0.5; cursor: default; }
+.memory-sheet .card .part { white-space: pre-wrap; }
+
+/* The character sheet in a chat. */
+.sheet-about { display: flex; flex-direction: column; gap: 10px; }
+.sheet-about .portrait.large { max-width: 360px; max-height: 44dvh; align-self: center; }
+.set-pick { display: flex; flex-direction: column; gap: 6px; }
+.set-pick-title .hint { margin-left: 4px; }
+.choice-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.choice { min-height: 36px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--rule); background: var(--surface); color: var(--text); font-size: 14px; }
+.choice.live { border-style: dashed; border-color: var(--text-2); }
+.choice[aria-pressed='true'] { background: var(--text); border-color: var(--text); color: var(--ground); font-weight: 700; }
+.choice:disabled { opacity: 0.5; cursor: default; }
+.character-sheet .keeper-card, .character-sheet .card h2 { font-size: 20px; }
+.home-name { font-family: var(--display); font-weight: 600; font-size: 22px; line-height: 1.15; }
+
+/* Homes: each a card that says who is in and what they are doing. */
+.homes .sub { margin: 0 0 6px; }
+.home-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 16px; }
+.home-card { display: flex; flex-direction: column; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); color: var(--text); text-decoration: none; overflow: hidden; }
+a.home-card:hover { border-color: var(--text-2); }
+.home-cover { display: block; aspect-ratio: 16 / 9; background: var(--raised); border-bottom: 1px solid var(--rule); overflow: hidden; line-height: 0; }
+.home-cover .media-image, .home-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.home-cover.bare { aspect-ratio: 16 / 5; display: flex; align-items: center; justify-content: center; line-height: 1; font-family: var(--display); font-weight: 600; font-size: 64px; color: var(--rule); }
+.home-card.offered .home-cover { border-bottom-style: dashed; }
+.home-card-text { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px; }
+.home-card-text .sub { margin: 0; }
+.home-line { font-family: var(--read); font-size: 15px; color: var(--text-2); }
+.home-who { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+.home-who > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-2); }
+.home-who b { color: var(--text); }
+.home-facts { font-size: 13px; color: var(--text-2); }
+.home-card .btn { align-self: flex-start; margin-top: 4px; }
+
+/* One home, open. */
+.house-head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; }
+.house-title { flex: 1 1 220px; min-width: 0; }
+.house-title .sub { margin: 0; }
+.house-title h1 { font-family: var(--display); font-weight: 600; font-size: clamp(24px, 4vw, 34px); letter-spacing: -0.02em; line-height: 1.1; overflow-wrap: anywhere; }
+.btn.back { gap: 4px; }
+.house .collection-tabs { display: flex; flex-wrap: wrap; gap: 5px; border-bottom: 1px solid var(--rule); }
+.house .collection-tabs button { min-height: 44px; padding: 8px 14px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--text-2); }
+.house .collection-tabs button[aria-pressed='true'] { border-bottom-color: var(--seal); color: var(--text); font-weight: 700; }
+
+/* A feed of posts. */
+.feed { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 680px; margin: 0 auto; }
+.feed-ask { display: flex; flex-direction: column; gap: 8px; }
+.feed-who, .post-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.feed-who-text { display: flex; flex-direction: column; flex: 1 1 140px; min-width: 0; line-height: 1.25; }
+.feed-who-text small { font-size: 12.5px; color: var(--text-2); }
+.post { gap: 10px; }
+.post-title { font-family: var(--display); font-weight: 600; font-size: 21px; line-height: 1.2; }
+.post-body { font-family: var(--read); font-size: 16px; line-height: 1.55; display: flex; flex-direction: column; gap: 0.6em; overflow-wrap: anywhere; }
+.post-body .narration { color: var(--text-2); }
+.post-photo { display: block; margin: 0 -16px; line-height: 0; border-block: 1px solid var(--rule); background: var(--raised); }
+.post-photo img, .post-photo.media-image { width: 100%; height: auto; display: block; }
+.post-caption { display: flex; gap: 6px; align-items: flex-start; font-size: 13px; color: var(--text-2); }
+.post-caption svg { flex: none; margin-top: 2px; }
+.post-menu { padding: 2px 0; }
+.btn.small.danger { border-color: var(--rule); }
+.comments { list-style: none; margin: 0; padding: 8px 0 0; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 8px; }
+.comment { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 8px; align-items: start; font-size: 14.5px; }
+.comment .portrait { border-radius: 50%; }
+.comment-text { font-family: var(--read); line-height: 1.45; overflow-wrap: anywhere; }
+.comment-text b { font-family: var(--ui); font-size: 13px; }
+.comment-text p { display: inline; }
+.comment.mine .comment-text b { color: var(--blue); }
+.comment .link { min-height: 24px; text-decoration: none; font-size: 16px; line-height: 1; }
+.comment-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.comment-bar .input { min-height: 36px; padding: 6px 10px; flex: 1 1 160px; }
+
+/* You: personas. */
+.you .sub { margin: 0 0 6px; }
+.persona-list { display: flex; flex-direction: column; gap: 10px; }
+.persona-card { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+.persona-card.usual { border-color: var(--text-2); box-shadow: inset 3px 0 0 var(--seal); }
+.persona-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+.persona-name { font-family: var(--display); font-weight: 600; font-size: 22px; }
+.persona-says { font-family: var(--read); font-size: 15px; color: var(--text-2); overflow-wrap: anywhere; }
+.persona-card .chip { border: 1px solid var(--text); }

@@ -18,3 +18,12 @@ export const KeepIcon = (props: Props) => <Icon {...props}><path d="M6 4h12v16l-
 export const BinIcon = (props: Props) => <Icon {...props}><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></Icon>;
 export const CloseIcon = (props: Props) => <Icon {...props}><path d="M18 6L6 18M6 6l12 12" /></Icon>;
 export const CheckIcon = (props: Props) => <Icon {...props}><path d="M5 12l5 5 9-10" /></Icon>;
+// Memory: a brain, drawn as two lobes.
+export const BrainIcon = (props: Props) => <Icon {...props}><path d="M12 5.5v13M12 7a3 3 0 0 0-5.6-1.5A3 3 0 0 0 4.5 11a3.2 3.2 0 0 0 1 5.6A3 3 0 0 0 12 17M12 7a3 3 0 0 1 5.6-1.5A3 3 0 0 1 19.5 11a3.2 3.2 0 0 1-1 5.6A3 3 0 0 1 12 17M8 11.5h1.5M14.5 11.5H16" /></Icon>;
+// A note: square brackets with a line between them.
+export const NoteIcon = (props: Props) => <Icon {...props}><path d="M8 5H5v14h3M16 5h3v14h-3M10 12h4" /></Icon>;
+export const HouseIcon = (props: Props) => <Icon {...props}><path d="M4 11l8-6 8 6M6 10v9h12v-9M10 19v-5h4v5" /></Icon>;
+export const MoreIcon = (props: Props) => <Icon {...props}><circle cx="6" cy="12" r="1.2" fill="currentColor" /><circle cx="12" cy="12" r="1.2" fill="currentColor" /><circle cx="18" cy="12" r="1.2" fill="currentColor" /></Icon>;
+export const PinIcon = (props: Props) => <Icon {...props}><path d="M9 4h6l-1 6 3 3H7l3-3zM12 13v7" /></Icon>;
+export const PhotoIcon = (props: Props) => <Icon {...props}><rect x="3.5" y="6" width="17" height="13" rx="2" /><circle cx="12" cy="12.5" r="3.2" /><path d="M8.5 6l1.2-2h4.6l1.2 2" /></Icon>;
+export const CommentIcon = (props: Props) => <Icon {...props}><path d="M5 5h14v10H10l-4 4v-4H5z" /></Icon>;

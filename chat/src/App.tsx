@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { EMOTIONS, careAt, lifeKey, lifeNow, needsText, newChat, newLife, readChatFile, type Chat, type Life } from '../../core/chat/index.js';
-import { importCardFile, newRecord, newWorld, recordById, type StoryRecord, type World } from '../../core/records/index.js';
+import { EMOTIONS, careAt, homeOf, lifeKey, lifeNow, needsText, newChat, newLife, postSlot, readChatFile, type Chat, type Life, type Post } from '../../core/chat/index.js';
+import { importCardFile, newRecord, newWorld, putRecord, recordById, removeRecord, type StoryRecord, type World } from '../../core/records/index.js';
 import { initialConnection, reconnect, type Connection } from '../../kit/src/connection';
 import { SiteHeader } from '../../kit/src/SiteHeader';
 import { characterKey, initializeCollection, loadCollection, memberFor, patchMember, saveCollection } from '../../kit/src/collection';
@@ -12,35 +12,54 @@ import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
 import { HOUSE_VERSION, HOUSE_WORLD_ID, INCLUDED_WORLDS, RETIRED_HOUSE_ID, loadIncluded, loadResort } from '../../kit/src/included';
 import { ChatView } from './ChatView';
 import { Home, type Status } from './Home';
-import { House } from './House';
+import { House, type HouseAt } from './House';
+import { postingFor } from './posting';
 import { SettingsView } from './SettingsView';
+import { You, defaultPersona, personasOf, type PersonaRef } from './You';
 import { readSettings, writeSettings, type Settings } from './settings';
 import {
-  displayPortraits, deleteChat, deletePortrait, getSent, listChats, listLives, makeBackup, putLife, portraitOwner, portraitSets, putChat, putPortrait, putSent, restoreBackup,
+  displayPortraits, deleteChat, deletePortrait, deletePost, getSent, listChats, listLives, listPosts, makeBackup, putLife, portraitOwner, portraitSets, putChat, putPortrait, putPost, putSent, restoreBackup,
   type PortraitSet, type Sent,
 } from './store';
 
 const IMPORTS_WORLD_ID = 'inkwyrm-imports';
+// Chat's own shelf: where imported cards, characters made here and personas live. It is for Chat,
+// never an adventure.
+const shelf = (name: string): World => ({ ...newWorld(IMPORTS_WORLD_ID, name, Date.now()), use: 'household' });
 const SEEDED_KEY = 'inkwyrm.chat.seeded';
 
 // `with` is a character to start a chat with, from the Studio's *Chat with* or the Overview:
 // `#/with/<world>/<record>`. It opens the new-chat sheet and creates nothing by itself.
-type View = { name: 'home'; with?: { worldId: string; recordId: string } } | { name: 'conversations' } | { name: 'character'; worldId: string; recordId: string } | { name: 'house' } | { name: 'settings' } | { name: 'chat'; id: string };
+// A chat remembers the place it was opened from, so Back returns there (Home, most of all).
+type Place = { name: 'home'; with?: { worldId: string; recordId: string } } | { name: 'conversations' } | { name: 'character'; worldId: string; recordId: string } | { name: 'house'; at?: HouseAt } | { name: 'you' } | { name: 'settings' };
+type View = Place | { name: 'chat'; id: string; back?: Place };
 export function viewFromHash(hashText = window.location.hash): View {
   const hash = hashText.replace(/^#\/?/, '');
   if (hash === 'conversations') return { name: 'conversations' };
   const character = /^character\/([^/]+)\/([^/?]+)$/.exec(hash);
   if (character) { try { return { name: 'character', worldId: decodeURIComponent(character[1]!), recordId: decodeURIComponent(character[2]!) }; } catch { return { name: 'home' }; } }
   if (hash === 'settings') return { name: 'settings' };
+  if (hash === 'you') return { name: 'you' };
   const asked = /^with\/([^/]+)\/([^/?]+)$/.exec(hash);
   if (asked) {
     try { return { name: 'home', with: { worldId: decodeURIComponent(asked[1]), recordId: decodeURIComponent(asked[2]) } }; } catch { return { name: 'home' }; }
   }
+  // Home: the list of homes, one home, or one home's posts.
   if (hash === 'home') return { name: 'house' };
+  const house = /^home\/([^/]+)\/([^/?]+)(\/posts)?$/.exec(hash);
+  if (house) { try { return { name: 'house', at: { worldId: decodeURIComponent(house[1]!), scenarioId: decodeURIComponent(house[2]!), ...(house[3] ? { tab: 'posts' as const } : {}) } }; } catch { return { name: 'house' }; } }
   if (hash.startsWith('chat/') && hash.length > 5) { try { return { name: 'chat', id: decodeURIComponent(hash.slice(5)) }; } catch { return { name: 'home' }; } }
   return { name: 'home' };
 }
-const hashFor = (view: View) => view.name === 'character' ? `#/character/${encodeURIComponent(view.worldId)}/${encodeURIComponent(view.recordId)}` : view.name === 'conversations' ? '#/conversations' : (view.name === 'chat' ? `#/chat/${encodeURIComponent(view.id)}` : view.name === 'settings' ? '#/settings' : view.name === 'house' ? '#/home' : '#/');
+const hashFor = (view: View) => {
+  if (view.name === 'character') return `#/character/${encodeURIComponent(view.worldId)}/${encodeURIComponent(view.recordId)}`;
+  if (view.name === 'conversations') return '#/conversations';
+  if (view.name === 'chat') return `#/chat/${encodeURIComponent(view.id)}`;
+  if (view.name === 'settings') return '#/settings';
+  if (view.name === 'you') return '#/you';
+  if (view.name === 'house') return view.at ? `#/home/${encodeURIComponent(view.at.worldId)}/${encodeURIComponent(view.at.scenarioId)}${view.at.tab === 'posts' ? '/posts' : ''}` : '#/home';
+  return '#/';
+};
 
 // The world a chat plays in: the character's own, plus the persona and scenario when they were
 // picked from another world. A persona made once serves every chat.
@@ -64,6 +83,9 @@ export function App() {
   const [chats, setChats] = useState<Chat[] | null>(null);
   const [portraits, setPortraits] = useState<Record<string, PortraitSet>>({});
   const [lives, setLives] = useState<Record<string, Life>>({});
+  const [posts, setPosts] = useState<Post[]>([]);
+  // The posts as they stand this instant, for a run of comments that each read the last.
+  const postsNow = useRef<Post[]>([]);
   const [connection, setConnection] = useState<Connection>(initialConnection);
   const [settings, setSettings] = useState<Settings>(readSettings);
   const [theme, setTheme] = useTheme();
@@ -77,7 +99,8 @@ export function App() {
   const go = useCallback((next: View) => { window.location.hash = hashFor(next); setView(next); setStatus(null); }, []);
 
   useEffect(() => {
-    const onHash = () => setView(viewFromHash());
+    // The address says where; what a chat was opened from, or who Home was looking at, is kept.
+    const onHash = () => setView((now) => { const next = viewFromHash(); return hashFor(next) === hashFor(now) ? now : next; });
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
@@ -106,6 +129,14 @@ export function App() {
           }
         }
         try { localStorage.setItem(SEEDED_KEY, String(HOUSE_VERSION)); } catch { /* storage blocked */ }
+        // The site's own households, and Chat's shelf of imported cards, were made before a world
+        // said what it is for. Each is marked in place, so nothing arranged in it is lost.
+        const chatOnly = new Set<string>([IMPORTS_WORLD_ID, ...INCLUDED_WORLDS.map((entry) => entry.id)]);
+        for (const world of list.filter((entry) => chatOnly.has(entry.id) && entry.use === undefined)) {
+          const marked = { ...world, use: 'household' as const };
+          await putWorld(marked);
+          list = list.map((entry) => (entry.id === marked.id ? marked : entry));
+        }
         setWorlds(list);
         setWorldsReady(true);
       } catch (error) {
@@ -116,6 +147,7 @@ export function App() {
       listChats().then((list) => { setChats(list); setChatsReady(true); }).catch((error) => { if (chats === null) setChats([]); fail(error); });
       displayPortraits().then((all) => setPortraits(portraitSets(all))).catch(() => undefined);
       listLives().then(setLives).catch(() => undefined);
+      listPosts().then((list) => { postsNow.current = list; setPosts(list); }).catch(() => undefined);
     })();
     void reconnect(initialConnection()).then(setConnection).catch(fail);
   }, [readTick]);
@@ -160,6 +192,17 @@ export function App() {
     return latest ? { ...fresh, clock: latest.clock, relationship: latest.relationship, pins: latest.pins } : fresh;
   };
   const saveLife = (life: Life) => { setLives((all) => ({ ...all, [life.key]: life })); putLife(life).catch(fail); };
+  const savePost = (post: Post) => {
+    postsNow.current = [post, ...postsNow.current.filter((entry) => entry.id !== post.id)].sort((a, b) => b.madeAt - a.madeAt);
+    setPosts(postsNow.current);
+    putPost(post).catch(fail);
+  };
+  const removePost = (post: Post) => {
+    postsNow.current = postsNow.current.filter((entry) => entry.id !== post.id);
+    setPosts(postsNow.current);
+    deletePost(post.id).catch(fail);
+    deletePortrait(portraitOwner(post.worldId, post.characterId), postSlot(post.id)).catch(() => undefined);
+  };
   const saveWorld = (world: World) => { setWorlds((list) => (list ?? []).map((entry) => (entry.id === world.id ? world : entry))); putWorld(world).catch(fail); };
   // A chat reads its character's life, and what it changes there goes back to the life.
   const withLife = (chat: Chat, life: Life): Chat => ({ ...chat, clock: life.clock, relationship: life.relationship, pins: life.pins });
@@ -167,14 +210,18 @@ export function App() {
     if (life && (next.clock !== life.clock || next.relationship !== life.relationship || next.pins !== life.pins)) saveLife({ ...life, clock: next.clock, relationship: next.relationship, pins: next.pins });
     save(next);
   };
+  // From Home into a chat: the one already going in that house, or a new one as your usual self.
+  // Back from it returns to the house.
   const chatFrom = (world: World, record: StoryRecord, scenario: StoryRecord) => {
+    const back: Place = { name: 'house', at: { worldId: world.id, scenarioId: scenario.id, who: record.id } };
     const existing = chats?.find((chat) => chat.worldId === world.id && chat.characterId === record.id && chat.scenarioId === scenario.id);
-    if (existing) { go({ name: 'chat', id: existing.id }); return; }
+    if (existing) { go({ name: 'chat', id: existing.id, back }); return; }
     const life = lifeOf(world.id, record);
     const greeting = record.greetings[0] ?? null;
-    const chat = withLife(newChat({ id: newId(), worldId: world.id, characterId: record.id, characterName: record.name, personaId: null, scenarioId: scenario.id, userName: settings.userName || 'User', relationship: life.relationship, style: 'roleplay', responseLength: 'unspecified', greeting }, newId, Date.now()), life);
+    const usual = defaultPersona(worlds ?? [], settings);
+    const chat = withLife(newChat({ id: newId(), worldId: world.id, characterId: record.id, characterName: record.name, personaId: usual?.record.id ?? null, scenarioId: scenario.id, userName: usual?.record.name ?? (settings.userName || 'User'), relationship: life.relationship, style: 'roleplay', responseLength: 'unspecified', greeting }, newId, Date.now()), life);
     save(chat, true);
-    go({ name: 'chat', id: chat.id });
+    go({ name: 'chat', id: chat.id, back });
   };
 
   const openId = view.name === 'chat' ? view.id : null;
@@ -187,6 +234,10 @@ export function App() {
     const current = loadCollection();
     if (world && record && memberFor(current, world, record, chats ?? [])) { try { saveCollection(patchMember(current, world.id, record.id, { ...(memberFor(current, world, record, chats ?? [])!), lastChatId: open.id })); } catch (error) { fail(error); } }
   }, [open?.id]);
+  // A home that really opened, too.
+  const houseAt = view.name === 'house' ? view.at : undefined;
+  const houseOpen = !!houseAt && !!worlds?.some((world) => world.id === houseAt.worldId && world.records.some((record) => record.id === houseAt.scenarioId));
+  useEffect(() => { if (houseAt && houseOpen) recordActivity({ kind: 'home', worldId: houseAt.worldId, scenarioId: houseAt.scenarioId }); }, [houseAt?.worldId, houseAt?.scenarioId, houseOpen]);
   useEffect(() => {
     if (!openId || openId in sent) return;
     getSent(openId).then((record) => setSent((all) => ({ ...all, [openId]: record ?? null }))).catch(() => undefined);
@@ -195,7 +246,7 @@ export function App() {
   const setPortrait = async (owner: string, slot: string, file: File | null) => {
     try {
       // A room is seen large; a figure or a face is not.
-      const image = file ? await readImageAsset(file, slot.startsWith('room:') || slot.startsWith('layer:') ? 1600 : slot.startsWith('fig:') ? 900 : 640) : null;
+      const image = file ? await readImageAsset(file, slot.startsWith('room:') || slot.startsWith('layer:') ? 1600 : slot.startsWith('post:') ? 1200 : slot.startsWith('fig:') ? 900 : 640) : null;
       const data = image?.data;
       if (image) await putPortrait(owner, slot, image.data, image); else await deletePortrait(owner, slot);
       setPortraits((all) => {
@@ -224,7 +275,7 @@ export function App() {
 
   const createCharacter = async (name: string) => {
     if (!worldsReady) throw new Error('Retry the library before creating a character.');
-    const target = worlds?.find((world) => world.id === IMPORTS_WORLD_ID) ?? newWorld(IMPORTS_WORLD_ID, 'Your characters', Date.now());
+    const target = worlds?.find((world) => world.id === IMPORTS_WORLD_ID) ?? shelf('Your characters');
     const record = { ...newRecord('character', newId(), name, newId), chatListed: true };
     const world = { ...target, records: [...target.records, record], updatedAt: Date.now() };
     await putWorld(world); setWorlds([world, ...(worlds ?? []).filter((w) => w.id !== world.id)]);
@@ -232,11 +283,29 @@ export function App() {
     await beforeOverview(); window.location.assign(`/studio/#/w/${encodeURIComponent(world.id)}?rec=${encodeURIComponent(record.id)}`);
   };
 
+  // Personas are records; ones made here live beside imported cards, where the Studio can edit them.
+  const createPersona = async (name: string): Promise<PersonaRef> => {
+    if (!worldsReady) throw new Error('Your worlds could not be read yet. Retry the library before making a persona.');
+    const target = worlds?.find((world) => world.id === IMPORTS_WORLD_ID) ?? shelf('Your characters');
+    const record = newRecord('persona', newId(), name, newId);
+    const world = putRecord(target, record, Date.now());
+    await putWorld(world);
+    setWorlds([world, ...(worlds ?? []).filter((entry) => entry.id !== world.id)]);
+    return { world, record };
+  };
+  const savePersona = (worldId: string, record: StoryRecord) => { const world = worlds?.find((entry) => entry.id === worldId); if (world) saveWorld(putRecord(world, record, Date.now())); };
+  const deletePersona = (worldId: string, record: StoryRecord) => {
+    const world = worlds?.find((entry) => entry.id === worldId);
+    if (!world) return;
+    saveWorld(removeRecord(world, record.id, Date.now()));
+    deletePortrait(portraitOwner(worldId, record.id), 'avatar').catch(() => undefined);
+  };
+
   const importCharacter = async (file: File) => {
     if (!worldsReady) { fail(new Error('Your worlds could not be read yet. Retry the library before importing a character.')); return; }
     try {
       const list = worlds ?? [];
-      const target = list.find((world) => world.id === IMPORTS_WORLD_ID) ?? newWorld(IMPORTS_WORLD_ID, 'Imported', Date.now());
+      const target = list.find((world) => world.id === IMPORTS_WORLD_ID) ?? shelf('Imported');
       const read = importCardFile(target, await readFileBytes(file), newId, Date.now());
       if (!read.ok) { setStatus({ text: read.errors.join(' '), bad: true }); return; }
       const { world: importedWorld, recordId, kind, notes, images } = read.result;
@@ -257,7 +326,7 @@ export function App() {
       if (Object.keys(pictures).length) setPortraits((all) => ({ ...all, [owner]: { ...(all[owner] ?? {}), ...pictures } }));
       if (kind === 'character') { try { saveCollection(patchMember(loadCollection(), world.id, recordId, { state: 'active' })); } catch (error) { fail(error); } }
       const name = recordById(world, recordId)?.name ?? 'the card';
-      const what = kind === 'character' ? `Brought in ${name}.` : kind === 'persona' ? `Brought in ${name} as a persona. Pick it when you start a chat.` : `Brought in the scenario ${name}. Pick it when you start a chat.`;
+      const what = kind === 'character' ? `Brought in ${name}.` : kind === 'persona' ? `Brought in ${name} as a persona. It is under You, and a new chat can start as them.` : `Brought in the scenario ${name}. Pick it when you start a chat.`;
       setStatus({ text: [what, ...notes].join(' ') });
     } catch (error) { fail(error); }
   };
@@ -281,6 +350,8 @@ export function App() {
       setWorlds(await listWorlds());
       setChats(await listChats());
       setPortraits(portraitSets(await displayPortraits()));
+      setLives(await listLives().catch(() => ({})));
+      await listPosts().then((list) => { postsNow.current = list; setPosts(list); }).catch(() => undefined);
       setStatus({ text: `Restored ${counts.worlds} world${counts.worlds === 1 ? '' : 's'}, ${counts.chats} chat${counts.chats === 1 ? '' : 's'} and ${counts.portraits} portrait${counts.portraits === 1 ? '' : 's'}.` });
     } catch (error) { fail(error); }
   };
@@ -292,6 +363,14 @@ export function App() {
     setChats((list) => (list ?? []).filter((existing) => existing.id !== chat.id));
     go({ name: 'home' });
   };
+
+  const posting = postingFor({
+    worlds: worlds ?? [], chats: chats ?? [], latest: () => postsNow.current, connection, settings, lifeOf,
+    worldFor: (chat) => (worlds ? worldFor(worlds, chat) : null), savePost, removePost,
+  });
+  // Rebuilt with `posts`, so a new post or comment redraws whoever shows the feed.
+  void posts;
+  const personas = personasOf(worlds ?? []);
 
   if (view.name === 'chat') {
     if (!open) {
@@ -320,10 +399,15 @@ export function App() {
         sent={sent[open.id] ?? null}
         onChange={(next) => saveChat(next, life)}
         onSent={(record) => { setSent((all) => ({ ...all, [record.chatId]: record })); putSent(record).catch(() => undefined); }}
-        onBack={() => { flush(); go({ name: 'home' }); }}
+        onBack={() => { flush(); go(view.back ?? { name: 'home' }); }}
         onOverview={beforeOverview}
         onDelete={() => void remove(open)}
         onSettings={() => go({ name: 'settings' })}
+        life={life} onLife={saveLife}
+        home={character && openWorld ? homeOf(openWorld, character) : null}
+        onHome={(at) => { flush(); go({ name: 'house', at }); }}
+        posting={posting} allPortraits={portraits} onPicture={(owner, slot, file) => void setPortrait(owner, slot, file)}
+        personas={personas}
       />
     );
   }
@@ -334,7 +418,8 @@ export function App() {
       <nav className="local-nav" aria-label="Chat">
         <button type="button" aria-current={view.name === 'home' || view.name === 'character' || undefined} onClick={() => go({ name: 'home' })}>Collection</button>
         <button type="button" aria-current={view.name === 'conversations' || undefined} onClick={() => go({ name: 'conversations' })}>Conversations</button>
-        <button type="button" aria-current={view.name === 'house' || undefined} onClick={() => go({ name: 'house' })}>Home</button>
+        <button type="button" aria-current={view.name === 'house' || undefined} onClick={() => go({ name: 'house' })}>Homes</button>
+        <button type="button" aria-current={view.name === 'you' || undefined} onClick={() => go({ name: 'you' })}>You</button>
         {view.name === 'settings' && <button type="button" aria-current="true" onClick={() => go({ name: 'home' })}>Settings · Done</button>}
       </nav>
       {view.name === 'house' ? (
@@ -342,6 +427,13 @@ export function App() {
           worlds={worlds ?? []} chats={chats ?? []} portraits={portraits} lives={lives} userName={settings.userName}
           onLife={saveLife} onWorld={saveWorld} onPicture={(owner, slot, file) => void setPortrait(owner, slot, file)} onChat={chatFrom}
           bringable={missingIncluded} onBring={(id) => void bringIncluded(id)}
+          at={view.at ?? null} onGo={(at) => go({ name: 'house', ...(at ? { at } : {}) })} posting={posting}
+        />
+      ) : view.name === 'you' ? (
+        <You
+          worlds={worlds} portraits={portraits} settings={settings} status={status} onSettings={setSettings}
+          onCreate={createPersona} onSave={savePersona} onDelete={deletePersona}
+          onPicture={(owner, slot, file) => void setPortrait(owner, slot, file)} onImport={(file) => void importCharacter(file)}
         />
       ) : view.name === 'settings' ? (
         <SettingsView
@@ -356,7 +448,7 @@ export function App() {
           )}
           <Home
             key={view.name === 'character' ? characterKey(view.worldId, view.recordId) : 'collection'}
-            worlds={worlds} chats={chats} portraits={portraits} status={status} userName={settings.userName}
+            worlds={worlds} chats={chats} portraits={portraits} status={status} userName={settings.userName} persona={settings.persona}
             onRetry={!worldsReady || !chatsReady ? () => { setStatus(null); setReadTick((n) => n + 1); } : undefined}
             mode={view.name === 'conversations' ? 'conversations' : 'collection'}
             profile={view.name === 'character' ? { worldId: view.worldId, recordId: view.recordId } : undefined}

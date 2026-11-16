@@ -3,8 +3,8 @@
 // worked out from the clock whenever it is looked at, the same way every time. A life holds
 // what play has changed; the record holds the rest and is never written by it.
 import { z } from 'zod';
-import { RELATIONSHIPS } from '../records/charactercard.js';
-import type { Placed, Spot, StoryRecord } from '../records/schema.js';
+import { BOND_CONDITIONS, RELATIONSHIPS } from '../records/charactercard.js';
+import type { Placed, Spot, StoryRecord, World } from '../records/schema.js';
 import { clockSchema } from './chat.js';
 import { replaceMacros } from './macros.js';
 import { DEFAULT_CLOCK, MIN_MS, clockNow, formatMinutes, levelReaches, minutesOfDay, readSchedule, weekdayOf, type StatusRead } from './time.js';
@@ -148,6 +148,35 @@ export function livesIn(record: StoryRecord, scenario: StoryRecord): boolean {
   if (record.kind !== 'character') return false;
   if (forScenario(record.idle, scenario)) return true;
   return Object.values(record.schedule ?? {}).some((events) => events.some((event) => forScenario(event.rooms, scenario)));
+}
+
+// --- Homes. A Home is a scenario with rooms: a set on the scenario, one member a room. Its
+// author can keep one out of Chat's Home (`homeListed: false`).
+
+export const roomsOf = (scenario: StoryRecord) => scenario.sets.find((set) => set.members.length) ?? null;
+export const isHome = (record: StoryRecord): boolean => record.kind === 'scenario' && record.homeListed !== false && !!roomsOf(record);
+
+export interface HomeRef { world: World; scenario: StoryRecord }
+export const homeKey = (worldId: string, scenarioId: string) => `${worldId}:${scenarioId}`;
+export const homesOf = (worlds: readonly World[]): HomeRef[] => worlds.flatMap((world) => world.records.filter(isHome).map((scenario) => ({ world, scenario })));
+export const residentsOf = (home: HomeRef): StoryRecord[] => home.world.records.filter((record) => livesIn(record, home.scenario));
+// The Home a character lives in, in their own world: the first whose rooms their day uses.
+export const homeOf = (world: World, record: StoryRecord): HomeRef | null => homesOf([world]).find((home) => livesIn(record, home.scenario)) ?? null;
+
+// Who is where in a Home at a moment, each by their own clock and relationship. Someone in a room
+// the player can't yet enter is said to be somewhere private, and the room isn't named.
+export interface Whereabouts { record: StoryRecord; room: string; doing: string; hidden: boolean }
+export function whereabouts(home: HomeRef, lives: Readonly<Record<string, Life>>, realNowMs: number): Whereabouts[] {
+  const rooms = roomsOf(home.scenario);
+  return residentsOf(home).map((record) => {
+    const life = lives[lifeKey(home.world.id, record.id)] ?? newLife(home.world.id, record, realNowMs);
+    const read = readSchedule(record.schedule, life.relationship, lifeNow(life, realNowMs));
+    const place = placeIn(record, home.scenario, read);
+    const member = rooms?.members.find((entry) => entry.id === place?.room);
+    const need = member?.lock ? BOND_CONDITIONS.find((condition) => condition.id === member.lock)?.tier : undefined;
+    const hidden = !!need && !levelReaches(life.relationship, need);
+    return { record, room: hidden ? '' : member?.name ?? '', doing: hidden ? '' : place?.event || read.live[0]?.text.trim() || '', hidden };
+  });
 }
 
 export interface AwayEntry { at: number; text: string }

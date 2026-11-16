@@ -5,6 +5,8 @@ import { downloadJson, fileSafe, newId, readJsonFile } from '../../kit/src/util'
 import { exportTalks, importTalks } from './author/store';
 import { go } from './go';
 import { LAUNCH_KEY, readLaunches, withLaunch, worldToModule } from '../../core/convert/index.js';
+import { homesOf } from '../../core/chat/home.js';
+import { homeHref } from '../../kit/src/activity';
 
 export function WorldSettings({ world, onChange, onDelete }: { world: World; onChange: (world: World) => void; onDelete: () => void }) {
   const [label, setLabel] = useState('');
@@ -33,7 +35,10 @@ export function WorldSettings({ world, onChange, onDelete }: { world: World; onC
     downloadJson(`${fileSafe(world.name)}.module.json`, module);
     setNote(notes.length ? notes : ['Saved as a module the adventure opens under New game.']);
   };
-  const going = worldToModule(world).notes;
+  const household = world.use === 'household';
+  const going = household ? [] : worldToModule(world).notes;
+  const homes = homesOf([world]);
+  const people = world.records.filter((record) => record.kind === 'character').length;
   const [talkNote, setTalkNote] = useState<{ text: string; bad?: boolean } | null>(null);
   // Talks with Errata and the drafts waiting go in a file of their own (the owner's answer,
   // Nov 12); the world's file never carries them.
@@ -58,15 +63,36 @@ export function WorldSettings({ world, onChange, onDelete }: { world: World; onC
   return (
     <>
       <h1 className="ink-write">{world.name}</h1>
-      <section className="card" aria-label="Play">
-        <div className="row">
-          <button type="button" className="btn primary" onClick={play}>Play in the adventure</button>
-          <button type="button" className="btn quiet" onClick={exportModule}>Export as a module</button>
-        </div>
-        <p className="hint">Everything in this world plays by its rules as it stands. The adventure gets a copy; what happens there never changes the world.</p>
-        {going.map((line) => <p key={line} className="hint">{line}</p>)}
-        {note.map((line) => <p key={line} className="status" role="status">{line}</p>)}
-      </section>
+      <fieldset className="card" aria-label="What this world is for">
+        <legend className="sub">What this world is for</legend>
+        <label className="check">
+          <input type="radio" name="world-use" checked={!household} onChange={() => { const { use: _use, ...rest } = world; onChange(rest); }} />
+          <span><b>A world.</b> Places, people and rules, played as an adventure. Its characters can be chatted with too.</span>
+        </label>
+        <label className="check">
+          <input type="radio" name="world-use" checked={household} onChange={() => onChange({ ...world, use: 'household' })} />
+          <span><b>A household.</b> People to chat with and the home they live in. It is for Chat, and isn&rsquo;t offered as an adventure.</span>
+        </label>
+      </fieldset>
+      {household ? (
+        <section className="card" aria-label="In Chat">
+          <div className="row">
+            {homes.map((home) => <a key={home.scenario.id} className="btn primary" href={homeHref(world.id, home.scenario.id)}>Open {home.scenario.name} in Home</a>)}
+            <a className={`btn${homes.length ? ' quiet' : ' primary'}`} href="/chat/">Open Chat</a>
+          </div>
+          <p className="hint">{homes.length ? `${homes.length === 1 ? 'Its home is' : 'Its homes are'} in Chat, under Homes.` : 'No home yet. A home is a scenario with rooms: add a scenario and open its Home door.'} {people ? `Its ${people === 1 ? 'person is' : `${people} people are`} met in Chat.` : 'Add a character and they can be met in Chat.'}</p>
+        </section>
+      ) : (
+        <section className="card" aria-label="Play">
+          <div className="row">
+            <button type="button" className="btn primary" onClick={play}>Play in the adventure</button>
+            <button type="button" className="btn quiet" onClick={exportModule}>Export as a module</button>
+          </div>
+          <p className="hint">Everything in this world plays by its rules as it stands. The adventure gets a copy; what happens there never changes the world.</p>
+          {going.map((line) => <p key={line} className="hint">{line}</p>)}
+          {note.map((line) => <p key={line} className="status" role="status">{line}</p>)}
+        </section>
+      )}
       <NameField label="Name" value={world.name} onChange={(name) => onChange({ ...world, name })} />
       <label className="field">
         <span>Premise · Always</span>
