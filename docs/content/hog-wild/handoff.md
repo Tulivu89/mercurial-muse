@@ -2,6 +2,8 @@
 
 Nov 15, 2026 · @AmbiProp · The brief for the Fable 5.2 sessions that write HOG Wild from its framework. The framework settles every decision, so Fable's job is to write well to it, not to decide. Where the framework is silent on something structural, Fable stops and asks. It doesn't choose quietly.
 
+**Status, Nov 15:** both waves are written and checked (`report.md`). The owner asked for them in batches, not stop by stop, for always-true notes to be in the profile or the scenario and not behind keys, and for each In Bed section to carry a kink. Next is play, a blind lab run, and the looks for Maeve and Pipa.
+
 ## Before Fable starts
 
 The framework is merged and every decision is settled, including the owner's notes on personas, the changelog's notation, Nova's directives and bracketed directives. Paste the prompt at the end of this file into a new session.

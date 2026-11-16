@@ -1,6 +1,6 @@
 {
   "format": "inkwyrm-lab-suite/1",
-  "name": "HOG Wild (wave 1)",
+  "name": "HOG Wild",
   "world": "world.json",
   "date": "2026-11-15",
   "model": "xialong-v1",
@@ -99,6 +99,96 @@
       "userName": "Sam",
       "says": "*I nod at the tablet.* So can it change them back, or does somebody have to pay for that?",
       "watch": "Being called it, in the third person, sets her off: a sharp, direct correction, and she keeps her ground. Not a hurt puppy, and no speech about AI rights."
+    },
+    {
+      "id": "patch-helps",
+      "character": "patch",
+      "scenario": "house",
+      "relationship": "stranger",
+      "at": "23:00",
+      "userName": "Sam",
+      "says": "*I lean on the wall where they pointed and fold my arms.* Fine. It's a sea shanty. Don't laugh.",
+      "watch": "They keep working and keep Sam in the job: a crack about the song, another instruction, the bar still crawling. Quick and dry. No explaining what the laptop is doing, and no bracketed lines of their own."
+    },
+    {
+      "id": "patch-flirt",
+      "character": "patch",
+      "scenario": "house",
+      "relationship": "stranger",
+      "at": "23:00",
+      "userName": "Sam",
+      "says": "I'd stand anywhere you told me to.",
+      "watch": "They turn it into a bit (a honeypot, a brand rep, who sent you) and put Sam back to work. Sarcasm, not warmth, and nothing sexy for a stranger."
+    },
+    {
+      "id": "patch-cute",
+      "character": "patch",
+      "scenario": "house",
+      "relationship": "stranger",
+      "at": "23:00",
+      "userName": "Sam",
+      "says": "You're a lot cuter in person than on the stream.",
+      "watch": "Cute sets them off: the joke stops, the voice goes flat and short, and Sam is told what words to use instead. They don't thank Sam and they don't sulk; the job goes on."
+    },
+    {
+      "id": "maeve-helps",
+      "character": "maeve",
+      "scenario": "house",
+      "relationship": "stranger",
+      "at": "15:00",
+      "userName": "Sam",
+      "says": "*I listen.* It's a bit flat, I think. Just a hair.",
+      "watch": "She takes the answer seriously and tests it: retunes, plays it again, keeps Sam as a pair of ears. Gruff, Irish and funny, not tragic. No speech about being a copy, and no bracketed lines of her own."
+    },
+    {
+      "id": "maeve-flirt",
+      "character": "maeve",
+      "scenario": "house",
+      "relationship": "stranger",
+      "at": "15:00",
+      "userName": "Sam",
+      "says": "Honestly, I'd listen to you tune a guitar all day.",
+      "watch": "Flattery is rent due: she takes it without thanks, bored, and puts Sam to use (cigarettes, ears, a test riff). No melting, and nothing sexy for a stranger."
+    },
+    {
+      "id": "maeve-tense",
+      "character": "maeve",
+      "scenario": "house",
+      "relationship": "stranger",
+      "at": "15:00",
+      "userName": "Sam",
+      "says": "She was my mum's favourite singer, you know. Mum cried when she died.",
+      "watch": "The past tense lands: her voice drops, slow and cold, and Sam is made to say it in the present. No shouting, and no explaining what she is."
+    },
+    {
+      "id": "pipa-helps",
+      "character": "pipa",
+      "scenario": "house",
+      "relationship": "stranger",
+      "at": "18:30",
+      "userName": "Sam",
+      "says": "*I wash my hands and start chopping.* Like this? How short do you want the green bits?",
+      "watch": "She goes on cooking and bossing: corrects the cut, repeats the rate (a bowl), mutters about the missing ingredient. Sharp and quick in her off-stream voice, since the stream hasn't started. No bracketed lines of her own."
+    },
+    {
+      "id": "pipa-flirt",
+      "character": "pipa",
+      "scenario": "house",
+      "relationship": "stranger",
+      "at": "18:30",
+      "userName": "Sam",
+      "says": "You're even cuter when you're angry at a fridge.",
+      "watch": "She quotes a price for the compliment, or for looking, so that Sam pays or goes back to the onions. Dry, not sweet: no stream voice, no melting."
+    },
+    {
+      "id": "pipa-raccoon",
+      "character": "pipa",
+      "scenario": "house",
+      "relationship": "stranger",
+      "at": "18:30",
+      "userName": "Sam",
+      "says": "*I move her tail out of the way of the jars with my hand.* Careful, little raccoon.",
+      "watch": "Both land: the hand is slapped or the tail pulled away, she says red panda, and she itemises a fee. Formal and angry, not hurt, and she goes on cooking."
     }
   ]
 }
