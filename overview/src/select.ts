@@ -3,10 +3,10 @@
 //
 // Each store is read on its own and can fail on its own: a failed read is never an empty
 // library. Nothing here writes, and nothing here calls a model.
-import { messageText, type Chat } from '../../core/chat/index.js';
+import { homeKey, homesOf, messageText, roomsOf, whereabouts, type Chat, type HomeRef, type Life } from '../../core/chat/index.js';
 import { KIND_NAMES, type World } from '../../core/records/index.js';
-import { chatWithHref, hrefFor, type NavigationV1, type Target } from '../../kit/src/activity';
-import { EXAMPLE_ADVENTURES, EXAMPLE_WORLDS, HOUSE_WORLD_ID, IMPORTS_WORLD_ID, type ExampleAdventure, type ExampleWorld } from './examples';
+import { chatWithHref, homeHref, hrefFor, type NavigationV1, type Target } from '../../kit/src/activity';
+import { EXAMPLE_ADVENTURES, EXAMPLE_HOMES, EXAMPLE_WORLDS, HOUSE_WORLD_ID, IMPORTS_WORLD_ID, type ExampleAdventure, type ExampleWorld } from './examples';
 import { ERRATA_ID } from '../../kit/src/included';
 import { characterKey, collectionCharacters, EMPTY_COLLECTION, type Collection, type Member } from '../../kit/src/collection';
 
@@ -26,6 +26,11 @@ export interface Library {
   // Errata as she comes with the site, for a browser where Chat hasn't put her in yet.
   house: World;
   collection?: Collection;
+  // Each character's own day, for who is where at home. Absent or unread, everyone is on their
+  // card's own clock.
+  lives?: Read<Record<string, Life>>;
+  // The device's time, for where the people of a home are now.
+  now?: number;
 }
 
 export interface ContinueItem { label: string; title: string; detail: string; href: string; action: string }
@@ -37,6 +42,15 @@ export interface WorldCard {
   world?: World;
   example?: ExampleWorld;
 }
+export interface HomeCard {
+  key: string; name: string; world: string; line: string; tag: 'Last visited' | 'Your home' | 'Included';
+  // Who is in, and what each is doing, a few at most.
+  people: { name: string; says: string }[];
+  more: number;
+  href: string; action: string;
+  // Where the home's pictures are kept, and its rooms' slots in order, for a cover.
+  owner?: string; slots?: string[];
+}
 export type AdventureCard =
   | { kind: 'save'; tag: 'Your last adventure' | 'Last saved'; name: string; moduleName: string; place: string; stamp: string; turns: number; href: string }
   | { kind: 'example'; example: ExampleAdventure };
@@ -47,6 +61,7 @@ export interface Overview {
   continueWith: ContinueItem | null;
   characters: CharacterCard[];
   worlds: WorldCard[];
+  homes: HomeCard[];
   adventure: AdventureCard | null;
   // Stores that failed, by name, so the page can say which and offer Retry.
   failed: string[];
@@ -56,7 +71,8 @@ export interface Overview {
 const ready = <T,>(read: Read<T>): T | null => (read.state === 'ready' ? read.value : null);
 // The author's own worlds: everything but Errata's house and Chat's imported cards. A copy of an
 // example the author brought in counts: they chose to have it.
-const isPersonal = (world: World) => world.id !== HOUSE_WORLD_ID && world.id !== IMPORTS_WORLD_ID;
+// A household is for Chat: its house is under Homes, and it is never a world to play.
+const isPersonal = (world: World) => world.id !== HOUSE_WORLD_ID && world.id !== IMPORTS_WORLD_ID && world.use !== 'household';
 const plural = (count: number, one: string) => `${count} ${one}${count === 1 ? '' : 's'}`;
 
 function writingDetail(authoring: Authoring | null, worldId: string, recordId?: string): string {
@@ -76,6 +92,19 @@ function lastExcerpt(chat: Chat): string {
   return '';
 }
 
+// A schedule line as a visitor reads it: the macros filled in, the player as "you".
+const said = (text: string, name: string) => text.replace(/\{\{user\}\}|\$u(?:ser)?\b/gi, 'you').replace(/\{\{char\}\}|\$c(?:ontact)?\b/gi, name).trim();
+
+function homeCard(home: HomeRef, tag: HomeCard['tag'], lives: Record<string, Life>, now: number, href: string, action: string): HomeCard {
+  const people = whereabouts(home, lives, now);
+  return {
+    key: homeKey(home.world.id, home.scenario.id), name: home.scenario.name, world: home.world.name, line: home.scenario.line || home.world.premise.trim(), tag,
+    people: people.slice(0, 3).map((entry) => ({ name: entry.record.name, says: entry.hidden ? 'Somewhere private' : [entry.room || 'Out', said(entry.doing, entry.record.name)].filter(Boolean).join(' · ') })),
+    more: Math.max(0, people.length - 3), href, action,
+    owner: `${home.world.id}:${home.scenario.id}`, slots: (roomsOf(home.scenario)?.members ?? []).map((member) => `room:${member.id}`),
+  };
+}
+
 // The newest place someone intentionally went that still exists. A target whose store failed is
 // skipped without being forgotten.
 function resolve(target: Target, library: Library): ContinueItem | null {
@@ -90,6 +119,12 @@ function resolve(target: Target, library: Library): ContinueItem | null {
     const save = ready(library.saves)?.find((entry) => entry.id === target.saveId);
     return save ? { label: 'Continue', title: save.name, detail: [save.place, save.stamp].filter(Boolean).join(' · ') || save.moduleName, href: hrefFor(target), action: 'Continue adventure' } : null;
   }
+  if (target.kind === 'home') {
+    const home = homesOf(worlds ?? []).find((entry) => entry.world.id === target.worldId && entry.scenario.id === target.scenarioId);
+    if (!home) return null;
+    const first = whereabouts(home, ready(library.lives ?? { state: 'loading' }) ?? {}, library.now ?? Date.now()).find((entry) => !entry.hidden && entry.doing);
+    return { label: 'Continue', title: home.scenario.name, detail: first ? `${first.record.name}: ${said(first.doing, first.record.name)}` : home.world.name, href: hrefFor(target), action: 'Open home' };
+  }
   const world = worlds?.find((entry) => entry.id === target.worldId);
   if (!world) return null;
   const record = target.recordId ? world.records.find((entry) => entry.id === target.recordId) : undefined;
@@ -97,6 +132,8 @@ function resolve(target: Target, library: Library): ContinueItem | null {
   const detail = [record ? `${KIND_NAMES[record.kind].one} in ${world.name}` : world.name, writingDetail(ready(library.authoring), world.id, record?.id)].filter(Boolean).join(' · ');
   return { label: 'Continue', title: record?.name ?? world.name, detail, href: hrefFor(at), action: 'Continue writing' };
 }
+
+const INCLUDED_HOME_WORLDS = new Set(EXAMPLE_HOMES.map((home) => home.worldId));
 
 export function selectOverview(library: Library): Overview {
   const worlds = ready(library.worlds);
@@ -164,6 +201,27 @@ export function selectOverview(library: Library): Overview {
     worldCards.push({ key: example.worldId, name: example.name, premise: example.line, tag: 'Included', href: example.href, action: 'Look inside', detail: example.note, example });
   }
 
+  // Homes: the one last visited, then the rest of this browser's, then what comes with the site.
+  // A first visit sees the resort's house before Chat has put it in; after that, a home that is
+  // not here is offered from Chat's own list, which is where it is brought in.
+  const lives = ready(library.lives ?? { state: 'loading' }) ?? {};
+  const now = library.now ?? Date.now();
+  const here = homesOf(worlds ?? []);
+  const visited = library.navigation.recent.map((entry) => entry.target).find((target): target is Extract<Target, { kind: 'home' }> => target.kind === 'home' && here.some((home) => home.world.id === target.worldId && home.scenario.id === target.scenarioId));
+  const byUse = [...here].sort((a, b) => Number(b.world.id === visited?.worldId && b.scenario.id === visited?.scenarioId) - Number(a.world.id === visited?.worldId && a.scenario.id === visited?.scenarioId) || b.world.updatedAt - a.world.updatedAt);
+  const homeCards: HomeCard[] = byUse.slice(0, 2).map((home) => homeCard(
+    home, visited && home.world.id === visited.worldId && home.scenario.id === visited.scenarioId ? 'Last visited' : INCLUDED_HOME_WORLDS.has(home.world.id) ? 'Included' : 'Your home',
+    lives, now, homeHref(home.world.id, home.scenario.id), 'Open home',
+  ));
+  for (const example of EXAMPLE_HOMES) {
+    if (homeCards.length >= 2) break;
+    if (here.some((home) => home.world.id === example.worldId)) continue;
+    const bundled = !curated.initialized && example.worldId === library.house.id ? homesOf([library.house]).find((home) => home.scenario.id === example.scenarioId) : undefined;
+    homeCards.push(bundled
+      ? homeCard(bundled, 'Included', lives, now, homeHref(example.worldId, example.scenarioId), 'Open home')
+      : { key: homeKey(example.worldId, example.scenarioId), name: example.name, world: example.world, line: example.line, tag: 'Included', people: [{ name: example.who, says: 'Not in this browser yet' }], more: 0, href: '/chat/#/home', action: 'Bring it in from Homes' });
+  }
+
   // Adventure: the save last opened, else the newest save, else an included opening.
   const savesByDate = [...(saves ?? [])].sort((a, b) => b.updatedAt - a.updatedAt);
   const opened = library.navigation.recent.map((entry) => entry.target).find((target): target is Extract<Target, { kind: 'adventure' }> => target.kind === 'adventure' && savesByDate.some((save) => save.id === target.saveId));
@@ -173,5 +231,5 @@ export function selectOverview(library: Library): Overview {
     : library.saves.state === 'error' ? null : { kind: 'example', example: EXAMPLE_ADVENTURES[0] };
 
   const first = !continueWith && !(chats?.length) && !(saves?.length) && !personal.length;
-  return { first, continueWith, characters: cards, worlds: worldCards, adventure, failed, loading };
+  return { first, continueWith, characters: cards, worlds: worldCards, homes: homeCards, adventure, failed, loading };
 }

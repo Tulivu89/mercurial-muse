@@ -2,7 +2,7 @@ import { Component, StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { resortFrom } from '../../kit/src/included';
 import resort from '../../content/dragons-resort/world.json';
-import { displayPortraits, listChats } from '../../chat/src/store';
+import { displayPortraits, listChats, listLives } from '../../chat/src/store';
 import { listSaves } from '../../adventure/src/ui/storage';
 import { authoringCounts } from '../../studio/src/author/store';
 import { listWorlds } from '../../kit/src/worlds';
@@ -15,6 +15,7 @@ const readers: Readers = {
   worlds: listWorlds,
   chats: listChats,
   portraits: displayPortraits,
+  lives: listLives,
   saves: async () => (await listSaves()).map(({ id, name, moduleName, place, stamp, turns, updatedAt }) => ({ id, name, moduleName, place, stamp, turns, updatedAt })),
   authoring: authoringCounts,
   house: () => resortFrom(resort, 0),

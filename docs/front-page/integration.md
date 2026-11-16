@@ -87,3 +87,14 @@ Each step is one pull request (F3 may be two: panels, then the preview). Each ru
 3. **Drafts waiting** as the Worlds panel's Continue line. *Suggest:* yes. It reads only counts, never the drafts' text.
 4. **Errata helps you build it** beside *Make a world*. *Suggest:* yes, one line, no second mascot panel.
 5. **The writing room built in the Studio with Errata's help.** *Answer (Nov 13):* no. Examples get a dedicated session on a strong model; the site's helper is for authors.
+
+## Homes on the Overview (Nov 16, Overview 0.3.0)
+
+@AmbiProp
+
+The note about Home at the foot of the page is now a panel, beside Characters.
+
+- **What it shows:** up to two homes. The one last visited comes first, then this browser's others, then the ones that come with the site. Each says who is in, which room, and what they are doing now, read from each character's own clock (Chat's lives) and schedule. Nothing is generated.
+- **A first visit** sees the resort's house before Chat has put it in this browser, and its link opens it in Chat. A home that is not here is offered from Chat's own list, where it is brought in.
+- **Continue** can be a home: Chat notes one when it really opens (`kit/src/activity.ts`, kind `home`).
+- **Worlds no longer lists a household.** The dragon's resort and HOG Wild were shown there as worlds to look inside, and the Studio then offered each as an adventure. A world now says what it is for; a household is a home and nothing else. With no world of their own, the panel says what a world is and offers Make a world. No world comes with the site as an example until there is one meant to be played.

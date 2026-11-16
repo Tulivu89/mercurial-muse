@@ -6,7 +6,7 @@ import { useMemo, useSyncExternalStore } from 'react';
 import { RECORD_KINDS, type RecordKind } from '../../core/records/index.js';
 
 // The jobs a record's page opens onto (docs/bids/ui/decision.md).
-export const DOORS = ['day', 'rules', 'adventure', 'chat', 'errata', 'context'] as const;
+export const DOORS = ['day', 'rules', 'home', 'adventure', 'chat', 'errata', 'context'] as const;
 export type Door = (typeof DOORS)[number];
 export const PAGES = ['about', 'rules', 'checks', 'map'] as const;
 export type Page = (typeof PAGES)[number];

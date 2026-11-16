@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Life } from '../../core/chat/index.js';
+import { POST_FORMAT, lifeKey, type Life, type Post } from '../../core/chat/index.js';
 import { importCardJson, newWorld, type World } from '../../core/records/index.js';
-import { House } from '../src/House';
+import { House, type HouseAt } from '../src/House';
+import type { PostApi } from '../src/posting';
 import { INCLUDED_WORLDS } from '../../kit/src/included';
 
 const contact = {
@@ -27,16 +28,48 @@ function world(): World {
   return b.result.world;
 }
 
-function Harness({ onChat = () => {} }: { onChat?: () => void }) {
+const cafeOf = (w: World) => w.records.find((record) => record.kind === 'scenario')!;
+const miraOf = (w: World) => w.records.find((record) => record.kind === 'character')!;
+
+// `open`: start inside the cafe, as most of these tests want; without it, on the list of homes.
+function Harness({ onChat = () => {}, open = true, posting }: { onChat?: () => void; open?: boolean; posting?: (w: World) => PostApi }) {
   const [state, setState] = useState(world);
   const [lives, setLives] = useState<Record<string, Life>>({});
-  return <House worlds={[state]} chats={[]} portraits={{}} lives={lives} userName="Sam" onLife={(life) => setLives((all) => ({ ...all, [life.key]: life }))} onWorld={setState} onPicture={() => {}} onChat={onChat} />;
+  const [at, setAt] = useState<HouseAt | null>(open ? { worldId: 'w', scenarioId: cafeOf(state).id } : null);
+  return <House worlds={[state]} chats={[]} portraits={{}} lives={lives} userName="Sam" onLife={(life) => setLives((all) => ({ ...all, [life.key]: life }))} onWorld={setState} onPicture={() => {}} onChat={onChat} at={at} onGo={setAt} posting={posting?.(state)} />;
 }
 
 describe('Home', () => {
-  it('says what it needs when there is no place yet', () => {
+  it('says what a home is, and how to get one, when there is none yet', () => {
     render(<House worlds={[newWorld('w', 'Empty', 1)]} chats={[]} portraits={{}} lives={{}} userName="" onLife={() => {}} onWorld={() => {}} onPicture={() => {}} onChat={() => {}} />);
-    expect(screen.getByText(/Home needs a scenario with rooms/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Homes' })).toBeInTheDocument();
+    expect(screen.getByText(/A home is a place your characters live in/)).toBeInTheDocument();
+    expect(screen.getByText('No homes in this browser yet.')).toBeInTheDocument();
+    expect(screen.getByText(/make a household, give its house rooms/)).toBeInTheDocument();
+  });
+
+  it('lists each home as a card that says who is in and what they are doing, with no dropdown, and opens one', () => {
+    render(<Harness open={false} />);
+    const card = screen.getByRole('link', { name: 'Open Cafe' });
+    expect(within(card).getByText('Imported')).toBeInTheDocument();
+    expect(card).toHaveTextContent('Mira · The floor · Minding the counter.');
+    expect(card).toHaveTextContent('2 rooms · 1 living here');
+    expect(card).toHaveAttribute('href', `#/home/w/${encodeURIComponent(cafeOf(world()).id)}`);
+    expect(screen.queryByRole('combobox', { name: 'Place' })).toBeNull();
+    fireEvent.click(card);
+    expect(screen.getByRole('heading', { name: 'Cafe' })).toBeInTheDocument();
+    expect(screen.getByRole('tablist', { name: 'Rooms' })).toBeInTheDocument();
+    // And back out to the list.
+    fireEvent.click(screen.getByRole('button', { name: 'Homes' }));
+    expect(screen.getByRole('link', { name: 'Open Cafe' })).toBeInTheDocument();
+  });
+
+  it('keeps a scenario its author took out of Home off the list, and says so for an address that is gone', () => {
+    const w = world();
+    const hidden = { ...w, records: w.records.map((record) => (record.kind === 'scenario' ? { ...record, homeListed: false } : record)) };
+    render(<House worlds={[hidden]} chats={[]} portraits={{}} lives={{}} userName="" onLife={() => {}} onWorld={() => {}} onPicture={() => {}} onChat={() => {}} at={{ worldId: 'w', scenarioId: cafeOf(w).id }} />);
+    expect(screen.queryByRole('link', { name: 'Open Cafe' })).toBeNull();
+    expect(screen.getByText('That home is not in this browser.')).toBeInTheDocument();
   });
 
   it('offers each world that comes with the site and isn\'t here yet', () => {
@@ -90,5 +123,59 @@ describe('Home', () => {
     fireEvent.click(within(screen.getByRole('region', { name: 'Mira' })).getByRole('button', { name: 'Chat' }));
     expect(onChat.mock.calls[0]![1].name).toBe('Mira');
     expect(onChat.mock.calls[0]![2].name).toBe('Cafe');
+  });
+
+  it('has a feed: a post is shown what it will send before it is written, and takes comments', async () => {
+    const posts: Post[] = [];
+    const calls: string[] = [];
+    function Posting() {
+      const [, redraw] = useState(0);
+      const api = (w: World): PostApi => ({
+        posts: [...posts], model: 'test-model',
+        frame: () => ['It is Friday at 15:30.', 'This is your first post.'],
+        preview: async (pw, record, kind) => { calls.push(`preview:${kind}`); return { kind, world: pw, record, chat: null as never, chatId: null, maxTokens: 250, built: { profile: 'general', messages: [{ role: 'system', content: 'THE SHEET' }], prefill: 'Thread:', lead: 'Thread:', roll: { startIndex: 0, pathIdList: [], trimmed: false }, windowStart: 0, plans: [], firstSent: 0, answer: { blocks: [], tokens: 0 } as never, parts: [], tokens: 321, notes: [] } }; },
+        write: async (ready) => {
+          const post: Post = { format: POST_FORMAT, id: 'p1', key: lifeKey('w', ready.record.id), worldId: 'w', characterId: ready.record.id, kind: ready.kind, chatId: null, title: 'Slow Tuesday', content: 'Nobody came in.', emotion: 'bored', at: 1, madeAt: 1, photo: '', kept: false, comments: [] };
+          posts.unshift(post); redraw((n) => n + 1);
+          return post;
+        },
+        comment: async (id) => { const post = posts.find((entry) => entry.id === id)!; post.comments = [...post.comments, { id: `c${post.comments.length}`, name: 'tidewatcher_9', characterId: null, mine: false, content: 'Count them again.', emotion: 'playful', at: 2 }]; redraw((n) => n + 1); return ''; },
+        say: (id, text) => { const post = posts.find((entry) => entry.id === id)!; post.comments = [...post.comments, { id: `c${post.comments.length}`, name: 'Sam', characterId: null, mine: true, content: text, emotion: 'neutral', at: 3 }]; redraw((n) => n + 1); },
+        describePhoto: async (id) => { posts.find((entry) => entry.id === id)!.photo = 'The empty counter.'; redraw((n) => n + 1); return ''; },
+        save: (post) => { posts.splice(posts.findIndex((entry) => entry.id === post.id), 1, post); redraw((n) => n + 1); },
+        remove: (post) => { posts.splice(posts.findIndex((entry) => entry.id === post.id), 1); redraw((n) => n + 1); },
+      });
+      void miraOf;
+      return <Harness posting={api} />;
+    }
+    render(<Posting />);
+    fireEvent.click(screen.getByRole('button', { name: /^Posts/ }));
+    const feed = screen.getByRole('region', { name: 'Posts' });
+    expect(within(feed).getByText(/No posts yet\. A post is written when you ask for one/)).toBeInTheDocument();
+    expect(within(feed).getByText('Hasn\u2019t posted yet')).toBeInTheDocument();
+
+    fireEvent.click(within(feed).getByRole('button', { name: 'Mira: post about their day' }));
+    const ask = await screen.findByRole('region', { name: 'A new post: what it will send' });
+    expect(ask).toHaveTextContent('Mira writes a post about their own day, away from you. This sends about 321 tokens to test-model and allows up to 250 back.');
+    expect(ask).toHaveTextContent('It is Friday at 15:30. · This is your first post.');
+    expect(posts).toHaveLength(0);
+    fireEvent.click(within(ask).getByRole('button', { name: 'Write it' }));
+
+    const post = await screen.findByRole('article', { name: 'Mira: Slow Tuesday' });
+    expect(within(post).getByText('Nobody came in.')).toBeInTheDocument();
+    fireEvent.click(within(post).getByRole('button', { name: /A comment/ }));
+    expect(await within(post).findByText('tidewatcher_9')).toBeInTheDocument();
+    fireEvent.change(within(post).getByLabelText('Your comment on Slow Tuesday'), { target: { value: 'I would have come in.' } });
+    fireEvent.click(within(post).getByRole('button', { name: 'Post' }));
+    expect(within(within(post).getByRole('list', { name: 'Comments' })).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(post).getByText('I would have come in.')).toBeInTheDocument();
+
+    // What they'd attach is asked in words and kept, for an image later; and the post can be kept.
+    fireEvent.click(within(post).getByRole('button', { name: 'Ask what Mira would attach' }));
+    expect(await within(post).findByText('Would attach: The empty counter.')).toBeInTheDocument();
+    fireEvent.click(within(post).getByRole('button', { name: 'More for Slow Tuesday' }));
+    fireEvent.click(within(post).getByRole('button', { name: /Keep on the profile/ }));
+    expect(posts[0]!.kept).toBe(true);
+    expect(calls).toEqual(['preview:day']);
   });
 });

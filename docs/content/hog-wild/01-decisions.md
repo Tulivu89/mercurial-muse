@@ -59,7 +59,7 @@ Square brackets already mean a note from outside the story. Chat's rules tell th
 **Rules:**
 - **The narrator never writes brackets.** A resident reacts to a directive in her own way. She doesn't run an auction, quote the chat back in brackets, or invent bids.
 - **The audience can still show up in narration,** such as the feed wall scrolling or a fan at the glass. It just isn't bracketed.
-- **Directives can stand alone.** Today the person writes them in their own turn, with or without a message. A way to drop one in without sending a message is a Chat feature the owner is considering (see the list at the end).
+- **Directives can stand alone.** A bracketed line sent on its own is a note: it goes into the chat without asking for a reply (Chat 0.5.0). Written inside a message, it is part of that turn, as before.
 
 ## 5. What is bought, and what it changes
 
@@ -79,7 +79,7 @@ No invented systems.
 - **To build:**
   1. When a set member is pinned in a chat, tell the model in the changelog's form.
   2. Brains and lore don't key in when their character isn't in the chat. **Done Nov 16:** a chat character brings nothing into another's chat (`sceneFor` in `core/chat/scene.ts`).
-  3. Adding memories during a chat should be easy.
-  4. Dropping a bracketed directive into a chat without sending a message (the owner's idea).
+  3. Adding memories during a chat should be easy. **Done Nov 16 (Chat 0.5.0):** a brain button beside the message box, and on each message.
+  4. Dropping a bracketed directive into a chat without sending a message (the owner's idea). **Done Nov 16 (Chat 0.5.0):** a note. A draft that is only bracketed lines goes in without asking for a reply, and so does anything sent with the note button.
 
 None of these blocks wave 1.

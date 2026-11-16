@@ -29,7 +29,7 @@ const STYLE_RULE: Record<Style, string> = {
 export function rulesFor(charName: string, userName: string): string {
   return [
     `You are ${charName}, in a private one-on-one chat with ${userName}. Write only ${charName}'s side: what ${charName} says, does and thinks. Never write ${userName}'s words or actions, and never step outside ${charName} to narrate or explain.`,
-    'Format: speech is plain text with no quotation marks. *Narration and actions go in single asterisks.* (Thoughts go in parentheses.) [Square brackets are notes from outside the story: follow them, and never answer them or write your own.]',
+    'Format: speech is plain text with no quotation marks. *Narration and actions go in single asterisks.* (Thoughts go in parentheses.) [Square brackets are notes from outside the story: follow them, and never answer them or write your own.] A bracketed line on its own in the chat is a directive: what it says is true from then on.',
     `Write every reply in this shape, ending with the emotion ${charName} is showing, one word from the list:\n${charName}: the reply\n  Emotion: word`,
     `Emotions: ${EMOTIONS.join(', ')}.`,
     `Styles, set in the note with the latest message: ${Object.values(STYLE_RULE).join('; ')}.`,
@@ -84,7 +84,7 @@ export interface GeneralBuild {
 
 export function turnText(message: ChatMessage, charName: string): string {
   const parts = pickedAlt(message).parts;
-  return message.from === 'user' ? parts.map((part) => part.text).join('\n') : replyText(parts, charName, false);
+  return message.from === 'character' ? replyText(parts, charName, false) : parts.map((part) => part.text).join('\n');
 }
 
 export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions): GeneralBuild {
@@ -149,10 +149,12 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
     if (last?.role === role) last.content += `\n${content}`;
     else turns.push({ role, content });
   };
-  if (shown[0]?.from !== 'user') push('user', start > 0 ? '[Earlier messages are out of view.]' : '[The chat begins.]');
+  if (!shown[0] || shown[0].from === 'character') push('user', start > 0 ? '[Earlier messages are out of view.]' : '[The chat begins.]');
   for (const message of shown) {
     if (message === carried) push('assistant', openText);
-    else push(message.from === 'user' ? 'user' : 'assistant', turnText(message, charName));
+    // A note rides in the player's turn, in its brackets: the rules say what brackets are, and a
+    // system message this late would be moved to the top by some formats.
+    else push(message.from === 'character' ? 'assistant' : 'user', turnText(message, charName));
   }
 
   // 7. The moment.

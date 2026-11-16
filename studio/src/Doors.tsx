@@ -6,6 +6,7 @@ import { useId, type ReactNode } from 'react';
 import type { StoryRecord, World } from '../../core/records/index.js';
 import { ChatParts } from './ChatParts';
 import { ContextPanel, type Moment } from './ContextPanel';
+import { HomeDoor, homeSummary } from './HomeDoor';
 import { DayStops, InTheAdventure, LivesAt, adventureSummary, hasAdventure } from './InTheAdventure';
 import { RulesPanel, rulesSummary } from './RulesPanel';
 import { ScheduleEditor } from './ScheduleEditor';
@@ -21,7 +22,9 @@ export function doorsFor(world: World, record: StoryRecord, moment: Moment, erra
   if (record.kind === 'character') doors.push({ id: 'day', label: 'Day', says: adventureSummary(world, record) });
   const rules = rulesSummary(world, record);
   if (rules) doors.push({ id: 'rules', label: 'Rules', says: rules });
-  if (hasAdventure(record)) doors.push({ id: 'adventure', label: 'In the adventure', says: adventureSummary(world, record) });
+  // A scenario with rooms is a home. In a household, a world made for Chat, the adventure has no part.
+  if (record.kind === 'scenario') doors.push({ id: 'home', label: 'Home', says: homeSummary(world, record) });
+  if (hasAdventure(record) && world.use !== 'household') doors.push({ id: 'adventure', label: 'In the adventure', says: adventureSummary(world, record) });
   if (record.kind === 'character') {
     const greetings = record.greetings.length;
     const examples = record.examples.length;
@@ -64,7 +67,7 @@ export function DoorPane({ world, record, door, moment, backTo, onClose, onChang
   errata?: { title: string; body: ReactNode };
 }) {
   const shown: Door = door && (door === 'context' || record) ? door : 'context';
-  const title = shown === 'day' ? 'Day' : shown === 'rules' ? 'Rules' : shown === 'adventure' ? 'In the adventure' : shown === 'chat' ? 'Chat' : shown === 'errata' ? errata?.title ?? 'Errata' : '';
+  const title = shown === 'day' ? 'Day' : shown === 'rules' ? 'Rules' : shown === 'adventure' ? 'In the adventure' : shown === 'home' ? 'Home' : shown === 'chat' ? 'Chat' : shown === 'errata' ? errata?.title ?? 'Errata' : '';
   return (
     <div className="door-pane">
       {shown === 'context'
@@ -90,6 +93,7 @@ export function DoorPane({ world, record, door, moment, backTo, onClose, onChang
       )}
       {record && shown === 'errata' && errata?.body}
       {record && shown === 'rules' && <RulesPanel world={world} record={record} onChange={onChange} />}
+      {record && shown === 'home' && <HomeDoor world={world} record={record} onChange={onChange} onWorld={onWorld} />}
       {record && shown === 'adventure' && <InTheAdventure world={world} record={record} onChange={onChange} onWorld={onWorld} />}
       {record && shown === 'chat' && (
         <>

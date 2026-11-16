@@ -177,6 +177,9 @@ export const recordSchema = z.object({
   chatDefaults: z.object({ relationship: shortText(40).default(''), style: shortText(40).default(''), responseLength: shortText(40).default('') }).nullable().default(null),
   // An author's default listing. Personal collection choices override it; play is unaffected.
   chatListed: z.boolean().optional(),
+  // Scenarios: whether this is a Home, a place with rooms that Chat's Home offers. Unset, a
+  // scenario with rooms is one; false keeps it out.
+  homeListed: z.boolean().optional(),
   // Home (CharacterRoom's Tamagotchi mode). Figures are named pictures of the character doing
   // something; the pictures themselves are kept by Chat. Idle is where they are in a scenario
   // when nothing is scheduled.
@@ -207,6 +210,9 @@ export const recordSchema = z.object({
 });
 export type StoryRecord = z.infer<typeof recordSchema>;
 
+export const WORLD_USES = ['world', 'household'] as const;
+export type WorldUse = (typeof WORLD_USES)[number];
+
 // Conditions are shared: defined once in the world, pointed at by any record's When text.
 export const conditionSchema = z.object({ id, label: z.string().min(1).max(120) });
 export type Condition = z.infer<typeof conditionSchema>;
@@ -218,6 +224,9 @@ export const worldSchema = z.object({
   premise: shortText(4000).default(''),
   genre: shortText(80).default(''),
   tone: shortText(200).default(''),
+  // What the world is for. A household is a world made for Chat: its people are met there and
+  // its places are Homes, and it isn't offered as an adventure. Unset, it is a world like any other.
+  use: z.enum(WORLD_USES).optional(),
   conditions: z.array(conditionSchema).max(200).default([]),
   records: z.array(recordSchema).max(5000).default([]),
   // The world's own rules: only what it changes from the standard ruleset (core/rules).

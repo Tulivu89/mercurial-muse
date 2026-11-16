@@ -114,7 +114,8 @@ export function ContextPanel({ preview, budget, gone, model = '', charName = '' 
 
 // What ChatView does for a side generation: work out the request, then send it.
 export interface SideApi {
-  preview: (kind: SideKind) => Promise<{ kind: SideKind; built: Built; maxTokens: number } | string>;
+  // `upTo`: the chat as it stood after that many messages; the whole chat when left out.
+  preview: (kind: SideKind, upTo?: number) => Promise<{ kind: SideKind; built: Built; maxTokens: number } | string>;
   write: (ready: { kind: SideKind; built: Built; maxTokens: number }, onText: (text: string) => void) => Promise<SideEntry | string>;
 }
 
@@ -183,7 +184,7 @@ export function MemoryPanel({ chat, onChange, charName, userName, model, side, o
 
       <section className="group" aria-label="Journal">
         <div className="row between"><h3>Journal</h3><button type="button" className="btn small quiet" onClick={onRemember}>Add an entry</button></div>
-        <p className="hint">What {charName} knows about {userName}. Active entries go with every reply. Remember this, on any message, adds one.</p>
+        <p className="hint">What {charName} knows about {userName}. Active entries go with every reply. The brain button beside the message box adds one.</p>
         {chat.journal.map((entry) => (
           <div key={entry.id} className="card">
             <textarea className="input" aria-label="Journal entry" rows={2} value={entry.text} onChange={(event) => onChange(setJournalEntry(chat, entry.id, { text: event.target.value }, Date.now()))} />

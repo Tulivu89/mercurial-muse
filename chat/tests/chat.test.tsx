@@ -170,7 +170,7 @@ describe('the chat screen', () => {
     expect(container.querySelector('.chat-head .portrait')).toHaveAttribute('data-emotion', 'laughing');
   });
 
-  it('carries a reply on, deletes a message, and remembers a fact for the journal', async () => {
+  it('carries a reply on, deletes a message, and keeps a journal entry from a message\'s memory button', async () => {
     const { calls, impl } = provider(['Errata: A start', ' and an end.\n  Emotion: happy', 'Errata: Noted.\n  Emotion: neutral']);
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<Harness impl={impl} />);
@@ -184,10 +184,19 @@ describe('the chat screen', () => {
 
     await screen.findByRole('button', { name: 'Regenerate' });
     fireEvent.click(screen.getByText('A start and an end.'));
-    fireEvent.click(screen.getByRole('button', { name: 'Remember this' }));
-    const dialog = screen.getByRole('dialog', { name: 'Remember this' });
-    fireEvent.change(within(dialog).getByLabelText('The fact'), { target: { value: 'Sam writes at night.' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Memory, from this message' }));
+    const dialog = screen.getByRole('dialog', { name: 'Memory' });
+    // Not just the message saved: the four things that can be kept, read as of this message.
+    expect(within(dialog).getByText(/as it stood at this message/)).toBeInTheDocument();
+    for (const name of ['A journal entry', 'Reflect', 'Process', 'Plan']) expect(within(dialog).getByRole('button', { name: new RegExp(`^${name}`) })).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: /^A journal entry/ }));
+    // The whole message is there to cut down, never the first few words of it.
+    const entry = within(dialog).getByLabelText(/The entry, said plainly/);
+    expect(entry).toHaveValue('A start and an end.');
+    fireEvent.change(entry, { target: { value: 'Sam writes at night.' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Keep it' }));
+    expect(within(dialog).getByRole('status', { name: 'Kept' })).toHaveTextContent('Kept in the journal.');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
     fireEvent.change(screen.getByLabelText('Your message'), { target: { value: 'Well?' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
     await screen.findByText('Noted.');
@@ -259,7 +268,94 @@ describe('the chat screen', () => {
     expect(within(card).getByText(/^Stranger/)).toBeInTheDocument();
     expect(within(card).getByText(/Errata isn\u2019t told the time/)).toBeInTheDocument();
     expect(within(card).queryByText(/by schedule|Looking neutral/)).toBeNull();
-    expect(card.querySelectorAll('.about-sets dt').length).toBeGreaterThan(0);
+    // What she has on is a choice here, said once: no second list of it above.
+    expect(card.querySelectorAll('.about-sets dt')).toHaveLength(0);
+    expect(within(card).getAllByRole('group', { name: /^Errata: / }).length).toBeGreaterThan(0);
+  });
+
+  it('opens a sheet from the header where an outfit or a room is picked, and lore switched', () => {
+    const { impl } = provider(['x']);
+    const seen: Chat[] = [];
+    function Watch() {
+      const [chat, setChat] = useState<Chat>(() => ({ ...start(), scenarioId: 'resort-arrival' }));
+      return <ChatView chat={chat} world={world} connection={connection} settings={DEFAULT_SETTINGS} onChange={(next) => { seen.push(next); setChat(next); }} onBack={() => {}} onDelete={() => {}} onSettings={() => {}} generateImpl={impl as never} />;
+    }
+    render(<Watch />);
+    fireEvent.click(screen.getByRole('button', { name: 'About Errata' }));
+    const card = screen.getByRole('dialog', { name: 'About Errata' });
+    const outfits = within(card).getAllByRole('group', { name: /^Errata: / })[0]!;
+    const follow = within(outfits).getByRole('button', { name: 'Follow the day' });
+    expect(follow).toHaveAttribute('aria-pressed', 'true');
+    const choice = within(outfits).getAllByRole('button').find((button) => button !== follow && !(button as HTMLButtonElement).disabled)!;
+    fireEvent.click(choice);
+    expect(choice).toHaveAttribute('aria-pressed', 'true');
+    expect(Object.values(seen.at(-1)!.pins)).toHaveLength(1);
+    expect(within(outfits).getByText(/held for this chat/)).toBeInTheDocument();
+    fireEvent.click(within(outfits).getByRole('button', { name: 'Follow the day' }));
+    expect(seen.at(-1)!.pins).toEqual({});
+
+    const lore = within(card).getByRole('region', { name: 'Lore in this chat' });
+    const first = within(lore).getAllByRole('button')[0]!;
+    expect(first).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(first);
+    expect(first).toHaveAttribute('aria-pressed', 'false');
+    expect(seen.at(-1)!.loreOff).toHaveLength(1);
+  });
+
+  it('adds a bracketed note without asking for a reply, and sends it with the next one', async () => {
+    const { calls, impl } = provider(['Errata: Dark, then.\n  Emotion: neutral']);
+    render(<Harness impl={impl} />);
+    const box = screen.getByLabelText('Your message');
+    // Typed in brackets, it is a note however it is sent.
+    fireEvent.change(box, { target: { value: '[SYS: The power is out]' } });
+    expect(screen.getByRole('status')).toHaveTextContent('A note: it goes in without asking Errata for a reply.');
+    fireEvent.click(screen.getByRole('button', { name: 'Add the note' }));
+    expect(screen.getByRole('group', { name: /^A note,/ })).toHaveTextContent('[SYS: The power is out]');
+    expect(box).toHaveValue('');
+    expect(impl).not.toHaveBeenCalled();
+    expect(screen.getByRole('status')).toHaveTextContent('Added. Send with the box empty when you want Errata to answer.');
+    // The note button puts the brackets on plain words, and opens a pair when the box is empty.
+    fireEvent.change(box, { target: { value: 'Later that night' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add as a note, without a reply' }));
+    expect(screen.getAllByRole('group', { name: /^A note,/ })[1]).toHaveTextContent('[Later that night]');
+    fireEvent.click(screen.getByRole('button', { name: 'Write a note' }));
+    expect(box).toHaveValue('[]');
+    fireEvent.change(box, { target: { value: '' } });
+    expect(impl).not.toHaveBeenCalled();
+
+    // An empty Send asks for the reply; both notes ride in the player's turn, in their brackets.
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    await screen.findByText('Dark, then.');
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.messages.at(-1)!.content).toMatch(/^\[SYS: The power is out\]\n\[Later that night\]\n\n\[Style: roleplay/);
+    // A note has no reply to step through or regenerate, and no memory of its own.
+    fireEvent.click(screen.getAllByRole('group', { name: /^A note,/ })[0]!);
+    expect(screen.queryByRole('button', { name: 'Memory, from this message' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
+  });
+
+  it('has a brain button by the message box: the character reflects on the chat so far, shown before it is sent', async () => {
+    const { calls, impl } = provider([' The red pen\nContent: Sam asked about the red pen and I pretended not to care.\nActivation Keys: red pen, drafts']);
+    const seen: Chat[] = [];
+    function Watch() {
+      const [chat, setChat] = useState(start);
+      return <ChatView chat={chat} world={world} connection={connection} settings={DEFAULT_SETTINGS} onChange={(next) => { seen.push(next); setChat(next); }} onBack={() => {}} onDelete={() => {}} onSettings={() => {}} generateImpl={impl as never} />;
+    }
+    render(<Watch />);
+    fireEvent.click(screen.getByRole('button', { name: 'Memory' }));
+    const dialog = screen.getByRole('dialog', { name: 'Memory' });
+    expect(within(dialog).getByText(/What Errata keeps from this chat\./)).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: /^Reflect/ }));
+    const ask = await within(dialog).findByRole('region', { name: 'Reflect: what it will send' });
+    expect(impl).not.toHaveBeenCalled();
+    expect(ask).toHaveTextContent(/Errata writes a diary entry about the chat so far\. This sends about [\d,]+ tokens to test\/model/);
+    fireEvent.click(within(ask).getByRole('button', { name: 'Write it' }));
+    await waitFor(() => expect(within(dialog).getByRole('status', { name: 'Kept' })).toHaveTextContent('Kept in the diary. The red pen'));
+    expect(calls).toHaveLength(1);
+    expect(seen.at(-1)!.diary).toMatchObject([{ name: 'The red pen', keys: ['red pen', 'drafts'] }]);
+    // And the way to everything she keeps.
+    fireEvent.click(within(dialog).getByRole('button', { name: /Everything Errata keeps/ }));
+    expect(within(screen.getByRole('complementary', { name: 'Under the hood' })).getByRole('region', { name: 'Diary' })).toBeInTheDocument();
   });
 
   it('keeps story time, moved by hand, and shows it under the hood', () => {

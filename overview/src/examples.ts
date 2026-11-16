@@ -6,20 +6,24 @@ export { HOUSE_WORLD_ID } from '../../kit/src/included';
 export const IMPORTS_WORLD_ID = 'inkwyrm-imports';
 
 export interface ExampleWorld { worldId: string; name: string; line: string; note: string; href: string; cover: { over: string; title: string } }
+// A home that comes with the site: a household's house, by its world and its scenario.
+export interface ExampleHome { worldId: string; scenarioId: string; name: string; world: string; line: string; who: string }
 export interface ExampleAdventure { name: string; title: string; opening: string; href: string; note: string }
 
-export const EXAMPLE_WORLDS: ExampleWorld[] = [
+// No world comes with the site as an example yet: the dragon's resort and HOG Wild are
+// households, shown under Homes, and never offered as worlds to play.
+export const EXAMPLE_WORLDS: ExampleWorld[] = [];
+
+export const EXAMPLE_HOMES: ExampleHome[] = [
   {
-    worldId: 'dragons-resort', name: 'The dragon\'s resort',
+    worldId: 'dragons-resort', scenarioId: 'resort-arrival', name: 'Autumn\'s Leaves', world: 'The dragon\'s resort',
     line: 'A teahouse at the edge of myth, run by a dragon whose mother and half-sister have moved in for the season.',
-    note: 'Opens a copy in the Studio, in this browser. Its three are in Chat and Home.',
-    href: '/studio/#/bring/dragons-resort', cover: { over: 'Autumn\'s Leaves', title: 'The dragon\'s resort' },
+    who: 'Qiulong, Errata and Echydna',
   },
   {
-    worldId: 'hog-wild', name: 'HOG Wild',
+    worldId: 'hog-wild', scenarioId: 'house', name: 'The House', world: 'HOG Wild',
     line: 'A glass-fronted house on the Mile streams six residents to the city, always live, and the audience bids on their choices.',
-    note: 'Opens a copy in the Studio, in this browser. Its six are in Chat and Home.',
-    href: '/studio/#/bring/hog-wild', cover: { over: 'The Mile', title: 'HOG Wild' },
+    who: 'Six residents, one of them a companion unit',
   },
 ];
 

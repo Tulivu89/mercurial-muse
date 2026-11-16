@@ -87,9 +87,15 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .scene { box-sizing: border-box; width: 100%; padding: 28px clamp(18px, 4vw, 48px); border-radius: 6px; background: #2F3B33; color: #EDE5D6; }
 .scene-line { margin: 0; max-width: 60ch; font-family: var(--read); font-style: italic; font-size: clamp(18px, 2vw, 22px); line-height: 1.5; }
 
-.home-strip { display: flex; align-items: flex-start; gap: 14px; padding: 16px 20px; border: 1px dashed var(--rule); border-radius: 10px; }
-.home-strip p { margin: 0; font-family: var(--read); line-height: 1.5; color: var(--text-2); }
-.home-strip b { color: var(--text); font-family: var(--ui); }
+.home-list { display: flex; flex-direction: column; gap: 18px; }
+.home-item { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 18px; align-items: start; }
+.home-item + .home-item { padding-top: 18px; border-top: 1px solid var(--rule); }
+.home-item-cover { display: block; width: 132px; aspect-ratio: 4 / 3; border-radius: 6px; overflow: hidden; border: 1px solid var(--rule); background: var(--raised); text-decoration: none; line-height: 0; }
+.home-item-cover img, .home-item-cover .media-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+.home-item-cover.bare { display: flex; align-items: center; justify-content: center; line-height: 1; font-family: var(--display); font-weight: 600; font-size: 56px; color: var(--rule); }
+.home-people { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 14px; min-width: 0; width: 100%; }
+.home-people li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-2); }
+.home-people b { color: var(--text); }
 .overview-foot { display: flex; flex-direction: column; gap: 4px; padding-top: 16px; border-top: 1px solid var(--rule); }
 .overview-foot p { margin: 0; }
 .overview :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
@@ -109,6 +115,8 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
   .character-line, .character-excerpt { display: none; }
   .world-card { grid-template-columns: 96px minmax(0, 1fr); gap: 14px; }
   .cover { width: 96px; }
+  .home-item { grid-template-columns: 96px minmax(0, 1fr); gap: 14px; }
+  .home-item-cover { width: 96px; }
   .continue-go { width: 100%; justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) {

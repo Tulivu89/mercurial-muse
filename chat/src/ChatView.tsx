@@ -4,20 +4,25 @@
 // under the hood.
 import { useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import {
-  PROFILE_NAMES, XIALONG, addAlternative, addReply, addUserMessage, buildRequest, buildSide, clockNow, clockTracks, deleteMessage, editMessage, editableText, formatMinutes,
-  hasSchedule, lastEmotion, messageText, pickedAlt, profileFor, readReply, readSide, recentEmotions, remember, replacePicked, sceneFor, sideTask,
-  SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type PackSettings, type ReplyPart, type SideKind,
+  PROFILE_NAMES, XIALONG, addAlternative, addNote, addReply, addUserMessage, buildRequest, buildSide, clockNow, clockTracks, deleteMessage, editMessage, editableText, formatMinutes,
+  hasSchedule, isNoteText, lastEmotion, messageText, pickedAlt, profileFor, readReply, readSide, recentEmotions, replacePicked, sceneFor, sideTask,
+  SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type HomeRef, type Life, type PackSettings, type ReplyPart, type SideKind,
 } from '../../core/chat/index.js';
 import type { World } from '../../core/records/index.js';
 import { canPrefill, generate, requestFor, type Connection, type GenerateOptions, type NarrationError } from '../../kit/src/connection';
 import { clock as clockText, downloadJson, fileSafe, newId } from '../../kit/src/util';
-import { AgainIcon, BackIcon, BinIcon, CloseIcon, ContinueIcon, CopyIcon, EditIcon, KeepIcon, NextIcon, SendIcon, StopIcon } from './icons';
+import { CharacterSheet, type SheetTab } from './CharacterSheet';
+import type { HouseAt } from './House';
+import { AgainIcon, BackIcon, BinIcon, BrainIcon, CloseIcon, ContinueIcon, CopyIcon, EditIcon, HouseIcon, NextIcon, NoteIcon, SendIcon, StopIcon } from './icons';
+import { MemorySheet } from './MemorySheet';
 import { ContextPanel, DetailsPanel, MemoryPanel, SentPanel, TimePanel, type ExportApi, type SideApi } from './Panels';
 import { Portrait } from './Portrait';
 import { InkMark } from '../../kit/src/Mark';
 import { RichText } from './RichText';
 import { contextTokensFor, type Settings } from './settings';
+import type { PostApi } from './posting';
 import type { PortraitSet, Sent } from './store';
+import type { PersonaRef } from './You';
 
 type Kind = 'reply' | 'regenerate' | 'continue';
 type Panel = 'sent' | 'context' | 'memory' | 'time' | 'details';
@@ -44,11 +49,22 @@ export interface ChatViewProps {
   onOverview?: () => void | Promise<void>;
   onDelete: () => void;
   onSettings: () => void;
+  // Home, from inside the chat: the character's own day, the house they live in and the way
+  // there, their feed, and every picture, for housemates' faces.
+  life?: Life | null;
+  onLife?: (life: Life) => void;
+  home?: HomeRef | null;
+  onHome?: (at: HouseAt) => void;
+  posting?: PostApi;
+  allPortraits?: Record<string, PortraitSet>;
+  onPicture?: (owner: string, slot: string, file: File | null) => void;
+  // The personas you could be in this chat.
+  personas?: PersonaRef[];
   // Swapped out in tests so nothing leaves the machine.
   generateImpl?: typeof generate;
 }
 
-export function ChatView({ chat, world, connection, settings, portraits, sent = null, needs, onChange, onSent, onBack, onOverview, onDelete, onSettings, generateImpl = generate }: ChatViewProps) {
+export function ChatView({ chat, world, connection, settings, portraits, sent = null, needs, onChange, onSent, onBack, onOverview, onDelete, onSettings, life = null, onLife, home = null, onHome, posting, allPortraits = {}, onPicture, personas = [], generateImpl = generate }: ChatViewProps) {
   // The status line follows the clock without a reply having to happen.
   const [tick, setTick] = useState(() => Date.now());
   useEffect(() => { const timer = setInterval(() => setTick(Date.now()), 30_000); return () => clearInterval(timer); }, []);
@@ -62,8 +78,11 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
   const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [panel, setPanel] = useState<Panel | null>(null);
-  const [face, setFace] = useState(false);
-  const [remembering, setRemembering] = useState<string | null>(null);
+  const [sheet, setSheet] = useState<SheetTab | null>(null);
+  // The memory sheet: for the whole chat (from the prompt bar), or as it stood at one message.
+  const [memory, setMemory] = useState<{ upTo: number; text: string } | 'chat' | null>(null);
+  const [added, setAdded] = useState(false);
+  const box = useRef<HTMLTextAreaElement>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [lastSent, setLastSent] = useState<Sent | null>(sent);
   const [preview, setPreview] = useState<Built | null>(null);
@@ -210,9 +229,28 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     setError(failure);
   }
 
+  // A note goes in without asking for a reply: the scene is set, and the next message or an
+  // empty Send has the character answer it.
+  function note(text: string) {
+    const next = addNote({ ...chatRef.current, draft: '' }, text, newId(), Date.now());
+    scroll.current.stick = true;
+    setAdded(true);
+    onChange(next);
+  }
+  // The note button: what is typed goes in as a note; with nothing typed, it opens the brackets.
+  function noteButton() {
+    if (busy) return;
+    if (chat.draft.trim()) { note(chat.draft); return; }
+    onChange({ ...chat, draft: '[]' });
+    requestAnimationFrame(() => { box.current?.focus(); box.current?.setSelectionRange(1, 1); });
+  }
+
   function send() {
     if (busy || inFlight.current) return;
     const text = chat.draft.trim();
+    // A draft that is nothing but bracketed lines is a note, however it was typed.
+    if (text && isNoteText(text)) { note(text); return; }
+    setAdded(false);
     let base: Chat = { ...chatRef.current, draft: '' };
     if (text) base = { ...addUserMessage(base, text, newId(), Date.now()), draft: '' };
     onChange(base);
@@ -221,11 +259,11 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
 
   // A diary entry, a feeling or a plan: shown before it is sent, and sent only when asked.
   const side: SideApi = {
-    preview: async (kind: SideKind) => {
+    preview: async (kind: SideKind, upTo = chat.messages.length) => {
       const blocked = ready();
       if (blocked) return blocked;
-      const task = sideTask(kind, recentEmotions(chat, 10), rng);
-      const built = await buildSide(task, chat, world!, buildOptions(chat.messages.length, false, true));
+      const task = sideTask(kind, recentEmotions(chat, 10, upTo), rng);
+      const built = await buildSide(task, chat, world!, buildOptions(chat.messages.length, false, true), upTo);
       // Models that think before they write need room for it on top of CharacterRoom's budget.
       return built ? { kind, built, maxTokens: profile === 'aetherroom' ? task.maxTokens : Math.max(task.maxTokens * 2, 600) } : 'This chat\'s world is gone.';
     },
@@ -260,7 +298,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     try { await navigator.clipboard.writeText(messageText(message)); setCopied(message.id); setTimeout(() => setCopied(null), 1500); } catch { setError('This browser would not copy the text.'); }
   };
 
-  const bubbles = (parts: readonly ReplyPart[], from: 'user' | 'character') => parts.map((part, at) => (
+  const bubbles = (parts: readonly ReplyPart[], from: ChatMessage['from']) => parts.map((part, at) => (
     <div key={at} className={`bubble ${from}`}><RichText text={part.text} /></div>
   ));
   const streaming = busy ? readReply(busy.text, busy.lead, charName, userName) : [];
@@ -279,10 +317,12 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     return set && member ? { key: `${pick.ownerId}:${pick.setId}`, title: set.title, name: member.name, pinned: pick.why === 'pinned' } : null;
   }).filter((entry) => entry !== null) ?? [];
   const bond = `${chat.relationship.charAt(0).toUpperCase()}${chat.relationship.slice(1)}`;
+  const draftIsNote = isNoteText(chat.draft.trim());
+  const lastFrom = chat.messages.at(-1)?.from;
 
   // Who they are right now: the portrait at full size, who they are, what they are doing and where,
   // each said once.
-  const about = (
+  const about = (sets: boolean) => (
     <>
       {/* With no pictures yet, a small initial; the large frame is for a portrait. */}
       <Portrait name={charName} emotion={emotion} set={portraits} size={Object.keys(portraits ?? {}).length ? 0 : 72} />
@@ -292,7 +332,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
         {scene?.character.line && <p className="line">{scene.character.line}</p>}
         {scheduled && <p className="now"><span className={`dot${scene!.status.live.length ? ' on' : ''}`} />{status}</p>}
         {scheduled && <p className="hint">{stamp}{clockTracks(chat.clock) ? '' : ` · ${charName} isn\u2019t told the time`}</p>}
-        {wearing.length > 0 && (
+        {sets && wearing.length > 0 && (
           <dl className="about-sets">
             {wearing.map((entry) => <div key={entry.key}><dt>{entry.title}</dt><dd>{entry.name}{entry.pinned && <span className="hint"> · pinned</span>}</dd></div>)}
           </dl>
@@ -302,8 +342,8 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
   );
 
   return (
-    <div className={`chat${panel ? ' paneled' : ''}${settings.rail ? ' railed' : ''}`} data-size={settings.textSize} data-layout={settings.layout}>
-      {settings.rail && <aside className="rail" aria-label={`About ${charName}`}>{about}</aside>}
+    <div className={`chat${panel || sheet || memory ? ' paneled' : ''}${settings.rail ? ' railed' : ''}`} data-size={settings.textSize} data-layout={settings.layout}>
+      {settings.rail && <aside className="rail" aria-label={`About ${charName}`}>{about(true)}</aside>}
 
       <div className="column">
         <header className={`chat-head${tucked && !panel ? ' tucked' : ''}`}>
@@ -314,14 +354,15 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
             try { await inFlight.current; await onOverview?.(); window.location.assign('/overview/'); }
             catch { leaving.current = false; /* the app reports the save failure */ }
           }}><InkMark size={28} /></a>
-          <button type="button" className="who" onClick={() => setFace(true)} aria-label={`About ${charName}`}>
+          <button type="button" className="who" onClick={() => { setPanel(null); setSheet(sheet ? null : 'now'); }} aria-expanded={sheet !== null} aria-label={`About ${charName}`}>
             <Portrait name={charName} emotion={emotion} set={portraits} size={40} />
             <span className="chat-who">
               <b>{charName}</b>
               <span className="hint">{scheduled ? <><span className={`dot${scene!.status.live.length ? ' on' : ''}`} />{status} · {stamp}</> : connection.connected ? `${connection.model} · ${PROFILE_NAMES[profile]}` : 'Not connected'}</span>
             </span>
           </button>
-          <button type="button" className="meter-chip" onClick={() => setPanel(panel ? null : 'sent')} aria-expanded={panel !== null} aria-label="Under the hood" title="Under the hood: what was sent, memory, time">
+          {home && onHome && <button type="button" className="icon-btn plain" onClick={() => { setPanel(null); setSheet(sheet === 'home' ? null : 'home'); }} aria-label={`${charName} at home: ${home.scenario.name}`} title={`${charName} at home: ${home.scenario.name}`}><HouseIcon /></button>}
+          <button type="button" className="meter-chip" onClick={() => { setSheet(null); setPanel(panel ? null : 'sent'); }} aria-expanded={panel !== null} aria-label="Under the hood" title="Under the hood: what was sent, memory, time">
             {lastSent ? compact(lastSent.tokens) : '···'}
           </button>
         </header>
@@ -331,6 +372,8 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
           {chat.messages.map((message, index) => {
             const alt = pickedAlt(message);
             const mine = message.from === 'user';
+            const theirs = message.from === 'character';
+            const aside = message.from === 'note';
             const replaced = busy?.messageId === message.id;
             const isLast = message.id === lastId;
             const open = openId === message.id;
@@ -339,7 +382,8 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
                 <div key={message.id} className={`turn ${message.from} editing`}>
                   <label className="sr" htmlFor={`edit-${message.id}`}>Edit this message</label>
                   <textarea id={`edit-${message.id}`} className="input edit" rows={Math.min(14, editing.text.split('\n').length + 2)} value={editing.text} onChange={(event) => setEditing({ id: message.id, text: event.target.value })} autoFocus />
-                  {!mine && <p className="hint">The last line is the emotion {charName} shows: one of the 24, or neutral.</p>}
+                  {theirs && <p className="hint">The last line is the emotion {charName} shows: one of the 24, or neutral.</p>}
+                  {aside && <p className="hint">A note sits outside the story, in square brackets. {charName} takes it as true from here on.</p>}
                   <div className="row">
                     <button type="button" className="btn small primary" onClick={() => { onChange(editMessage(chat, message.id, editing.text, charName, Date.now())); setEditing(null); }}>Save</button>
                     <button type="button" className="btn small quiet" onClick={() => setEditing(null)}>Cancel</button>
@@ -347,7 +391,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
                 </div>
               );
             }
-            const swipe = !mine && (message.alts.length > 1 || isLast) && (
+            const swipe = theirs && (message.alts.length > 1 || isLast) && (
               <span className="swipe">
                 <button type="button" className="chip-btn" onClick={() => step(message, -1)} disabled={message.pick === 0} aria-label="Earlier reply"><BackIcon size={16} /></button>
                 <span aria-label={`Reply ${message.pick + 1} of ${message.alts.length}`}>{message.pick + 1}/{message.alts.length}</span>
@@ -356,23 +400,23 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
             );
             return (
               <div key={message.id} className={`turn ${message.from}${index < windowStart ? ' out' : ''}${open ? ' open' : ''}`} onTouchStart={(event) => { const point = event.touches[0]; touch.current = point ? { x: point.clientX, y: point.clientY } : null; }} onTouchEnd={onTouchEnd(message)}>
-                <span className="speaker">{mine ? userName : charName}</span>
-                <div className="bubbles" role="group" aria-label={`${mine ? userName : charName}, ${clockText(message.at, Date.now())}`} onClick={() => setOpenId(open ? null : message.id)}>
+                <span className="speaker">{aside ? 'Note' : mine ? userName : charName}</span>
+                <div className="bubbles" role="group" aria-label={`${aside ? 'A note' : mine ? userName : charName}, ${clockText(message.at, Date.now())}`} onClick={() => setOpenId(open ? null : message.id)}>
                   {replaced && busy.kind === 'regenerate' ? (streaming.length ? bubbles(streaming, 'character') : typing)
                     : replaced ? bubbles(streaming.length ? streaming : alt.parts, 'character')
                       : bubbles(alt.parts, message.from)}
                 </div>
-                {!busy && (open || (isLast && !mine)) && (
+                {!busy && (open || (isLast && theirs)) && (
                   <div className="actions">
                     {swipe}
-                    {!mine && isLast && <button type="button" className="chip-btn" onClick={() => void run('regenerate', message.id)} aria-label="Regenerate" title="Regenerate"><AgainIcon size={16} /></button>}
+                    {theirs && isLast && <button type="button" className="chip-btn" onClick={() => void run('regenerate', message.id)} aria-label="Regenerate" title="Regenerate"><AgainIcon size={16} /></button>}
                     {open && (
                       <>
-                        {!mine && isLast && <button type="button" className="chip-btn" onClick={() => void run('continue', message.id)} aria-label="Continue" title="Continue this reply"><ContinueIcon size={16} /></button>}
+                        {theirs && isLast && <button type="button" className="chip-btn" onClick={() => void run('continue', message.id)} aria-label="Continue" title="Continue this reply"><ContinueIcon size={16} /></button>}
                         <button type="button" className="chip-btn" onClick={() => setEditing({ id: message.id, text: editableText(message, charName) })} aria-label="Edit" title="Edit"><EditIcon size={16} /></button>
                         <button type="button" className="chip-btn" onClick={() => void copy(message)} aria-label="Copy" title="Copy">{copied === message.id ? <span className="done">Copied</span> : <CopyIcon size={16} />}</button>
-                        <button type="button" className="chip-btn" onClick={() => setRemembering(messageText(message).replace(/\*/g, '').replace(/\s+/g, ' ').trim().slice(0, 300))} aria-label="Remember this" title="Remember this"><KeepIcon size={16} /></button>
-                        <button type="button" className="chip-btn danger" onClick={() => { if (window.confirm('Delete this message? The model stops seeing it too.')) onChange(deleteMessage(chat, message.id, Date.now())); }} aria-label="Delete" title="Delete"><BinIcon size={16} /></button>
+                        {!aside && <button type="button" className="chip-btn" onClick={() => { setPanel(null); setSheet(null); setMemory({ upTo: index + 1, text: messageText(message).replace(/\*/g, '').trim().slice(0, 2000) }); }} aria-label="Memory, from this message" title={`Memory: what ${charName} keeps from the chat up to here`}><BrainIcon size={16} /></button>}
+                        <button type="button" className="chip-btn danger" onClick={() => { if (window.confirm(aside ? 'Delete this note? The model stops seeing it too.' : 'Delete this message? The model stops seeing it too.')) onChange(deleteMessage(chat, message.id, Date.now())); }} aria-label="Delete" title="Delete"><BinIcon size={16} /></button>
                       </>
                     )}
                   </div>
@@ -384,37 +428,41 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
           {error && <p className="status bad" role="alert">{error} {!connection.connected && <button type="button" className="link" onClick={onSettings}>Open Settings</button>}</p>}
         </main>
 
+        {(draftIsNote || (added && lastFrom === 'note')) && !busy && (
+          <p className="composer-hint" role="status">{draftIsNote ? `A note: it goes in without asking ${charName} for a reply.` : `Added. Send with the box empty when you want ${charName} to answer.`}</p>
+        )}
         <form className="composer" onSubmit={(event) => { event.preventDefault(); send(); }}>
+          <button type="button" className="bar-btn" onClick={() => { setPanel(null); setSheet(null); setMemory(memory ? null : 'chat'); }} aria-expanded={memory !== null} aria-label="Memory" title={`Memory: have ${charName} reflect, feel or plan, or add a journal entry`}><BrainIcon /></button>
+          <button type="button" className="bar-btn" onClick={noteButton} disabled={!!busy} aria-label={chat.draft.trim() ? 'Add as a note, without a reply' : 'Write a note'} title="A note in [square brackets]: sets the scene or gives a direction, and doesn't ask for a reply"><NoteIcon /></button>
           <label className="sr" htmlFor="draft">Your message</label>
           <textarea
-            id="draft" rows={1} value={chat.draft} placeholder={`Message ${charName}`}
+            id="draft" ref={box} rows={1} value={chat.draft} placeholder={lastFrom === 'note' || lastFrom === 'user' ? `Message ${charName}, or send empty for a reply` : `Message ${charName}`}
             onChange={(event) => onChange({ ...chat, draft: event.target.value })}
             onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); send(); } }}
           />
           {busy
             ? <button type="button" className="send" onClick={() => abort.current?.abort()} aria-label="Stop"><StopIcon /></button>
-            : <button type="submit" className="send" aria-label="Send"><SendIcon /></button>}
+            : <button type="submit" className={`send${draftIsNote ? ' noting' : ''}`} aria-label={draftIsNote ? 'Add the note' : 'Send'}>{draftIsNote ? <NoteIcon /> : <SendIcon />}</button>}
         </form>
       </div>
 
-      {face && (
-        <div className="sheet face" role="dialog" aria-label={`About ${charName}`}>
-          <button type="button" className="icon-btn plain close" onClick={() => setFace(false)} aria-label="Close"><CloseIcon /></button>
-          {about}
-        </div>
+      {sheet && (
+        <CharacterSheet
+          key={sheet}
+          chat={chat} onChange={onChange} scene={scene} world={world} charName={charName} userName={userName} about={about(false)}
+          portraits={allPortraits} life={life} onLife={onLife} home={home} onHome={onHome} posting={posting} onPicture={onPicture}
+          personas={personas} tab={sheet} onClose={() => setSheet(null)}
+        />
       )}
 
-      {remembering !== null && (
-        <div className="sheet" role="dialog" aria-label="Remember this">
-          <h2>Remember this</h2>
-          <p className="hint">A fact for {charName}'s journal about {userName}. It goes with every reply from now on, so say it plainly, as {charName} would know it.</p>
-          <label className="sr" htmlFor="fact">The fact</label>
-          <textarea id="fact" className="input" rows={3} value={remembering} onChange={(event) => setRemembering(event.target.value)} autoFocus />
-          <div className="row">
-            <button type="button" className="btn primary" disabled={!remembering.trim()} onClick={() => { onChange(remember(chat, remembering, newId(), Date.now())); setRemembering(null); }}>Keep it</button>
-            <button type="button" className="btn quiet" onClick={() => setRemembering(null)}>Cancel</button>
-          </div>
-        </div>
+      {memory && (
+        <MemorySheet
+          key={memory === 'chat' ? 'chat' : memory.upTo}
+          chat={chat} onChange={onChange} charName={charName} userName={userName} model={connection.model} side={side}
+          at={memory === 'chat' ? null : memory}
+          onClose={() => setMemory(null)}
+          onAll={() => { setMemory(null); setSheet(null); setPanel('memory'); }}
+        />
       )}
 
       {panel && (
@@ -427,7 +475,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
           </div>
           {panel === 'sent' && <SentPanel sent={lastSent} exports={world ? exports : undefined} charName={charName} />}
           {panel === 'context' && <ContextPanel preview={preview} budget={contextTokensFor(settings, connection)} gone={!world} model={connection.model} charName={charName} />}
-          {panel === 'memory' && <MemoryPanel chat={chat} onChange={onChange} charName={charName} userName={userName} model={connection.model} side={side} onRemember={() => setRemembering('')} />}
+          {panel === 'memory' && <MemoryPanel chat={chat} onChange={onChange} charName={charName} userName={userName} model={connection.model} side={side} onRemember={() => setMemory('chat')} />}
           {panel === 'time' && <TimePanel chat={chat} onChange={onChange} scene={scene} charName={charName} />}
           {panel === 'details' && <DetailsPanel chat={chat} onChange={onChange} scene={scene} world={world} charName={charName} onDelete={onDelete} exports={world ? exports : undefined} />}
         </aside>

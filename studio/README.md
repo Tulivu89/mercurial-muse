@@ -68,6 +68,10 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - The default questions are the plan's: six for a character, five for a place, the thread's five and its next beat, and a few for every other kind. W4 makes them the author's own.
   - **Settings › The Studio's helper:** a model for drafts and Errata apart from play's (same provider and key), and **Plain voice**, which takes Errata's manner away and leaves the same helper.
   - **Talks with Errata** on the world's About page: **Export talks** saves the world's talks and waiting drafts as `<world>.talks.json`, and **Open a talks file** brings them back beside the same world, keeping anything already there. The world's own file never carries them.
+- **Homes** (0.15.0). A home is a scenario with rooms, and Chat's Home lists it.
+  - **New household** on the Studio's first page makes a world for Chat with its house in it, and opens on the house.
+  - **The Home door** on every scenario: the rooms (a name, what is there, who may go in), who lives there and where each of them is when nothing is on, someone new added on the spot, **Shown in Chat's Home**, and **Open in Home**. Pictures and where figures stand are arranged in Chat.
+  - **What this world is for**, on a world's About page: a world, played as an adventure, or a household, for Chat. A household has no Play in the adventure and no adventure door on its scenario; it has Open in Home.
 - **For the Overview** (0.14.1): a record that really opens is noted, with its door, for the front page's Continue (`kit/src/activity.ts`), and `#/bring/<example>` opens that bundled world, bringing it in only if this browser doesn't have it yet.
 - **The marks** (0.7.1): the Studio's nib in the header and on the home page, in wet ink, black by day and bone at night (`kit/src/Mark.tsx`). It drops in when the Studio opens; page titles are written on and a new page settles in from a slight blur, all off with reduced motion. The tab shows the flat nib.
 - **Genre:** the purse's words are the Coin state's bands and the catalog's names are editable, so a modern world's hundred *could buy a car*.

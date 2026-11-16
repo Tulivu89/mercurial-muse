@@ -9,6 +9,8 @@
 export type Target =
   | { kind: 'chat'; chatId: string }
   | { kind: 'adventure'; saveId: string }
+  // A Home in Chat: a scenario with rooms, by its world and its own id.
+  | { kind: 'home'; worldId: string; scenarioId: string }
   | { kind: 'studio'; worldId: string; recordId?: string; door?: string };
 
 export interface Activity { target: Target; openedAt: number }
@@ -25,6 +27,7 @@ function readTarget(raw: unknown): Target | null {
   const value = raw as Record<string, unknown>;
   if (value.kind === 'chat' && text(value.chatId)) return { kind: 'chat', chatId: value.chatId };
   if (value.kind === 'adventure' && text(value.saveId)) return { kind: 'adventure', saveId: value.saveId };
+  if (value.kind === 'home' && text(value.worldId) && text(value.scenarioId)) return { kind: 'home', worldId: value.worldId, scenarioId: value.scenarioId };
   if (value.kind === 'studio' && text(value.worldId)) {
     return {
       kind: 'studio', worldId: value.worldId,
@@ -52,9 +55,10 @@ export function readNavigation(raw: string | null): NavigationV1 {
   return { version: 1, recent: dedupe(recent).slice(0, MOST_RECENT) };
 }
 
-// One entry per place: a chat, a save, a world (the record and door are where in it).
+// One entry per place: a chat, a save, a home, a world (the record and door are where in it).
 export const sameTarget = (a: Target, b: Target) =>
-  a.kind === b.kind && (a.kind === 'chat' ? a.chatId === (b as typeof a).chatId : a.kind === 'adventure' ? a.saveId === (b as typeof a).saveId : a.worldId === (b as typeof a).worldId);
+  a.kind === b.kind && (a.kind === 'chat' ? a.chatId === (b as typeof a).chatId : a.kind === 'adventure' ? a.saveId === (b as typeof a).saveId
+    : a.kind === 'home' ? a.worldId === (b as typeof a).worldId && a.scenarioId === (b as typeof a).scenarioId : a.worldId === (b as typeof a).worldId);
 
 function dedupe(list: Activity[]): Activity[] {
   const kept: Activity[] = [];
@@ -82,6 +86,7 @@ export function recordActivity(target: Target, openedAt = Date.now()): void {
 export const hrefFor = (target: Target): string => {
   if (target.kind === 'chat') return `/chat/#/chat/${encodeURIComponent(target.chatId)}`;
   if (target.kind === 'adventure') return `/?save=${encodeURIComponent(target.saveId)}`;
+  if (target.kind === 'home') return homeHref(target.worldId, target.scenarioId);
   const asked = new URLSearchParams();
   if (target.recordId) asked.set('rec', target.recordId);
   if (target.recordId && target.door) asked.set('door', target.door);
@@ -89,4 +94,5 @@ export const hrefFor = (target: Target): string => {
   return `/studio/#/w/${encodeURIComponent(target.worldId)}${query ? `?${query}` : ''}`;
 };
 
+export const homeHref = (worldId: string, scenarioId: string) => `/chat/#/home/${encodeURIComponent(worldId)}/${encodeURIComponent(scenarioId)}`;
 export const chatWithHref = (worldId: string, recordId: string) => `/chat/#/with/${encodeURIComponent(worldId)}/${encodeURIComponent(recordId)}`;

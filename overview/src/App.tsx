@@ -5,7 +5,7 @@
 // It reads this browser's stores and nothing else. It makes no model calls, creates no chats,
 // saves or Lives, and writes nothing. Each store loads and fails on its own.
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Chat } from '../../core/chat/index.js';
+import type { Chat, Life } from '../../core/chat/index.js';
 import type { World } from '../../core/records/index.js';
 import { atlasOf, chainOf, circlesOf, placeMap } from '../../core/map/index.js';
 import { loadNavigation, type NavigationV1 } from '../../kit/src/activity';
@@ -17,7 +17,7 @@ import { ERRATA_ID } from '../../kit/src/included';
 import { MediaImage, animationSlot, posterSlot } from '../../kit/src/media';
 import '../../kit/src/media.css';
 import { portraitSets, type Portrait, type PortraitSet } from '../../chat/src/store';
-import { selectOverview, type Authoring, type CharacterCard, type Read, type SaveSummary, type WorldCard } from './select';
+import { selectOverview, type Authoring, type CharacterCard, type HomeCard, type Read, type SaveSummary, type WorldCard } from './select';
 
 export interface Readers {
   worlds: () => Promise<World[]>;
@@ -26,6 +26,7 @@ export interface Readers {
   authoring: () => Promise<Authoring>;
   house: () => World;
   portraits?: () => Promise<Portrait[]>;
+  lives?: () => Promise<Record<string, Life>>;
 }
 
 const message = (error: unknown) => (error instanceof Error ? error.message : 'It could not be read.');
@@ -59,9 +60,10 @@ export function App({ readers }: { readers: Readers }) {
   const authoring = useRead(readers.authoring, tick);
   const portraits = useRead(readers.portraits ?? (async () => []), tick);
   const pictures = useMemo(() => portraits.state === 'ready' ? portraitSets(portraits.value) : {}, [portraits]);
+  const lives = useRead(readers.lives ?? (async () => ({})), tick);
   const collection = useCollection();
   const house = useMemo(() => readers.house(), [readers]);
-  const view = selectOverview({ worlds, chats, saves, authoring, navigation, house, collection });
+  const view = selectOverview({ worlds, chats, saves, authoring, navigation, house, collection, lives });
 
   return (
     <>
@@ -95,15 +97,25 @@ export function App({ readers }: { readers: Readers }) {
             </div>
           </Panel>
 
+          <Panel mark="main" title="Homes" more={{ label: 'All homes', href: '/chat/#/home' }} loading={worlds.state === 'loading'}>
+            <div className="home-list">{view.homes.map((card) => <HomeItem key={card.key} card={card} set={card.owner ? pictures[card.owner] : undefined} />)}</div>
+            <p className="panel-lede">A home is where the people you chat with live, each going about their day by their own clock. Look in, do something for them, read what they have posted.</p>
+            <div className="row panel-foot">
+              <a className="link-btn" href="/studio/">Build a home</a>
+              <span className="hint">In the Studio: a household, its rooms, and who lives there.</span>
+            </div>
+          </Panel>
+
           <Panel mark="nib" title="Worlds" more={{ label: 'Your library', href: '/studio/' }} loading={worlds.state === 'loading'}>
             <div className="world-cards">{view.worlds.map((card, index) => <WorldItem key={card.key} card={card} lead={index === 0} />)}</div>
+            {view.worlds.length === 0 && <p className="panel-lede">A world is places, people and the rules they keep, written once and played as an adventure. You have none yet.</p>}
             <div className="row panel-foot">
               <a className="link-btn" href="/studio/">Make a world</a>
               <span className="hint">Errata helps you build it, with your own model.</span>
             </div>
           </Panel>
 
-          <Panel mark="dragon" title="Adventure" more={{ label: 'All adventures', href: '/' }} loading={saves.state === 'loading'} wide>
+          <Panel mark="dragon" title="Adventure" more={{ label: 'All adventures', href: '/' }} loading={saves.state === 'loading'}>
             {view.adventure?.kind === 'save' && (
               <div className="adventure">
                 <p className="eyebrow">{view.adventure.tag}</p>
@@ -132,11 +144,6 @@ export function App({ readers }: { readers: Readers }) {
             {!view.adventure && <p className="hint">Saved games couldn&rsquo;t be read just now. <a href="/">Open the Adventure</a> to see them.</p>}
           </Panel>
         </div>
-
-        <section className="home-strip" aria-label="Home">
-          <InkMark name="main" size={28} />
-          <p><b>Home</b> puts the people you chat with in one place, going about their day by their own clocks. The first household is the dragon&rsquo;s resort: Qiulong, Errata and Echydna at Autumn&rsquo;s Leaves. <a href="/chat/#/home">Open Home in Chat</a> to bring them in.</p>
-        </section>
 
         <footer className="overview-foot">
           <p className="hint">One library, in this browser: your characters, worlds and games, across Inkwyrm. Nothing leaves it unless you export it.</p>
@@ -200,6 +207,26 @@ function Character({ card, lead, set }: { card: CharacterCard; lead: boolean; se
       {card.excerpt && <span className="character-excerpt">&ldquo;{card.excerpt}&rdquo;</span>}
       {card.world && <span className="character-world">{card.world}</span>}
     </a>
+  );
+}
+
+function HomeItem({ card, set }: { card: HomeCard; set?: PortraitSet }) {
+  const slot = card.slots?.find((entry) => set?.[entry]);
+  return (
+    <article className="home-item">
+      <a className={`home-item-cover${slot ? '' : ' bare'}`} href={card.href} aria-hidden="true" tabIndex={-1}>
+        {slot && set?.[slot] ? <MediaImage src={set[slot]!} poster={set[posterSlot(slot)]} animated={set[animationSlot(slot)] === 'true'} alt="" /> : <span>{card.name.replace(/^The /, '').charAt(0)}</span>}
+      </a>
+      <div className="world-text">
+        <p className="eyebrow">{card.tag === 'Included' ? 'Included home' : card.tag} · {card.world}</p>
+        <h3 className="card-title">{card.name}</h3>
+        <ul className="home-people">
+          {card.people.map((person) => <li key={person.name}><b>{person.name}</b> <span>{person.says}</span></li>)}
+          {card.more > 0 && <li><span>and {card.more} more</span></li>}
+        </ul>
+        <a className="btn" href={card.href}>{card.action} <span aria-hidden="true">→</span></a>
+      </div>
+    </article>
   );
 }
 
