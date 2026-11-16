@@ -9,8 +9,8 @@ import { readSchedule, resolveSet, type SetPick, type StatusRead } from './time.
 export interface Scene {
   // The world as this chat sees it. The character, persona and scenario are whole, each set
   // showing the member this moment calls for. Lore the chat has switched off is gone, other
-  // scenarios and personas are gone, and every other record keeps only what a key or a
-  // condition brings in, so someone else's Always text stays out.
+  // scenarios and personas are gone, other chat characters bring nothing, and every other record
+  // keeps only what a key or a condition brings in, so someone else's Always text stays out.
   view: World;
   character: StoryRecord;
   persona: StoryRecord | null;
@@ -48,6 +48,12 @@ export function sceneFor(world: World, chat: Chat, nowMs: number): Scene | null 
     if (record.kind === 'scenario' || record.kind === 'persona') return [];
     if (record.kind === 'lore') return off.has(record.id) ? [] : [record];
     if (record.kind === 'group') return [record];
+    // Another character's sections are their own brains, written for chats with them: keys like
+    // *where are you from* or *kiss* would bring in every resident's at once. Someone people chat
+    // with brings nothing into anyone else's chat; who they are to others lives in groups and lore.
+    // Anyone else keeps what their name brings in, but never a bond-gated section, since the bond
+    // in this chat is with someone else.
+    if (record.kind === 'character') return record.chatListed ? [{ ...record, sections: [], sets: [] }] : [{ ...record, sections: record.sections.filter((section) => section.reach === 'named'), sets: [] }];
     return [{ ...record, sections: record.sections.filter((section) => section.reach === 'named' || section.reach === 'when'), sets: [] }];
   });
   return {

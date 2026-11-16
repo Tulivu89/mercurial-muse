@@ -78,7 +78,7 @@ No invented systems.
 - **Done in this change:** dollar tags fire on Xialong (`keyVariants` in `core/chat/sheet.ts`, with a test).
 - **To build:**
   1. When a set member is pinned in a chat, tell the model in the changelog's form.
-  2. Brains and lore don't key in when their character isn't in the chat.
+  2. Brains and lore don't key in when their character isn't in the chat. **Done Nov 16:** a chat character brings nothing into another's chat (`sceneFor` in `core/chat/scene.ts`).
   3. Adding memories during a chat should be easy.
   4. Dropping a bracketed directive into a chat without sending a message (the owner's idea).
 

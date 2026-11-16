@@ -39,10 +39,12 @@ export async function labVariants(pack: TestPack, upTo: number, only?: readonly 
     const world = { ...pack.world, records: pack.world.records.map((record) => (record.id === character.id ? { ...record, examples: [] } : record)) };
     await add('no-examples', 'Without her example chats', 'Her example chats taken out. How much of her voice comes from them?', { ...pack, world });
   }
-  const others = pack.world.records.filter((record) => record.kind === 'character' && record.id !== pack.chat.characterId);
+  // Other chat characters already bring nothing into her chat; anyone else's Named sections can
+  // still come in on a key.
+  const others = pack.world.records.filter((record) => record.kind === 'character' && record.id !== pack.chat.characterId && !record.chatListed && record.sections.some((section) => section.reach === 'named'));
   if (others.length) {
     const world = { ...pack.world, records: pack.world.records.filter((record) => !others.includes(record)) };
-    await add('only-her', 'Without the others', `${others.map((record) => record.name).join(', ')} taken out of the world, so none of their sections can come in on a key.`, { ...pack, world });
+    await add('only-her', 'Without the others', `${others.map((record) => record.name).join(', ')} taken out of the world, so none of their Named sections can come in on a key.`, { ...pack, world });
   }
   if (!pack.chat.scenarioId && character) {
     const scenario = pack.world.records.find((record) => record.kind === 'scenario' && livesIn(character, record))

@@ -38,8 +38,8 @@ function provider(replies: string[]) {
 }
 
 // Holds the chat the way the app does, so changes come back in as props.
-function Harness({ impl, connected = true, layout = 'bubbles' as const }: { impl: ReturnType<typeof provider>['impl']; connected?: boolean; layout?: 'bubbles' | 'page' }) {
-  const [chat, setChat] = useState(start);
+function Harness({ impl, connected = true, layout = 'bubbles' as const, initial = start }: { impl: ReturnType<typeof provider>['impl']; connected?: boolean; layout?: 'bubbles' | 'page'; initial?: () => Chat }) {
+  const [chat, setChat] = useState(initial);
   return <ChatView chat={chat} world={world} connection={{ ...connection, connected }} settings={{ ...DEFAULT_SETTINGS, layout }} onChange={setChat} onBack={() => {}} onDelete={() => {}} onSettings={() => {}} generateImpl={impl as never} />;
 }
 
@@ -246,6 +246,20 @@ describe('the chat screen', () => {
     fireEvent.click(within(screen.getByRole('article', { name: 'Errata' })).getByRole('button', { name: 'Start chat' }));
     fireEvent.click(within(screen.getByRole('dialog', { name: 'New chat with Errata' })).getByRole('button', { name: 'Start the chat' }));
     expect((onStart.mock.calls[0]![0] as Chat).scenarioId).toBe('resort-arrival');
+  });
+
+  it('says who she is, what she is doing, and what she has on, each once', () => {
+    const { impl } = provider(['x']);
+    render(<Harness impl={impl} initial={() => ({ ...start(), scenarioId: 'resort-arrival' })} />);
+    fireEvent.click(screen.getByRole('button', { name: 'About Errata' }));
+    const card = screen.getByRole('dialog', { name: 'About Errata' });
+    const doing = card.querySelector('.now')!.textContent!;
+    expect(doing.length).toBeGreaterThan(0);
+    expect(card.textContent!.split(doing)).toHaveLength(2);
+    expect(within(card).getByText(/^Stranger/)).toBeInTheDocument();
+    expect(within(card).getByText(/Errata isn\u2019t told the time/)).toBeInTheDocument();
+    expect(within(card).queryByText(/by schedule|Looking neutral/)).toBeNull();
+    expect(card.querySelectorAll('.about-sets dt').length).toBeGreaterThan(0);
   });
 
   it('keeps story time, moved by hand, and shows it under the hood', () => {

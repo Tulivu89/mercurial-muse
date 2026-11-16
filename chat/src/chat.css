@@ -99,6 +99,10 @@
 .about-text h2 { font-family: var(--display); font-weight: 600; font-size: 26px; }
 .about-text .line { font-family: var(--read); color: var(--text-2); }
 .about-text .now { font-size: 15px; }
+.about-sets { display: grid; gap: 4px; margin: 4px 0 0; font-size: 14px; }
+.about-sets > div { display: flex; gap: 8px; }
+.about-sets dt { color: var(--text-2); font-weight: 600; min-width: 5.5em; }
+.about-sets dd { margin: 0; }
 .sheet.face .portrait.large { max-width: 420px; align-self: center; }
 .sheet .close { position: absolute; top: 8px; right: 8px; }
 @media (min-width: 1024px) {

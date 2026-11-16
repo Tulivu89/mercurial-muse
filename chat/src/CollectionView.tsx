@@ -1,4 +1,5 @@
 import { useLayoutEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+import type { IncludedWorld } from '../../kit/src/included';
 import { EMOTIONS, lastLine, type Chat } from '../../core/chat/index.js';
 import type { StoryRecord, World } from '../../core/records/index.js';
 import {
@@ -48,6 +49,9 @@ export interface CollectionViewProps {
   onPortrait?: (owner: string, slot: string, file: File | null) => void;
   onCreate?: (name: string) => Promise<void>;
   onBackup?: () => void;
+  // The worlds that come with the site and aren't in this browser yet.
+  bringable?: readonly IncludedWorld[];
+  onBring?: (id: string) => void;
 }
 
 export function CollectionView({
@@ -62,6 +66,8 @@ export function CollectionView({
   onPortrait,
   onCreate,
   onBackup,
+  bringable = [],
+  onBring,
 }: CollectionViewProps) {
   const collection = useCollection();
   const cast = useMemo(
@@ -746,6 +752,17 @@ export function CollectionView({
               Make a character
             </button>
           </div>
+          {onBring && bringable.length > 0 && (
+            <>
+              <h2>Comes with the site</h2>
+              {bringable.map((entry) => (
+                <div key={entry.id} className="row">
+                  <button type="button" className="btn" onClick={() => { onBring(entry.id); setSheet(null); }}>Bring in {entry.name}</button>
+                  <span className="hint">{entry.who}</span>
+                </div>
+              ))}
+            </>
+          )}
           <h2>From your worlds</h2>
           <p className="hint">
             Choose people individually. Their source worlds and adventures stay unchanged.

@@ -36,7 +36,7 @@ The lab looks at the last reply when the chat ends on one; `--turn <n>` picks an
 | `as-sent` | Nothing: exactly the request the chat sends, with today's code. |
 | `general` | For a Xialong chat: the General layout every other model gets. |
 | `no-examples` | Her example chats taken out. |
-| `only-her` | The other characters taken out of the world, so none of their sections can come in on a key. |
+| `only-her` | Anyone else in the world who isn't a chat character taken out, so none of their Named sections can come in on a key. Other chat characters never bring anything into her chat, so a world of chat characters has no `only-her`. |
 | `with-scenario` | For a chat with no scenario: her world's scenario put in. |
 
 After the replies are written:

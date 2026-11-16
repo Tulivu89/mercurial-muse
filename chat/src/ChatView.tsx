@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import {
   PROFILE_NAMES, XIALONG, addAlternative, addReply, addUserMessage, buildRequest, buildSide, clockNow, clockTracks, deleteMessage, editMessage, editableText, formatMinutes,
-  hasSchedule, lastEmotion, messageText, pickedAlt, profileFor, readReply, readSide, recentEmotions, remember, replacePicked, sceneFor, setWhyText, sideTask,
+  hasSchedule, lastEmotion, messageText, pickedAlt, profileFor, readReply, readSide, recentEmotions, remember, replacePicked, sceneFor, sideTask,
   SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type PackSettings, type ReplyPart, type SideKind,
 } from '../../core/chat/index.js';
 import type { World } from '../../core/records/index.js';
@@ -270,24 +270,33 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
   const scheduled = hasSchedule(scene?.character.schedule);
   const stamp = scene ? `${scene.status.day.slice(0, 3)} ${formatMinutes(scene.status.minutes)}` : '';
   const status = scheduled && scene ? statusText(scene.status) : '';
+  // What each set is showing. Why is left out unless it was pinned: the schedule's reason is the
+  // line above it, and the usual member needs no reason.
   const wearing = scene?.picks.map((pick) => {
     const owner = [scene.character, scene.persona, scene.scenario].find((record) => record?.id === pick.ownerId);
     const set = owner?.sets.find((entry) => entry.id === pick.setId);
     const member = set?.members.find((entry) => entry.id === pick.memberId);
-    return set && member ? { key: `${pick.ownerId}:${pick.setId}`, title: set.title, name: member.name, why: setWhyText(pick) } : null;
-  }).filter(Boolean) ?? [];
+    return set && member ? { key: `${pick.ownerId}:${pick.setId}`, title: set.title, name: member.name, pinned: pick.why === 'pinned' } : null;
+  }).filter((entry) => entry !== null) ?? [];
+  const bond = `${chat.relationship.charAt(0).toUpperCase()}${chat.relationship.slice(1)}`;
 
-  // Who they are right now: the portrait at full size, what they are doing, what they have on.
+  // Who they are right now: the portrait at full size, who they are, what they are doing and where,
+  // each said once.
   const about = (
     <>
       {/* With no pictures yet, a small initial; the large frame is for a portrait. */}
       <Portrait name={charName} emotion={emotion} set={portraits} size={Object.keys(portraits ?? {}).length ? 0 : 72} />
       <div className="about-text">
         <h2>{charName}</h2>
-        <p className="hint">Looking {emotion}</p>
+        <p className="hint">{bond}{emotion !== 'neutral' ? ` · looking ${emotion}` : ''}</p>
         {scene?.character.line && <p className="line">{scene.character.line}</p>}
-        {scheduled && <p className="now"><span className={`dot${scene!.status.live.length ? ' on' : ''}`} />{status} <span className="hint">{stamp}{clockTracks(chat.clock) ? '' : ' · not sent'}</span></p>}
-        {wearing.map((entry) => <p key={entry!.key} className="hint"><b>{entry!.title}:</b> {entry!.name}, {entry!.why}</p>)}
+        {scheduled && <p className="now"><span className={`dot${scene!.status.live.length ? ' on' : ''}`} />{status}</p>}
+        {scheduled && <p className="hint">{stamp}{clockTracks(chat.clock) ? '' : ` · ${charName} isn\u2019t told the time`}</p>}
+        {wearing.length > 0 && (
+          <dl className="about-sets">
+            {wearing.map((entry) => <div key={entry.key}><dt>{entry.title}</dt><dd>{entry.name}{entry.pinned && <span className="hint"> · pinned</span>}</dd></div>)}
+          </dl>
+        )}
       </div>
     </>
   );

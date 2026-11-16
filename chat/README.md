@@ -131,6 +131,12 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.4.6 - HOG Wild, and a card that says each thing once - 2026-11-16
+
+- **HOG Wild can be brought in** from Home and from Add characters, beside the dragon's resort. Its six residents join the collection and its house is a place in Home. It isn't put in a first visitor's browser: the resort stays the house.
+- **Another chat character's notes stay out of a chat.** A resident's keyed and bond-gated sections were written for chats with her, but they could key into anyone's: in a chat with Nova, *kiss* brought in all six In Bed sections, opened by the bond with Nova, and *where are you from* brought in four Backgrounds. Now a chat character brings nothing into another's chat (`sceneFor` in `core/chat/scene.ts`); who they are to each other is in groups and lore. Anyone in the world who isn't a chat character still comes in on their name, without bond-gated sections.
+- **The character card says each thing once.** It was printing the schedule line three times, once as what she is doing and again as the reason for each outfit and room. Now: the relationship and her look (if not neutral), her line, what she is doing, the time, and each set's member, marked only when pinned. *Not sent* reads as *Errata isn't told the time*.
+
 ### 0.4.5 - Tag triggers on Xialong - 2026-11-15
 
 - **A trigger with a symbol on it now fires with Xialong.** CharacterRoom's kernel strips symbols from the ends of words before matching, so a tag such as `$directives` never fired. Chat now sends each trigger the way the kernel reads it (`keyVariants` in `core/chat/sheet.ts`). HOG Wild keys Nova's admin directives on `$directives` (`docs/content/hog-wild/01-decisions.md`).

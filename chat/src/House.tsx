@@ -12,7 +12,7 @@ import {
 import { BOND_CONDITIONS, LAYER_BLENDS, LAYER_MOTIONS, RELATIONSHIPS, putRecord, type Layer, type RecordSet, type Spot, type StoryRecord, type World } from '../../core/records/index.js';
 import { newId } from '../../kit/src/util';
 import { figureSlot, layerSlot, portraitOwner, roomSlot, type PortraitSet } from './store';
-import { RESORT_NAME } from '../../kit/src/included';
+import type { IncludedWorld } from '../../kit/src/included';
 
 const capital = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 const DEFAULT_SPOT: Spot = { x: 0.5, y: 0.62, scale: 0.3, pic: '' };
@@ -30,14 +30,16 @@ export interface HouseProps {
   onWorld: (world: World) => void;
   onPicture: (owner: string, slot: string, file: File | null) => void;
   onChat: (world: World, record: StoryRecord, scenario: StoryRecord) => void;
-  // Brings in the household that comes with the site, when this browser doesn't have it yet.
-  onBringResort?: () => void;
+  // The worlds that come with the site and aren't in this browser yet, and how to bring one in.
+  bringable?: readonly IncludedWorld[];
+  onBring?: (id: string) => void;
 }
 
 // The scenarios that are places: those with a set of rooms.
 const placesOf = (worlds: World[]) => worlds.flatMap((world) => world.records.filter((record) => record.kind === 'scenario' && record.sets.some((set) => set.members.length)).map((scenario) => ({ world, scenario })));
 
-export function House({ worlds, chats, portraits, lives, userName, onLife, onWorld, onPicture, onChat, onBringResort }: HouseProps) {
+export function House({ worlds, chats, portraits, lives, userName, onLife, onWorld, onPicture, onChat, bringable = [], onBring }: HouseProps) {
+  const bring = onBring ? bringable : [];
   const places = placesOf(worlds);
   const [placeKey, setPlaceKey] = useState('');
   const [looking, setLooking] = useState<string | null>(null);
@@ -54,12 +56,12 @@ export function House({ worlds, chats, portraits, lives, userName, onLife, onWor
       <main className="home">
         <h1>Home</h1>
         <p className="lede">A place, with everyone in it, going about their day.</p>
-        {onBringResort && (
-          <div className="row">
-            <button type="button" className="btn primary" onClick={onBringResort}>Bring in {RESORT_NAME}</button>
-            <span className="hint">Qiulong, Errata and Echydna at Autumn&rsquo;s Leaves, the household that comes with the site.</span>
+        {bring.map((entry) => (
+          <div key={entry.id} className="row">
+            <button type="button" className="btn primary" onClick={() => onBring!(entry.id)}>Bring in {entry.name}</button>
+            <span className="hint">{entry.who}</span>
           </div>
-        )}
+        ))}
         <p className="hint">Home needs a scenario with rooms: a set on the scenario, one member a room. Import a CharacterRoom scenario card with locations, or add a set to a scenario in the <a href="/studio/">Studio</a>. A character lives there once a schedule event happens in one of its rooms, or you bring them in here.</p>
       </main>
     );
@@ -129,7 +131,7 @@ export function House({ worlds, chats, portraits, lives, userName, onLife, onWor
             {places.map((entry) => <option key={`${entry.world.id}:${entry.scenario.id}`} value={`${entry.world.id}:${entry.scenario.id}`}>{entry.scenario.name}</option>)}
           </select>
         </label>
-        {onBringResort && <button type="button" className="btn small quiet" onClick={onBringResort}>Bring in {RESORT_NAME}</button>}
+        {bring.map((entry) => <button key={entry.id} type="button" className="btn small quiet" onClick={() => onBring!(entry.id)} title={entry.who}>Bring in {entry.name}</button>)}
         <button type="button" className={`btn small ${arranging ? '' : 'quiet'}`} aria-pressed={arranging} onClick={() => setArranging(!arranging)}>{arranging ? 'Done arranging' : 'Arrange'}</button>
       </div>
 

@@ -39,7 +39,7 @@ describe('choosing what to show', () => {
     expect(view.first).toBe(true);
     expect(view.continueWith).toBeNull();
     expect(view.characters.map((card) => [card.name, card.tag, card.href])).toEqual(THREE);
-    expect(view.worlds.map((card) => [card.name, card.tag])).toEqual([['The dragon\'s resort', 'Included']]);
+    expect(view.worlds.map((card) => [card.name, card.tag])).toEqual([['The dragon\'s resort', 'Included'], ['HOG Wild', 'Included']]);
     expect(view.adventure).toMatchObject({ kind: 'example' });
   });
 
@@ -102,7 +102,8 @@ describe('the page', () => {
     expect(await screen.findByRole('heading', { level: 1, name: /Characters who remember you/ })).toBeInTheDocument();
     const characters = within(await screen.findByRole('region', { name: 'Characters' }));
     expect(await characters.findByRole('link', { name: 'Meet Errata' })).toHaveAttribute('href', '/chat/#/with/dragons-resort/errata');
-    expect(within(screen.getByRole('region', { name: 'Worlds' })).getAllByRole('link', { name: 'Look inside' })[0]).toHaveAttribute('href', '/studio/#/bring/dragons-resort');
+    const examples = within(screen.getByRole('region', { name: 'Worlds' })).getAllByRole('link', { name: 'Look inside' });
+    expect(examples.map((link) => link.getAttribute('href'))).toEqual(['/studio/#/bring/dragons-resort', '/studio/#/bring/hog-wild']);
     expect(screen.queryByRole('region', { name: 'Continue' })).toBeNull();
   });
 
@@ -119,6 +120,6 @@ describe('the page', () => {
   it('says which store failed, and keeps the rest', async () => {
     render(<App readers={readers({ chats: async () => { throw new Error('blocked'); } })} />);
     expect(await screen.findByText(/couldn.t read your chats/)).toBeInTheDocument();
-    await waitFor(() => expect(within(screen.getByRole('region', { name: 'Worlds' })).getAllByRole('link', { name: 'Look inside' })).toHaveLength(1));
+    await waitFor(() => expect(within(screen.getByRole('region', { name: 'Worlds' })).getAllByRole('link', { name: 'Look inside' })).toHaveLength(2));
   });
 });
