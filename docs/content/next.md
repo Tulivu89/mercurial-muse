@@ -57,6 +57,8 @@ The house of glass: a cyberpunk influencer house the world watches. It's chat-fi
 
 ### Stream 2: Volungraiv, from seed to a filled first place (the scale test)
 
+**The process for this stream and the next is `docs/content/modules/process.md`** (Nov 16): a slice built by hand over six checkpoints, a pattern page written from it, then frames and fills. It replaces the checkpoints listed below where they differ.
+
 The standard's seed → frame → fill done for real, on the owner's setting. It's the only stream that answers A7 (does reviewing lines catch most problems?) and A8 (does Fable fill well from a frame and a gold set?) inside the window. Sources: `Initial content ideas.md` and the Dark Lord Funk workbook and card (adapt the characters; the setting has drifted).
 
 - **Checkpoint 1:** two or three candidate first places, one or two lines each. Qetzal, the one city in the Badlands, is the obvious one; the owner picks.
