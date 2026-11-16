@@ -75,7 +75,7 @@ When a chat outgrows the window, the oldest messages leave a piece at a time and
 - **Socials:** posts about the chat or the character's day, with comments, and a one-press narration of the away replay. Next.
 - Dice, sheets and games are no part of Chat (the owner's decision, Nov 10). Stage mode, bubble styling, the emoji set, Imitate and the farewell on delete wait.
 - In Home: a place's atmosphere lines (lamps lit at dusk), characters from more than one world in one place, and generating pictures.
-- Group chat stays pinned (`docs/records.md`). Image generation is roadmap step 7.
+- Group chat is being tried in the chat lab first, with two layouts (`docs/model-jobs.md`, Group chat); no chat screen until the owner reads the scores. Image generation is roadmap step 7.
 
 ## To check with a real key
 

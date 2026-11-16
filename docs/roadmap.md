@@ -117,3 +117,4 @@ Each step is one or more pull requests. The adventure keeps its own list (charte
 
 1. The record model's open questions, at the end of `docs/records.md`.
 2. A name from `docs/brand.md`, or a direction to look in instead.
+3. Models for each job, and group chat (`docs/model-jobs.md`): Voice, Side and Build, each with its own provider and model if the player wants; group chat's two layouts go to the lab first. Its questions are at the end of that page.
