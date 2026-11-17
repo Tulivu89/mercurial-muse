@@ -1,0 +1,28 @@
+{
+  "format": "inkwyrm-pictures/1",
+  "world": "hog-wild",
+  "characters": {
+    "lux": { "avatar": "lux.png" },
+    "maeve": { "avatar": "maeve.png" },
+    "nova": { "avatar": "nova.png" },
+    "patch": { "avatar": "patch.png" },
+    "pipa": { "avatar": "pipa.png" },
+    "primus": { "avatar": "primus.png" }
+  },
+  "homes": {
+    "house": {
+      "cover": "outside.jpg",
+      "rooms": {
+        "showroom": "showroom.jpg",
+        "kitchen": "kitchen.jpg",
+        "the-booth": "booth.jpg",
+        "glam-room": "glam-room.jpg",
+        "luxs-room": "lux-room.jpg",
+        "primuss-room": "primus-room.jpg",
+        "novas-room": "nova-room.jpg",
+        "patchs-room": "patch-room.jpg",
+        "maeves-room": "maeve-room.jpg"
+      }
+    }
+  }
+}

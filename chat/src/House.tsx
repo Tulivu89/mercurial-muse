@@ -11,6 +11,7 @@ import {
 } from '../../core/chat/index.js';
 import { BOND_CONDITIONS, LAYER_BLENDS, LAYER_MOTIONS, RELATIONSHIPS, putRecord, type Layer, type RecordSet, type Spot, type StoryRecord, type World } from '../../core/records/index.js';
 import { newId } from '../../kit/src/util';
+import { COVER_SLOT } from '../../kit/src/pictures';
 import { figureSlot, layerSlot, portraitOwner, roomSlot, type PortraitSet } from './store';
 import type { IncludedWorld } from '../../kit/src/included';
 import { BackIcon } from './icons';
@@ -73,7 +74,7 @@ function Homes({ homes, missing, portraits, lives, bringable = [], onBring, onGo
         {homes.map((home) => {
           const rooms = roomsOf(home.scenario)!;
           const pictures = portraits[portraitOwner(home.world.id, home.scenario.id)] ?? {};
-          const cover = rooms.members.map((member) => roomSlot(member.id)).find((slot) => pictures[slot]);
+          const cover = [COVER_SLOT, ...rooms.members.map((member) => roomSlot(member.id))].find((slot) => pictures[slot]);
           const people = whereabouts(home, lives, tick);
           return (
             <a key={`${home.world.id}:${home.scenario.id}`} className="home-card" href={homeHref(home)} onClick={(event) => { if (!onGo || event.metaKey || event.ctrlKey || event.shiftKey) return; event.preventDefault(); onGo({ worldId: home.world.id, scenarioId: home.scenario.id }); }} aria-label={`Open ${home.scenario.name}`}>

@@ -150,6 +150,11 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.5.1 - The site's own pictures - 2026-11-17
+
+- **Worlds that come with the site bring their pictures.** A world's `pictures.json` names a face for each character and a cover and pictures for a Home's rooms, from its `pictures/` folder (`kit/src/pictures.ts`; how to add or change one is `content/PICTURES.md`). A built site reads them from GitHub through jsDelivr, pinned to the commit it was built from, so the web server sends none of them. A picture set in the browser wins. HOG Wild has its six faces, nine rooms and the outside of the house.
+- **A Home's cover** is its own `cover` picture when it has one, before its first room's, in Homes and on the Overview.
+
 ### 0.5.0 - Home, finished: personas, homes, notes, memory, posts - 2026-11-16
 
 The owner's eight, from a pass over Chat and Home.
