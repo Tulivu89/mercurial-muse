@@ -28,8 +28,9 @@ A short topic can keep its notes inside `decision.md`.
 
 | Topic | Brief | Decision | Status |
 | --- | --- | --- | --- |
-| Standards: cards, lorebooks, chat files, macros | `standards/brief.md`, Nov 17 (notes: `card-specs.md`, `sillytavern.md`, `agnai-risuai.md`) | `standards/decision.md`, Nov 17 | Waiting on the owner |
-| Memory in long chats | — | — | Next |
+| Standards: cards, lorebooks, chat files, macros | `standards/brief.md`, Nov 17 (notes: `card-specs.md`, `sillytavern.md`, `agnai-risuai.md`) | `standards/decision.md`, Nov 17 | Answered Nov 17; X1 next |
+| Prompt setup: system prompts per model, reply length, mature content, refusals, emotions | — | — | Next, from the owner's Gemini test |
+| Memory in long chats | — | — | After prompt setup |
 | Feature sweep | — | — | After memory |
 
 ## Sources

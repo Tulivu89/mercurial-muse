@@ -1,6 +1,6 @@
 # Standards: decision
 
-Nov 17, 2026 · @AmbiProp · Waiting on the owner
+Nov 17, 2026 · @AmbiProp · Answered by the owner Nov 17; X1 next
 
 From the brief, the card specs, and the source of SillyTavern, Agnai and RisuAI (notes beside this page).
 
@@ -53,7 +53,7 @@ We match keys case-insensitively on whole words, and a Named section stays until
 | SillyTavern chats in | **Adopt**: JSONL to one of our chats with a character the player picks; swipes become alternative replies, `is_system` lines become notes | Players arrive with long chats |
 | Chats out | **Adopt**: JSONL and plain text | Cheap once the reader exists |
 | Personas | **Skip** | No shared file exists (SillyTavern only backs up all of them). CharacterRoom user cards stay our way in. |
-| Card's own system prompt | **Keep as Never (as now), with one switch to send it** | V2 says it should override the player's own prompt. Our prompt does real work (time, states, notes), so a card that overrides it hurts more than it helps. The owner's call, below |
+| Card's own system prompt | **Optional, flagged on import** (the owner, Nov 17) | Kept unsent, with a switch to send it and a line in the import notes that the card has one. V2 says it overrides the player's prompt; ours does real work (time, states, notes) |
 | Fetching from Chub, JanitorAI and other sites by address | **Skip for now** | The server would fetch other sites' pages, with their terms in play. The player can download the file |
 | Providers and prompt formats | **Nothing to do** | We already speak the OpenAI-style API and cover the main families |
 
@@ -68,9 +68,9 @@ We match keys case-insensitively on whole words, and a Named section stays until
 
 X1 first: it fixes what testers can already hit. The rest can go in any order.
 
-## Questions for the owner
+## The owner's answers (Nov 17)
 
-1. **A card's own system prompt.** Keep it unsent by default with a switch to send it (proposed), or follow the spec and send it unless the player turns it off?
-2. **NovelAI lorebooks.** Is there a `.lorebook` of yours to build the reader against? The other apps read them, so the shape is known, but a real file is the test.
-3. **Secondary keys.** A second key list on a Named section is a small change to the record model. Agree, or leave cards' second lists as notes?
-4. **The chat issues you've seen.** Some may be X1's leaks (raw braces, decorator lines, a missing character note). If they're about forgetting, they go to the memory review next.
+1. **A card's own system prompt:** send it where it fits, but keep it optional and flag it on import.
+2. **NovelAI lorebooks:** a real file came with the answer (`lorebookVersion: 6`): entries with `text`, `keys`, `displayName`, `enabled`, `forceActivation`, `searchRange`, `category`, `contextConfig` (budget priority, insertion position, prefix and suffix), `loreBiasGroups` and `advancedConditions`; the book has `settings`, `categories` and `order`. X2 reads it: text, keys, name and enabled cross over; `forceActivation` becomes Always; categories become tags; the rest goes into the import notes.
+3. **Secondary keys:** yes, a second key list on a Named section.
+4. **Chat issues:** Gemini 3.8 Flash replies stop partway and need Continue, each stop ends on an emotion line, and there's no sign of a refusal. These are prompt and reply-handling problems, not standards. They go to a fix pass and to a new review of prompt setup (`docs/reviews/README.md`). The owner isn't tied to CharacterRoom's setup outside Xialong.
