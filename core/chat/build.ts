@@ -6,7 +6,7 @@ import { contextFor, mentions, type ContextAnswer } from '../records/context.js'
 import type { World } from '../records/schema.js';
 import { AETHERROOM_MODEL, brainEntries, contextBuilt, type KernelContext, type KernelMessage, type KernelPlan, type Roll } from './aetherroom.js';
 import { aetherRoomStyle, lastContactMs, pickedAlt, recentEmotions, type Chat, type Plan } from './chat.js';
-import { openReplyText, parseReply, replyText, type ReplyPart } from './emotions.js';
+import { joinText, mergeParts, openReplyText, parseReply, replyText, type ReplyPart } from './emotions.js';
 import { budgetFor, buildGeneral, estimateTokens, windowStartFor } from './general.js';
 import { currentEventsLine, hoursApart, moodFor, moodLine, pickPlans, timeApartLine } from './moment.js';
 import { recentText, sceneFor, type Scene } from './scene.js';
@@ -272,11 +272,15 @@ export function readSide(text: string, lead: string, charName: string, userName:
 
 // The model's text, read as the character's turn. With a lead (a prefill, or a message being
 // carried on), the reply continues it, unless the model wrote the name out again itself.
-export function readReply(text: string, lead: string, charName: string, userName: string): ReplyPart[] {
+// `whole` (every model but xialong) keeps a reply in one piece: a carried-on reply joins the
+// text before it, and a name written out again starts no new piece.
+export function readReply(text: string, lead: string, charName: string, userName: string, whole = false): ReplyPart[] {
   const body = text.replace(/^\s*\n/, '');
   const named = new RegExp(`^\\s*${charName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:`, 'i').test(body);
   const opener = `${charName}:`;
-  if (!lead) return parseReply(body, charName, userName);
-  if (lead === opener) return parseReply(named ? body : `${opener} ${body.replace(/^ /, '')}`, charName, userName);
-  return parseReply(`${lead}${named ? `\n${body}` : body}`, charName, userName);
+  const done = (parts: ReplyPart[]) => (whole ? mergeParts(parts) : parts);
+  if (!lead) return done(parseReply(body, charName, userName));
+  if (lead === opener) return done(parseReply(named ? body : `${opener} ${body.replace(/^ /, '')}`, charName, userName));
+  if (named) return done(parseReply(`${lead}\n${body}`, charName, userName));
+  return done(parseReply(whole ? joinText(lead, body) : `${lead}${body}`, charName, userName));
 }

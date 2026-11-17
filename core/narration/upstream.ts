@@ -52,7 +52,7 @@ export function buildUpstream(request: NarrationRequest, provider: ProviderInfo,
   }
   const sent: Message[] = [...messages];
   if (prefill) sent.push({ role: provider.chatPrefill === 'assistant' ? 'assistant' : 'system', content: prefill });
-  return { path: '/chat/completions', format: null, body: { model, messages: sent, max_tokens, temperature, ...samplers, ...(request.stop?.length ? { stop: request.stop } : {}), stream, ...(provider.thinkingOff ?? {}) } };
+  return { path: '/chat/completions', format: null, body: { model, messages: sent, max_tokens: max_tokens + (provider.thinkingRoom ?? 0), temperature, ...samplers, ...(request.stop?.length ? { stop: request.stop } : {}), stream, ...(provider.thinkingOff ?? {}) } };
 }
 
 // Thinking a model wrote into its reply, which the player should never see.

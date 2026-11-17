@@ -101,6 +101,26 @@ export function parseReply(raw: string, charName: string, userName = ''): ReplyP
   return parts;
 }
 
+// Two pieces of one reply put back together: a piece that carries on mid-sentence (lower case,
+// or punctuation) joins with a space, one that starts afresh after a finished sentence gets a
+// line of its own.
+export function joinText(before: string, after: string): string {
+  if (!before) return after;
+  if (!after) return before;
+  if (/\s$/.test(before) || /^\s/.test(after)) return before + after;
+  if (/^[,.;:!?…]/.test(after)) return before + after;
+  if (/^[\p{Ll}]/u.test(after)) return `${before} ${after}`;
+  return /[.!?…*)"”]$/.test(before) ? `${before}\n${after}` : `${before} ${after}`;
+}
+
+// A reply as one piece, showing the last emotion. Models other than xialong write one turn at a
+// time, and a reply sent back in pieces, each with its own emotion line, teaches them to stop
+// midway.
+export function mergeParts(parts: readonly ReplyPart[]): ReplyPart[] {
+  if (parts.length < 2) return [...parts];
+  return [{ text: parts.reduce((text, part) => joinText(text, part.text), ''), emotion: parts[parts.length - 1]!.emotion }];
+}
+
 // The parts written back out as the character's turn. AetherRoom indents continuation lines.
 export function replyText(parts: readonly ReplyPart[], charName: string, indent: boolean): string {
   return parts.map((part) => `${charName}: ${indent ? part.text.replaceAll('\n', '\n    ') : part.text}\n  Emotion: ${part.emotion}`).join('\n');

@@ -150,6 +150,15 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.5.2 - Replies that stop say why - 2026-11-17
+
+From the owner's Gemini 3.8 Flash test pack (Lux, HOG Wild): replies stopped partway, and every Continue made the next stop more likely.
+
+- **A reply stays in one piece** for every model but xialong. A carried-on reply joins the text before it, with a space where it carries on mid-sentence, even when the model writes the character's name again. A chat sent back to the model writes each reply once, with one emotion line. It used to send each piece of a continued reply as a reply of its own ending in an emotion line, which taught the model that replies stop midway. xialong keeps CharacterRoom's pieces.
+- **Why a reply stopped** shows under it: at its length limit (with how much went on thinking first, where the provider says), or at the provider's filter, with Continue beside it. A reply the player stops gets no line. It's kept on the reply and in the chat file.
+- **Gemini gets room to think** (`thinkingRoom` on a provider): Gemini 3 can't stop thinking and the thinking counts against the reply allowance, so Google AI Studio is sent 4,096 tokens on top of the reply length.
+- **Test packs** keep the finish reason and the token counts of the last reply.
+
 ### 0.5.1 - The site's own pictures - 2026-11-17
 
 - **Worlds that come with the site bring their pictures.** A world's `pictures.json` names a face for each character and a cover and pictures for a Home's rooms, from its `pictures/` folder (`kit/src/pictures.ts`; how to add or change one is `content/PICTURES.md`). A built site reads them from GitHub through jsDelivr, pinned to the commit it was built from, so the web server sends none of them. A picture set in the browser wins. HOG Wild has its six faces, nine rooms and the outside of the house.

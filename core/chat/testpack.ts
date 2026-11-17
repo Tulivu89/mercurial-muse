@@ -41,6 +41,9 @@ export interface PackLast {
   request: unknown;
   reply: string;
   tokens: number;
+  // Why the provider said the reply ended ('stop', 'length', 'content_filter'), and its count.
+  finishReason?: string | null;
+  usage?: unknown;
   error?: string;
 }
 

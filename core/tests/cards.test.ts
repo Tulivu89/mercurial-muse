@@ -190,4 +190,11 @@ describe('streaming', () => {
     expect(plain.body.stream).toBe(false);
     expect(plain.body.stop).toContain('\nSam:');
   });
+  it('gives Gemini room to think on top of the reply allowance', () => {
+    const google = BUILT_IN_PROVIDERS.find((provider) => provider.id === 'google')!;
+    const novelai = BUILT_IN_PROVIDERS.find((provider) => provider.id === 'novelai')!;
+    const request = narrationRequestSchema.parse({ provider: 'google', model: 'gemini-flash', mode: 'chat', messages: [{ role: 'user', content: 'Hi' }], max_tokens: 1000 });
+    expect(buildUpstream(request, google).body.max_tokens).toBe(1000 + google.thinkingRoom!);
+    expect(buildUpstream(request, novelai).body.max_tokens).toBe(1000);
+  });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  addAlternative, addReply, keyVariants, addUserMessage, buildRequest, budgetFor, deleteMessage, editMessage, editableText, exportChat, newChat, parseReply, pickedAlt, profileFor,
+  addAlternative, addReply, endedFrom, joinText, markEnded, mergeParts, thinkingTokens, keyVariants, addUserMessage, buildRequest, budgetFor, deleteMessage, editMessage, editableText, exportChat, newChat, parseReply, pickedAlt, profileFor,
   readChatFile, readReply, remember, replaceMacros, replyText, resolvePortrait, sceneFor, sheetFor, stepAlternative, windowStartFor, type BuildOptions, type Chat,
 } from '../chat/index.js';
 import { formatPrompt } from '../narration/formats.js';
@@ -56,6 +56,43 @@ describe('replies', () => {
     expect(readReply(' Fine.\n  Emotion: bored', 'Ada Moss:', 'Ada Moss', 'Sam')).toEqual([{ text: 'Fine.', emotion: 'bored' }]);
     expect(readReply('Ada Moss: Fine.\n  Emotion: bored', 'Ada Moss:', 'Ada Moss', 'Sam')).toEqual([{ text: 'Fine.', emotion: 'bored' }]);
     expect(readReply(' and then some.\n  Emotion: happy', 'Ada Moss: A start', 'Ada Moss', 'Sam')).toEqual([{ text: 'A start and then some.', emotion: 'happy' }]);
+  });
+  it('keeps a reply in one piece for models other than xialong', () => {
+    // Gemini writes the name again when it carries a cut reply on; that is no new piece.
+    expect(readReply('Ada Moss: reaches for the dial.\n  Emotion: smug', 'Ada Moss: Not tonight. *She', 'Ada Moss', 'Sam', true))
+      .toEqual([{ text: 'Not tonight. *She reaches for the dial.', emotion: 'smug' }]);
+    // A chat model's carry-on has no leading space; the join puts one in.
+    expect(readReply('and fast.', 'Ada Moss: It\'s clean', 'Ada Moss', 'Sam', true)).toEqual([{ text: 'It\'s clean and fast.', emotion: 'neutral' }]);
+    expect(readReply('Ada Moss: One.\n  Emotion: happy\nAda Moss: Two.\n  Emotion: tired', '', 'Ada Moss', 'Sam', true)).toEqual([{ text: 'One.\nTwo.', emotion: 'tired' }]);
+    // xialong keeps its pieces.
+    expect(readReply('Ada Moss: One.\n  Emotion: happy\nAda Moss: Two.\n  Emotion: tired', '', 'Ada Moss', 'Sam')).toHaveLength(2);
+  });
+  it('joins two pieces of a reply by how the second one starts', () => {
+    expect(joinText('*She', 'reaches')).toBe('*She reaches');
+    expect(joinText('Wait', ', what?')).toBe('Wait, what?');
+    expect(joinText('Done.', 'Next.')).toBe('Done.\nNext.');
+    expect(joinText('Done.\n', 'Next.')).toBe('Done.\nNext.');
+    expect(mergeParts([{ text: 'A *She', emotion: 'neutral' }, { text: 'grins.*', emotion: 'smug' }])).toEqual([{ text: 'A *She grins.*', emotion: 'smug' }]);
+  });
+  it('reads why a reply stopped, and marks it on the reply', () => {
+    expect(endedFrom('length')).toBe('limit');
+    expect(endedFrom('MAX_TOKENS')).toBe('limit');
+    expect(endedFrom('content_filter')).toBe('filter');
+    expect(endedFrom('SAFETY')).toBe('filter');
+    expect(endedFrom('stop')).toBeUndefined();
+    expect(endedFrom(null)).toBeUndefined();
+    expect(thinkingTokens({ completion_tokens: 900, completion_tokens_details: { reasoning_tokens: 700 } })).toBe(700);
+    expect(thinkingTokens({ completion_tokens: 900 })).toBeUndefined();
+    let c = addReply(chat(), [{ text: 'Half', emotion: 'neutral' }], 'r1', NOW + 1);
+    c = markEnded(c, 'r1', 'limit', 700);
+    expect(pickedAlt(c.messages.at(-1)!)).toMatchObject({ ended: 'limit', thinking: 700 });
+    c = markEnded(c, 'r1', undefined, 700);
+    expect(pickedAlt(c.messages.at(-1)!)).not.toHaveProperty('ended');
+    expect(pickedAlt(c.messages.at(-1)!)).not.toHaveProperty('thinking');
+    // It survives a round trip through the chat file.
+    const marked = markEnded(c, 'r1', 'filter', undefined);
+    const back = readChatFile(JSON.parse(JSON.stringify(exportChat(marked, NOW))));
+    expect(back.ok && pickedAlt(back.chat.messages.at(-1)!).ended).toBe('filter');
   });
   it('finds a stand-in portrait for an empty slot', () => {
     expect(resolvePortrait('laughing', ['happy', 'avatar'])).toBe('happy');
@@ -120,6 +157,16 @@ describe('the General profile', () => {
     expect(last).toContain('Ada Moss, The flood: She lost the station tapes in the flood.');
     expect(last.endsWith('Reply as Ada Moss only.]')).toBe(true);
     expect(built.prefill).toBe('Ada Moss:');
+  });
+
+  it('sends a reply that came in pieces back as one turn with one emotion line', async () => {
+    let c = addUserMessage(chat(), 'Go on.', 'u1', NOW + 1);
+    c = addReply(c, [{ text: 'Not tonight. *She', emotion: 'neutral' }, { text: 'reaches for the dial.*', emotion: 'smug' }], 'r1', NOW + 2);
+    c = addUserMessage(c, 'And?', 'u2', NOW + 3);
+    const built = (await buildRequest(c, world(), options('glm-4-6', { upTo: 4 })))!;
+    const reply = built.messages.find((message) => message.role === 'assistant' && message.content.includes('dial'))!;
+    expect(reply.content).toContain('Ada Moss: Not tonight. *She reaches for the dial.*\n  Emotion: smug');
+    expect(reply.content.match(/Emotion:/g)).toHaveLength(1);
   });
 
   it('keeps the prefix the same from one turn to the next', async () => {
