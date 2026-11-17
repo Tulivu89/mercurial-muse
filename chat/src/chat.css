@@ -217,6 +217,7 @@ details.block summary, .ask summary { cursor: pointer; min-height: 36px; font-we
 .bar-btn[aria-expanded='true'] { color: var(--text); border-color: var(--text); }
 .bar-btn:disabled { opacity: 0.45; cursor: default; }
 .send.noting { background: var(--blue); color: var(--on-blue); }
+.turn .ended { margin: 4px 0 0; font-size: 13px; color: var(--text-2); }
 .composer-hint { margin: 0; padding: 6px clamp(10px, 2vw, 18px); border-top: 1px solid var(--rule); background: var(--surface); font-size: 13px; color: var(--text-2); }
 @media (max-width: 380px) { .bar-btn { width: 36px; } .composer { gap: 4px; } }
 

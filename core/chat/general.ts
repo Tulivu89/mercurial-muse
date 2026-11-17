@@ -9,7 +9,7 @@
 import type { Message } from '../narration/formats.js';
 import { contextFor, type ContextAnswer, type ContextBlock } from '../records/context.js';
 import { messageSchema, pickedAlt, type Chat, type ResponseLength, type Style } from './chat.js';
-import { EMOTIONS, openReplyText, replyText } from './emotions.js';
+import { EMOTIONS, mergeParts, openReplyText, replyText } from './emotions.js';
 import { replaceMacros } from './macros.js';
 import { recentText, type Scene } from './scene.js';
 import type { z } from 'zod';
@@ -84,7 +84,7 @@ export interface GeneralBuild {
 
 export function turnText(message: ChatMessage, charName: string): string {
   const parts = pickedAlt(message).parts;
-  return message.from === 'character' ? replyText(parts, charName, false) : parts.map((part) => part.text).join('\n');
+  return message.from === 'character' ? replyText(mergeParts(parts), charName, false) : parts.map((part) => part.text).join('\n');
 }
 
 export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions): GeneralBuild {
@@ -140,7 +140,7 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
   const costs = history.map((message) => estimateTokens(turnText(message, charName)) + 6);
   const start = Math.min(options.windowStart, history.length);
   const carried = options.continuing && history.at(-1)?.from === 'character' ? history.at(-1)! : null;
-  const openText = carried ? openReplyText(pickedAlt(carried).parts, charName, false) : '';
+  const openText = carried ? openReplyText(mergeParts(pickedAlt(carried).parts), charName, false) : '';
   const shown = carried && options.canPrefill ? history.slice(start, -1) : history.slice(start);
 
   const turns: Message[] = [];

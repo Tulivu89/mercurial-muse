@@ -26,7 +26,15 @@ export type ResponseLength = (typeof RESPONSE_LENGTHS)[number];
 
 const id = z.string().min(1).max(80);
 const partSchema = z.object({ text: z.string().max(40_000), emotion: z.enum(EMOTIONS).catch(FALLBACK_EMOTION) });
-const altSchema = z.object({ parts: z.array(partSchema).max(40), at: z.number().nonnegative().default(0), model: z.string().max(200).default('') });
+// `ended` says a reply stopped before the model finished it: at the reply limit, or at the
+// provider's filter. `thinking` is what the model spent thinking first, where it said.
+const altSchema = z.object({
+  parts: z.array(partSchema).max(40),
+  at: z.number().nonnegative().default(0),
+  model: z.string().max(200).default(''),
+  ended: z.enum(['limit', 'filter']).optional().catch(undefined),
+  thinking: z.number().int().nonnegative().optional().catch(undefined),
+});
 export const messageSchema = z.object({
   id,
   // A note is a directive in square brackets, from outside the story: it sets the scene or
@@ -192,6 +200,40 @@ export function addAlternative(chat: Chat, messageId: string, parts: ReplyPart[]
 
 export function replacePicked(chat: Chat, messageId: string, parts: ReplyPart[], now: number): Chat {
   return change(chat, messageId, now, (message) => ({ ...message, alts: message.alts.map((alt, index) => (index === Math.min(message.pick, message.alts.length - 1) ? { ...alt, parts } : alt)) }));
+}
+
+export type Ended = 'limit' | 'filter';
+
+// How a provider's finish reason reads: cut at the limit, stopped by a filter, or finished.
+export function endedFrom(finishReason: unknown): Ended | undefined {
+  const reason = typeof finishReason === 'string' ? finishReason.toLowerCase() : '';
+  if (reason === 'length' || reason === 'max_tokens') return 'limit';
+  if (['content_filter', 'safety', 'prohibited_content', 'blocklist', 'spii', 'recitation', 'refusal'].includes(reason)) return 'filter';
+  return undefined;
+}
+
+// Thinking tokens from a reply's usage, in the places providers report them.
+export function thinkingTokens(usage: unknown): number | undefined {
+  const top = usage && typeof usage === 'object' ? usage as Record<string, unknown> : {};
+  const details = top.completion_tokens_details && typeof top.completion_tokens_details === 'object' ? top.completion_tokens_details as Record<string, unknown> : {};
+  const value = [details.reasoning_tokens, top.reasoning_tokens, top.thoughts_token_count].find((entry) => typeof entry === 'number' && Number.isSafeInteger(entry) && entry > 0);
+  return typeof value === 'number' ? value : undefined;
+}
+
+// Marks the shown reply of a message with how it ended; a reply that finished loses the mark.
+export function markEnded(chat: Chat, messageId: string, ended: Ended | undefined, thinking: number | undefined): Chat {
+  const index = chat.messages.findIndex((message) => message.id === messageId);
+  if (index < 0) return chat;
+  const message = chat.messages[index]!;
+  const pick = Math.min(message.pick, message.alts.length - 1);
+  const alts = message.alts.map((alt, at) => {
+    if (at !== pick) return alt;
+    const { ended: _ended, thinking: _thinking, ...rest } = alt;
+    return { ...rest, ...(ended ? { ended } : {}), ...(ended && thinking ? { thinking } : {}) };
+  });
+  const messages = [...chat.messages];
+  messages[index] = { ...message, alts };
+  return { ...chat, messages };
 }
 
 export function stepAlternative(chat: Chat, messageId: string, by: number, now: number): Chat {

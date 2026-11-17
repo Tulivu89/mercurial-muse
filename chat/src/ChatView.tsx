@@ -6,8 +6,7 @@ import { useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import {
   PROFILE_NAMES, XIALONG, addAlternative, addNote, addReply, addUserMessage, buildRequest, buildSide, clockNow, clockTracks, deleteMessage, editMessage, editableText, formatMinutes,
   hasSchedule, isNoteText, lastEmotion, messageText, pickedAlt, profileFor, readReply, readSide, recentEmotions, replacePicked, sceneFor, sideTask,
-  SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type HomeRef, type Life, type PackSettings, type ReplyPart, type SideKind,
-} from '../../core/chat/index.js';
+  SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type HomeRef, type Life, type PackSettings, type ReplyPart, type SideKind, endedFrom, markEnded, thinkingTokens } from '../../core/chat/index.js';
 import type { World } from '../../core/records/index.js';
 import { canPrefill, generate, requestFor, type Connection, type GenerateOptions, type NarrationError } from '../../kit/src/connection';
 import { clock as clockText, downloadJson, fileSafe, newId } from '../../kit/src/util';
@@ -25,6 +24,12 @@ import type { PortraitSet, Sent } from './store';
 import type { PersonaRef } from './You';
 
 type Kind = 'reply' | 'regenerate' | 'continue';
+
+// The line under a reply that stopped before the model finished it.
+function endedText(ended: 'limit' | 'filter', thinking: number | undefined, provider = 'The provider'): string {
+  if (ended === 'filter') return `${provider.replace(/\s*\(.*\)$/, '')}'s filter stopped this reply here.`;
+  return thinking ? `This reply reached its length limit; the model spent ${thinking} tokens thinking first.` : 'This reply reached its length limit.';
+}
 type Panel = 'sent' | 'context' | 'memory' | 'time' | 'details';
 const PANELS: Record<Panel, string> = { sent: 'What was sent', context: 'In context now', memory: 'Memory', time: 'Time', details: 'This chat' };
 // Short enough for all five to fit across a phone.
@@ -149,7 +154,12 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     settings: () => downloadJson('chat-settings.json', { format: SETTINGS_EXPORT_FORMAT, exportedAt: Date.now(), request: packSettings(), chat: settings }),
     pack: async () => {
       const next = world ? await buildRequest(chat, world, { ...buildOptions(chat.messages.length, false, true, chat.draft), firstBuild: false }) : null;
-      const last = lastSent ? { at: lastSent.at, profile: lastSent.profile, request: lastSent.request, reply: lastSent.reply, tokens: lastSent.tokens, ...(lastSent.error ? { error: lastSent.error } : {}) } : null;
+      const said = lastSent?.diagnostics as { finishReason?: unknown; usage?: unknown } | null | undefined;
+      const last = lastSent ? {
+        at: lastSent.at, profile: lastSent.profile, request: lastSent.request, reply: lastSent.reply, tokens: lastSent.tokens,
+        finishReason: typeof said?.finishReason === 'string' ? said.finishReason : null, usage: said?.usage ?? null,
+        ...(lastSent.error ? { error: lastSent.error } : {}),
+      } : null;
       if (!world) return;
       downloadJson(`${fileSafe(charName)}-test.json`, makeTestPack({ chat, world, settings: packSettings(), needs, next, last, now: Date.now() }));
     },
@@ -209,12 +219,17 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     }
     firstBuild.current = false;
 
-    const parts = text.trim() ? readReply(text, built.lead, charName, userName) : [];
+    const parts = text.trim() ? readReply(text, built.lead, charName, userName, built.profile === 'general') : [];
     if (parts.length && !failure) {
       const now = Date.now();
-      const next = kind === 'reply' ? addReply(base, parts, newId(), now, connection.model)
+      const replyId = kind === 'reply' ? newId() : targetId!;
+      const added = kind === 'reply' ? addReply(base, parts, replyId, now, connection.model)
         : kind === 'regenerate' ? addAlternative(base, targetId!, parts, now, connection.model)
           : replacePicked(base, targetId!, parts, now);
+      // A stopped reply says why, unless the player stopped it.
+      const said = diagnostics as { finishReason?: unknown; usage?: unknown } | null;
+      const ended = controller.signal.aborted ? undefined : endedFrom(said?.finishReason);
+      const next = markEnded(added, replyId, ended, thinkingTokens(said?.usage));
       onChange({ ...next, roll: built.roll, windowStart: built.windowStart, plans: built.plans });
     } else if (!failure && !controller.signal.aborted) {
       failure = 'The model wrote nothing that reads as a reply. What was sent shows what came back.';
@@ -406,6 +421,12 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
                     : replaced ? bubbles(streaming.length ? streaming : alt.parts, 'character')
                       : bubbles(alt.parts, message.from)}
                 </div>
+                {theirs && alt.ended && !replaced && (
+                  <p className="ended" role="note">
+                    {endedText(alt.ended, alt.thinking, connection.providers.find((entry) => entry.id === connection.provider)?.name)}
+                    {isLast && !busy && <> <button type="button" className="link" onClick={() => void run('continue', message.id)}>Continue</button></>}
+                  </p>
+                )}
                 {!busy && (open || (isLast && theirs)) && (
                   <div className="actions">
                     {swipe}
