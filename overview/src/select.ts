@@ -48,7 +48,7 @@ export interface HomeCard {
   people: { name: string; says: string }[];
   more: number;
   href: string; action: string;
-  // Where the home's pictures are kept, and its rooms' slots in order, for a cover.
+  // Where the home's pictures are kept, and its slots in order for a cover: its own cover, then its rooms.
   owner?: string; slots?: string[];
 }
 export type AdventureCard =
@@ -101,7 +101,7 @@ function homeCard(home: HomeRef, tag: HomeCard['tag'], lives: Record<string, Lif
     key: homeKey(home.world.id, home.scenario.id), name: home.scenario.name, world: home.world.name, line: home.scenario.line || home.world.premise.trim(), tag,
     people: people.slice(0, 3).map((entry) => ({ name: entry.record.name, says: entry.hidden ? 'Somewhere private' : [entry.room || 'Out', said(entry.doing, entry.record.name)].filter(Boolean).join(' · ') })),
     more: Math.max(0, people.length - 3), href, action,
-    owner: `${home.world.id}:${home.scenario.id}`, slots: (roomsOf(home.scenario)?.members ?? []).map((member) => `room:${member.id}`),
+    owner: `${home.world.id}:${home.scenario.id}`, slots: ['cover', ...(roomsOf(home.scenario)?.members ?? []).map((member) => `room:${member.id}`)],
   };
 }
 

@@ -4,6 +4,7 @@
 import { BACKUP_FORMAT, parseChat, parseLife, parsePost, type Chat, type Life, type Post } from '../../core/chat/index.js';
 import { parseWorld, type World } from '../../core/records/index.js';
 import { loadCollection, parseCollection, saveCollection, type Collection } from '../../kit/src/collection';
+import { withSitePictures } from '../../kit/src/pictures';
 import { animationSlot, forgetOriginal, portraitSource, posterSlot, type ImageAsset } from '../../kit/src/media';
 import { newId } from '../../kit/src/util';
 import { listWorlds, putWorld } from '../../kit/src/worlds';
@@ -109,7 +110,8 @@ export function portraitSets(portraits: Portrait[]): Record<string, PortraitSet>
     if (portrait.poster) set[posterSlot(portrait.slot)] = portrait.poster;
     if (portrait.animated) set[animationSlot(portrait.slot)] = 'true';
   }
-  return sets;
+  // The site's own pictures (content/<world>/pictures.json) fill whatever this browser hasn't set.
+  return withSitePictures(sets);
 }
 export const putPortrait = (owner: string, slot: string, data: string, image: Partial<Omit<ImageAsset, 'data'>> = {}) => { forgetOriginal(owner, slot); return run('portraits', 'readwrite', (store) => store.put({ key: `${owner}:${slot}`, owner, slot, data, ...image, revision: newId() })); };
 export const deletePortrait = (owner: string, slot: string) => { forgetOriginal(owner, slot); return run('portraits', 'readwrite', (store) => store.delete(`${owner}:${slot}`)); };
