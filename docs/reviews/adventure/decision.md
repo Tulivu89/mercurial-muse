@@ -1,6 +1,6 @@
 # The adventure: decision
 
-Nov 18, 2026 · @AmbiProp · Waiting on the owner
+Nov 18, 2026 · @AmbiProp · Answered by the owner Nov 18; A1 next
 
 From Marinara Engine's game mode (`marinara.md`) and the owner's priority (Nov 18): **our AI-friendly dice system first**, because it bridges the model's creative side and the rules' deterministic side. Other rule systems should be addable, though they won't slot in the way ours does.
 
@@ -55,6 +55,12 @@ They won't slot in like ours: our four approaches work on anything without autho
 | **A4, resolution kinds** | `symbol-pool` moved to the core; band tables; the ruleset file; then Blades, Year Zero and PbtA kinds |
 
 These run alongside roadmap step 6 (the adventure on the new records) and the search for a game to replace Bogwater.
+
+## The owner's answers (Nov 18)
+
+1. **A proposed check waits for the player:** tap to approve, edit or dismiss. Ignoring it dismisses it after the player's next message. Another way in is a cheap **choices card**: a short Side call that offers a few options, each a check from the closed lists, for the player to pick.
+2. **Other rule systems are not a focus** until our own dice system is tested and fully built. A4 waits.
+3. **The world that replaces Bogwater is the test bed,** written after HOG Wild.
 
 ## Questions for the owner
 

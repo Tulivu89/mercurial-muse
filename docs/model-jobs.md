@@ -165,3 +165,10 @@ The jobs' tests run in `kit/` and `chat/`. G1's run in `core/` and the lab. J2 a
 2. Reflect, Process and Plan: on Side, with a switch back to Voice if they drift (proposed), or on Voice from the start?
 3. Should J1 also bring a second key for the same provider, or wait until someone asks?
 4. Group chat: is "whoever has been quiet longest" a good enough way to pick the next speaker when the player names nobody, or do you want the Side call from the start?
+   **Answered Nov 18** (`docs/reviews/group-chat/decision.md`):
+   - the agent's pick by default when nobody is named, behind a setting, with the quietest when it's off;
+   - a group button or a long press on Send to pick who answers, push a reply, take the quietest, or ask the agent;
+   - one speaker per message by default, "whoever has something to say" as a setting;
+   - characters talking on their own after group chat.
+
+   The review's additions are part of G1 and G2: talkativeness and mute, a reply's author answers, handoffs by name once per turn, clean-up after the reply, the opening greetings, the journal and chapters shared, a lab variant with others' lines as the user's turn, prefill per model, and how Xialong takes a group.
