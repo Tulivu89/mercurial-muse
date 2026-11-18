@@ -66,6 +66,8 @@ export interface GeneralOptions {
   task?: { rules: string; ask: string; lead: string };
   // The player's prompt setup; left out, the defaults.
   prompt?: PromptSetup;
+  // What the story so far may take (core/chat/chapters.ts); left out, no limit.
+  storyTokens?: number;
 }
 
 export interface GeneralPart { label: string; text: string; tokens: number }
@@ -168,7 +170,7 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
   const journal = facts.length ? `## What ${charName} knows about ${userName}\n${charName} knows the following about ${userName} and is comfortable bringing it up.\n${facts.join('\n')}` : '';
   if (journal) parts.push({ label: 'Journal', text: journal, tokens: estimateTokens(journal) });
   // What left the window, written up as chapters (core/chat/chapters.ts).
-  const story = macros(storySoFar(chat, Math.min(options.windowStart, options.upTo)));
+  const story = macros(storySoFar(chat, Math.min(options.windowStart, options.upTo), options.storyTokens ?? Infinity, recentText(chat, options.upTo, options.draft)));
   if (story) parts.push({ label: 'The story so far', text: story, tokens: estimateTokens(story) });
   const prefixTokens = parts.reduce((sum, part) => sum + part.tokens, 0);
 

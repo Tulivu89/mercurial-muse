@@ -66,7 +66,7 @@ export function queueChapters(chat: Chat, windowStart: number, ids: () => string
       chars += messageText(chat.messages[end]!).length;
       end += 1;
     }
-    added.push({ id: ids(), fromId: chat.messages[start]!.id, toId: chat.messages[end - 1]!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: now });
+    added.push({ id: ids(), fromId: chat.messages[start]!.id, toId: chat.messages[end - 1]!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: now, folded: false });
     start = end;
   }
   return { ...chat, chapters: [...chat.chapters, ...added] };
@@ -146,22 +146,102 @@ export function changeChapter(chat: Chat, chapterId: string, patch: Partial<Pick
   return { ...chat, chapters, updatedAt: now };
 }
 
-// The story so far, for the prompt: every written chapter wholly before `windowStart` (the first
-// message still sent), oldest first. A chapter whose messages are back in view is left out.
-// Memory brought in from earlier chats goes first, under "Before this chat".
-export function storySoFar(chat: Chat, windowStart: number): string {
-  const earlier = chat.earlier.filter((entry) => entry.text.trim());
-  const written = chat.chapters.filter((chapter) => {
+const tokensOf = (text: string) => Math.ceil(text.length / 3.5);
+
+// The written chapters wholly before `windowStart` (the first message still sent), oldest first.
+// A chapter whose messages are back in view is left out.
+function outOfView(chat: Chat, windowStart: number): Chapter[] {
+  return chat.chapters.filter((chapter) => {
     if (chapter.state !== 'written' || !chapter.text.trim()) return false;
     const to = chat.messages.findIndex((message) => message.id === chapter.toId);
     return to >= 0 && to < windowStart;
   });
-  if (!earlier.length && !written.length) return '';
+}
+
+// The story so far, for the prompt (C1 to C3), within `budget` tokens:
+//   memory brought in from earlier chats, under "Before this chat";
+//   the Earlier summary the oldest chapters were folded into;
+//   folded chapters whose keys come up in `recentText`;
+//   the rest of the chapters, pinned ones always, then the newest that fit.
+// Everything goes out oldest first.
+export function storySoFar(chat: Chat, windowStart: number, budget = Infinity, recentText = ''): string {
+  const earlier = chat.earlier.filter((entry) => entry.text.trim());
+  const chapters = outOfView(chat, windowStart);
+  const fold = chat.fold.text.trim();
+  if (!earlier.length && !chapters.length && !fold) return '';
+  let left = budget - earlier.reduce((sum, entry) => sum + tokensOf(entry.text), 0) - tokensOf(fold);
+  const sent = new Set<string>();
+  const take = (chapter: Chapter) => { sent.add(chapter.id); left -= tokensOf(chapter.text); };
+  for (const chapter of chapters) if (chapter.pinned) take(chapter);
+  const said = recentText.toLowerCase();
+  for (const chapter of chapters) {
+    if (!chapter.folded || chapter.pinned || !chapter.keys.some((key) => said.includes(key.toLowerCase()))) continue;
+    if (tokensOf(chapter.text) <= left) take(chapter);
+  }
+  for (const chapter of [...chapters].reverse()) {
+    if (chapter.folded || sent.has(chapter.id)) continue;
+    if (tokensOf(chapter.text) > left) break;
+    take(chapter);
+  }
+  const numbered = chapters.map((chapter, index) => ({ chapter, number: index + 1 })).filter(({ chapter }) => sent.has(chapter.id));
   return [
     `## The story so far`,
     ...(earlier.length ? [`Before this chat, ${chat.characterName} and ${chat.userName} talked before:`, ...earlier.map((entry) => entry.text.trim())] : []),
-    ...(written.length ? [`Earlier in this chat, before the messages below:`, ...written.map((chapter, index) => `Chapter ${index + 1}. ${chapter.text.trim()}`)] : []),
+    ...(fold || numbered.length ? [`Earlier in this chat, before the messages below:`] : []),
+    ...(fold ? [fold] : []),
+    ...numbered.map(({ chapter, number }) => `Chapter ${number}. ${chapter.text.trim()}`),
   ].join('\n\n');
+}
+
+// --- Folding (C3)
+
+// The share of the context the story so far may take.
+export const STORY_SHARE = 0.15;
+
+// The chapters to fold now: when the unfolded, unpinned chapters out of view take more than
+// two thirds of the budget, the oldest of them, leaving the newest third of the budget's worth.
+export function foldDue(chat: Chat, windowStart: number, budget: number): Chapter[] {
+  const open = outOfView(chat, windowStart).filter((chapter) => !chapter.folded && !chapter.pinned);
+  const total = open.reduce((sum, chapter) => sum + tokensOf(chapter.text), 0);
+  if (open.length < 2 || total <= budget * (2 / 3)) return [];
+  let keep = 0;
+  let from = open.length;
+  while (from > 0 && keep + tokensOf(open[from - 1]!.text) <= budget / 3) { from -= 1; keep += tokensOf(open[from]!.text); }
+  return open.slice(0, Math.max(1, Math.min(from, open.length - 1)));
+}
+
+// The request that folds chapters into the Earlier summary, with the summary so far.
+export function foldRequest(chat: Chat, chapters: readonly Chapter[], length: ChapterLength): Message[] {
+  const sentences = length === 'short' ? '3 to 5 sentences' : length === 'full' ? '8 to 14 sentences' : '5 to 9 sentences';
+  return [
+    {
+      role: 'system',
+      content: [
+        `You are keeping the record of a story between ${chat.characterName} and ${chat.userName}. You are writing a document, not the story: do not continue the roleplay and do not speak as anyone.`,
+        `Combine what you are given into one summary of the earlier story, ${sentences} of plain prose in the past tense. Keep what lasts: what happened between them, what changed, promises, secrets, names, places and things that matter. Drop passing detail. No quoted dialogue, no headings, no commentary.`,
+      ].join('\n\n'),
+    },
+    {
+      role: 'user',
+      content: [
+        ...(chat.fold.text.trim() ? ['=== The summary so far ===', chat.fold.text.trim(), ''] : []),
+        '=== Chapters to fold in, oldest first ===',
+        ...chapters.map((chapter) => chapter.text.trim()),
+        '=== End ===',
+        '',
+        'Write the one combined summary now.',
+      ].join('\n'),
+    },
+  ];
+}
+export const FOLD_TOKENS: Record<ChapterLength, number> = { short: 350, usual: 600, full: 1000 };
+
+// The fold written: the summary replaced, those chapters marked folded.
+export function chaptersFolded(chat: Chat, chapterIds: readonly string[], text: string, now: number): Chat {
+  const clean = text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/^\s*summary:\s*/i, '').trim();
+  if (clean.length < 20) return chat;
+  const ids = new Set(chapterIds);
+  return { ...chat, fold: { text: clean.slice(0, 12_000), at: now }, chapters: chat.chapters.map((chapter) => (ids.has(chapter.id) ? { ...chapter, folded: true } : chapter)), updatedAt: now };
 }
 
 // --- Memory between chats (C2)
@@ -179,7 +259,7 @@ export function chatsToCarry(chat: Chat, chats: readonly Chat[]): Chat[] {
 export function endingRequest(source: Chat, length: ChapterLength): Message[] | null {
   const from = Math.max(coveredUpTo(source), source.messages.length - CHAPTER_SPAN_MESSAGES);
   if (from >= source.messages.length) return null;
-  const tail: Chapter = { id: 'ending', fromId: source.messages[from]!.id, toId: source.messages.at(-1)!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: 0 };
+  const tail: Chapter = { id: 'ending', fromId: source.messages[from]!.id, toId: source.messages.at(-1)!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: 0, folded: false };
   return chapterRequest({ ...source, chapters: [...source.chapters, tail] }, tail, length);
 }
 

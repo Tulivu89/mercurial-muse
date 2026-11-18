@@ -396,6 +396,13 @@ function Chapters({ chat, onChange, charName }: { chat: Chat; onChange: Change; 
         When older messages leave what {charName} is sent, they are written up here as chapters, and the chapters go with every reply as the story so far. The chat keeps every message. Edit a chapter to set it straight; Redo writes it again from its messages.
       </p>
       {chat.chapters.length === 0 && <p className="hint">No chapters yet: everything still fits.</p>}
+      {(chat.fold.text || chat.chapters.some((chapter) => chapter.folded)) && (
+        <div className="card">
+          <b>Earlier</b>
+          <p className="hint">The oldest chapters, folded into one summary when the chapters outgrew their share of what {charName} is sent. A folded chapter still comes back on its own when one of its keys comes up.</p>
+          <textarea className="input" aria-label="Earlier" rows={5} value={chat.fold.text} onChange={(event) => onChange({ ...chat, fold: { ...chat.fold, text: event.target.value }, updatedAt: Date.now() })} />
+        </div>
+      )}
       {chat.chapters.map((chapter, index) => {
         const from = indexOf(chapter.fromId);
         const to = indexOf(chapter.toId);
@@ -410,6 +417,7 @@ function Chapters({ chat, onChange, charName }: { chat: Chat; onChange: Change; 
               <span className="hint">{from >= 0 && to >= 0 ? `Messages ${from + 1} to ${to + 1}` : 'Its messages are gone'}</span>
             </div>
             {state && <p className="hint">{state}</p>}
+            {chapter.folded && !chapter.pinned && <p className="hint">Folded into Earlier; it comes back on its own when one of its keys comes up.</p>}
             {chapter.state === 'written' && (
               <>
                 <textarea className="input" aria-label={`Chapter ${index + 1}`} rows={4} value={chapter.text} onChange={(event) => onChange(changeChapter(chat, chapter.id, { text: event.target.value }, Date.now()))} />
@@ -417,7 +425,7 @@ function Chapters({ chat, onChange, charName }: { chat: Chat; onChange: Change; 
               </>
             )}
             <div className="row between">
-              <label className="checks"><input type="checkbox" checked={chapter.pinned} onChange={(event) => onChange(changeChapter(chat, chapter.id, { pinned: event.target.checked }, Date.now()))} /> Keep word for word</label>
+              <label className="checks"><input type="checkbox" checked={chapter.pinned} onChange={(event) => onChange(changeChapter(chat, chapter.id, { pinned: event.target.checked }, Date.now()))} /> Keep as written, never folded</label>
               <span className="row">
                 {(chapter.state !== 'pending') && <button type="button" className="link" onClick={() => onChange(changeChapter(chat, chapter.id, 'redo', Date.now()))}>Redo</button>}
                 <button type="button" className="link danger" onClick={() => { if (window.confirm(`Remove chapter ${index + 1}? Its messages stay in the chat; ${charName} stops being sent this chapter.`)) onChange(changeChapter(chat, chapter.id, null, Date.now())); }}>Remove</button>

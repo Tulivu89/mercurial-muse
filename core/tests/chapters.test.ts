@@ -116,3 +116,48 @@ describe('memory between chats', () => {
     expect(storySoFar(fresh, 0)).toContain('Before this chat, Ada Moss and Sam talked before:\n\nAda let Sam into the booth after hours.');
   });
 });
+
+describe('folding (C3)', () => {
+  const written = (count: number, words = 60) => {
+    let c = queueChapters(chatWith(count * 20), count * 40, ids('ch'), NOW);
+    c.chapters.forEach((chapter, index) => { c = chapterWritten(c, chapter.id, { text: `Chapter text ${index}. ${'detail '.repeat(words)}`, keys: [`key${index}`] }, NOW); });
+    return c;
+  };
+
+  it('keeps the story so far within its budget, newest chapters first, pins always', async () => {
+    const { foldDue } = await import('../chat/index.js');
+    let c = written(6);
+    const each = Math.ceil(c.chapters[0]!.text.length / 3.5);
+    const story = storySoFar(c, c.messages.length, each * 3 + 5);
+    expect(story).toContain('Chapter 6.');
+    expect(story).toContain('Chapter 4.');
+    expect(story).not.toContain('Chapter 3.');
+    c = changeChapter(c, c.chapters[0]!.id, { pinned: true }, NOW);
+    expect(storySoFar(c, c.messages.length, each * 3 + 5)).toContain('Chapter 1.');
+    // Over two thirds of the budget: the oldest unpinned fold, the newest stay.
+    const due = foldDue(c, c.messages.length, each * 4);
+    expect(due.length).toBeGreaterThan(0);
+    expect(due.map((chapter) => chapter.id)).not.toContain(c.chapters[0]!.id);
+    expect(due.map((chapter) => chapter.id)).not.toContain(c.chapters[5]!.id);
+    expect(foldDue(c, c.messages.length, each * 100)).toEqual([]);
+  });
+
+  it('folds into one Earlier summary, and a folded chapter comes back by its keys', async () => {
+    const { chaptersFolded, foldRequest } = await import('../chat/index.js');
+    let c = written(4);
+    const old = c.chapters.slice(0, 2);
+    const ask = foldRequest(c, old, 'usual');
+    expect(ask[0]!.content).toContain('do not continue the roleplay');
+    expect(ask[1]!.content).toContain('Chapter text 0.');
+    c = chaptersFolded(c, old.map((chapter) => chapter.id), 'Long ago Ada and Sam met and made a deal at the booth.', NOW);
+    expect(c.fold.text).toBe('Long ago Ada and Sam met and made a deal at the booth.');
+    expect(c.chapters.filter((chapter) => chapter.folded)).toHaveLength(2);
+    const story = storySoFar(c, c.messages.length);
+    expect(story).toContain('Long ago Ada and Sam met');
+    expect(story).not.toContain('Chapter text 0.');
+    expect(story).toContain('Chapter 3. Chapter text 2.');
+    expect(storySoFar(c, c.messages.length, Infinity, 'remember key0?')).toContain('Chapter 1. Chapter text 0.');
+    // The fold's next request carries the summary so far.
+    expect(foldRequest(c, c.chapters.slice(2, 3), 'usual')[1]!.content).toContain('=== The summary so far ===');
+  });
+});

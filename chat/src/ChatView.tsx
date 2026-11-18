@@ -7,7 +7,7 @@ import {
   PROFILE_NAMES, XIALONG, addAlternative, addNote, addReply, addUserMessage, buildRequest, buildSide, clockNow, clockTracks, deleteMessage, editMessage, editableText, formatMinutes,
   hasSchedule, isNoteText, lastEmotion, messageText, pickedAlt, profileFor, readReply, readSide, recentEmotions, replacePicked, sceneFor, sideTask,
   SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type HomeRef, type Life, type PackSettings, type ReplyPart, type SideKind, endedFrom, markEnded, thinkingTokens,
-  CHAPTER_TOKENS, bringMemory, chatsToCarry, endingRequest, chapterRequest, chapterWritten, chaptersToWrite, queueChapters, readChapter,
+  CHAPTER_TOKENS, FOLD_TOKENS, STORY_SHARE, chaptersFolded, foldDue, foldRequest, bringMemory, chatsToCarry, endingRequest, chapterRequest, chapterWritten, chaptersToWrite, queueChapters, readChapter,
   EMOTION_PICK_TOKENS, emotionPick, mergeParts, readEmotionPick, replyTokensFor, setReplyEmotion, trimToSentence, wantsEmotions } from '../../core/chat/index.js';
 import type { World } from '../../core/records/index.js';
 import { canPrefill, generate, requestFor, type Connection, type GenerateOptions, type NarrationError } from '../../kit/src/connection';
@@ -301,6 +301,16 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
         }
         if (leaving.current) return;
         onChange(chapterWritten(chatRef.current, chapter.id, written, Date.now()));
+      }
+      // Grown past two thirds of their share: the oldest unpinned chapters fold into Earlier.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      const now = chatRef.current;
+      const due = foldDue(now, now.windowStart, Math.round(contextTokensFor(settings, connection) * STORY_SHARE));
+      if (due.length && !leaving.current) {
+        try {
+          const result = await generateImpl(foldRequest(now, due, settings.chapterLength), target, { maxTokens: FOLD_TOKENS[settings.chapterLength], temperature: 0.3, thinking: settings.prompt.thinking });
+          if (!leaving.current) onChange(chaptersFolded(chatRef.current, due.map((chapter) => chapter.id), result.text, Date.now()));
+        } catch { /* folded after a later reply */ }
       }
     } finally {
       writingChapters.current = false;

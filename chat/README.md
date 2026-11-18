@@ -150,6 +150,15 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.8.2 - Folding - 2026-11-18
+
+Memory review C3. The story so far stays within 15% of the context:
+- **Pinned chapters** ("Keep as written, never folded") always go.
+- **The newest chapters** go next, as many as fit.
+- **When the unpinned chapters take more than two thirds of the share,** a side request after a reply folds the oldest of them into one **Earlier** summary, together with the summary so far. The newest third is left as it was.
+- **A folded chapter comes back on its own** when one of its keys comes up in the chat.
+- Memory shows the Earlier summary, to edit, and marks each folded chapter.
+
 ### 0.8.1 - Memory between chats - 2026-11-18
 
 Memory review C2:

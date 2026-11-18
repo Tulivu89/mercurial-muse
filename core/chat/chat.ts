@@ -72,6 +72,8 @@ export const chapterSchema = z.object({
   tries: z.number().int().nonnegative().default(0),
   seal: z.string().max(40).default(''),
   at: z.number().nonnegative().default(0),
+  // Folded into the Earlier summary (C3): no longer sent on its own, except when its keys come up.
+  folded: z.boolean().default(false),
 });
 export type Chapter = z.infer<typeof chapterSchema>;
 
@@ -142,6 +144,8 @@ export const chatSchema = z.object({
   // Memory brought in from earlier chats with the same character, and whether it was offered.
   earlier: z.array(earlierSchema).max(50).default([]),
   earlierAsked: z.boolean().default(false),
+  // The oldest chapters, folded into one summary when the chapters outgrow their share (C3).
+  fold: z.object({ text: z.string().max(12_000).default(''), at: z.number().nonnegative().default(0) }).default({ text: '', at: 0 }),
   // Set members pinned for this chat, by "recordId:setId": an outfit, a location.
   pins: z.record(z.string().max(200), id).default({}),
   createdAt: z.number().nonnegative().default(0),
@@ -168,7 +172,7 @@ export function newChat(input: NewChat, ids: () => string, now: number): Chat {
     personaId: input.personaId, scenarioId: input.scenarioId, userName: input.userName.trim() || 'User',
     relationship: input.relationship, style: input.style, responseLength: input.responseLength,
     messages: [], journal: [], loreOff: [], roll: { startIndex: 0, pathIdList: [], trimmed: false }, windowStart: 0, draft: '',
-    clock: { ...DEFAULT_CLOCK }, moods: false, diary: [], process: [], plans: [], chapters: [], earlier: [], earlierAsked: false, pins: {}, createdAt: now, updatedAt: now,
+    clock: { ...DEFAULT_CLOCK }, moods: false, diary: [], process: [], plans: [], chapters: [], earlier: [], earlierAsked: false, fold: { text: '', at: 0 }, pins: {}, createdAt: now, updatedAt: now,
   };
   const text = input.greeting?.text.trim();
   if (text) {

@@ -1,6 +1,6 @@
 # Memory in long chats: decision
 
-Nov 18, 2026 · @AmbiProp · Answered by the owner Nov 18; C1 and C2 built Nov 18 (Chat 0.8.0, 0.8.1); C3 next
+Nov 18, 2026 · @AmbiProp · Answered by the owner Nov 18; C1 to C3 built Nov 18 (Chat 0.8.0 to 0.8.2); C4 next
 
 From the brief and the source of SillyTavern (with three memory add-ons), RisuAI and Talemate (notes beside this page). For the General profile first; Xialong and the adventure follow.
 
