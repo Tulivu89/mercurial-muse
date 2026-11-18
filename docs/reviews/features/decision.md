@@ -1,6 +1,6 @@
 # Feature sweep: decision
 
-Nov 18, 2026 · @AmbiProp · Answered by the owner Nov 18
+Nov 18, 2026 · @AmbiProp · Answered by the owner Nov 18; F1 built (Chat 0.9.0)
 
 From the brief and the inventory of five apps (`apps.md`). The test is the owner's: a feature earns its place if it makes a part good or joins the parts up (`docs/value.md`).
 
