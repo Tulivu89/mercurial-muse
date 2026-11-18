@@ -7,6 +7,7 @@ Nov 15, 2026 · @AmbiProp · The plan after the pilot: the play-test, then three
 The owner's call: **worldbuilding for an adventure module comes next**, so adventure development can go on. Bogwater is retired, and the adventure now has features with nothing to test them on. These are the evaluator (free text proposes a check, adventure 0.28.0) and, coming, opponents' moves, progress clocks and story events (`docs/reviews/adventure/decision.md`, A2 and A3). The module is their test bed.
 
 - **Which setting:** the owner picks. Volungraiv (Stream 2 below, starting from Qetzal) is the one the module process was written around. Mythic Overdrive (Stream 3) is the other candidate.
+- **Volungraiv's plan (Nov 18):** `docs/content/volungraiv/plan.md`. Every region, town, faction, family and lead starts from a named source (`docs/content/sources/README.md`); Qetzal's sheet is drafted (`docs/content/volungraiv/sources/qetzal.md`). The owner's answers to the plan's questions come first.
 - **How:** `docs/content/modules/process.md`. A slice built by hand over six checkpoints until it plays, a pattern page written from it, then frames and fills. The standard (`docs/content/standard.md`) is the last pass.
 - **What the first slice has to give the rules,** so each feature has something to bite on:
   - **Things worth a check:** people, things and places with states and difficulties set on purpose, not left at Average.
