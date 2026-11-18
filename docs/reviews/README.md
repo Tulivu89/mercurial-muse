@@ -30,8 +30,10 @@ A short topic can keep its notes inside `decision.md`.
 | --- | --- | --- | --- |
 | Standards: cards, lorebooks, chat files, macros | `standards/brief.md`, Nov 17 (notes: `card-specs.md`, `sillytavern.md`, `agnai-risuai.md`) | `standards/decision.md`, Nov 17 | X1 to X4 built Nov 18 |
 | Prompt setup: system prompts per model, reply length, mature content, refusals, emotions | `prompt-setup/brief.md`, Nov 17 (notes: `sillytavern.md`, `agnai-risuai.md`) | `prompt-setup/decision.md`, Nov 17 | P1 to P3 built Nov 18 (Chat 0.6.0 to 0.7.0) |
-| Memory in long chats | `memory/brief.md`, Nov 18 (notes: `sillytavern.md`, `risuai-talemate.md`) | `memory/decision.md`, Nov 18 | C1 to C3 built Nov 18 (Chat 0.8.0 to 0.8.2); C4 to come |
-| Feature sweep | — | — | After memory |
+| Memory in long chats | `memory/brief.md`, Nov 18 (notes: `sillytavern.md`, `risuai-talemate.md`) | `memory/decision.md`, Nov 18 | C1 to C4 built Nov 18 (Chat 0.8.0 to 0.9.1) |
+| Feature sweep | `features/brief.md`, Nov 18 (notes: `apps.md`) | `features/decision.md`, Nov 18 | Answered Nov 18; F1 built (Chat 0.9.0) |
+| The adventure: Marinara's game mode, our dice, other rule systems | — | `adventure/decision.md`, Nov 18 (notes: `marinara.md`) | Waiting on the owner |
+| Group chat: four apps against our plan | — | `group-chat/decision.md`, Nov 18 | Waiting on the owner |
 
 ## Sources
 

@@ -7,6 +7,7 @@ import {
   PROFILE_NAMES, XIALONG, addAlternative, addNote, addReply, addUserMessage, buildRequest, buildSide, clockNow, clockTracks, deleteMessage, editMessage, editableText, formatMinutes,
   hasSchedule, isNoteText, lastEmotion, messageText, pickedAlt, profileFor, readReply, readSide, recentEmotions, replacePicked, sceneFor, sideTask,
   SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type HomeRef, type Life, type PackSettings, type ReplyPart, type SideKind, endedFrom, markEnded, thinkingTokens,
+  branchChat, myTurnRequest, readMyTurn, speakableText,
   CHAPTER_TOKENS, FOLD_TOKENS, STORY_SHARE, chaptersFolded, foldDue, foldRequest, bringMemory, chatsToCarry, endingRequest, chapterRequest, chapterWritten, chaptersToWrite, queueChapters, readChapter,
   EMOTION_PICK_TOKENS, emotionPick, mergeParts, readEmotionPick, replyTokensFor, setReplyEmotion, trimToSentence, wantsEmotions } from '../../core/chat/index.js';
 import type { World } from '../../core/records/index.js';
@@ -14,7 +15,9 @@ import { canPrefill, generate, requestFor, type Connection, type GenerateOptions
 import { clock as clockText, downloadJson, fileSafe, newId } from '../../kit/src/util';
 import { CharacterSheet, type SheetTab } from './CharacterSheet';
 import type { HouseAt } from './House';
-import { AgainIcon, BackIcon, BinIcon, BrainIcon, CloseIcon, ContinueIcon, CopyIcon, EditIcon, HouseIcon, NextIcon, NoteIcon, SendIcon, StopIcon } from './icons';
+import { AgainIcon, BackIcon, BinIcon, BrainIcon, BranchIcon, CloseIcon, ContinueIcon, CopyIcon, EditIcon, HouseIcon, NextIcon, NoteIcon, QuillIcon, SendIcon, SpeakIcon, StopIcon } from './icons';
+import { canSpeak, speak, stopSpeaking, voiceFor } from '../../kit/src/speech';
+import { VoicePicker } from './VoicePicker';
 import { MemorySheet } from './MemorySheet';
 import { ContextPanel, DetailsPanel, MemoryPanel, SentPanel, TimePanel, type CarryApi, type ExportApi, type SideApi } from './Panels';
 import { Portrait } from './Portrait';
@@ -69,11 +72,13 @@ export interface ChatViewProps {
   personas?: PersonaRef[];
   // Every chat, for bringing memory in from another with the same character.
   otherChats?: Chat[];
+  // A branch made from a message: saved and opened by the app.
+  onBranch?: (chat: Chat) => void;
   // Swapped out in tests so nothing leaves the machine.
   generateImpl?: typeof generate;
 }
 
-export function ChatView({ chat, world, connection, settings, portraits, sent = null, needs, onChange, onSent, onBack, onOverview, onDelete, onSettings, life = null, onLife, home = null, onHome, posting, allPortraits = {}, onPicture, personas = [], otherChats = [], generateImpl = generate }: ChatViewProps) {
+export function ChatView({ chat, world, connection, settings, portraits, sent = null, needs, onChange, onSent, onBack, onOverview, onDelete, onSettings, life = null, onLife, home = null, onHome, posting, allPortraits = {}, onPicture, personas = [], otherChats = [], onBranch, generateImpl = generate }: ChatViewProps) {
   // The status line follows the clock without a reply having to happen.
   const [tick, setTick] = useState(() => Date.now());
   useEffect(() => { const timer = setInterval(() => setTick(Date.now()), 30_000); return () => clearInterval(timer); }, []);
@@ -250,7 +255,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
       }
       after = { ...next, roll: built.roll, windowStart: built.windowStart, plans: built.plans };
       // Messages that just left the window wait to be written up as chapters.
-      if (built.profile === 'general' && settings.chapters) after = queueChapters(after, built.windowStart, newId, now);
+      if (settings.chapters) after = queueChapters(after, built.profile === 'aetherroom' ? built.roll.startIndex : built.windowStart, newId, now);
       onChange(after);
     } else if (!failure && !controller.signal.aborted) {
       failure = 'The model wrote nothing that reads as a reply. What was sent shows what came back.';
@@ -264,7 +269,8 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     setBusy(null);
     setError(failure);
     if (!after || failure || leaving.current) return;
-    if (built.profile === 'general' && settings.chapters && chaptersToWrite(after).length) void writeChapters(after);
+    if (settings.readAloud && !(endedAt === 'limit' && settings.autoContinue && auto < AUTO_CONTINUES)) readAloudChat(after, replyId);
+    if (settings.chapters && chaptersToWrite(after).length) void writeChapters(after);
     // Cut at the limit: carry it on without asking, up to twice.
     if (endedAt === 'limit' && settings.autoContinue && auto < AUTO_CONTINUES && built.profile === 'general') {
       await runTurn('continue', replyId, after, auto + 1);
@@ -314,6 +320,48 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
       }
     } finally {
       writingChapters.current = false;
+    }
+  }
+
+  // Read aloud with the device's voices: the character's own, chosen in the chat's details.
+  const [speaking, setSpeaking] = useState<string | null>(null);
+  const readAloud = (messageId: string, theirs: boolean) => {
+    if (speaking === messageId) { stopSpeaking(); setSpeaking(null); return; }
+    const voice = theirs ? voiceFor(`${chat.worldId}:${chat.characterId}`) : '';
+    if (speak(speakableText(chat, messageId), voice, () => setSpeaking((now) => (now === messageId ? null : now)))) setSpeaking(messageId);
+  };
+  useEffect(() => () => stopSpeaking(), []);
+  const readAloudChat = (from: Chat, messageId: string) => {
+    if (speak(speakableText(from, messageId), voiceFor(`${from.worldId}:${from.characterId}`), () => setSpeaking((now) => (now === messageId ? null : now)))) setSpeaking(messageId);
+  };
+
+  // Branch from here: a new chat up to this message.
+  const branch = (messageId: string) => {
+    const made = branchChat(chatRef.current, messageId, newId(), Date.now());
+    if (made && onBranch) onBranch(made);
+  };
+
+  // Write my turn: the model drafts the player's next message into the box.
+  const [drafting, setDrafting] = useState(false);
+  async function writeMyTurn() {
+    if (busy || drafting) return;
+    const blocked = ready();
+    if (blocked) { setError(blocked); return; }
+    setDrafting(true);
+    setError('');
+    try {
+      const built = await buildRequest(chatRef.current, world!, buildOptions(chatRef.current.messages.length, false, true, chatRef.current.draft));
+      if (!built) return;
+      const turn = myTurnRequest(built.messages, charName, userName);
+      const prefill = canPrefill(connection) ? turn.lead : '';
+      const result = await generateImpl(turn.messages, target, { ...samplers(Math.min(replyTokens, 600)), stop: turn.stop, ...(prefill ? { prefill } : {}), thinking: settings.prompt.thinking });
+      const text = readMyTurn(result.text, charName, userName);
+      if (text && !leaving.current) onChange({ ...chatRef.current, draft: chatRef.current.draft.trim() ? `${chatRef.current.draft.trim()}\n${text}` : text });
+      else if (!text) setError('The model wrote nothing that reads as your turn. Try again.');
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Your turn could not be written.');
+    } finally {
+      setDrafting(false);
     }
   }
 
@@ -535,6 +583,8 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
                         {theirs && isLast && <button type="button" className="chip-btn" onClick={() => void run('continue', message.id)} aria-label="Continue" title="Continue this reply"><ContinueIcon size={16} /></button>}
                         <button type="button" className="chip-btn" onClick={() => setEditing({ id: message.id, text: editableText(message, charName) })} aria-label="Edit" title="Edit"><EditIcon size={16} /></button>
                         <button type="button" className="chip-btn" onClick={() => void copy(message)} aria-label="Copy" title="Copy">{copied === message.id ? <span className="done">Copied</span> : <CopyIcon size={16} />}</button>
+                        {canSpeak() && !aside && <button type="button" className="chip-btn" onClick={() => readAloud(message.id, theirs)} aria-label={speaking === message.id ? 'Stop reading' : 'Read aloud'} title={speaking === message.id ? 'Stop reading' : 'Read aloud'}>{speaking === message.id ? <StopIcon size={16} /> : <SpeakIcon size={16} />}</button>}
+                        {onBranch && <button type="button" className="chip-btn" onClick={() => branch(message.id)} aria-label="Branch from here" title="Branch from here: a new chat up to this message, to try it another way"><BranchIcon size={16} /></button>}
                         {!aside && <button type="button" className="chip-btn" onClick={() => { setPanel(null); setSheet(null); setMemory({ upTo: index + 1, text: messageText(message).replace(/\*/g, '').trim().slice(0, 2000) }); }} aria-label="Memory, from this message" title={`Memory: what ${charName} keeps from the chat up to here`}><BrainIcon size={16} /></button>}
                         <button type="button" className="chip-btn danger" onClick={() => { if (window.confirm(aside ? 'Delete this note? The model stops seeing it too.' : 'Delete this message? The model stops seeing it too.')) onChange(deleteMessage(chat, message.id, Date.now())); }} aria-label="Delete" title="Delete"><BinIcon size={16} /></button>
                       </>
@@ -560,6 +610,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
         )}
         <form className="composer" onSubmit={(event) => { event.preventDefault(); send(); }}>
           <button type="button" className="bar-btn" onClick={() => { setPanel(null); setSheet(null); setMemory(memory ? null : 'chat'); }} aria-expanded={memory !== null} aria-label="Memory" title={`Memory: have ${charName} reflect, feel or plan, or add a journal entry`}><BrainIcon /></button>
+          {profile === 'general' && <button type="button" className="bar-btn" onClick={() => void writeMyTurn()} disabled={!!busy || drafting} aria-label={drafting ? 'Writing your turn' : 'Write my turn'} title={`Write my turn: ${connection.model || 'the model'} drafts what you say next, into the box, for you to change before sending`}><QuillIcon /></button>}
           <button type="button" className="bar-btn" onClick={noteButton} disabled={!!busy} aria-label={chat.draft.trim() ? 'Add as a note, without a reply' : 'Write a note'} title="A note in [square brackets]: sets the scene or gives a direction, and doesn't ask for a reply"><NoteIcon /></button>
           <label className="sr" htmlFor="draft">Your message</label>
           <textarea
@@ -605,6 +656,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
           {panel === 'memory' && <MemoryPanel chat={chat} onChange={onChange} charName={charName} userName={userName} model={connection.model} side={side} onRemember={() => setMemory('chat')} carry={carry} />}
           {panel === 'time' && <TimePanel chat={chat} onChange={onChange} scene={scene} charName={charName} />}
           {panel === 'details' && <DetailsPanel chat={chat} onChange={onChange} scene={scene} world={world} charName={charName} onDelete={onDelete} exports={world ? exports : undefined} profile={profile} />}
+          {panel === 'details' && <VoicePicker owner={`${chat.worldId}:${chat.characterId}`} charName={charName} />}
         </aside>
       )}
     </div>

@@ -60,3 +60,7 @@ Later, Inkwyrm could host models itself, as some writing services do, with the v
 - **A moderation and terms stance** that fits an 18+ service.
 
 None of it changes the record model or the sides. The relay is the one place it touches.
+
+## The nearest rival (Nov 18)
+
+The feature sweep found that Marinara Engine (open source, AGPL-3.0, self-hosted) has nearly Inkwyrm's combination: schedules with first messages, a social feed, a game mode with rulesets, trackers, Discord and phone builds. So the combination alone isn't unique. What Inkwyrm has that it lacks: a hosted site, one record model across every side, a content standard with flagship worlds, and memory that carries between chats. These have to be better made and easier to reach (`docs/reviews/features/decision.md`).

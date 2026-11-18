@@ -74,6 +74,8 @@ export const chapterSchema = z.object({
   at: z.number().nonnegative().default(0),
   // Folded into the Earlier summary (C3): no longer sent on its own, except when its keys come up.
   folded: z.boolean().default(false),
+  // Lasting things about the player it noticed (C4), offered for the journal until kept or dismissed.
+  facts: z.array(z.string().min(1).max(400)).max(4).default([]),
 });
 export type Chapter = z.infer<typeof chapterSchema>;
 
@@ -144,6 +146,8 @@ export const chatSchema = z.object({
   // Memory brought in from earlier chats with the same character, and whether it was offered.
   earlier: z.array(earlierSchema).max(50).default([]),
   earlierAsked: z.boolean().default(false),
+  // A branch: the chat and message it was made from.
+  branchOf: z.object({ chatId: id, messageId: id }).optional().catch(undefined),
   // The oldest chapters, folded into one summary when the chapters outgrow their share (C3).
   fold: z.object({ text: z.string().max(12_000).default(''), at: z.number().nonnegative().default(0) }).default({ text: '', at: 0 }),
   // Set members pinned for this chat, by "recordId:setId": an outfit, a location.

@@ -5,7 +5,7 @@ import {
   CLOCK_STEPS, GENERAL_LENGTHS, PLAN_TURNS, PROFILE_NAMES, generalLengthName, generalLengthOf, type Profile, RESPONSE_LENGTHS, SIDE_NAMES, STYLES, STYLE_HINTS, STYLE_NAMES, addPlan, clockTracks, exportChat, formatDate,
   formatMinutes, formatStamp, hasSchedule, levelReaches, lorePool, minutesOfDay, moveClock, nextMorningMs, pinKey, responseLengthName, roundToHalfHour,
   requestText, setClockMode, setJournalEntry, setMemory, setPlan, setWhyText, statusText, storyActive, timeOfDayMs,
-  type Built, type Chat, type MemoryKind, type Scene, type SideEntry, type SideKind, chatToSillyTavern, chatToText, CHAPTER_TRIES, changeChapter, isStale } from '../../core/chat/index.js';
+  type Built, type Chat, type MemoryKind, type Scene, type SideEntry, type SideKind, chatToSillyTavern, chatToText, CHAPTER_TRIES, changeChapter, isStale, settleFact } from '../../core/chat/index.js';
 import { BOND_CONDITIONS, KIND_NAMES, RELATIONSHIPS, type World } from '../../core/records/index.js';
 import { KeysField } from '../../kit/src/Fields';
 import { downloadJson, downloadText, fileSafe, newId } from '../../kit/src/util';
@@ -418,6 +418,15 @@ function Chapters({ chat, onChange, charName }: { chat: Chat; onChange: Change; 
             </div>
             {state && <p className="hint">{state}</p>}
             {chapter.folded && !chapter.pinned && <p className="hint">Folded into Earlier; it comes back on its own when one of its keys comes up.</p>}
+            {chapter.facts.map((fact) => (
+              <div key={fact} className="row between fact">
+                <span>{fact}</span>
+                <span className="row">
+                  <button type="button" className="btn small" onClick={() => onChange(settleFact(chat, chapter.id, fact, true, newId(), Date.now()))}>Keep in the journal</button>
+                  <button type="button" className="link" onClick={() => onChange(settleFact(chat, chapter.id, fact, false, '', Date.now()))}>Dismiss</button>
+                </span>
+              </div>
+            ))}
             {chapter.state === 'written' && (
               <>
                 <textarea className="input" aria-label={`Chapter ${index + 1}`} rows={4} value={chapter.text} onChange={(event) => onChange(changeChapter(chat, chapter.id, { text: event.target.value }, Date.now()))} />

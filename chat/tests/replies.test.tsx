@@ -29,9 +29,9 @@ function provider(replies: [string, string][]) {
   return { calls, impl };
 }
 
-function Harness({ impl, settings, portraits, seen, initial = start, others = [] }: { impl: ReturnType<typeof provider>['impl']; settings?: Partial<Settings>; portraits?: Record<string, string>; seen?: Chat[]; initial?: () => Chat; others?: Chat[] }) {
+function Harness({ impl, settings, portraits, seen, initial = start, others = [], onBranch }: { impl: ReturnType<typeof provider>['impl']; settings?: Partial<Settings>; portraits?: Record<string, string>; seen?: Chat[]; initial?: () => Chat; others?: Chat[]; onBranch?: (chat: Chat) => void }) {
   const [chat, setChat] = useState(initial);
-  return <ChatView chat={chat} world={world} connection={connection} settings={{ ...DEFAULT_SETTINGS, ...settings }} portraits={portraits} onChange={(next) => { seen?.push(next); setChat(next); }} onBack={() => {}} onDelete={() => {}} onSettings={() => {}} otherChats={others} generateImpl={impl as never} />;
+  return <ChatView chat={chat} world={world} connection={connection} settings={{ ...DEFAULT_SETTINGS, ...settings }} portraits={portraits} onChange={(next) => { seen?.push(next); setChat(next); }} onBack={() => {}} onDelete={() => {}} onSettings={() => {}} otherChats={others} onBranch={onBranch} generateImpl={impl as never} />;
 }
 const send = (text: string) => {
   fireEvent.change(screen.getByLabelText('Your message'), { target: { value: text } });
@@ -145,6 +145,28 @@ describe('memory between chats', () => {
     render(<Harness impl={impl} others={[old]} />);
     fireEvent.click(await screen.findByRole('button', { name: 'Not now' }));
     expect(screen.queryByRole('button', { name: 'Bring it in' })).toBeNull();
+  });
+});
+
+describe('the small things (F1)', () => {
+  it('writes my turn into the box, to change before sending', async () => {
+    const { calls, impl } = provider([['Sam: *I set the page down.* Read it.\nErrata: no', 'stop']]);
+    render(<Harness impl={impl} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Write my turn' }));
+    await waitFor(() => expect(screen.getByLabelText('Your message')).toHaveValue('*I set the page down.* Read it.'));
+    expect(calls[0]!.messages.at(-1)!.content).toContain("write Sam's next message instead of Errata's");
+    expect(calls[0]!.options.stop).toEqual(['\nErrata:']);
+  });
+
+  it('branches a chat from a message', async () => {
+    const branched: Chat[] = [];
+    const { impl } = provider([['x', 'stop']]);
+    const { container } = render(<Harness impl={impl} onBranch={(chat) => branched.push(chat)} />);
+    fireEvent.click(container.querySelector('.turn.character .bubbles')!);
+    fireEvent.click(screen.getByRole('button', { name: 'Branch from here' }));
+    expect(branched).toHaveLength(1);
+    expect(branched[0]!.messages).toHaveLength(1);
+    expect(branched[0]!.branchOf?.chatId).toBe('c1');
   });
 });
 

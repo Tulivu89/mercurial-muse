@@ -27,3 +27,6 @@ export const MoreIcon = (props: Props) => <Icon {...props}><circle cx="6" cy="12
 export const PinIcon = (props: Props) => <Icon {...props}><path d="M9 4h6l-1 6 3 3H7l3-3zM12 13v7" /></Icon>;
 export const PhotoIcon = (props: Props) => <Icon {...props}><rect x="3.5" y="6" width="17" height="13" rx="2" /><circle cx="12" cy="12.5" r="3.2" /><path d="M8.5 6l1.2-2h4.6l1.2 2" /></Icon>;
 export const CommentIcon = (props: Props) => <Icon {...props}><path d="M5 5h14v10H10l-4 4v-4H5z" /></Icon>;
+export const SpeakIcon = (props: Props) => <Icon {...props}><path d="M4 10v4h4l5 4V6L8 10zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" /></Icon>;
+export const BranchIcon = (props: Props) => <Icon {...props}><circle cx="6" cy="5" r="2" /><circle cx="6" cy="19" r="2" /><circle cx="18" cy="8" r="2" /><path d="M6 7v10M18 10c0 4-6 3-12 7" /></Icon>;
+export const QuillIcon = (props: Props) => <Icon {...props}><path d="M20 4c-6 0-12 5-13 13l-2 3M20 4c0 6-5 11-11 11M9 15l-2-2" /></Icon>;

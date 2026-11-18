@@ -12,7 +12,7 @@ import { currentEventsLine, hoursApart, moodFor, moodLine, pickPlans, timeApartL
 import { recentText, sceneFor, type Scene } from './scene.js';
 import { sheetFor } from './sheet.js';
 import type { PromptSetup } from './prompt.js';
-import { STORY_SHARE } from './chapters.js';
+import { STORY_SHARE, storySoFar } from './chapters.js';
 import { clockNow, clockTracks, storyActive } from './time.js';
 
 export type Profile = 'aetherroom' | 'general';
@@ -119,6 +119,10 @@ const answerFor = (scene: Scene, chat: Chat, options: BuildOptions) =>
 async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, side?: SideTask): Promise<Built> {
   const sheet = sheetFor(scene);
   if (options.needs) sheet.char.brains = [...(sheet.char.brains ?? []), { name: 'Needs', content: options.needs }];
+  // Chapters (memory review, C4): the story so far rides as an always-on brain, so the AetherRoom
+  // kernel itself is untouched. Out of view means before CharacterRoom's rollover.
+  const soFar = storySoFar(chat, chat.roll.startIndex, Math.round(options.contextTokens * STORY_SHARE), recentText(chat, options.upTo, options.draft));
+  if (soFar) sheet.char.brains = [...(sheet.char.brains ?? []), { name: 'The story so far', content: soFar.replace(/^## The story so far\n\n/, '') }];
   const history = chat.messages.slice(0, options.upTo);
   const carried = !side && options.continuing && history.at(-1)?.from === 'character' ? history.pop()! : null;
   const slot = carried ? openReplyText(pickedAlt(carried).parts, scene.charName, true) : '';
