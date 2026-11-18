@@ -222,6 +222,10 @@ export function leftoverNotes(left: BookLeftovers): string[] {
   return notes;
 }
 
+// The titles a card's own prompts come in under; Chat sends them when the player asks (core/chat/prompt.ts).
+export const CARD_PROMPT_TITLE = 'System prompt (from the card)';
+export const CARD_POST_TITLE = 'Post-history instructions (from the card)';
+
 // Room on a character for lorebook sections before a big book becomes Lore records instead.
 const BOOK_ON_CHARACTER = 60;
 
@@ -284,9 +288,9 @@ export function importTavernCard(world: World, raw: unknown, ids: Ids, now: numb
     else notes.push('Its other apps\' extra data was too big to keep, so a card written back out from here won\'t have it.');
   }
   if (card.creatorNotes) record.sections.push(section(ids, 'Creator notes', 'never', card.creatorNotes));
-  if (card.systemPrompt) record.sections.push(section(ids, 'System prompt (from the card)', 'never', card.systemPrompt));
-  if (card.postHistory) record.sections.push(section(ids, 'Post-history instructions (from the card)', 'never', card.postHistory));
-  if (card.systemPrompt || card.postHistory) notes.push('This card has its own system prompt. It is kept as a Never section and not sent; change its reach in the Studio to send it.');
+  if (card.systemPrompt) record.sections.push(section(ids, CARD_PROMPT_TITLE, 'never', card.systemPrompt));
+  if (card.postHistory) record.sections.push(section(ids, CARD_POST_TITLE, 'never', card.postHistory));
+  if (card.systemPrompt || card.postHistory) notes.push("This card has its own system prompt. It is kept, not sent: Chat sends it when Settings › Prompt › The card's own prompt is on.");
   record.notes = [card.creator && `By ${card.creator}.`, card.version && `Version ${card.version}.`, `Imported from a ${card.spec} card.`].filter(Boolean).join(' ');
 
   record.greetings = [card.firstMes, ...card.alternateGreetings].filter(Boolean).slice(0, 20).map((text) => ({ id: ids(), text: text.slice(0, 8000), emotion: '' }));

@@ -1,6 +1,6 @@
 # Prompt setup: decision
 
-Nov 17, 2026 · @AmbiProp · Answered by the owner Nov 18; P1, P2, X1, P3 in that order
+Nov 17, 2026 · @AmbiProp · Built Nov 18: P1 (Chat 0.6.0), P2 (0.6.1), P3 (0.7.0)
 
 From the brief, the owner's Gemini test, and the source of SillyTavern, Agnai and RisuAI (notes beside this page). Covers the General profile, every model but Xialong; Xialong keeps CharacterRoom's prompt.
 
@@ -49,6 +49,12 @@ Ask for length in words, and continue on its own when a reply hits the limit. Ta
 | **P3, the Prompt page** | The parts, editable per connection with Put back; the mature content switch; the card's own prompt; a thinking level | One PR, Chat and kit |
 
 **Proposed order:** P1 and P2 first, because they fix what the owner hit. Then X1 from the standards review (nothing leaks). Then P3, which X1's card prompt switch fits into.
+
+## As built (Nov 18)
+
+- **P1:** Chat 0.6.0. The emotion pick runs on the chat's own connection; it moves to the Side job when that exists (`docs/model-jobs.md`).
+- **P2:** Chat 0.6.1, in the server's relay, so the adventure's Gemini narration gets it too.
+- **P3:** Chat 0.7.0. One prompt setup for every model, not one per connection: per-connection setups wait until someone needs two. The 18+ question is asked on every side (`kit/src/AgeGate.tsx`). Thinking is set for Google's own API only. OpenRouter keeps turning thinking off, as it did before.
 
 ## The owner's answers (Nov 18)
 

@@ -134,6 +134,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     canPrefill: profile === 'general' && canPrefill(connection),
     contextTokens: contextTokensFor(settings, connection),
     replyTokens,
+    prompt: settings.prompt,
     nowMs: Date.now(),
     upTo, continuing, draft, dryRun, needs,
     firstBuild: firstBuild.current,
@@ -196,7 +197,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     const built = await buildRequest(base, world!, buildOptions(upTo, kind === 'continue', false));
     if (!built || leaving.current) return;
 
-    const options: GenerateOptions = { ...samplers(replyTokens), ...(built.profile === 'general' ? { stop: [`\n${userName}:`] } : {}), ...(built.prefill ? { prefill: built.prefill } : {}) };
+    const options: GenerateOptions = { ...samplers(replyTokens), ...(built.profile === 'general' ? { thinking: settings.prompt.thinking } : {}), ...(built.profile === 'general' ? { stop: [`\n${userName}:`] } : {}), ...(built.prefill ? { prefill: built.prefill } : {}) };
     const controller = new AbortController();
     abort.current = controller;
     setError('');

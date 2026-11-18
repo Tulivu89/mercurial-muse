@@ -1,5 +1,5 @@
 // Chat's own settings, in this browser. The connection is the site's (kit/src/connection.ts).
-import { XIALONG, profileFor } from '../../core/chat/index.js';
+import { DEFAULT_PROMPT, XIALONG, profileFor, readPromptSetup, type PromptSetup } from '../../core/chat/index.js';
 import type { Connection } from '../../kit/src/connection';
 
 export type TextSize = 'small' | 'medium' | 'large';
@@ -24,10 +24,12 @@ export interface Settings {
   emotions: 'auto' | 'off';
   // A reply still cut off after carrying on loses its half sentence.
   trimCut: boolean;
+  // The General prompt's parts as the player set them (core/chat/prompt.ts).
+  prompt: PromptSetup;
 }
 
 const KEY = 'inkwyrm.chat.settings';
-export const DEFAULT_SETTINGS: Settings = { contextTokens: 0, replyTokens: 1000, temperature: 0.8, textSize: 'medium', layout: 'bubbles', rail: true, userName: '', persona: '', autoContinue: true, emotions: 'auto', trimCut: false };
+export const DEFAULT_SETTINGS: Settings = { contextTokens: 0, replyTokens: 1000, temperature: 0.8, textSize: 'medium', layout: 'bubbles', rail: true, userName: '', persona: '', autoContinue: true, emotions: 'auto', trimCut: false, prompt: DEFAULT_PROMPT };
 // How many times a reply is carried on without asking.
 export const AUTO_CONTINUES = 2;
 
@@ -47,6 +49,7 @@ export function readSettings(): Settings {
       autoContinue: stored.autoContinue !== false,
       emotions: stored.emotions === 'off' ? 'off' : 'auto',
       trimCut: stored.trimCut === true,
+      prompt: readPromptSetup(stored.prompt),
     };
   } catch {
     return DEFAULT_SETTINGS;

@@ -53,12 +53,23 @@ export function geminiUpstream(request: NarrationRequest, provider: ProviderInfo
     ...(request.top_p !== undefined ? { topP: request.top_p } : {}),
     ...(request.top_k !== undefined ? { topK: request.top_k } : {}),
     ...(stops.length ? { stopSequences: stops } : {}),
+    ...thinkingConfig(request.model, request.thinking),
   };
   return {
     path: `/models/${encodeURIComponent(model)}:${stream ? 'streamGenerateContent?alt=sse' : 'generateContent'}`,
     format: null,
     body: { contents, ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}), generationConfig, safetySettings: GEMINI_SAFETY },
   };
+}
+
+// Less thinking, where the player asked: Gemini 3 by level (Flash goes down to minimal, Pro to
+// low), Gemini 2.5 by budget (Flash can stop, Pro can't go under 128). Other models are left alone.
+export function thinkingConfig(model: string, thinking: NarrationRequest['thinking']): { thinkingConfig?: Record<string, unknown> } {
+  if (!thinking || thinking === 'default') return {};
+  const flash = /flash/i.test(model);
+  if (/gemini-3/i.test(model)) return { thinkingConfig: { thinkingLevel: thinking === 'off' && flash ? 'minimal' : 'low' } };
+  if (/gemini-2\.5/i.test(model)) return { thinkingConfig: { thinkingBudget: thinking === 'low' ? 1024 : flash ? 0 : 128 } };
+  return {};
 }
 
 // Google's finish reasons in the OpenAI words the rest of the site reads.

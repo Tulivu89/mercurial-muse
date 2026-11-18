@@ -129,6 +129,8 @@ export interface GenerateOptions {
   signal?: AbortSignal;
   // Called with each piece of text as it arrives. The promise resolves with the whole reply.
   onDelta?: (text: string) => void;
+  // How much a thinking model should think, where the provider lets it be set.
+  thinking?: 'default' | 'low' | 'off';
 }
 
 // The request as the relay takes it. Shown to the player as "What was sent".
@@ -146,6 +148,7 @@ export function requestFor(messages: Message[], target: Target, options: Generat
     ...(options.min_p !== undefined ? { min_p: options.min_p } : {}),
     ...(options.stop?.length ? { stop: options.stop } : {}),
     ...(options.prefill ? { prefill: options.prefill } : {}),
+    ...(options.thinking && options.thinking !== 'default' ? { thinking: options.thinking } : {}),
   };
 }
 

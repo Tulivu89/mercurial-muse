@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
-  addAlternative, addReply, emotionPick, GENERAL_LENGTHS, generalLengthOf, lengthWords, readEmotionPick, replyTokensFor, setReplyEmotion, trimToSentence, wantsEmotions, endedFrom, joinText, markEnded, mergeParts, thinkingTokens, keyVariants, addUserMessage, buildRequest, budgetFor, deleteMessage, editMessage, editableText, exportChat, newChat, parseReply, pickedAlt, profileFor,
+  addAlternative, addReply, DEFAULT_PROMPT, rulesText, emotionPick, GENERAL_LENGTHS, generalLengthOf, lengthWords, readEmotionPick, replyTokensFor, setReplyEmotion, trimToSentence, wantsEmotions, endedFrom, joinText, markEnded, mergeParts, thinkingTokens, keyVariants, addUserMessage, buildRequest, budgetFor, deleteMessage, editMessage, editableText, exportChat, newChat, parseReply, pickedAlt, profileFor,
   readChatFile, readReply, remember, replaceMacros, replyText, resolvePortrait, sceneFor, sheetFor, stepAlternative, windowStartFor, type BuildOptions, type Chat,
 } from '../chat/index.js';
 import { formatPrompt } from '../narration/formats.js';
+import { thinkingConfig } from '../narration/gemini.js';
+import { CARD_POST_TITLE, CARD_PROMPT_TITLE } from '../records/tavern.js';
 import { ensureCondition, newRecord, newWorld, putRecord, type StoryRecord, type World } from '../records/index.js';
 
 function ids() { let n = 0; return () => `id-${++n}`; }
@@ -201,6 +203,40 @@ describe('the General profile', () => {
     const reply = built.messages.find((message) => message.role === 'assistant' && message.content.includes('dial'))!;
     expect(reply.content).toContain('Ada Moss: Not tonight. *She reaches for the dial.*');
     expect(reply.content).not.toContain('Emotion:');
+  });
+
+  it('builds the rules from the player\'s prompt setup, mature content on by default', () => {
+    const plain = rulesText(DEFAULT_PROMPT, 'Ada Moss', 'Sam');
+    expect(plain).toContain('You are Ada Moss, in a private one-on-one chat with Sam.');
+    expect(plain).toContain('This is fiction between adults.');
+    const changed = rulesText({ ...DEFAULT_PROMPT, off: ['content', 'voice'], texts: { format: 'Write in plain prose, {{user}}.' } }, 'Ada Moss', 'Sam');
+    expect(changed).not.toContain('fiction between adults');
+    expect(changed).not.toContain('example chats');
+    expect(changed).toContain('Write in plain prose, Sam.');
+    expect(changed).toContain('Styles and lengths');
+  });
+
+  it('sends a card\'s own prompt and post-history line only when the player asks', async () => {
+    let w = world();
+    const ada = w.records.find((record) => record.id === 'ada')!;
+    w = putRecord(w, { ...ada, sections: [...ada.sections, { id: 'cp', title: CARD_PROMPT_TITLE, reach: 'never', keys: [], when: null, text: 'Stay noir, {{user}}.' }, { id: 'ph', title: CARD_POST_TITLE, reach: 'never', keys: [], when: null, text: 'Short lines.' }] }, 3);
+    const c = addUserMessage(chat(), 'Hi.', 'u1', NOW + 1);
+    const off = (await buildRequest(c, w, options('glm-4-6', { upTo: 2 })))!;
+    expect(JSON.stringify(off.messages)).not.toContain('Stay noir');
+    const on = (await buildRequest(c, w, options('glm-4-6', { upTo: 2, prompt: { ...DEFAULT_PROMPT, cardPrompt: true, after: 'Mind the clock.' } })))!;
+    expect(on.messages[0]!.content).toContain('Stay noir, Sam.');
+    const note = on.messages.at(-1)!.content;
+    expect(note).toContain('Short lines.');
+    expect(note.indexOf('Mind the clock.')).toBeLessThan(note.indexOf('Reply as Ada Moss only.'));
+  });
+
+  it('sets Gemini\'s thinking where the player asked for less', () => {
+    expect(thinkingConfig('models/gemini-3.8-flash', 'off')).toEqual({ thinkingConfig: { thinkingLevel: 'minimal' } });
+    expect(thinkingConfig('gemini-3-pro', 'off')).toEqual({ thinkingConfig: { thinkingLevel: 'low' } });
+    expect(thinkingConfig('gemini-2.5-flash', 'off')).toEqual({ thinkingConfig: { thinkingBudget: 0 } });
+    expect(thinkingConfig('gemini-2.5-pro', 'low')).toEqual({ thinkingConfig: { thinkingBudget: 1024 } });
+    expect(thinkingConfig('gemini-3.8-flash', 'default')).toEqual({});
+    expect(thinkingConfig('gemma-3-27b', 'low')).toEqual({});
   });
 
   it('keeps the prefix the same from one turn to the next', async () => {

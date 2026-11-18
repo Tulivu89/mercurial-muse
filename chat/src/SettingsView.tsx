@@ -2,7 +2,7 @@
 // window, display, each character's portraits, and files.
 import { IMAGE_TYPES, MediaImage, animationSlot, posterSlot } from '../../kit/src/media';
 import { useState, type ChangeEvent } from 'react';
-import { AVATAR_SLOT, EMOTIONS, PROFILE_NAMES, SETTINGS_EXPORT_FORMAT, XIALONG, profileFor, resolvePortrait, samplersFor } from '../../core/chat/index.js';
+import { AVATAR_SLOT, EMOTIONS, PROFILE_NAMES, PROMPT_PARTS, SETTINGS_EXPORT_FORMAT, XIALONG, partText, profileFor, resolvePortrait, samplersFor, type PartId, type PromptSetup, type Thinking } from '../../core/chat/index.js';
 import { downloadJson } from '../../kit/src/util';
 import { ConnectForm, ModelFields } from '../../kit/src/Connect';
 import type { Connection } from '../../kit/src/connection';
@@ -90,6 +90,8 @@ export function SettingsView({ connection, onConnection, settings, onSettings, t
         </p>
       </section>
 
+      <PromptCard setup={settings.prompt} onChange={(prompt) => onSettings({ ...settings, prompt })} aetherRoom={profile === 'aetherroom'} />
+
       <section className="card" aria-label="Display">
         <h2>Display</h2>
         <div className="row">
@@ -158,5 +160,49 @@ export function SettingsView({ connection, onConnection, settings, onSettings, t
         <p className="hint">Save settings writes the model, context size and samplers in a file, never your key. A chat&rsquo;s own Save for a test, under What was sent, puts them in one file with the chat and what it was sent.</p>
       </section>
     </main>
+  );
+}
+
+// The General prompt's parts, in the order they're sent, each to read, turn off or rewrite.
+function PromptCard({ setup, onChange, aetherRoom }: { setup: PromptSetup; onChange: (setup: PromptSetup) => void; aetherRoom: boolean }) {
+  const toggle = (id: PartId, on: boolean) => onChange({ ...setup, off: on ? setup.off.filter((entry) => entry !== id) : [...setup.off, id] });
+  const write = (id: PartId, text: string) => onChange({ ...setup, texts: { ...setup.texts, [id]: text } });
+  const putBack = (id: PartId) => { const { [id]: _was, ...texts } = setup.texts; onChange({ ...setup, texts }); };
+  return (
+    <section className="card" aria-label="Prompt">
+      <h2>Prompt</h2>
+      <p className="hint">
+        What every model but Xialong is told before the character, in this order. {'{{char}}'} and {'{{user}}'} become the names. Turn a part off, or rewrite it; Put back returns to the site's own words.
+        {aetherRoom && ' Xialong, connected now, gets CharacterRoom\'s own prompt instead.'}
+      </p>
+      {PROMPT_PARTS.map((part) => {
+        const on = !setup.off.includes(part.id);
+        return (
+          <div key={part.id} className="prompt-part">
+            <label className="check"><input type="checkbox" checked={on} onChange={(event) => toggle(part.id, event.target.checked)} /> {part.name}</label>
+            {on && (
+              <>
+                <textarea className="input" rows={part.id === 'format' || part.id === 'content' ? 4 : 3} maxLength={4000} value={partText(setup, part.id)} onChange={(event) => write(part.id, event.target.value)} aria-label={part.name} />
+                {setup.texts[part.id] !== undefined && <button type="button" className="btn small quiet" onClick={() => putBack(part.id)}>Put back</button>}
+              </>
+            )}
+          </div>
+        );
+      })}
+      <label className="check"><input type="checkbox" checked={setup.cardPrompt} onChange={(event) => onChange({ ...setup, cardPrompt: event.target.checked })} /> The card's own prompt: send a character card's system prompt and post-history line, where it has them</label>
+      <label className="field">
+        <span>After every turn</span>
+        <textarea className="input" rows={2} maxLength={2000} value={setup.after} placeholder="A line added to the note with every turn, last. Empty: nothing." onChange={(event) => onChange({ ...setup, after: event.target.value })} />
+      </label>
+      <label className="field">
+        <span>Thinking</span>
+        <select value={setup.thinking} onChange={(event) => onChange({ ...setup, thinking: event.target.value as Thinking })}>
+          <option value="default">The model's own</option>
+          <option value="low">Less</option>
+          <option value="off">As little as it allows</option>
+        </select>
+      </label>
+      <p className="hint">Thinking is set for Gemini through Google AI Studio. Less thinking is quicker and leaves more of the allowance for the reply. If a model refuses the setting, put it back to the model's own.</p>
+    </section>
   );
 }

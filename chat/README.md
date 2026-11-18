@@ -150,6 +150,26 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.7.0 - The Prompt, and the 18+ question - 2026-11-18
+
+The last phase of the prompt setup review (P3):
+
+- **Settings › Prompt** shows what every model but Xialong is told before the character, in order:
+  - who the model plays;
+  - the format;
+  - how a reply is shaped;
+  - the examples' voice;
+  - **mature content**.
+
+  Each part can be turned off or rewritten, and **Put back** returns it to the site's words. `{{char}}` and `{{user}}` become the names. Below the parts:
+  - **The card's own prompt** sends a character card's system prompt and post-history line, where the card has them. Off by default; import says when a card has one.
+  - **After every turn** is a line of the player's own, added last to the note with every turn.
+  - **Thinking:** the model's own, less, or as little as it allows. It is set for Gemini through Google AI Studio (level for Gemini 3, budget for 2.5).
+- **Mature content is on by default.** The line says this is fiction between adults, with sex, violence and dark themes written plainly and in character when the story calls for them, and the character keeping their own limits. No made-up framings. A player can turn it off.
+- **One question before the site opens,** on whichever side a visitor reaches first: Inkwyrm is for adults, are you 18 or older (`kit/src/AgeGate.tsx`). The answer is kept in this browser and nothing is sent. Studio, Overview and the adventure ask it too.
+
+The prompt is one setup for every model for now. A setup per connection waits until someone needs two.
+
 ### 0.6.2 - Cards from other apps, cleaned - 2026-11-18
 
 The first phase of the standards review (X1, `docs/reviews/standards/decision.md`), with Studio 0.16.0, which has the details. A card imported here loses its `@@` decorator lines and other apps' placeholders, brings in its character's note, and keeps a lore entry's second key list. When a prompt is built, the placeholders cards use beyond CharacterRoom's are filled in: `{{random}}`, `{{pick}}`, `{{roll}}`, `{{weekday}}`, `{{isodate}}`, `{{isotime}}` and `{{reverse}}`. Comments and variables are left out, so none of it reaches a model as raw braces.

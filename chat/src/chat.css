@@ -310,3 +310,5 @@ a.home-card:hover { border-color: var(--text-2); }
 .persona-says { font-family: var(--read); font-size: 15px; color: var(--text-2); overflow-wrap: anywhere; }
 .persona-card .chip { border: 1px solid var(--text); }
 .card .check { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 15px; }
+.prompt-part { display: flex; flex-direction: column; gap: 6px; padding: 8px 0; border-top: 1px solid var(--rule); }
+.prompt-part .btn { align-self: flex-start; }

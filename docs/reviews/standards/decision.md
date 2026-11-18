@@ -1,6 +1,6 @@
 # Standards: decision
 
-Nov 17, 2026 · @AmbiProp · Answered by the owner Nov 17; X1 next
+Nov 17, 2026 · @AmbiProp · Answered by the owner Nov 17; X1 built Nov 18 (Studio 0.16.0, Chat 0.6.2); X2 to X4 next
 
 From the brief, the card specs, and the source of SillyTavern, Agnai and RisuAI (notes beside this page).
 

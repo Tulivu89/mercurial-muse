@@ -28,8 +28,8 @@ A short topic can keep its notes inside `decision.md`.
 
 | Topic | Brief | Decision | Status |
 | --- | --- | --- | --- |
-| Standards: cards, lorebooks, chat files, macros | `standards/brief.md`, Nov 17 (notes: `card-specs.md`, `sillytavern.md`, `agnai-risuai.md`) | `standards/decision.md`, Nov 17 | Answered Nov 17; X1 next |
-| Prompt setup: system prompts per model, reply length, mature content, refusals, emotions | `prompt-setup/brief.md`, Nov 17 (notes: `sillytavern.md`, `agnai-risuai.md`) | `prompt-setup/decision.md`, Nov 17 | Waiting on the owner |
+| Standards: cards, lorebooks, chat files, macros | `standards/brief.md`, Nov 17 (notes: `card-specs.md`, `sillytavern.md`, `agnai-risuai.md`) | `standards/decision.md`, Nov 17 | X1 built Nov 18; X2 to X4 to come |
+| Prompt setup: system prompts per model, reply length, mature content, refusals, emotions | `prompt-setup/brief.md`, Nov 17 (notes: `sillytavern.md`, `agnai-risuai.md`) | `prompt-setup/decision.md`, Nov 17 | P1 to P3 built Nov 18 (Chat 0.6.0 to 0.7.0) |
 | Memory in long chats | — | — | After prompt setup |
 | Feature sweep | — | — | After memory |
 

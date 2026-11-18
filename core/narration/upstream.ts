@@ -20,6 +20,9 @@ export const narrationRequestSchema = z.object({
   mode: z.enum(['chat', 'prompt']).default('prompt'),
   // The prompt format; left out, it is guessed from the model's name.
   format: z.enum(FORMAT_IDS).optional(),
+  // How much a model that thinks should think, where the provider lets it be set (Google's own
+  // API). Left out, the model's own default.
+  thinking: z.enum(['default', 'low', 'off']).optional(),
   prefill: z.string().max(20_000).optional(),
   // Samplers beyond temperature, for models that are run with set values (xialong-v1). Sent only
   // when given.
