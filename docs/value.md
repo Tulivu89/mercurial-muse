@@ -1,6 +1,6 @@
 # What Inkwyrm offers that free front-ends don't
 
-Nov 18, 2026 · @AmbiProp · For the owner to weigh; nothing here is decided
+Nov 18, 2026 · @AmbiProp · The owner's answer is at the end
 
 SillyTavern, RisuAI and Agnai are free, mature and open. Anyone can install one, add a key and chat. A subscription or a purchase has to buy something they don't give, or give only after days of setup. This page sorts what Inkwyrm has into what can be copied quickly and what can't, from what the reviews found (`docs/reviews/`).
 
@@ -41,3 +41,11 @@ This also answers the order of work. Home and its content proved the chat side a
 1. Is the adventure the draw, with Chat as the way in, or the other way round?
 2. Content for sale: whole worlds, character households, or both? Written only by you and these sessions, or by other creators too, with a share?
 3. Would you rather charge for sync and the Discord bot, or wait for a model partner and charge for models?
+
+## The owner's answer (Nov 18)
+
+No single feature is the draw: dice and records can be copied as easily as anything. The draw is the combination: drop in a key, get adult writing that works, keep characters organised, build worlds, live in Home, play an adventure, with content provided. Bundled with models at a mark-up for the service, the combination is something people could pay for. So:
+
+- **Each part only has to be good, not unmatched.** What matters is that the parts join up: one character across Chat, Home, the Studio and the adventure.
+- **The paid offer is models plus the service** (roadmap step 9), with players' own keys staying free.
+- **Content is part of the combination,** not a separate store first.
