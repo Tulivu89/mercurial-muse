@@ -67,11 +67,11 @@ export function contextFor(world: World, situation: Situation): ContextAnswer {
 function blockFor(record: StoryRecord, isHere: boolean, lineWanted: boolean, recentText: string, conditions: Set<string>): ContextBlock | null {
   const ownKeys = ownTerms(record);
   const isNamed = mentions(recentText, ownKeys);
-  const reaches = (reach: Reach, keys: readonly string[], when: string | null) => {
+  const reaches = (reach: Reach, keys: readonly string[], when: string | null, also: readonly string[] = []) => {
     switch (reach) {
       case 'always': return true;
       case 'here': return isHere;
-      case 'named': return mentions(recentText, keys.length ? keys : ownKeys);
+      case 'named': return mentions(recentText, keys.length ? keys : ownKeys) && (!also.length || mentions(recentText, also));
       case 'when': return !!when && conditions.has(when) && (keys.length ? mentions(recentText, keys) : isHere || isNamed);
       case 'never': return false;
     }
@@ -80,7 +80,7 @@ function blockFor(record: StoryRecord, isHere: boolean, lineWanted: boolean, rec
   const parts: ContextPart[] = [];
   let reachedBy: Why | null = null;
   for (const section of record.sections) {
-    if (!section.text.trim() || !reaches(section.reach, section.keys, section.when)) continue;
+    if (!section.text.trim() || !reaches(section.reach, section.keys, section.when, section.also)) continue;
     parts.push({ title: section.title, reach: section.reach, text: section.text.trim() });
     if (section.reach === 'always' || section.reach === 'when') reachedBy ??= section.reach;
   }

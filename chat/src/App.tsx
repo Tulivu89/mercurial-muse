@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { EMOTIONS, careAt, homeOf, lifeKey, lifeNow, needsText, newChat, newLife, postSlot, readChatFile, type Chat, type Life, type Post } from '../../core/chat/index.js';
+import { EMOTIONS, careAt, homeOf, lifeKey, lifeNow, needsText, newChat, newLife, postSlot, readChatFile, type Chat, type Life, type Post, readSillyTavernChat, withSillyTavernTurns } from '../../core/chat/index.js';
 import { importCardFile, newRecord, newWorld, putRecord, recordById, removeRecord, type StoryRecord, type World } from '../../core/records/index.js';
 import { initialConnection, reconnect, type Connection } from '../../kit/src/connection';
 import { SiteHeader } from '../../kit/src/SiteHeader';
@@ -337,12 +337,31 @@ export function App() {
 
   const importChat = async (file: File) => {
     try {
-      const read = readChatFile(await readJsonFile(file));
+      const text = await file.text();
+      let raw: unknown;
+      try { raw = JSON.parse(text); } catch { raw = undefined; }
+      // Not one of ours: a SillyTavern chat file, bound to the character of the same name.
+      if (raw === undefined || file.name.toLowerCase().endsWith('.jsonl')) { importSillyTavern(text); return; }
+      const read = readChatFile(raw);
       if (!read.ok) { setStatus({ text: read.errors.join(' '), bad: true }); return; }
       const chat = chats?.some((existing) => existing.id === read.chat.id) ? { ...read.chat, id: newId() } : read.chat;
       save({ ...chat, updatedAt: Date.now() }, true);
       setStatus({ text: `Brought in the chat with ${chat.characterName || 'a character'}.` });
     } catch (error) { fail(error); }
+  };
+
+  const importSillyTavern = (text: string) => {
+    const read = readSillyTavernChat(text);
+    if (!read.ok) { setStatus({ text: read.error, bad: true }); return; }
+    const name = read.characterName.trim().toLowerCase();
+    const found = (worlds ?? []).flatMap((world) => world.records.filter((record) => record.kind === 'character' && record.name.trim().toLowerCase() === name).map((record) => ({ world, record })))
+      .sort((a, b) => Number(b.record.chatListed ?? false) - Number(a.record.chatListed ?? false))[0];
+    if (!found) { setStatus({ text: `There is no character called ${read.characterName || 'that'} here yet. Import their card first, then the chat.`, bad: true }); return; }
+    const now = Date.now();
+    const base = newChat({ id: newId(), worldId: found.world.id, characterId: found.record.id, characterName: found.record.name, personaId: null, scenarioId: null, userName: read.userName || settings.userName || 'User', relationship: 'stranger', style: 'roleplay', responseLength: 'unspecified', greeting: null }, newId, now);
+    const chat = withSillyTavernTurns(base, read.turns, newId, now);
+    save(chat, true);
+    setStatus({ text: `Brought in ${read.turns.length} message${read.turns.length === 1 ? '' : 's'} with ${found.record.name} from SillyTavern.` });
   };
 
   const backup = async () => {

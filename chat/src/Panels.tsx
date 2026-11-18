@@ -2,11 +2,10 @@
 // remembers, the clock, and this chat's own settings.
 import { useState } from 'react';
 import {
-  CLOCK_STEPS, PLAN_TURNS, PROFILE_NAMES, RESPONSE_LENGTHS, SIDE_NAMES, STYLES, STYLE_HINTS, STYLE_NAMES, addPlan, clockTracks, exportChat, formatDate,
+  CLOCK_STEPS, GENERAL_LENGTHS, PLAN_TURNS, PROFILE_NAMES, generalLengthName, generalLengthOf, type Profile, RESPONSE_LENGTHS, SIDE_NAMES, STYLES, STYLE_HINTS, STYLE_NAMES, addPlan, clockTracks, exportChat, formatDate,
   formatMinutes, formatStamp, hasSchedule, levelReaches, lorePool, minutesOfDay, moveClock, nextMorningMs, pinKey, responseLengthName, roundToHalfHour,
   requestText, setClockMode, setJournalEntry, setMemory, setPlan, setWhyText, statusText, storyActive, timeOfDayMs,
-  type Built, type Chat, type MemoryKind, type Scene, type SideEntry, type SideKind,
-} from '../../core/chat/index.js';
+  type Built, type Chat, type MemoryKind, type Scene, type SideEntry, type SideKind, chatToSillyTavern, chatToText } from '../../core/chat/index.js';
 import { BOND_CONDITIONS, KIND_NAMES, RELATIONSHIPS, type World } from '../../core/records/index.js';
 import { KeysField } from '../../kit/src/Fields';
 import { downloadJson, downloadText, fileSafe, newId } from '../../kit/src/util';
@@ -297,7 +296,7 @@ export function TimePanel({ chat, onChange, scene, charName }: { chat: Chat; onC
   );
 }
 
-export function DetailsPanel({ chat, onChange, scene, world, charName, onDelete, exports }: { chat: Chat; onChange: Change; scene: Scene | null; world: World | null; charName: string; onDelete: () => void; exports?: ExportApi }) {
+export function DetailsPanel({ chat, onChange, scene, world, charName, onDelete, exports, profile = 'general' }: { chat: Chat; onChange: Change; scene: Scene | null; world: World | null; charName: string; onDelete: () => void; exports?: ExportApi; profile?: Profile }) {
   const lore = world ? lorePool(world) : [];
   const owners = scene ? [scene.character, scene.persona, scene.scenario].filter(Boolean) : [];
   const tier = (lock: string | null) => BOND_CONDITIONS.find((condition) => condition.id === lock)?.tier;
@@ -318,7 +317,9 @@ export function DetailsPanel({ chat, onChange, scene, world, charName, onDelete,
           <select value={chat.style} onChange={(event) => onChange({ ...chat, style: event.target.value as Chat['style'] })}>{STYLES.map((value) => <option key={value} value={value}>{STYLE_NAMES[value]}</option>)}</select>
         </label>
         <label className="field grow"><span>Response length</span>
-          <select value={chat.responseLength} onChange={(event) => onChange({ ...chat, responseLength: event.target.value as Chat['responseLength'] })}>{RESPONSE_LENGTHS.map((value) => <option key={value} value={value}>{responseLengthName(value)}</option>)}</select>
+          {profile === 'aetherroom'
+            ? <select value={chat.responseLength} onChange={(event) => onChange({ ...chat, responseLength: event.target.value as Chat['responseLength'] })}>{RESPONSE_LENGTHS.map((value) => <option key={value} value={value}>{responseLengthName(value)}</option>)}</select>
+            : <select value={generalLengthOf(chat.responseLength)} onChange={(event) => onChange({ ...chat, responseLength: event.target.value as Chat['responseLength'] })}>{GENERAL_LENGTHS.map((value) => <option key={value} value={value}>{generalLengthName(value)}</option>)}</select>}
         </label>
       </div>
       <p className="hint">{STYLE_HINTS[chat.style]} The relationship decides which of {charName}'s sections and schedule lines behind a bond are in.</p>
@@ -367,6 +368,10 @@ export function DetailsPanel({ chat, onChange, scene, world, charName, onDelete,
       {exports ? <ExportBar api={exports} /> : (
         <div className="row"><button type="button" className="btn small quiet" onClick={() => downloadJson(`${fileSafe(charName)}.chat.json`, exportChat(chat, Date.now()))}>Export this chat</button></div>
       )}
+      <div className="row">
+        <button type="button" className="btn small quiet" title="A chat file SillyTavern, Agnai and RisuAI read, every alternative reply kept" onClick={() => downloadText(`${fileSafe(charName)}.jsonl`, chatToSillyTavern(chat), 'application/jsonl')}>Save for SillyTavern</button>
+        <button type="button" className="btn small quiet" onClick={() => downloadText(`${fileSafe(charName)}.txt`, chatToText(chat), 'text/plain')}>Save as text</button>
+      </div>
       <div className="row">
         <button type="button" className="btn small danger" onClick={onDelete}>Delete this chat</button>
       </div>

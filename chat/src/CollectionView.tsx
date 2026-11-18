@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import type { IncludedWorld } from '../../kit/src/included';
 import { EMOTIONS, homeOf, lastLine, type Chat } from '../../core/chat/index.js';
-import type { StoryRecord, World } from '../../core/records/index.js';
+import { cardFromRecord, pngWithCard, type StoryRecord, type World } from '../../core/records/index.js';
 import {
   characterKey,
   freshMember,
@@ -14,10 +14,10 @@ import {
   type Collection,
   type Member,
 } from '../../kit/src/collection';
-import { IMAGE_TYPES, MediaImage, animationSlot, posterSlot } from '../../kit/src/media';
+import { IMAGE_TYPES, MediaImage, animationSlot, posterSlot, readOriginal } from '../../kit/src/media';
 import '../../kit/src/media.css';
 import { Sheet } from '../../kit/src/Sheet';
-import { clock, newId } from '../../kit/src/util';
+import { clock, downloadBytes, downloadJson, fileSafe, newId, pngBytes } from '../../kit/src/util';
 import { InkMark } from '../../kit/src/Mark';
 import { loadNavigation } from '../../kit/src/activity';
 import { portraitOwner, type PortraitSet } from './store';
@@ -126,6 +126,21 @@ export function CollectionView({
         ...value,
       }),
     );
+  // A card other apps open: a PNG with the portrait when there is one, JSON otherwise.
+  const saveCard = async (entry: Cast) => {
+    const card = cardFromRecord(entry.world, entry.record.id, Date.now());
+    if (!card) return;
+    const name = fileSafe(entry.record.name);
+    const avatar = portraits[portraitOwner(entry.world.id, entry.record.id)]?.avatar;
+    try {
+      if (!avatar) throw new Error('no picture');
+      downloadBytes(`${name}.card.png`, pngWithCard(await pngBytes(await readOriginal(avatar)), card), 'image/png');
+      setNotice('');
+    } catch {
+      downloadJson(`${name}.card.json`, card);
+      setNotice(avatar ? 'The portrait could not be made into a card picture, so the card was saved as JSON.' : '');
+    }
+  };
   const ownChats = (entry: Cast) =>
     (chats ?? []).filter((chat) => chat.worldId === entry.world.id && chat.characterId === entry.record.id);
   const recent = (entry: Cast) => latestChat(chats ?? [], entry.world.id, entry.record.id, member(entry));
@@ -324,6 +339,9 @@ export function CollectionView({
         <a className="btn quiet" href={studioHref(entry)}>
           Edit in Studio
         </a>
+        <button type="button" className="btn quiet" onClick={() => void saveCard(entry)}>
+          Save as a card
+        </button>
         <p className="hint">
           Removing or archiving changes this collection. The character and conversations stay intact.
         </p>

@@ -55,6 +55,9 @@ export const sectionSchema = z.object({
   reach: z.enum(REACHES),
   // Named: what brings it in. Empty means the record's own name and keys.
   keys,
+  // Named: and one of these must come up too (a card lorebook's secondary keys). Left out or
+  // empty: no second condition.
+  also: z.array(z.string().min(1).max(60)).max(40).optional(),
   // When: the condition that must hold, by its id in the world's conditions.
   when: id.nullable().default(null),
   text: shortText(20000),
@@ -165,6 +168,9 @@ export const recordSchema = z.object({
   groupIds: z.array(id).max(40).default([]),
   tags: z.array(z.string().min(1).max(40)).max(40).default([]),
   notes: shortText(20000).default(''),
+  // What a character card carried that the record model has no place for (its `extensions`),
+  // kept untouched so the card can be written back out whole (docs/reviews/standards/decision.md).
+  cardExtensions: z.record(z.string(), z.unknown()).optional().catch(undefined),
   // Places: the place this one is inside.
   parentId: id.nullable().default(null),
   // Groups: what kind of group.

@@ -3,7 +3,7 @@
 // Every row carries the record's line, because at a few hundred records a name alone is not
 // enough to tell two people apart. Find crosses every kind at once.
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
-import { KIND_NAMES, RECORD_KINDS, type RecordKind, type StoryRecord, type World } from '../../core/records/index.js';
+import { KIND_NAMES, RECORD_KINDS, worldInfoFrom, type RecordKind, type StoryRecord, type World } from '../../core/records/index.js';
 import { changedCount } from '../../core/rules/index.js';
 import { downloadJson, fileSafe } from '../../kit/src/util';
 import { byName } from './RecordPick';
@@ -215,9 +215,10 @@ export function WorldList({ world, route, go, prefs, onPrefs, flagged, checks, c
             </section>
             <div className="row">
               <button type="button" className="btn small quiet" onClick={() => downloadJson(`${fileSafe(world.name)}.world.json`, world)}>Export</button>
+              <button type="button" className="btn small quiet" title="Lore, characters, places, items and groups as a SillyTavern World Info file, which other apps read too" onClick={() => downloadJson(`${fileSafe(world.name)}.lorebook.json`, worldInfoFrom(world))}>Export as a lorebook</button>
               <span className="btn small quiet file-btn">
-                Import a card
-                <input type="file" accept="application/json,.json,image/png,.png" aria-label="Import a card" onChange={onImportCard} />
+                Import a card or lorebook
+                <input type="file" accept="application/json,.json,image/png,.png,.lorebook" aria-label="Import a card or lorebook" onChange={onImportCard} />
               </span>
             </div>
           </>

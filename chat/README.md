@@ -150,6 +150,59 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.7.2 - SillyTavern chats in and out - 2026-11-18
+
+Standards X4, the last of the standards phases:
+- **Import a chat** (Settings) also takes a SillyTavern chat file (`.jsonl`), old or new. It is bound to the character of the same name in your worlds; import their card first if there isn't one. Every swipe comes in as an alternative reply with the same one shown, and SillyTavern's hidden lines come in as notes.
+- **Save for SillyTavern** and **Save as text** in a chat's details. The first is a `.jsonl` file that SillyTavern, Agnai and RisuAI read, with every alternative reply as a swipe. The second is a paragraph a message.
+
+### 0.7.1 - Cards out, and CHARX in - 2026-11-18
+
+Standards X3, with Studio 0.18.0, which has the details:
+- **Save as a card** on a character in the Collection writes a PNG card with the portrait in it, as SillyTavern writes them (a V2 `chara` chunk and a V3 `ccv3` chunk). Without a portrait it saves JSON.
+- **CHARX** cards import with their pictures: the icon becomes the portrait, and emotion pictures fill the emotion slots of the same names.
+
+### 0.7.0 - The Prompt, and the 18+ question - 2026-11-18
+
+The last phase of the prompt setup review (P3):
+
+- **Settings › Prompt** shows what every model but Xialong is told before the character, in order:
+  - who the model plays;
+  - the format;
+  - how a reply is shaped;
+  - the examples' voice;
+  - **mature content**.
+
+  Each part can be turned off or rewritten, and **Put back** returns it to the site's words. `{{char}}` and `{{user}}` become the names. Below the parts:
+  - **The card's own prompt** sends a character card's system prompt and post-history line, where the card has them. Off by default; import says when a card has one.
+  - **After every turn** is a line of the player's own, added last to the note with every turn.
+  - **Thinking:** the model's own, less, or as little as it allows. It is set for Gemini through Google AI Studio (level for Gemini 3, budget for 2.5).
+- **Mature content is on by default.** The line says this is fiction between adults, with sex, violence and dark themes written plainly and in character when the story calls for them, and the character keeping their own limits. No made-up framings. A player can turn it off.
+- **One question before the site opens,** on whichever side a visitor reaches first: Inkwyrm is for adults, are you 18 or older (`kit/src/AgeGate.tsx`). The answer is kept in this browser and nothing is sent. Studio, Overview and the adventure ask it too.
+
+The prompt is one setup for every model for now. A setup per connection waits until someone needs two.
+
+### 0.6.2 - Cards from other apps, cleaned - 2026-11-18
+
+The first phase of the standards review (X1, `docs/reviews/standards/decision.md`), with Studio 0.16.0, which has the details. A card imported here loses its `@@` decorator lines and other apps' placeholders, brings in its character's note, and keeps a lore entry's second key list. When a prompt is built, the placeholders cards use beyond CharacterRoom's are filled in: `{{random}}`, `{{pick}}`, `{{roll}}`, `{{weekday}}`, `{{isodate}}`, `{{isotime}}` and `{{reverse}}`. Comments and variables are left out, so none of it reaches a model as raw braces.
+
+### 0.6.1 - Gemini direct - 2026-11-18
+
+The second phase of the prompt setup review (P2). The site's server, so the adventure gets it too:
+
+- **Google AI Studio goes to Google's own Gemini API,** not its OpenAI-style route, which can't take safety settings. Every harm category Google lets a caller set is OFF, as SillyTavern, Agnai and RisuAI do. The player's key goes in Google's own header, as before never stored. The leading system messages become the system instruction (folded into the first turn for Gemma), and turns are put in Google's shape. Thinking stays out of the reply, and its count reaches the line under a cut reply. Only the stop strings Google takes are sent (five at most, 16 characters each).
+- **Filters say why.** Google's finish reasons read as the rest of the site's: a SAFETY or PROHIBITED_CONTENT stop shows as the filter line under the reply; a blocked prompt fails with Google's reason ("filtered the reply (PROHIBITED_CONTENT)").
+- **Gemini on OpenRouter** is sent the same safety settings.
+
+### 0.6.0 - Length in words, carrying on, emotions after - 2026-11-18
+
+The first phase of the prompt setup review (`docs/reviews/prompt-setup/decision.md`, P1), for every model but Xialong:
+
+- **Length in words.** The note with each turn asks for a length a model follows: "two to four paragraphs" by default, one paragraph for Short, four to six for Long, six or more for Very long (lines instead of paragraphs in the chat style). The reply allowance is at least what that length needs. A chat's details offer these four. Xialong keeps CharacterRoom's list.
+- **Carrying on without asking.** A reply that reaches its length limit is carried on, up to twice (Settings › Replies, on by default). The line under a reply that is still cut off offers Continue and Try again.
+- **No emotion line.** The rules no longer ask for one, and the chat and the example chats go back to the model without them. Where a character has emotion portraits, or a chat keeps moods, a one-word request after the reply picks the emotion from the 24, steering away from the last few (`core/chat/helpers.ts`: the first helper, a small step after a reply that others can join). It can be turned off in Settings › Replies.
+- **Trimming,** as an option, off: a reply still cut off after carrying on loses its half sentence.
+
 ### 0.5.3 - Looks, and Ink Night - 2026-11-18
 
 - **Looks** (`docs/looks.md`): a world can choose a skin, and a chat, character or home in that world wears it. HOG Wild wears Live Feed. **Settings › Look**: follow the world, Wet Ink everywhere, or one look everywhere (Live Feed, Outrun, Phosphor, Halcyon).

@@ -11,6 +11,7 @@ import { budgetFor, buildGeneral, estimateTokens, windowStartFor } from './gener
 import { currentEventsLine, hoursApart, moodFor, moodLine, pickPlans, timeApartLine } from './moment.js';
 import { recentText, sceneFor, type Scene } from './scene.js';
 import { sheetFor } from './sheet.js';
+import type { PromptSetup } from './prompt.js';
 import { clockNow, clockTracks, storyActive } from './time.js';
 
 export type Profile = 'aetherroom' | 'general';
@@ -39,6 +40,8 @@ export interface BuildOptions {
   draft?: string;
   // Home: how the character's needs stand, already worded. Sent as CharacterRoom's Needs brain.
   needs?: string;
+  // The player's prompt setup, for every model but xialong.
+  prompt?: PromptSetup;
 }
 
 export interface BuiltPart { label: string; tokens: number }
@@ -216,7 +219,7 @@ function generalMoment(chat: Chat, scene: Scene, options: BuildOptions, windowSt
 }
 
 function buildGeneralProfile(chat: Chat, scene: Scene, options: BuildOptions, side?: SideTask): Built {
-  const base = { upTo: options.upTo, canPrefill: options.canPrefill, continuing: !side && options.continuing, nowMs: scene.nowMs, draft: options.draft };
+  const base = { upTo: options.upTo, canPrefill: options.canPrefill, continuing: !side && options.continuing, nowMs: scene.nowMs, draft: options.draft, prompt: options.prompt };
   const task = side ? {
     rules: `You are ${scene.charName}. Below is who you are, who ${scene.userName} is, and your chat with them so far. After it you will be asked to write something of your own, in your own voice. Write only that, in the form asked for, and nothing after it.`,
     ask: [side.shape, ...(side.frame ?? []), side.style, `Write it now as ${scene.charName}. ${side.layout ?? `Start with "Title:", then "Content:"${side.kind === 'plan' ? '' : ', then "Activation Keys:" with a few comma-separated words or names from the chat that should bring it back to mind'}.`}`].join('\n'),

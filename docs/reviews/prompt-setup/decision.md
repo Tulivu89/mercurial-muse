@@ -1,6 +1,6 @@
 # Prompt setup: decision
 
-Nov 17, 2026 · @AmbiProp · Waiting on the owner
+Nov 17, 2026 · @AmbiProp · Built Nov 18: P1 (Chat 0.6.0), P2 (0.6.1), P3 (0.7.0)
 
 From the brief, the owner's Gemini test, and the source of SillyTavern, Agnai and RisuAI (notes beside this page). Covers the General profile, every model but Xialong; Xialong keeps CharacterRoom's prompt.
 
@@ -50,9 +50,15 @@ Ask for length in words, and continue on its own when a reply hits the limit. Ta
 
 **Proposed order:** P1 and P2 first, because they fix what the owner hit. Then X1 from the standards review (nothing leaks). Then P3, which X1's card prompt switch fits into.
 
-## Questions for the owner
+## As built (Nov 18)
 
-1. **Mature content:** a switch the player turns on (proposed), on for everyone, or decided per world (a household like HOG Wild could ask for it)?
-2. **The emotion side call** costs one short extra request per reply where portraits or moods are on. Fine, or off unless the player asks for it?
-3. **Continuing on its own**, at most twice: on by default?
-4. **Gemini direct** sends the player's key to Google's own API through the relay, the same as now but at a different address. No change for the player. Agreed?
+- **P1:** Chat 0.6.0. The emotion pick runs on the chat's own connection; it moves to the Side job when that exists (`docs/model-jobs.md`).
+- **P2:** Chat 0.6.1, in the server's relay, so the adventure's Gemini narration gets it too.
+- **P3:** Chat 0.7.0. One prompt setup for every model, not one per connection: per-connection setups wait until someone needs two. The 18+ question is asked on every side (`kit/src/AgeGate.tsx`). Thinking is set for Google's own API only. OpenRouter keeps turning thinking off, as it did before.
+
+## The owner's answers (Nov 18)
+
+1. **Mature content:** the service is built on it. One 18+ question at the front of the site, and people engage as they choose. So the content line is on once a visitor has said they are 18 or over. A player can still turn it off on the Prompt page.
+2. **Emotions:** optional, and only where something uses them (portraits). The 24 are AetherRoom's and will be refined later. The wider idea is a small step before or after a reply for anything that benefits. So the emotion pick is built as the first **helper**: a short side call after the reply, which other uses can join.
+3. **Continuing on its own:** yes, on by default.
+4. **Gemini direct:** yes. More direct control for players is better.

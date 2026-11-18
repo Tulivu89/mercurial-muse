@@ -1,5 +1,6 @@
 import { Component, StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { AgeGate } from '../../kit/src/AgeGate';
 import { App } from './App';
 import '../../kit/src/wet-ink.css';
 import './chat.css';
@@ -24,4 +25,4 @@ class Crash extends Component<{ children: ReactNode }, { error: Error | null }> 
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element.');
-createRoot(root).render(<StrictMode><Crash><App /></Crash></StrictMode>);
+createRoot(root).render(<StrictMode><Crash><AgeGate><App /></AgeGate></Crash></StrictMode>);

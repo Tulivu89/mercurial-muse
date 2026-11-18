@@ -67,3 +67,27 @@ export function clock(time: number, now: number): string {
   const sameDay = new Date(now).toDateString() === date.toDateString();
   return sameDay ? date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
+
+export function downloadBytes(name: string, bytes: Uint8Array, type: string): void {
+  const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// A picture as PNG bytes, redrawn on a canvas (the first frame, for a moving one).
+export async function pngBytes(source: string): Promise<Uint8Array> {
+  const image = new Image();
+  image.decoding = 'async';
+  image.src = source;
+  await image.decode();
+  const canvas = document.createElement('canvas');
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+  canvas.getContext('2d')!.drawImage(image, 0, 0);
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+  if (!blob) throw new Error('This picture could not be made into a PNG.');
+  return new Uint8Array(await blob.arrayBuffer());
+}

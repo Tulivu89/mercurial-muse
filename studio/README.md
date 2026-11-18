@@ -81,6 +81,32 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - a CharacterRoom contact card as a character: persona and appearance become Here sections, brains become sections, conditional brains become Named or When sections behind CharacterRoom's bond tiers, the species becomes a group, and the schedule is kept;
   - a CharacterRoom user card as a persona, and a scenario card as a scenario;
   - a Character Card V1, V2 or V3, as JSON or PNG: description and personality as Here sections, the scenario as a Scenario, greetings and example chats, the lorebook as Named sections, and the card's own system prompt kept as a Never section.
+  - **Nothing reaches the model raw** (0.16.0, `docs/reviews/standards/decision.md`, X1):
+    - a lore entry's `@@` decorator lines are taken off (`@@activate` makes it Here, `@@dont_activate` Never);
+    - other apps' placeholders become ours (`<USER>`, `<BOT>`, `{{charIfNotGroup}}`), and comments and `{{original}}` go;
+    - the character's note (SillyTavern's depth prompt) comes in as a Here section;
+    - group-only greetings are kept as a Never section;
+    - a lore entry's second key list becomes **And one of these too** on its section (a Named section reaches only when a key and one of these both come up);
+    - the card's `extensions` are kept on the record, for writing the card back out.
+
+    The import notes say what came in without its effect: other decorators, second lists that need all or none, pattern keys, SillyTavern's chance, sticky, cooldown, delay, groups and depth, and variables or if-blocks.
+
+  - **Lorebooks** (0.17.0, X2): **Import a card or lorebook** also reads lorebooks, each entry a Lore record:
+    - SillyTavern World Info;
+    - a Character Card V3 lorebook, or a V2 character book on its own;
+    - Agnai's memory books and RisuAI's exports;
+    - NovelAI's `.lorebook`: forced entries are Always, categories become tags.
+
+    Disabled entries are Never, second key lists become *And one of these too*, and the import notes say what came in without its effect. **Export as a lorebook** writes the world as a SillyTavern World Info file, which other apps read too. Lore records go as they are; characters, places, items, groups and factions go as one entry each under their names and keys, with their line and every section a scene could send, never a Never or When section.
+
+  - **Cards out** (0.18.0, X3): **Export as a card** on a character's or persona's page writes a Character Card V3 that other apps open:
+    - Here and Always sections are the description, the line is the personality;
+    - greetings and example chats go across;
+    - Named sections become the card's lorebook with their keys, and sections behind a condition go switched off;
+    - the character's note, the card's own prompts, group greetings and creator notes go back where they came from;
+    - Never sections stay home.
+
+    The whole record rides in the card's `inkwyrm` extension, with other apps' extensions untouched. Brought back unchanged, it comes back whole, conditions and all; changed in another app, it comes in as any card does. **CHARX** files import too (`.charx`, a zip with `card.json`).
 
   Pictures on a card are kept by Chat, which is where portraits live; import there to bring them.
 

@@ -1,5 +1,6 @@
 import { Component, StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { AgeGate } from '../../kit/src/AgeGate';
 import { resortFrom } from '../../kit/src/included';
 import resort from '../../content/dragons-resort/world.json';
 import { displayPortraits, listChats, listLives } from '../../chat/src/store';
@@ -39,4 +40,4 @@ class Crash extends Component<{ children: ReactNode }, { error: Error | null }> 
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element.');
-createRoot(root).render(<StrictMode><Crash><App readers={readers} /></Crash></StrictMode>);
+createRoot(root).render(<StrictMode><Crash><AgeGate><App readers={readers} /></AgeGate></Crash></StrictMode>);

@@ -3,7 +3,7 @@
 // send exactly the same thing.
 import { z } from 'zod';
 import { FORMAT_IDS, formatPrompt, guessFormat, type FormatId, type Message } from './formats.js';
-import type { ProviderInfo } from './providers.js';
+import { GEMINI_SAFETY, type ProviderInfo } from './providers.js';
 
 export const narrationRequestSchema = z.object({
   provider: z.string().trim().min(1).max(40),
@@ -20,6 +20,9 @@ export const narrationRequestSchema = z.object({
   mode: z.enum(['chat', 'prompt']).default('prompt'),
   // The prompt format; left out, it is guessed from the model's name.
   format: z.enum(FORMAT_IDS).optional(),
+  // How much a model that thinks should think, where the provider lets it be set (Google's own
+  // API). Left out, the model's own default.
+  thinking: z.enum(['default', 'low', 'off']).optional(),
   prefill: z.string().max(20_000).optional(),
   // Samplers beyond temperature, for models that are run with set values (xialong-v1). Sent only
   // when given.
@@ -32,7 +35,8 @@ export const narrationRequestSchema = z.object({
 export type NarrationRequest = z.infer<typeof narrationRequestSchema>;
 
 export interface Upstream {
-  path: '/chat/completions' | '/completions';
+  // An OpenAI-style path, or Google's `/models/…:generateContent` (core/narration/gemini.ts).
+  path: string;
   body: Record<string, unknown>;
   format: FormatId | null;
 }
@@ -52,7 +56,9 @@ export function buildUpstream(request: NarrationRequest, provider: ProviderInfo,
   }
   const sent: Message[] = [...messages];
   if (prefill) sent.push({ role: provider.chatPrefill === 'assistant' ? 'assistant' : 'system', content: prefill });
-  return { path: '/chat/completions', format: null, body: { model, messages: sent, max_tokens: max_tokens + (provider.thinkingRoom ?? 0), temperature, ...samplers, ...(request.stop?.length ? { stop: request.stop } : {}), stream, ...(provider.thinkingOff ?? {}) } };
+  // Gemini on OpenRouter takes Google's safety settings too.
+  const safety = provider.id === 'openrouter' && /^google\/gemini/i.test(model) ? { safety_settings: GEMINI_SAFETY } : {};
+  return { path: '/chat/completions', format: null, body: { model, messages: sent, max_tokens: max_tokens + (provider.thinkingRoom ?? 0), temperature, ...samplers, ...(request.stop?.length ? { stop: request.stop } : {}), stream, ...(provider.thinkingOff ?? {}), ...safety } };
 }
 
 // Thinking a model wrote into its reply, which the player should never see.
@@ -67,6 +73,8 @@ export interface Reply {
   model: string | null;
   usage: Record<string, unknown> | null;
   choice: Record<string, unknown> | null;
+  // Why a filter stopped it, in the provider's words, where it says (Google's block reasons).
+  filterReason?: string;
 }
 
 // The reply in any of the places OpenAI-style providers put it.
@@ -149,6 +157,6 @@ export function diagnosticsFor(upstream: Upstream, mode: string, provider: Provi
 export function emptyReplyReason(reply: Reply, maxTokens: number, providerName: string, parsed: boolean): string {
   if (reply.reasoning && reply.finishReason === 'length') return `The model used its whole allowance (${maxTokens} tokens) thinking and wrote no reply.`;
   if (!parsed) return `${providerName} sent something that was not JSON.`;
-  if (reply.finishReason === 'content_filter') return `${providerName} filtered the reply.`;
+  if (reply.finishReason === 'content_filter') return `${providerName} filtered the reply${reply.filterReason ? ` (${reply.filterReason})` : ''}.`;
   return `${providerName} returned an empty reply.`;
 }

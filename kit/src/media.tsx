@@ -86,7 +86,8 @@ export const animationSlot = (slot: string) => `animated:${slot}`;
 export const portraitSource = (key: string, revision = '') =>
   `inkwyrm-portrait:${encodeURIComponent(key)}${revision ? `?v=${encodeURIComponent(revision)}` : ''}`;
 const originals = new Map<string, Promise<string>>();
-function readOriginal(source: string): Promise<string> {
+// A picture's full data URL, from a portrait reference or as it is.
+export function readOriginal(source: string): Promise<string> {
   if (!source.startsWith('inkwyrm-portrait:')) return Promise.resolve(source);
   const cached = originals.get(source);
   if (cached) return cached;
