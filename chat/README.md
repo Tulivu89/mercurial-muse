@@ -150,6 +150,14 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.9.0 - Branches, Write my turn, read aloud, on the home screen - 2026-11-18
+
+Phase F1 of the feature sweep (`docs/reviews/features/decision.md`), the small things every other app has:
+- **Branch from here** on any message: a new chat up to that message, with every alternative, the journal, memory and the chapters that came along. The first chat stays as it was.
+- **Write my turn** (the quill beside the message box): the model drafts what you say next into the box, in your persona's voice, for you to change before sending. Every model but Xialong.
+- **Read aloud** on any message, with the voices the device already has (free). Each character's voice is picked in the chat's details and kept in this browser. **Settings › Replies** can read each new reply as it finishes.
+- **On the home screen:** Chat has a web app manifest and icons, so *Add to home screen* opens it full-screen like an app, on Android and iPhone.
+
 ### 0.8.2 - Folding - 2026-11-18
 
 Memory review C3. The story so far stays within 15% of the context:

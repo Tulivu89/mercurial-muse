@@ -29,10 +29,12 @@ export interface Settings {
   // What leaves the window is written up as chapters (core/chat/chapters.ts), this long.
   chapters: boolean;
   chapterLength: ChapterLength;
+  // Each new reply read aloud in the character's voice, as it finishes.
+  readAloud: boolean;
 }
 
 const KEY = 'inkwyrm.chat.settings';
-export const DEFAULT_SETTINGS: Settings = { contextTokens: 0, replyTokens: 1000, temperature: 0.8, textSize: 'medium', layout: 'bubbles', rail: true, userName: '', persona: '', autoContinue: true, emotions: 'auto', trimCut: false, prompt: DEFAULT_PROMPT, chapters: true, chapterLength: 'usual' };
+export const DEFAULT_SETTINGS: Settings = { contextTokens: 0, replyTokens: 1000, temperature: 0.8, textSize: 'medium', layout: 'bubbles', rail: true, userName: '', persona: '', autoContinue: true, emotions: 'auto', trimCut: false, prompt: DEFAULT_PROMPT, chapters: true, chapterLength: 'usual', readAloud: false };
 // How many times a reply is carried on without asking.
 export const AUTO_CONTINUES = 2;
 
@@ -55,6 +57,7 @@ export function readSettings(): Settings {
       prompt: readPromptSetup(stored.prompt),
       chapters: stored.chapters !== false,
       chapterLength: stored.chapterLength === 'short' || stored.chapterLength === 'full' ? stored.chapterLength : 'usual',
+      readAloud: stored.readAloud === true,
     };
   } catch {
     return DEFAULT_SETTINGS;

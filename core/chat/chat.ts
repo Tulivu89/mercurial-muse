@@ -144,6 +144,8 @@ export const chatSchema = z.object({
   // Memory brought in from earlier chats with the same character, and whether it was offered.
   earlier: z.array(earlierSchema).max(50).default([]),
   earlierAsked: z.boolean().default(false),
+  // A branch: the chat and message it was made from.
+  branchOf: z.object({ chatId: id, messageId: id }).optional().catch(undefined),
   // The oldest chapters, folded into one summary when the chapters outgrow their share (C3).
   fold: z.object({ text: z.string().max(12_000).default(''), at: z.number().nonnegative().default(0) }).default({ text: '', at: 0 }),
   // Set members pinned for this chat, by "recordId:setId": an outfit, a location.

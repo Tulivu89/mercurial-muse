@@ -432,6 +432,7 @@ export function App() {
         posting={posting} allPortraits={portraits} onPicture={(owner, slot, file) => void setPortrait(owner, slot, file)}
         personas={personas}
         otherChats={chats ?? []}
+        onBranch={(branched) => { flush(); save(branched, true); go({ name: 'chat', id: branched.id, back: view.back }); setStatus({ text: `A branch of the chat with ${branched.characterName}, up to the message you picked. The first chat is as it was.` }); }}
       />
     );
   }

@@ -87,6 +87,7 @@ export function SettingsView({ connection, onConnection, settings, onSettings, t
         <h2>Replies</h2>
         <label className="check"><input type="checkbox" checked={settings.autoContinue} onChange={(event) => onSettings({ ...settings, autoContinue: event.target.checked })} /> Carry on a reply that reaches its length limit, up to twice, without asking</label>
         <label className="check"><input type="checkbox" checked={settings.trimCut} onChange={(event) => onSettings({ ...settings, trimCut: event.target.checked })} /> Trim the half sentence off a reply that is still cut off</label>
+        <label className="check"><input type="checkbox" checked={settings.readAloud} onChange={(event) => onSettings({ ...settings, readAloud: event.target.checked })} /> Read each new reply aloud, in the character's voice (set in a chat's details)</label>
         <label className="check"><input type="checkbox" checked={settings.chapters} onChange={(event) => onSettings({ ...settings, chapters: event.target.checked })} /> Write older messages up as chapters when they leave what the model is sent</label>
         <label className="field">
           <span>Chapter length</span>
