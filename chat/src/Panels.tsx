@@ -118,8 +118,10 @@ export interface SideApi {
   write: (ready: { kind: SideKind; built: Built; maxTokens: number }, onText: (text: string) => void) => Promise<SideEntry | string>;
 }
 
-export function MemoryPanel({ chat, onChange, charName, userName, model, side, onRemember }: {
-  chat: Chat; onChange: Change; charName: string; userName: string; model: string; side: SideApi; onRemember: () => void;
+export interface CarryApi { from: Chat[]; bring: (source: Chat) => void; busy: boolean }
+
+export function MemoryPanel({ chat, onChange, charName, userName, model, side, onRemember, carry }: {
+  chat: Chat; onChange: Change; charName: string; userName: string; model: string; side: SideApi; onRemember: () => void; carry?: CarryApi;
 }) {
   const [ready, setReady] = useState<{ kind: SideKind; built: Built; maxTokens: number } | null>(null);
   const [busy, setBusy] = useState<SideKind | null>(null);
@@ -180,6 +182,8 @@ export function MemoryPanel({ chat, onChange, charName, userName, model, side, o
         </section>
       )}
       {note && <p className="status bad" role="status">{note}</p>}
+
+      <Earlier chat={chat} onChange={onChange} charName={charName} carry={carry} />
 
       <Chapters chat={chat} onChange={onChange} charName={charName} />
 
@@ -422,6 +426,36 @@ function Chapters({ chat, onChange, charName }: { chat: Chat; onChange: Change; 
           </div>
         );
       })}
+    </section>
+  );
+}
+
+// Memory brought in from other chats with the same character, and the way to bring more.
+function Earlier({ chat, onChange, charName, carry }: { chat: Chat; onChange: Change; charName: string; carry?: CarryApi }) {
+  const [pick, setPick] = useState('');
+  const chosen = carry?.from.find((other) => other.id === pick) ?? carry?.from[0];
+  const set = (id: string, text: string | null) => onChange({ ...chat, earlier: text === null ? chat.earlier.filter((entry) => entry.id !== id) : chat.earlier.map((entry) => (entry.id === id ? { ...entry, text } : entry)), updatedAt: Date.now() });
+  return (
+    <section className="group" aria-label="Before this chat">
+      <h3>Before this chat</h3>
+      <p className="hint">What {charName} remembers from other chats with you: each one's chapters and how it ended, sent first in the story so far. Bringing one in also copies its journal, diary and feelings.</p>
+      {chat.earlier.map((entry) => (
+        <div key={entry.id} className="card">
+          <b>{entry.title}</b>
+          <textarea className="input" aria-label={entry.title} rows={4} value={entry.text} onChange={(event) => set(entry.id, event.target.value)} />
+          <button type="button" className="link danger" onClick={() => set(entry.id, null)}>Remove</button>
+        </div>
+      ))}
+      {carry && carry.from.length > 0 ? (
+        <div className="row">
+          <label className="field grow"><span>Another chat with {charName}</span>
+            <select value={chosen?.id ?? ''} onChange={(event) => setPick(event.target.value)}>
+              {carry.from.map((other) => <option key={other.id} value={other.id}>{new Date(other.updatedAt).toLocaleDateString()} · {other.messages.length} messages{other.userName !== chat.userName ? ` · as ${other.userName}` : ''}</option>)}
+            </select>
+          </label>
+          <button type="button" className="btn small" style={{ alignSelf: 'flex-end' }} disabled={carry.busy || !chosen} onClick={() => chosen && carry.bring(chosen)}>{carry.busy ? 'Bringing it in…' : 'Bring it in'}</button>
+        </div>
+      ) : <p className="hint">No other chats with {charName} to bring in.</p>}
     </section>
   );
 }

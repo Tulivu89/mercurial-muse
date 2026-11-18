@@ -150,6 +150,15 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.8.1 - Memory between chats - 2026-11-18
+
+Memory review C2:
+- **A new chat offers what the character remembers** from your last chat with them, above the message box: *Bring it in*, or *Not now*. Bringing it in:
+  - copies that chat's journal, diary and feelings where this chat doesn't have them;
+  - writes up how it ended, where its chapters don't cover it, in one short side request;
+  - puts its chapters and that ending into this chat as one **Before this chat** entry, sent first in the story so far.
+- **Memory › Before this chat** lists what was brought in, to edit or remove. It can bring in any other chat with the same character, as any persona.
+
 ### 0.8.0 - Chapters - 2026-11-18
 
 The first phase of the memory review (C1, `docs/reviews/memory/decision.md`), for every model but Xialong. A long chat used to forget what left its window; now it keeps it as chapters:

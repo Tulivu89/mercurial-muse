@@ -7,7 +7,7 @@ import {
   PROFILE_NAMES, XIALONG, addAlternative, addNote, addReply, addUserMessage, buildRequest, buildSide, clockNow, clockTracks, deleteMessage, editMessage, editableText, formatMinutes,
   hasSchedule, isNoteText, lastEmotion, messageText, pickedAlt, profileFor, readReply, readSide, recentEmotions, replacePicked, sceneFor, sideTask,
   SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type HomeRef, type Life, type PackSettings, type ReplyPart, type SideKind, endedFrom, markEnded, thinkingTokens,
-  CHAPTER_TOKENS, chapterRequest, chapterWritten, chaptersToWrite, queueChapters, readChapter,
+  CHAPTER_TOKENS, bringMemory, chatsToCarry, endingRequest, chapterRequest, chapterWritten, chaptersToWrite, queueChapters, readChapter,
   EMOTION_PICK_TOKENS, emotionPick, mergeParts, readEmotionPick, replyTokensFor, setReplyEmotion, trimToSentence, wantsEmotions } from '../../core/chat/index.js';
 import type { World } from '../../core/records/index.js';
 import { canPrefill, generate, requestFor, type Connection, type GenerateOptions, type NarrationError } from '../../kit/src/connection';
@@ -16,7 +16,7 @@ import { CharacterSheet, type SheetTab } from './CharacterSheet';
 import type { HouseAt } from './House';
 import { AgainIcon, BackIcon, BinIcon, BrainIcon, CloseIcon, ContinueIcon, CopyIcon, EditIcon, HouseIcon, NextIcon, NoteIcon, SendIcon, StopIcon } from './icons';
 import { MemorySheet } from './MemorySheet';
-import { ContextPanel, DetailsPanel, MemoryPanel, SentPanel, TimePanel, type ExportApi, type SideApi } from './Panels';
+import { ContextPanel, DetailsPanel, MemoryPanel, SentPanel, TimePanel, type CarryApi, type ExportApi, type SideApi } from './Panels';
 import { Portrait } from './Portrait';
 import { InkMark } from '../../kit/src/Mark';
 import { RichText } from './RichText';
@@ -67,11 +67,13 @@ export interface ChatViewProps {
   onPicture?: (owner: string, slot: string, file: File | null) => void;
   // The personas you could be in this chat.
   personas?: PersonaRef[];
+  // Every chat, for bringing memory in from another with the same character.
+  otherChats?: Chat[];
   // Swapped out in tests so nothing leaves the machine.
   generateImpl?: typeof generate;
 }
 
-export function ChatView({ chat, world, connection, settings, portraits, sent = null, needs, onChange, onSent, onBack, onOverview, onDelete, onSettings, life = null, onLife, home = null, onHome, posting, allPortraits = {}, onPicture, personas = [], generateImpl = generate }: ChatViewProps) {
+export function ChatView({ chat, world, connection, settings, portraits, sent = null, needs, onChange, onSent, onBack, onOverview, onDelete, onSettings, life = null, onLife, home = null, onHome, posting, allPortraits = {}, onPicture, personas = [], otherChats = [], generateImpl = generate }: ChatViewProps) {
   // The status line follows the clock without a reply having to happen.
   const [tick, setTick] = useState(() => Date.now());
   useEffect(() => { const timer = setInterval(() => setTick(Date.now()), 30_000); return () => clearInterval(timer); }, []);
@@ -305,6 +307,32 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     }
   }
 
+  // Memory from another chat with the same character (memory review, C2): how it ended is written
+  // up first, where its chapters don't already cover it.
+  const [bringing, setBringing] = useState(false);
+  const carryFrom = chatsToCarry(chat, otherChats);
+  async function bring(source: Chat) {
+    if (bringing) return;
+    setBringing(true);
+    setError('');
+    try {
+      let ending = '';
+      const ask = endingRequest(source, settings.chapterLength);
+      if (ask) {
+        if (!connection.connected || !connection.model) throw new Error('Connect a model first, under Settings, so how that chat ended can be written up.');
+        const result = await generateImpl(ask, target, { maxTokens: CHAPTER_TOKENS[settings.chapterLength], temperature: 0.3, thinking: settings.prompt.thinking });
+        ending = readChapter(result.text, source)?.text ?? '';
+      }
+      if (!leaving.current) onChange(bringMemory(chatRef.current, source, ending, newId, Date.now()));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'That chat\'s memory could not be brought in.');
+    } finally {
+      setBringing(false);
+    }
+  }
+  const carry: CarryApi = { from: carryFrom, bring: (source) => void bring(source), busy: bringing };
+  const offerCarry = !chat.earlierAsked && carryFrom.length > 0 && !chat.messages.some((message) => message.from === 'user');
+
   // A note goes in without asking for a reply: the scene is set, and the next message or an
   // empty Send has the character answer it.
   function note(text: string) {
@@ -510,6 +538,13 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
           {error && <p className="status bad" role="alert">{error} {!connection.connected && <button type="button" className="link" onClick={onSettings}>Open Settings</button>}</p>}
         </main>
 
+        {offerCarry && !busy && (
+          <p className="composer-hint" role="status">
+            You've talked with {charName} before ({new Date(carryFrom[0]!.updatedAt).toLocaleDateString()}). Bring in what {charName} remembers from it?{' '}
+            <button type="button" className="link" disabled={bringing} onClick={() => void bring(carryFrom[0]!)}>{bringing ? 'Bringing it in…' : 'Bring it in'}</button>{' · '}
+            <button type="button" className="link" disabled={bringing} onClick={() => onChange({ ...chat, earlierAsked: true })}>Not now</button>
+          </p>
+        )}
         {(draftIsNote || (added && lastFrom === 'note')) && !busy && (
           <p className="composer-hint" role="status">{draftIsNote ? `A note: it goes in without asking ${charName} for a reply.` : `Added. Send with the box empty when you want ${charName} to answer.`}</p>
         )}
@@ -557,7 +592,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
           </div>
           {panel === 'sent' && <SentPanel sent={lastSent} exports={world ? exports : undefined} charName={charName} />}
           {panel === 'context' && <ContextPanel preview={preview} budget={contextTokensFor(settings, connection)} gone={!world} model={connection.model} charName={charName} />}
-          {panel === 'memory' && <MemoryPanel chat={chat} onChange={onChange} charName={charName} userName={userName} model={connection.model} side={side} onRemember={() => setMemory('chat')} />}
+          {panel === 'memory' && <MemoryPanel chat={chat} onChange={onChange} charName={charName} userName={userName} model={connection.model} side={side} onRemember={() => setMemory('chat')} carry={carry} />}
           {panel === 'time' && <TimePanel chat={chat} onChange={onChange} scene={scene} charName={charName} />}
           {panel === 'details' && <DetailsPanel chat={chat} onChange={onChange} scene={scene} world={world} charName={charName} onDelete={onDelete} exports={world ? exports : undefined} profile={profile} />}
         </aside>

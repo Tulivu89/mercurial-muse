@@ -82,3 +82,37 @@ describe('chapters', () => {
     expect(built.parts.map((part) => part.label)).toContain('The story so far');
   });
 });
+
+describe('memory between chats', () => {
+  it('lists the other chats with the same character that have something to carry', async () => {
+    const { chatsToCarry } = await import('../chat/index.js');
+    const one = { ...chatWith(2), id: 'one', updatedAt: 5 };
+    const two = { ...chatWith(3), id: 'two', updatedAt: 9 };
+    const other = { ...chatWith(2), id: 'other', characterId: 'someone' };
+    const empty = { ...chatWith(0), id: 'empty' };
+    const fresh = { ...chatWith(0), id: 'fresh' };
+    expect(chatsToCarry(fresh, [one, two, other, empty, fresh]).map((chat) => chat.id)).toEqual(['two', 'one']);
+  });
+
+  it('brings journal, diary, feelings and the chapters with how it ended, once each', async () => {
+    const { bringMemory, endingRequest, remember } = await import('../chat/index.js');
+    let source = queueChapters(chatWith(30), 40, ids('ch'), NOW);
+    source = chapterWritten(source, source.chapters[0]!.id, { text: 'Ada let Sam into the booth after hours.', keys: [] }, NOW);
+    source = remember({ ...source, id: 'old', diary: [{ id: 'd1', name: 'The booth', content: 'I let him stay.', keys: ['booth'], at: 1 }] }, 'Sam drives nights.', 'j1', NOW);
+    // How it ended: the messages after its chapters.
+    const ending = endingRequest(source, 'usual')!;
+    expect(ending[1]!.content).toContain("Ada's line 29.");
+    expect(ending[1]!.content).not.toContain("Ada's line 1.");
+    let fresh = { ...chatWith(0), id: 'new' };
+    fresh = bringMemory(fresh, source, 'In the end Sam left before dawn.', ids('b'), NOW);
+    expect(fresh.journal.map((entry) => entry.text)).toEqual(['Sam drives nights.']);
+    expect(fresh.diary.map((entry) => entry.content)).toEqual(['I let him stay.']);
+    expect(fresh.earlier).toHaveLength(1);
+    expect(fresh.earlier[0]!.text).toBe('Ada let Sam into the booth after hours.\n\nIn the end Sam left before dawn.');
+    expect(fresh.earlierAsked).toBe(true);
+    // Not twice.
+    const again = bringMemory(fresh, source, '', ids('c'), NOW);
+    expect(again.journal).toHaveLength(1);
+    expect(storySoFar(fresh, 0)).toContain('Before this chat, Ada Moss and Sam talked before:\n\nAda let Sam into the booth after hours.');
+  });
+});

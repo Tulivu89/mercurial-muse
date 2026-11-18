@@ -75,6 +75,17 @@ export const chapterSchema = z.object({
 });
 export type Chapter = z.infer<typeof chapterSchema>;
 
+// What another chat with the same character came to, brought into this one (memory review, C2):
+// that chat's chapters and how it ended, written up. It goes before this chat's own chapters.
+export const earlierSchema = z.object({
+  id,
+  fromChatId: id,
+  title: z.string().max(200).default(''),
+  text: z.string().max(20_000).default(''),
+  at: z.number().nonnegative().default(0),
+});
+export type Earlier = z.infer<typeof earlierSchema>;
+
 // A plan: something the character means to do in the next few turns (CharacterRoom's Plans, F-20).
 // The AI's own or the player's, limited to a number of turns or ongoing.
 export const PLAN_TURNS = 3;
@@ -128,6 +139,9 @@ export const chatSchema = z.object({
   plans: z.array(planSchema).max(100).default([]),
   // What left the window, in chapters, oldest first.
   chapters: z.array(chapterSchema).max(2000).default([]),
+  // Memory brought in from earlier chats with the same character, and whether it was offered.
+  earlier: z.array(earlierSchema).max(50).default([]),
+  earlierAsked: z.boolean().default(false),
   // Set members pinned for this chat, by "recordId:setId": an outfit, a location.
   pins: z.record(z.string().max(200), id).default({}),
   createdAt: z.number().nonnegative().default(0),
@@ -154,7 +168,7 @@ export function newChat(input: NewChat, ids: () => string, now: number): Chat {
     personaId: input.personaId, scenarioId: input.scenarioId, userName: input.userName.trim() || 'User',
     relationship: input.relationship, style: input.style, responseLength: input.responseLength,
     messages: [], journal: [], loreOff: [], roll: { startIndex: 0, pathIdList: [], trimmed: false }, windowStart: 0, draft: '',
-    clock: { ...DEFAULT_CLOCK }, moods: false, diary: [], process: [], plans: [], chapters: [], pins: {}, createdAt: now, updatedAt: now,
+    clock: { ...DEFAULT_CLOCK }, moods: false, diary: [], process: [], plans: [], chapters: [], earlier: [], earlierAsked: false, pins: {}, createdAt: now, updatedAt: now,
   };
   const text = input.greeting?.text.trim();
   if (text) {

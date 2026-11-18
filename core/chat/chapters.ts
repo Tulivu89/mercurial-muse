@@ -148,12 +148,51 @@ export function changeChapter(chat: Chat, chapterId: string, patch: Partial<Pick
 
 // The story so far, for the prompt: every written chapter wholly before `windowStart` (the first
 // message still sent), oldest first. A chapter whose messages are back in view is left out.
+// Memory brought in from earlier chats goes first, under "Before this chat".
 export function storySoFar(chat: Chat, windowStart: number): string {
+  const earlier = chat.earlier.filter((entry) => entry.text.trim());
   const written = chat.chapters.filter((chapter) => {
     if (chapter.state !== 'written' || !chapter.text.trim()) return false;
     const to = chat.messages.findIndex((message) => message.id === chapter.toId);
     return to >= 0 && to < windowStart;
   });
-  if (!written.length) return '';
-  return [`## The story so far`, `Earlier in this chat, before the messages below:`, ...written.map((chapter, index) => `Chapter ${index + 1}. ${chapter.text.trim()}`)].join('\n\n');
+  if (!earlier.length && !written.length) return '';
+  return [
+    `## The story so far`,
+    ...(earlier.length ? [`Before this chat, ${chat.characterName} and ${chat.userName} talked before:`, ...earlier.map((entry) => entry.text.trim())] : []),
+    ...(written.length ? [`Earlier in this chat, before the messages below:`, ...written.map((chapter, index) => `Chapter ${index + 1}. ${chapter.text.trim()}`)] : []),
+  ].join('\n\n');
+}
+
+// --- Memory between chats (C2)
+
+// The other chats with the same character, newest first, that have something to carry.
+export function chatsToCarry(chat: Chat, chats: readonly Chat[]): Chat[] {
+  return chats
+    .filter((other) => other.id !== chat.id && other.worldId === chat.worldId && other.characterId === chat.characterId && other.messages.some((message) => message.from === 'user'))
+    .filter((other) => !chat.earlier.some((entry) => entry.fromChatId === other.id))
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+// How another chat ended, for a request: its messages after its last chapter, the last
+// CHAPTER_SPAN_MESSAGES of them at most. Null when its chapters cover it all.
+export function endingRequest(source: Chat, length: ChapterLength): Message[] | null {
+  const from = Math.max(coveredUpTo(source), source.messages.length - CHAPTER_SPAN_MESSAGES);
+  if (from >= source.messages.length) return null;
+  const tail: Chapter = { id: 'ending', fromId: source.messages[from]!.id, toId: source.messages.at(-1)!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: 0 };
+  return chapterRequest({ ...source, chapters: [...source.chapters, tail] }, tail, length);
+}
+
+// Brings another chat's memory into this one: its journal, diary and feelings where this chat
+// doesn't have them yet, and its chapters with how it ended (`ending`, written up from
+// endingRequest) as one "Before this chat" entry.
+export function bringMemory(chat: Chat, source: Chat, ending: string, ids: () => string, now: number): Chat {
+  const has = (list: readonly string[], text: string) => list.some((entry) => entry.trim() === text.trim());
+  const journal = [...chat.journal, ...source.journal.filter((entry) => entry.text.trim() && !has(chat.journal.map((own) => own.text), entry.text)).map((entry) => ({ ...entry, id: ids() }))];
+  const carry = (own: Chat['diary'], theirs: Chat['diary']) => [...own, ...theirs.filter((entry) => !has(own.map((mine) => mine.content), entry.content)).map((entry) => ({ ...entry, id: ids() }))];
+  const chapters = source.chapters.filter((chapter) => chapter.state === 'written' && chapter.text.trim()).map((chapter) => chapter.text.trim());
+  const text = [...source.earlier.map((entry) => entry.text.trim()), ...chapters, ending.trim()].filter(Boolean).join('\n\n');
+  const when = new Date(source.createdAt || source.updatedAt).toISOString().slice(0, 10);
+  const earlier = text ? [...chat.earlier, { id: ids(), fromChatId: source.id, title: `The chat from ${when}`, text: text.slice(0, 20_000), at: now }] : chat.earlier;
+  return { ...chat, journal, diary: carry(chat.diary, source.diary), process: carry(chat.process, source.process), earlier, earlierAsked: true, updatedAt: now };
 }

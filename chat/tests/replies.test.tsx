@@ -29,9 +29,9 @@ function provider(replies: [string, string][]) {
   return { calls, impl };
 }
 
-function Harness({ impl, settings, portraits, seen, initial = start }: { impl: ReturnType<typeof provider>['impl']; settings?: Partial<Settings>; portraits?: Record<string, string>; seen?: Chat[]; initial?: () => Chat }) {
+function Harness({ impl, settings, portraits, seen, initial = start, others = [] }: { impl: ReturnType<typeof provider>['impl']; settings?: Partial<Settings>; portraits?: Record<string, string>; seen?: Chat[]; initial?: () => Chat; others?: Chat[] }) {
   const [chat, setChat] = useState(initial);
-  return <ChatView chat={chat} world={world} connection={connection} settings={{ ...DEFAULT_SETTINGS, ...settings }} portraits={portraits} onChange={(next) => { seen?.push(next); setChat(next); }} onBack={() => {}} onDelete={() => {}} onSettings={() => {}} generateImpl={impl as never} />;
+  return <ChatView chat={chat} world={world} connection={connection} settings={{ ...DEFAULT_SETTINGS, ...settings }} portraits={portraits} onChange={(next) => { seen?.push(next); setChat(next); }} onBack={() => {}} onDelete={() => {}} onSettings={() => {}} otherChats={others} generateImpl={impl as never} />;
 }
 const send = (text: string) => {
   fireEvent.change(screen.getByLabelText('Your message'), { target: { value: text } });
@@ -121,6 +121,30 @@ describe('chapters', () => {
     await screen.findByText('Noted.');
     await Promise.resolve();
     expect(calls).toHaveLength(1);
+  });
+});
+
+describe('memory between chats', () => {
+  it('offers a new chat what the character remembers from the last one, and brings it in', async () => {
+    const seen: Chat[] = [];
+    const old = { ...addReply(addUserMessage(start(), 'I owe you a page.', 'u1', 2000), [{ text: 'You do.', emotion: 'neutral' }], 'r1', 2001), id: 'old', updatedAt: 3000, journal: [{ id: 'j1', text: 'Sam owes Errata a page.', at: 1, active: true }] };
+    const { calls, impl } = provider([['Sam promised Errata a page and she held him to it.\nKeys: page', 'stop']]);
+    render(<Harness impl={impl} seen={seen} others={[old]} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Bring it in' }));
+    await waitFor(() => expect(seen.at(-1)?.earlier).toHaveLength(1));
+    expect(calls[0]!.messages[1]!.content).toContain('I owe you a page.');
+    const next = seen.at(-1)!;
+    expect(next.earlier[0]!.text).toBe('Sam promised Errata a page and she held him to it.');
+    expect(next.journal.map((entry) => entry.text)).toEqual(['Sam owes Errata a page.']);
+    expect(screen.queryByRole('button', { name: 'Bring it in' })).toBeNull();
+  });
+
+  it('asks once: Not now puts the offer away', async () => {
+    const old = { ...addUserMessage(start(), 'Hi.', 'u1', 2000), id: 'old', updatedAt: 3000 };
+    const { impl } = provider([['x', 'stop']]);
+    render(<Harness impl={impl} others={[old]} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Not now' }));
+    expect(screen.queryByRole('button', { name: 'Bring it in' })).toBeNull();
   });
 });
 
