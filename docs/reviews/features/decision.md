@@ -1,6 +1,6 @@
 # Feature sweep: decision
 
-Nov 18, 2026 · @AmbiProp · Waiting on the owner
+Nov 18, 2026 · @AmbiProp · Answered by the owner Nov 18
 
 From the brief and the inventory of five apps (`apps.md`). The test is the owner's: a feature earns its place if it makes a part good or joins the parts up (`docs/value.md`).
 
@@ -57,8 +57,8 @@ Marinara Engine has nearly our combination: schedules with first messages, a soc
 
 The memory review's last phase (C4) can go before or after F1.
 
-## Questions for the owner
+## The owner's answers (Nov 18)
 
-1. **The order:** F1, then group chat, then first messages, then images? Or images earlier?
-2. **Read aloud:** the browser's free voices first, as proposed, or wait for provider voices?
-3. **Marinara Engine:** worth a closer look (a bid-style comparison of its game mode against the adventure)?
+1. **The order doesn't matter;** batch whatever goes together efficiently. F1 and the memory review's C4 go first, in one pull request.
+2. **Read aloud starts with the free built-in voices.**
+3. **Yes to a closer look at Marinara's game mode,** because the adventure has a lot still to do. **Our AI-friendly dice system is the priority:** it bridges the model's creative side and the rules' deterministic side. Other rule systems should be addable too, though they won't slot in the way ours does. Their group chats are compared with our plan at the same time (`docs/reviews/adventure/` and `docs/reviews/group-chat/`).
