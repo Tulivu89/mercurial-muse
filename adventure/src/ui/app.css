@@ -488,3 +488,10 @@ button.lr:hover:not(:disabled), a.lr:hover { background: var(--hover); }
   .menu-space { margin-top: 18px; border-top: 1px solid var(--line); }
 }
 .edit-reply { margin: 4px 0 6px; }
+
+/* The evaluator's proposals, above the turn box. */
+.proposals { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; padding: 10px 12px; border: 1px solid var(--rule); border-radius: var(--r-card, 10px); background: var(--surface); }
+.proposals .meta { margin: 0; }
+.proposal { display: flex; flex-direction: column; gap: 6px; }
+.proposal p { margin: 0; }
+.proposals > .link { align-self: flex-start; }

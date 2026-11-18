@@ -1,6 +1,6 @@
 # Group chat: compared with our plan
 
-Nov 18, 2026 · @AmbiProp · Waiting on the owner
+Nov 18, 2026 · @AmbiProp · Answered by the owner Nov 18
 
 These are from:
 - SillyTavern 1.19.0, Agnai 1.0.555, RisuAI (main) and Marinara Engine 2.5.2, read from source;
@@ -55,6 +55,14 @@ Marinara's lessons, from its changelog:
 | Roles in layout C | **A lab variant with everyone's lines as the user's turn, named,** beside the all-assistant one | Marinara and RisuAI found other characters as the user's turn cuts down speaking for them |
 | Prefill | **Per model, not per provider** | Some models refuse a request that ends on their turn |
 | Xialong in a group | **Specify how others' lines enter CharacterRoom's kernel** before G1 builds it | The parity fixtures don't cover groups |
+
+## The owner's answers (Nov 18)
+
+1. **One speaker per message by default;** "whoever has something to say" as a setting.
+2. **Characters talking on their own comes after group chat,** on the same architecture.
+3. **Picking who speaks:**
+   - **A group button, or a long press on Send,** offers: pick who answers, or push their reply; the quietest; or the agent's pick.
+   - **When nobody is named,** the agent's pick is the default, behind a setting. With it off, the quietest answers.
 
 ## Questions for the owner
 

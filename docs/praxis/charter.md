@@ -162,7 +162,7 @@ Saves are `praxis-save/1`, exports `praxis-export/1` (a save with its module), a
 
 **v0.2** is done with 0.9.0, except NPC opposition dice (opponents' approaches and ranks building the difficulty); every check is Average until NPCs carry ratings.
 
-**v0.3** is done with 0.10.0 except the evaluator, which waits on the generation test. The evaluator also lets free text propose a check instead of the player choosing one.
+**v0.3** is done with 0.10.0, and the evaluator came in 0.28.0 (Nov 18): free text proposes a check from closed lists, which the player rolls, changes or sets aside.
 
 **Next, in order:** (Nov 15: Abernys is retired. Bogwater stays the test module until a replacement comes, with no more work for its own sake, and Port Covenant is a test fixture only. The play-throughs, the Port Covenant checks and Bogwater's engine asks are dropped.)
 1. Compare narrators on the same turn with "Try this turn 5 more times": GLM-4.6 on NovelAI against the same model on another provider, then one or two other large models. Count how often each follows the ruling and the conditions.
@@ -173,7 +173,7 @@ Saves are `praxis-save/1`, exports `praxis-export/1` (a save with its module), a
    - holdings;
    - a key that opens its lock;
    - NPC opposition dice (opponents' approaches set the difficulty).
-4. The evaluator: reads free text, proposes a check, and fills in what you want. It waits on the generation test results.
+4. ~~The evaluator~~: built in 0.28.0. Next for the dice (`docs/reviews/adventure/decision.md`): opponents' moves from a list and progress clocks (A2), then story events (A3).
 5. Transcript branches.
 6. A game of its own to replace Bogwater, from a seed (`docs/content/next.md`).
 Xialong stays on hold.

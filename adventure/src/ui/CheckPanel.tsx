@@ -7,6 +7,7 @@ import {
   type Act, type CheckChoice, type Level, type Subject, type Target, type Tier,
 } from '../engine';
 import type { PlayApi } from './Play';
+import type { Proposal } from '../engine';
 import { BackIcon, PlusIcon } from './icons';
 import { Die } from './CheckCard';
 import { newId } from './shared';
@@ -23,7 +24,7 @@ function actWords(act: Act): { claim: string; what: string } {
 
 const targetOf = (subject: Subject, act: Act | undefined): Target | null => (act ? { owner: subject.id, defId: act.kind === 'deed' ? null : act.def.id } : null);
 
-export function CheckPanel({ api, owner, headRef, onCancel }: { api: PlayApi; owner?: string; headRef: RefObject<HTMLDivElement>; onCancel: () => void }) {
+export function CheckPanel({ api, owner, preset, headRef, onCancel }: { api: PlayApi; owner?: string; preset?: Proposal; headRef: RefObject<HTMLDivElement>; onCancel: () => void }) {
   const { world, save, busy } = api;
   const playerId = playerOf(world);
   const subjects = subjectsHere(world, save);
@@ -36,10 +37,16 @@ export function CheckPanel({ api, owner, headRef, onCancel }: { api: PlayApi; ow
   };
   const firstUsable = (list: typeof options) => list.find((entry) => entry.acts.length)?.approach.id ?? list[0]?.approach.id ?? '';
   const [choice, setChoice] = useState<CheckChoice>(() => {
-    const approach = firstUsable(options);
-    return { approach, charge: bestFor(approach), push: false, storyPoint: false, useAids: true };
+    // From the evaluator: its approach and what you want, to change before rolling.
+    const approach = preset && options.find((entry) => entry.approach.id === preset.approach)?.acts.length ? preset.approach : firstUsable(options);
+    return { approach, charge: bestFor(approach), push: false, storyPoint: false, useAids: true, ...(preset?.intent ? { intent: preset.intent } : {}) };
   });
-  const [actIndex, setActIndex] = useState(0);
+  const [actIndex, setActIndex] = useState(() => {
+    if (!preset) return 0;
+    const acts = options.find((entry) => entry.approach.id === preset.approach)?.acts ?? [];
+    const at = acts.findIndex((act) => (act.kind === 'deed' ? preset.target.defId === null : act.def.id === preset.target.defId));
+    return Math.max(0, at);
+  });
   const [line, setLine] = useState(api.draft);
   const [adding, setAdding] = useState(false);
 

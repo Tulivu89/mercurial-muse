@@ -4,6 +4,7 @@
 // decides what to show and when to ask the narrator.
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import {
+  choiceFor, evaluatorMenu, evaluatorRequest, readProposals, type EvaluatorMode, type Proposal,
   act, cleanReply, cleanSuggestion, continuing, replyFrom, compressRequest, compressionDue, contextPlan, durationWords, entryRequest, inSentence,
   abandonWork, grow, journalDue, lastTurn, moveQuietly, startWork, placeCharacter, playable, playerOf, promptChars, recordPromptSize, say, sceneActionsFor, sceneOf,
   read, setPending, setReply, setState, stateDefFor, timeOfDay, uncoveredTurns, undoLastTurn,
@@ -31,7 +32,7 @@ type Page = Exclude<View, 'story'>;
 
 export interface Call {
   at: string;
-  purpose: 'narration' | 'journal';
+  purpose: 'narration' | 'journal' | 'evaluator';
   ok: boolean;
   ms: number;
   message: string;
@@ -118,7 +119,7 @@ export function Play({ module, initial, name, connection, setConnection, prefs, 
   const [worldQuery, setWorldQuery] = useState('');
   const [recordTarget, setRecordTarget] = useState<RecordTarget>({ mode: 'new' });
   // The check form, which takes the prompt's place while it is open.
-  const [check, setCheck] = useState<{ owner?: string; fromMenu: boolean } | null>(null);
+  const [check, setCheck] = useState<{ owner?: string; fromMenu: boolean; preset?: Proposal } | null>(null);
   const pending = useRef<AbortController | null>(null);
   const suggesting = useRef(false);
   // The turn count when a suggestion last failed, so a failure is not retried every render.
@@ -259,17 +260,55 @@ export function Play({ module, initial, name, connection, setConnection, prefs, 
     }
   });
 
+  // The evaluator: after a turn in your own words, a check it sounds like, from the closed lists
+  // the rules give (engine/evaluator.ts). It waits for your tap; your next turn sets it aside.
+  const [proposals, setProposals] = useState<{ list: Proposal[]; mode: EvaluatorMode } | null>(null);
+  const [evaluating, setEvaluating] = useState<EvaluatorMode | null>(null);
+  async function evaluate(target: Save, input: string, mode: EvaluatorMode) {
+    if (!connection.connected) { if (mode === 'choices') setNotice('Connect a model first, under Settings.'); return; }
+    const menu = evaluatorMenu(module, target);
+    if (!menu.targets.length) { if (mode === 'choices') setNotice('Nothing here can be checked against.'); return; }
+    setEvaluating(mode);
+    const started = performance.now();
+    try {
+      const model = helperModelOf(connection, prefs.helperModel);
+      const playerName = world.characters.find((entry) => entry.id === playerOf(world))?.name ?? 'The player';
+      const result = await narrate(evaluatorRequest(menu, input, playerName, mode), { ...connection, model, format: model === connection.model ? connection.format : 'auto' }, { maxTokens: mode === 'one' ? 120 : 300, temperature: 0.2 });
+      const read = readProposals(result.text, menu);
+      logCall({ at: new Date().toLocaleTimeString(), purpose: 'evaluator', ok: true, ms: Math.round(performance.now() - started), message: `${read.proposals.length} proposed${read.refused.length ? `; refused: ${read.refused.join(' ')}` : ''}`, diagnostics: result.diagnostics ?? null });
+      setProposals(read.proposals.length ? { list: read.proposals, mode } : null);
+      if (!read.proposals.length && mode === 'choices') setNotice('No options came back that the rules could settle. Try again, or make a check by hand.');
+    } catch (error) {
+      logCall({ at: new Date().toLocaleTimeString(), purpose: 'evaluator', ok: false, ms: 0, message: error instanceof Error ? error.message : 'The evaluator failed.', diagnostics: error instanceof NarrationError ? error.diagnostics : null });
+    } finally {
+      setEvaluating(null);
+    }
+  }
+  function rollProposal(proposal: Proposal) {
+    setProposals(null);
+    perform({ type: 'check', target: proposal.target, choice: choiceFor(module, save, proposal), input: '', random: save.options.alwaysSucceed ? null : Math.random });
+  }
+  function changeProposal(proposal: Proposal) {
+    setProposals(null);
+    const menu = document.getElementById('menu-space');
+    setCheck({ owner: proposal.target.owner, fromMenu: Boolean(menu && menu.getBoundingClientRect().top < window.innerHeight / 2), preset: proposal });
+  }
+
   function send() {
     const result = say(module, save, newId('t'), draft);
     if (!result.ok) { setNotice(result.reason); return; }
+    const input = draft;
     setDraft('');
+    setProposals(null);
     setSave(result.save);
     void runNarration(result.save);
+    if (prefs.evaluator) void evaluate(result.save, input, 'one');
   }
 
   function perform(action: Action) {
     const result = act(module, save, newId('t'), action);
     if (!result.ok) { setNotice(result.reason); return; }
+    setProposals(null);
     setSave(result.save);
     setCheck(null);
     const terminal = result.terminals[0];
@@ -458,7 +497,7 @@ export function Play({ module, initial, name, connection, setConnection, prefs, 
       >
         {notice && <p className="notice" role="status">{notice}</p>}
         {check ? (
-          <CheckPanel key={check.owner ?? 'any'} api={api} owner={check.owner} headRef={checkHead} onCancel={closeCheck} />
+          <CheckPanel key={`${check.owner ?? 'any'}:${check.preset?.summary ?? ''}`} api={api} owner={check.owner} preset={check.preset} headRef={checkHead} onCancel={closeCheck} />
         ) : (
           <>
             {pendingSuggestion && (
@@ -477,6 +516,9 @@ export function Play({ module, initial, name, connection, setConnection, prefs, 
                   <DiamondIcon />Make a check
                 </button>
               )}
+              {canCheck && (
+                <button type="button" className="chip" disabled={busy || evaluating !== null} onClick={() => void evaluate(save, '', 'choices')}>{evaluating === 'choices' ? 'Thinking…' : 'Options'}</button>
+              )}
               <button type="button" className="chip" disabled={busy} onClick={() => perform({ type: 'wait', minutes: 10 })}>Wait 10 min</button>
               {openExits.map((exit) => (
                 <button key={exit.place.id} type="button" className="chip" disabled={busy} onClick={() => perform({ type: 'travel', to: exit.place.id })}>
@@ -484,6 +526,21 @@ export function Play({ module, initial, name, connection, setConnection, prefs, 
                 </button>
               ))}
             </div>
+            {proposals && (
+              <div className="proposals" role="group" aria-label={proposals.mode === 'one' ? 'A check this sounds like' : 'Options'}>
+                <p className="meta">{proposals.mode === 'one' ? 'That sounds like a check:' : 'You could try:'}</p>
+                {proposals.list.map((proposal) => (
+                  <div key={proposal.summary} className="proposal">
+                    <p>{proposals.mode === 'choices' && proposal.label ? <b>{proposal.label}. </b> : null}{proposal.summary}</p>
+                    <div className="chips">
+                      <button type="button" className="chip" disabled={busy} onClick={() => rollProposal(proposal)}><DiamondIcon />{save.options.alwaysSucceed ? 'Do it' : 'Roll it'}</button>
+                      <button type="button" className="chip" disabled={busy} onClick={() => changeProposal(proposal)}>Change</button>
+                    </div>
+                  </div>
+                ))}
+                <button type="button" className="link" onClick={() => setProposals(null)}>{proposals.mode === 'one' ? 'Not a check' : 'None of these'}</button>
+              </div>
+            )}
             <div className="compose-row">
               <label htmlFor="turn-input" className="sr">Your turn</label>
               <textarea
