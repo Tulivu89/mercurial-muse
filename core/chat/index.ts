@@ -10,6 +10,7 @@ export * from './build.js';
 export * from './home.js';
 export * from './helpers.js';
 export * from './prompt.js';
+export * from './sillytavern.js';
 export * from './posts.js';
 export * as aetherroom from './aetherroom.js';
 export * from './testpack.js';

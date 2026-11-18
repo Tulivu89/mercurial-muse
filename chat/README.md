@@ -150,6 +150,12 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.7.2 - SillyTavern chats in and out - 2026-11-18
+
+Standards X4, the last of the standards phases:
+- **Import a chat** (Settings) also takes a SillyTavern chat file (`.jsonl`), old or new. It is bound to the character of the same name in your worlds; import their card first if there isn't one. Every swipe comes in as an alternative reply with the same one shown, and SillyTavern's hidden lines come in as notes.
+- **Save for SillyTavern** and **Save as text** in a chat's details. The first is a `.jsonl` file that SillyTavern, Agnai and RisuAI read, with every alternative reply as a swipe. The second is a paragraph a message.
+
 ### 0.7.1 - Cards out, and CHARX in - 2026-11-18
 
 Standards X3, with Studio 0.18.0, which has the details:

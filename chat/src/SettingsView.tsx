@@ -156,7 +156,7 @@ export function SettingsView({ connection, onConnection, settings, onSettings, t
         <div className="row">
           <button type="button" className="btn" onClick={onBackup}>Back up everything</button>
           <span className="btn quiet file-btn">Restore a backup<input type="file" accept="application/json,.json" aria-label="Restore a backup" onChange={file(onRestore)} /></span>
-          <span className="btn quiet file-btn">Import a chat<input type="file" accept="application/json,.json" aria-label="Import a chat" onChange={file(onImportChat)} /></span>
+          <span className="btn quiet file-btn">Import a chat<input type="file" accept="application/json,.json,.jsonl" aria-label="Import a chat" title="A chat saved here, or a SillyTavern chat file (.jsonl) with a character you have" onChange={file(onImportChat)} /></span>
           <button type="button" className="btn quiet" onClick={() => downloadJson('chat-settings.json', {
             format: SETTINGS_EXPORT_FORMAT, exportedAt: Date.now(),
             request: { provider: connection.provider, model: connection.model, mode: connection.mode, format: connection.format, profile: profileFor(connection.model), contextTokens: contextTokensFor(settings, connection), replyTokens: settings.replyTokens, samplers: samplersFor(connection.model, settings.temperature) },
