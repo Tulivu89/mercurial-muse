@@ -1,6 +1,6 @@
 # Memory in long chats: decision
 
-Nov 18, 2026 · @AmbiProp · Waiting on the owner
+Nov 18, 2026 · @AmbiProp · Answered by the owner Nov 18; C1 built Nov 18 (Chat 0.8.0); C2 next
 
 From the brief and the source of SillyTavern (with three memory add-ons), RisuAI and Talemate (notes beside this page). For the General profile first; Xialong and the adventure follow.
 
@@ -56,8 +56,17 @@ When old messages leave a chat's window, a short side request writes them up as 
 | **C2, folding** | The Earlier summary within the 15% budget; pins kept out of it; keys on each chapter | One PR |
 | **C3, facts and Xialong** | Journal facts offered from chapters; chapters for Xialong as a brain entry | One PR |
 
-## Questions for the owner
+## The owner's answers (Nov 18)
 
-1. **On by default?** Proposed: yes, with a switch in Settings › Replies, since it costs one short request every few dozen messages.
-2. **Show the cut in the chat?** A thin line where the window starts, "Chapter 3 · written", that opens the chapter. Or keep it in Memory only.
-3. **Chapter length:** 3 to 6 sentences proposed. Shorter, cheaper and vaguer; or longer and fuller?
+1. **On by default,** with a switch.
+2. **The transcript stays in the chat as it is;** chapters are managed in a Memory view that is easy to reach. **Memory has to carry between chats** with the same character.
+3. **Chapter length** starts at 3 to 6 sentences and is a setting: short, the usual, or full.
+
+So the phases become:
+
+| Phase | What |
+| --- | --- |
+| **C1, chapters** | As above, with the length setting, and Memory reached from the brain button |
+| **C2, memory between chats** | A chat can bring in another chat's memory with the same character: its journal, diary, feelings and chapters, the chapters as one "Before this chat" chapter. A new chat offers it when there is an earlier one |
+| **C3, folding** | The Earlier summary within the 15% budget; pins kept out of it; keys on each chapter |
+| **C4, facts and Xialong** | Journal facts offered from chapters; chapters for Xialong as a brain entry |

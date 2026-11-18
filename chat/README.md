@@ -150,6 +150,14 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.8.0 - Chapters - 2026-11-18
+
+The first phase of the memory review (C1, `docs/reviews/memory/decision.md`), for every model but Xialong. A long chat used to forget what left its window; now it keeps it as chapters:
+- **When older messages leave what the model is sent,** they are written up as chapters by a short side request after the reply. It never holds up your next message. Each chapter is 3 to 6 sentences in the past tense, with names, written once from its own messages. Up to 40 messages go into one chapter, and the chapter before it goes along as context only.
+- **The story so far:** written chapters go with every reply, just after the journal. They change only when the window moves, so the start of the context stays the same between cuts.
+- **The chat keeps every message.** Chapters are managed under Memory: the brain button's "Everything … keeps", or Under the hood › Memory. There you can read, edit, set the keys of, redo or remove each chapter. A chapter whose messages were edited later is marked out of date, and a chapter that couldn't be written is tried again after later replies, three times in all.
+- **Settings › Replies:** chapters on or off (on by default), and their length: short (2 or 3 sentences), the usual (3 to 6) or full (6 to 10).
+
 ### 0.7.2 - SillyTavern chats in and out - 2026-11-18
 
 Standards X4, the last of the standards phases:

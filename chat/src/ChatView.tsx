@@ -7,6 +7,7 @@ import {
   PROFILE_NAMES, XIALONG, addAlternative, addNote, addReply, addUserMessage, buildRequest, buildSide, clockNow, clockTracks, deleteMessage, editMessage, editableText, formatMinutes,
   hasSchedule, isNoteText, lastEmotion, messageText, pickedAlt, profileFor, readReply, readSide, recentEmotions, replacePicked, sceneFor, sideTask,
   SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type HomeRef, type Life, type PackSettings, type ReplyPart, type SideKind, endedFrom, markEnded, thinkingTokens,
+  CHAPTER_TOKENS, chapterRequest, chapterWritten, chaptersToWrite, queueChapters, readChapter,
   EMOTION_PICK_TOKENS, emotionPick, mergeParts, readEmotionPick, replyTokensFor, setReplyEmotion, trimToSentence, wantsEmotions } from '../../core/chat/index.js';
 import type { World } from '../../core/records/index.js';
 import { canPrefill, generate, requestFor, type Connection, type GenerateOptions, type NarrationError } from '../../kit/src/connection';
@@ -246,6 +247,8 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
         if (whole[0]) next = replacePicked(next, replyId, [{ ...whole[0], text: trimToSentence(whole[0].text) }], now);
       }
       after = { ...next, roll: built.roll, windowStart: built.windowStart, plans: built.plans };
+      // Messages that just left the window wait to be written up as chapters.
+      if (built.profile === 'general' && settings.chapters) after = queueChapters(after, built.windowStart, newId, now);
       onChange(after);
     } else if (!failure && !controller.signal.aborted) {
       failure = 'The model wrote nothing that reads as a reply. What was sent shows what came back.';
@@ -259,6 +262,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     setBusy(null);
     setError(failure);
     if (!after || failure || leaving.current) return;
+    if (built.profile === 'general' && settings.chapters && chaptersToWrite(after).length) void writeChapters(after);
     // Cut at the limit: carry it on without asking, up to twice.
     if (endedAt === 'limit' && settings.autoContinue && auto < AUTO_CONTINUES && built.profile === 'general') {
       await runTurn('continue', replyId, after, auto + 1);
@@ -274,6 +278,30 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
         const emotion = readEmotionPick(picked.text);
         if (emotion && !leaving.current) onChange(setReplyEmotion(chatRef.current, replyId, emotion));
       } catch { /* the reply stands with no emotion; nothing to show */ }
+    }
+  }
+
+  // Chapters still to write, two at most each time, after the reply and beside the player's next
+  // turn rather than in front of it. Each result goes onto the chat as it stands by then.
+  const writingChapters = useRef(false);
+  async function writeChapters(base: Chat) {
+    if (writingChapters.current) return;
+    writingChapters.current = true;
+    try {
+      for (const chapter of chaptersToWrite(base).slice(0, 2)) {
+        const messages = chapterRequest(base, chapter, settings.chapterLength);
+        let written: ReturnType<typeof readChapter> = null;
+        if (messages) {
+          try {
+            const result = await generateImpl(messages, target, { maxTokens: CHAPTER_TOKENS[settings.chapterLength], temperature: 0.3, thinking: settings.prompt.thinking });
+            written = readChapter(result.text, base);
+          } catch { /* tried again after a later reply */ }
+        }
+        if (leaving.current) return;
+        onChange(chapterWritten(chatRef.current, chapter.id, written, Date.now()));
+      }
+    } finally {
+      writingChapters.current = false;
     }
   }
 

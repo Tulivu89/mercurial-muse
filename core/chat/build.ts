@@ -225,7 +225,7 @@ function buildGeneralProfile(chat: Chat, scene: Scene, options: BuildOptions, si
     ask: [side.shape, ...(side.frame ?? []), side.style, `Write it now as ${scene.charName}. ${side.layout ?? `Start with "Title:", then "Content:"${side.kind === 'plan' ? '' : ', then "Activation Keys:" with a few comma-separated words or names from the chat that should bring it back to mind'}.`}`].join('\n'),
     lead: side.lead ?? 'Title:',
   } : undefined;
-  const sized = buildGeneral(chat, scene, { ...base, windowStart: 0, task });
+  const sized = buildGeneral(chat, scene, { ...base, windowStart: chat.windowStart, task });
   const budget = budgetFor(options.contextTokens, side ? side.maxTokens : options.replyTokens, sized.prefixTokens);
   const windowStart = windowStartFor(sized.costs, chat.windowStart, budget.high, budget.low);
   const moment = side ? { lines: [], plans: chat.plans } : generalMoment(chat, scene, options, windowStart);

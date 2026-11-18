@@ -1,5 +1,5 @@
 // Chat's own settings, in this browser. The connection is the site's (kit/src/connection.ts).
-import { DEFAULT_PROMPT, XIALONG, profileFor, readPromptSetup, type PromptSetup } from '../../core/chat/index.js';
+import { DEFAULT_PROMPT, XIALONG, profileFor, readPromptSetup, type ChapterLength, type PromptSetup } from '../../core/chat/index.js';
 import type { Connection } from '../../kit/src/connection';
 
 export type TextSize = 'small' | 'medium' | 'large';
@@ -26,10 +26,13 @@ export interface Settings {
   trimCut: boolean;
   // The General prompt's parts as the player set them (core/chat/prompt.ts).
   prompt: PromptSetup;
+  // What leaves the window is written up as chapters (core/chat/chapters.ts), this long.
+  chapters: boolean;
+  chapterLength: ChapterLength;
 }
 
 const KEY = 'inkwyrm.chat.settings';
-export const DEFAULT_SETTINGS: Settings = { contextTokens: 0, replyTokens: 1000, temperature: 0.8, textSize: 'medium', layout: 'bubbles', rail: true, userName: '', persona: '', autoContinue: true, emotions: 'auto', trimCut: false, prompt: DEFAULT_PROMPT };
+export const DEFAULT_SETTINGS: Settings = { contextTokens: 0, replyTokens: 1000, temperature: 0.8, textSize: 'medium', layout: 'bubbles', rail: true, userName: '', persona: '', autoContinue: true, emotions: 'auto', trimCut: false, prompt: DEFAULT_PROMPT, chapters: true, chapterLength: 'usual' };
 // How many times a reply is carried on without asking.
 export const AUTO_CONTINUES = 2;
 
@@ -50,6 +53,8 @@ export function readSettings(): Settings {
       emotions: stored.emotions === 'off' ? 'off' : 'auto',
       trimCut: stored.trimCut === true,
       prompt: readPromptSetup(stored.prompt),
+      chapters: stored.chapters !== false,
+      chapterLength: stored.chapterLength === 'short' || stored.chapterLength === 'full' ? stored.chapterLength : 'usual',
     };
   } catch {
     return DEFAULT_SETTINGS;
