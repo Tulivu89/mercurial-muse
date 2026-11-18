@@ -150,6 +150,12 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.5.3 - Looks, and Ink Night - 2026-11-18
+
+- **Looks** (`docs/looks.md`): a world can choose a skin, and a chat, character or home in that world wears it. HOG Wild wears Live Feed. **Settings › Look**: follow the world, Wet Ink everywhere, or one look everywhere (Live Feed, Outrun, Phosphor, Halcyon).
+- **Night is Ink Night**: blue-black instead of brown.
+- Send is marked while a reply is written, and the arriving reply too, so a look can show it: Outrun's level meter runs fast, Live Feed pulses, Phosphor's cursor blinks.
+
 ### 0.5.2 - Replies that stop say why - 2026-11-17
 
 From the owner's Gemini 3.8 Flash test pack (Lux, HOG Wild): replies stopped partway, and every Continue made the next stop more likely.

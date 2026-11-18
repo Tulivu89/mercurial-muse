@@ -16,12 +16,21 @@ export function readTheme(): Theme {
 }
 
 export function applyTheme(theme: Theme) {
-  const night = theme === 'night' || (theme === 'auto' && typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches);
+  // A dark look (kit/src/look.ts) brings night with it, so every night rule (maps, the rules'
+  // colours, the marks) holds under it; Halcyon keeps the player's own choice.
+  const dark = document.documentElement.dataset.lookDark === 'true';
+  const night = dark || theme === 'night' || (theme === 'auto' && typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = night ? 'night' : 'paper';
   // A page may have painted its ground before the stylesheet came; the tokens take over from here.
   document.documentElement.style.background = '';
-  // The browser's own bar follows the ground.
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', night ? '#16130F' : '#F3EEE4');
+  paintBar(night ? '#12151A' : '#F3EEE4');
+}
+
+// The browser's own bar follows the ground, whichever look (kit/src/look.ts) is on.
+export function paintBar(fallback?: string) {
+  const ground = getComputedStyle(document.documentElement).getPropertyValue('--ground').trim();
+  const colour = ground || fallback;
+  if (colour) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', colour);
 }
 
 export function useTheme(): [Theme, (theme: Theme) => void] {

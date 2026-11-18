@@ -10,6 +10,7 @@ import { usePrefs } from './prefs';
 import { InkMark } from '../../../kit/src/Mark';
 import { SiteHeader } from '../../../kit/src/SiteHeader';
 import { THEME_NAMES, useTheme, type Theme } from '../../../kit/src/theme';
+import { LOOK_NAMES, useLook, type LookChoice } from '../../../kit/src/look';
 import { deleteSave, listSaves, moduleKey, openSave, putModule, putSave, type SaveRecord } from './storage';
 import { recordActivity } from '../../../kit/src/activity';
 
@@ -29,6 +30,7 @@ export function App() {
   const [connection, setConnection] = useState<Connection>(initialConnection);
   const [prefs, setPrefs] = usePrefs();
   const [theme, setTheme] = useTheme();
+  const [look, setLook] = useLook();
 
   const refresh = useCallback(async () => {
     try { setSaves(await listSaves()); } catch (error) { setStorageNote(error instanceof Error ? error.message : 'Saved games are unavailable.'); }
@@ -151,6 +153,8 @@ export function App() {
         setPrefs={setPrefs}
         theme={theme}
         setTheme={setTheme}
+        look={look}
+        setLook={setLook}
         onChange={persist}
         onClose={() => { setScreen({ kind: 'home' }); void refresh(); }}
       />
@@ -252,6 +256,11 @@ export function App() {
               </div>
               <span className="meta" style={{ lineHeight: 1.45 }}>Paper by day, ink by night. The same choice holds in Chat and the Studio.</span>
             </div>
+            <label className="lr stack">
+              <span className="name">Style</span>
+              <select className="select" value={look} onChange={(event) => setLook(event.target.value as LookChoice)}>{(Object.keys(LOOK_NAMES) as LookChoice[]).map((option) => <option key={option} value={option}>{LOOK_NAMES[option]}</option>)}</select>
+              <span className="meta" style={{ lineHeight: 1.45 }}>A skin over paper and ink. Worlds can choose one in Chat and the Studio.</span>
+            </label>
           </div>
           <div className="card clip"><ConnectForm connection={connection} onChange={setConnection} /></div>
         </section>
