@@ -150,6 +150,10 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.6.2 - Cards from other apps, cleaned - 2026-11-18
+
+The first phase of the standards review (X1, `docs/reviews/standards/decision.md`), with Studio 0.16.0, which has the details. A card imported here loses its `@@` decorator lines and other apps' placeholders, brings in its character's note, and keeps a lore entry's second key list. When a prompt is built, the placeholders cards use beyond CharacterRoom's are filled in: `{{random}}`, `{{pick}}`, `{{roll}}`, `{{weekday}}`, `{{isodate}}`, `{{isotime}}` and `{{reverse}}`. Comments and variables are left out, so none of it reaches a model as raw braces.
+
 ### 0.6.1 - Gemini direct - 2026-11-18
 
 The second phase of the prompt setup review (P2). The site's server, so the adventure gets it too:

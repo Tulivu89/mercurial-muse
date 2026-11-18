@@ -80,6 +80,15 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
   - a CharacterRoom contact card as a character: persona and appearance become Here sections, brains become sections, conditional brains become Named or When sections behind CharacterRoom's bond tiers, the species becomes a group, and the schedule is kept;
   - a CharacterRoom user card as a persona, and a scenario card as a scenario;
   - a Character Card V1, V2 or V3, as JSON or PNG: description and personality as Here sections, the scenario as a Scenario, greetings and example chats, the lorebook as Named sections, and the card's own system prompt kept as a Never section.
+  - **Nothing reaches the model raw** (0.16.0, `docs/reviews/standards/decision.md`, X1):
+    - a lore entry's `@@` decorator lines are taken off (`@@activate` makes it Here, `@@dont_activate` Never);
+    - other apps' placeholders become ours (`<USER>`, `<BOT>`, `{{charIfNotGroup}}`), and comments and `{{original}}` go;
+    - the character's note (SillyTavern's depth prompt) comes in as a Here section;
+    - group-only greetings are kept as a Never section;
+    - a lore entry's second key list becomes **And one of these too** on its section (a Named section reaches only when a key and one of these both come up);
+    - the card's `extensions` are kept on the record, for writing the card back out.
+
+    The import notes say what came in without its effect: other decorators, second lists that need all or none, pattern keys, SillyTavern's chance, sticky, cooldown, delay, groups and depth, and variables or if-blocks.
 
   Pictures on a card are kept by Chat, which is where portraits live; import there to bring them.
 

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { bondConditionsFor, cardFromPng, importCardFile, importCardJson, newWorld, parseExampleChats, parseWorld, pngTextChunks, recordById, type World } from '../records/index.js';
+import { contextFor, bondConditionsFor, cardFromPng, cardText, splitDecorators, importCardFile, importCardJson, newWorld, parseExampleChats, parseWorld, pngTextChunks, recordById, type World } from '../records/index.js';
 import { readStreamChunk, sseReader, thinkingFilter } from '../narration/stream.js';
 import { buildUpstream, narrationRequestSchema } from '../narration/upstream.js';
+import { cardMacros, replaceMacros } from '../chat/macros.js';
 import { BUILT_IN_PROVIDERS } from '../narration/providers.js';
 
 function ids() { let n = 0; return () => `id-${++n}`; }
@@ -106,6 +107,87 @@ describe('Character Card import', () => {
   it('parses example chats with either name for each side', () => {
     const chats = parseExampleChats('<START>\nYou: hi\nSeraphine: hello\n<START>\n<USER>: one\n<BOT>: two', 'Seraphine', ids());
     expect(chats.map((chat) => chat.messages.map((message) => message.fromCharacter))).toEqual([[false, true], [false, true]]);
+  });
+});
+
+describe('nothing from a card reaches the model raw (X1)', () => {
+  const card = (data: Record<string, unknown>) => ({ spec: 'chara_card_v3', spec_version: '3.0', data: { name: 'Mara', description: 'A ferry pilot. <USER> owes her.', personality: '', scenario: '', first_mes: 'Hi, <user>. {{// greeting one}}', mes_example: '', group_only_greetings: [], ...data } });
+
+  it('takes decorator lines off lore and reads the two that have a place', () => {
+    expect(splitDecorators('@@depth 4\n@@role system\nThe river floods.')).toEqual({ text: 'The river floods.', decorators: ['depth', 'role'] });
+    const book = { entries: [
+      { keys: ['river'], content: '@@depth 4\n@@scan_depth 6\nThe river floods in spring.', enabled: true, insertion_order: 1, extensions: {} },
+      { keys: ['ferry'], content: '@@activate\nThe ferry is hers.', enabled: true, insertion_order: 2, extensions: {} },
+      { keys: ['debt'], content: '@@dont_activate\nThe debt is fake.', enabled: true, insertion_order: 3, extensions: {} },
+    ] };
+    const read = importCardJson(empty(), card({ character_book: book }), ids(), 5);
+    expect(read.ok).toBe(true);
+    if (!read.ok) return;
+    const mara = recordById(read.result.world, read.result.recordId)!;
+    const by = (title: string) => mara.sections.find((section) => section.title === title)!;
+    expect(by('river')).toMatchObject({ reach: 'named', text: 'The river floods in spring.' });
+    expect(by('ferry').reach).toBe('here');
+    expect(by('debt').reach).toBe('never');
+    expect(JSON.stringify(mara.sections)).not.toContain('@@');
+    expect(read.result.notes.join(' ')).toContain('@@depth, @@scan_depth');
+  });
+
+  it('brings the character\'s note in, keeps the extensions, and puts other apps\' placeholders in ours', () => {
+    const extensions = { depth_prompt: { prompt: 'Mara never says sorry to {{user}}.', depth: 4, role: 'system' }, talkativeness: '0.5', 'risuai': { x: 1 } };
+    const read = importCardJson(empty(), card({ extensions, system_prompt: 'Be Mara.', group_only_greetings: ['Hey, all.'] }), ids(), 5);
+    if (!read.ok) throw new Error('import');
+    const mara = recordById(read.result.world, read.result.recordId)!;
+    expect(mara.sections.find((section) => section.title === "Character's note (from the card)")).toMatchObject({ reach: 'here', text: 'Mara never says sorry to {{user}}.' });
+    expect(mara.sections.find((section) => section.title === 'Description')!.text).toBe('A ferry pilot. {{user}} owes her.');
+    expect(mara.greetings[0]!.text).toBe('Hi, {{user}}.');
+    expect(mara.cardExtensions).toEqual(extensions);
+    expect(mara.sections.find((section) => section.title === 'Group greetings (from the card)')!.reach).toBe('never');
+    expect(read.result.notes.join(' ')).toContain('has its own system prompt');
+    // It survives the world file.
+    const back = parseWorld(JSON.parse(JSON.stringify(read.result.world)));
+    expect(back.ok && recordById(back.world, mara.id)!.cardExtensions).toEqual(extensions);
+    expect(cardText('<BOT> and {{charIfNotGroup}} {{original}}{{noop}}')).toBe('{{char}} and {{char}} ');
+  });
+
+  it('keeps a second key list as "and one of these too", and notes what it can\'t keep', () => {
+    const book = { entries: [
+      { keys: ['Mara'], secondary_keys: ['river'], selective: true, content: 'Mara learned the river from her mother.', enabled: true, insertion_order: 1, extensions: { selectiveLogic: 0 } },
+      { keys: ['Mara'], secondary_keys: ['town'], selective: true, content: 'Not in town.', enabled: true, insertion_order: 2, extensions: { selectiveLogic: 2, probability: 50, sticky: 2 } },
+      { keys: ['/ferr(y|ies)/i'], content: 'Ferries.', enabled: true, insertion_order: 3, use_regex: true, extensions: {} },
+    ] };
+    const read = importCardJson(empty(), card({ character_book: book, description: '{{setvar::mood::1}}A ferry pilot.' }), ids(), 5);
+    if (!read.ok) throw new Error('import');
+    const world = read.result.world;
+    const mara = recordById(world, read.result.recordId)!;
+    const mother = mara.sections.find((section) => section.text.startsWith('Mara learned'))!;
+    expect(mother.also).toEqual(['river']);
+    expect(mara.sections.find((section) => section.text === 'Not in town.')!.also).toBeUndefined();
+    const notes = read.result.notes.join(' ');
+    expect(notes).toContain('second key list');
+    expect(notes).toContain('pattern keys');
+    expect(notes).toContain('chance, sticky');
+    expect(notes).toContain('variables');
+    const sent = (recentText: string) => contextFor(world, { hereIds: [], recentText, conditionIds: [] }).blocks.flatMap((block) => block.parts.map((part) => part.text));
+    expect(sent('Tell me about Mara.')).not.toContain(mother.text);
+    expect(sent('Did Mara grow up on the river?')).toContain(mother.text);
+  });
+
+  it('fills other apps\' placeholders when the prompt is built', () => {
+    const now = Date.UTC(2026, 10, 18, 9, 5);
+    const out = cardMacros('{{random:red,blue}} {{random::red::blue}} {{pick::a::b::c}} {{roll:d6}} {{roll 2d6}} {{weekday}} {{reverse:abc}} {{// gone}}{{getvar::mood}}x{{newline}}y', now);
+    const [first, second, picked, d6, twoD6, day, reversed, rest] = out.split(' ');
+    expect(['red', 'blue']).toContain(first);
+    expect(['red', 'blue']).toContain(second);
+    expect(['a', 'b', 'c']).toContain(picked);
+    expect(cardMacros('{{pick::a::b::c}}', now + 99)).toBe(picked);
+    expect(Number(d6)).toBeGreaterThanOrEqual(1);
+    expect(Number(d6)).toBeLessThanOrEqual(6);
+    expect(Number(twoD6)).toBeGreaterThanOrEqual(2);
+    expect(Number(twoD6)).toBeLessThanOrEqual(12);
+    expect(day).toBe(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date(now).getDay()]);
+    expect(reversed).toBe('cba');
+    expect(rest).toBe('x\ny');
+    expect(replaceMacros('{{char}} rolls {{roll:1}}', 'Mara', 'Sam', now)).toBe('Mara rolls 1');
   });
 });
 

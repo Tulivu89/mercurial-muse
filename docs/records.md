@@ -23,7 +23,7 @@ Every block of text carries one reach.
 | --- | --- | --- |
 | **Always** | Every turn. Kept to very little. | The world's premise, the player's persona line, the active thread's next beat. |
 | **Here** | While the record is part of the scene: the place you're in, people present, things carried or in the room, the character you're chatting with. | The core of a profile; a place's entry and atmosphere. |
-| **Named** | When one of its keys appears in the player's words or the last few turns. It stays until the scene changes, so it doesn't flicker in and out. | The rest of a profile, never repeating what Here already sends; lore; off-stage people and places. |
+| **Named** | When one of its keys appears in the player's words or the last few turns. It stays until the scene changes, so it doesn't flicker in and out. A section can also ask for one of a second list of keys (*And one of these too*, from a card lorebook's secondary keys). | The rest of a profile, never repeating what Here already sends; lore; off-stage people and places. |
 | **When** | Only while a condition holds. | Schedules, outfits by time of day, what she admits once you're friends, a place after the raid. |
 | **Never** | Not sent as written. | Mechanics (states, numbers, rules), which reach the model only as the sentences the rules write for them; the author's notes; image prompts. |
 

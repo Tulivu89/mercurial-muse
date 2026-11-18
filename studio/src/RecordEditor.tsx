@@ -224,6 +224,14 @@ function SectionCard({ world, record, section, drafts, onRecord, onChange, onMov
           onChange={(keys) => onChange({ ...section, keys })}
         />
       )}
+      {section.reach === 'named' && (
+        <KeysField
+          label="And one of these too"
+          value={section.also ?? []}
+          placeholder="Empty: the keys above are enough"
+          onChange={(also) => { const { also: _was, ...rest } = section; onChange(also.length ? { ...rest, also } : rest); }}
+        />
+      )}
       <label className="sr" htmlFor={`${id}-text`}>{section.title} text</label>
       <textarea id={`${id}-text`} maxLength={20000} value={section.text} placeholder={hint || 'Plain, concrete prose. The model copies its voice.'} onChange={(event) => onChange({ ...section, text: event.target.value })} />
       <DraftButton world={world} record={record} target={{ field: 'section', sectionId: section.id }} api={drafts} label={section.title || 'this section'} />
