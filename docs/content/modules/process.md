@@ -71,6 +71,10 @@ The narrator asks a different question of each field. A fact lives in the field 
 
 ## The process, in three parts
 
+### Before part 1: sources
+
+A module's regions, towns, factions, families, leads and threads start from named sources (`docs/content/sources/README.md`, Nov 18): a one-page atlas for the world, then a source sheet before the slice and before every frame. A sheet's *becomes* column is most of the frame already.
+
 ### Part 1: the slice, built by hand with the owner
 
 **The slice is one place someone could play in for an evening.** It is small enough to get right and wide enough to hold one of everything the full module will need, so that every later record has a gold example to be shown.
