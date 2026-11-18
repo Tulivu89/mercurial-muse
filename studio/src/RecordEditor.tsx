@@ -4,10 +4,9 @@
 import { useState, type ReactNode } from 'react';
 import {
   GROUP_KINDS, KIND_NAMES, REACHES, REACH_HINTS, REACH_NAMES, hintFor, newSection, wouldLoop,
-  type RecordSet, type Section, type StoryRecord, type World,
-} from '../../core/records/index.js';
+  type RecordSet, type Section, type StoryRecord, type World, cardFromRecord } from '../../core/records/index.js';
 import { KeysField, NameField } from '../../kit/src/Fields';
-import { newId } from '../../kit/src/util';
+import { downloadJson, fileSafe, newId } from '../../kit/src/util';
 import { RecordMulti, RecordPick, withinOf } from './RecordPick';
 import { DraftButton, DraftsFor, NameIdeas, draftWaiting } from './Drafting';
 import type { DraftsApi } from './author/useDrafts';
@@ -56,6 +55,9 @@ export function RecordEditor({ world, record, drafts, onChange, onDelete, doors 
         <h1 className="ink-write">{record.name}</h1>
         <span className="row">
           {record.kind === 'character' && <a className="btn small quiet" href={`/chat/#/with/${encodeURIComponent(world.id)}/${encodeURIComponent(record.id)}`}>Chat with {record.name}</a>}
+          {(record.kind === 'character' || record.kind === 'persona') && (
+            <button type="button" className="btn small quiet" title="A Character Card V3 other apps open; brought back here, it comes back whole. Chat saves it as a picture with the portrait." onClick={() => { const card = cardFromRecord(world, record.id, Date.now()); if (card) downloadJson(`${fileSafe(record.name)}.card.json`, card); }}>Export as a card</button>
+          )}
           <span className="chip line">{KIND_NAMES[record.kind].one}</span>
         </span>
       </div>

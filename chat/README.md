@@ -150,6 +150,12 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.7.1 - Cards out, and CHARX in - 2026-11-18
+
+Standards X3, with Studio 0.18.0, which has the details:
+- **Save as a card** on a character in the Collection writes a PNG card with the portrait in it, as SillyTavern writes them (a V2 `chara` chunk and a V3 `ccv3` chunk). Without a portrait it saves JSON.
+- **CHARX** cards import with their pictures: the icon becomes the portrait, and emotion pictures fill the emotion slots of the same names.
+
 ### 0.7.0 - The Prompt, and the 18+ question - 2026-11-18
 
 The last phase of the prompt setup review (P3):

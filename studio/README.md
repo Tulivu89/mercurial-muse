@@ -99,6 +99,15 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 
     Disabled entries are Never, second key lists become *And one of these too*, and the import notes say what came in without its effect. **Export as a lorebook** writes the world as a SillyTavern World Info file, which other apps read too. Lore records go as they are; characters, places, items, groups and factions go as one entry each under their names and keys, with their line and every section a scene could send, never a Never or When section.
 
+  - **Cards out** (0.18.0, X3): **Export as a card** on a character's or persona's page writes a Character Card V3 that other apps open:
+    - Here and Always sections are the description, the line is the personality;
+    - greetings and example chats go across;
+    - Named sections become the card's lorebook with their keys, and sections behind a condition go switched off;
+    - the character's note, the card's own prompts, group greetings and creator notes go back where they came from;
+    - Never sections stay home.
+
+    The whole record rides in the card's `inkwyrm` extension, with other apps' extensions untouched. Brought back unchanged, it comes back whole, conditions and all; changed in another app, it comes in as any card does. **CHARX** files import too (`.charx`, a zip with `card.json`).
+
   Pictures on a card are kept by Chat, which is where portraits live; import there to bring them.
 
 ## Phases (`docs/studio-brief.md`)
