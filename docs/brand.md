@@ -20,18 +20,20 @@ The site is **Inkwyrm**, in the **Wet Ink** look, with an ink drop for its mark.
 
 Paper by day, ink by night. Calm and literary, built for long reading, with a red seal for the one thing to press. It carries on from the adventure's current look.
 
-| Token | Paper (light) | Night (dark) |
+| Token | Paper (light) | Ink Night (dark) |
 | --- | --- | --- |
-| Ground | Paper `#F3EEE4` | Night `#16130F` |
-| Surface | Sheet `#FBF8F2` | Sheet `#201C16` |
-| Raised | `#FFFFFF` | `#2A251D` |
-| Text | Ink `#1D1B17` | Ink `#EDE5D6` |
-| Secondary text | Grey ink `#5E574C` | Grey ink `#A89E8D` |
-| Lines | Rule `#D9D0C0` | Rule `#3A342B` |
-| Accent (the main action) | Seal `#B23A26`, text on it `#FFF8F0` | Seal `#E46A4E`, text on it `#1A100B` |
+| Ground | Paper `#F3EEE4` | Night `#12151A` |
+| Surface | Sheet `#FBF8F2` | Sheet `#1A1E25` |
+| Raised | `#FFFFFF` | `#222731` |
+| Text | Ink `#1D1B17` | Ink `#ECE7DD` |
+| Secondary text | Grey ink `#5E574C` | Grey ink `#A3A7B0` |
+| Lines | Rule `#D9D0C0` | Rule `#303642` |
+| Accent (the main action) | Seal `#B23A26`, text on it `#FFF8F0` | Seal `#E8735A`, text on it `#14100D` |
 | Second colour (the player's own words, conditions) | Blue-black `#2F4A6B`, text on it `#F3F6FA` | Blue-black `#8FB1D9`, text on it `#0F1620` |
 
-Every pair above passes 4.5:1 contrast.
+Every pair above passes 4.5:1 contrast. Night became Ink Night on Nov 18: blue-black instead of brown.
+
+**Looks** (Nov 18, `docs/looks.md`): a world can wear a skin over Wet Ink, such as Live Feed for HOG Wild. Looks redefine these tokens; the corners are tokens too (`--r-ctrl`, `--r-card`, `--r-chip`).
 
 **Type:**
 - **Display:** Fraunces, semibold, with italics for emphasis.

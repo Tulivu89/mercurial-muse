@@ -12,6 +12,7 @@ import { loadNavigation, type NavigationV1 } from '../../kit/src/activity';
 import { InkMark, type MarkName } from '../../kit/src/Mark';
 import { SiteHeader } from '../../kit/src/SiteHeader';
 import { applyTheme, readTheme } from '../../kit/src/theme';
+import { applyLook, readLook, resolveLook } from '../../kit/src/look';
 import { useCollection } from '../../kit/src/collection';
 import { ERRATA_ID } from '../../kit/src/included';
 import { MediaImage, animationSlot, posterSlot } from '../../kit/src/media';
@@ -43,7 +44,7 @@ function useRead<T>(read: () => Promise<T>, tick: number): Read<T> {
 
 export function App({ readers }: { readers: Readers }) {
   // The site's one look, applied; the Overview never changes it, so it writes nothing.
-  useEffect(() => { applyTheme(readTheme()); }, []);
+  useEffect(() => { applyTheme(readTheme()); applyLook(resolveLook(readLook())); }, []);
   // Read again on coming back to the tab: a game saved in another tab shows up.
   const [tick, setTick] = useState(0);
   const [navigation, setNavigation] = useState<NavigationV1>(loadNavigation);

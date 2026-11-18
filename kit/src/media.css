@@ -27,7 +27,7 @@
   min-width: 44px;
   min-height: 44px;
   border: 1px solid var(--rule);
-  border-radius: 6px;
+  border-radius: var(--r-ctrl);
   background: var(--surface);
   color: var(--text);
   font: 13px var(--ui);

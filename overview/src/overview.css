@@ -22,7 +22,7 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .hero.quiet .hero-title { animation: none; }
 
 /* One exact Continue: the one seal-red action on a returning visit. */
-.continue { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; padding: 14px 20px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+.continue { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; padding: 14px 20px; border: 1px solid var(--rule); border-radius: var(--r-card); background: var(--surface); }
 .continue-label { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-2); }
 .continue-text { flex: 1 1 260px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; min-width: 0; }
 .continue-title { font-family: var(--display); font-weight: 600; font-size: 22px; }
@@ -31,7 +31,7 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 
 /* The panels: two equal columns, one on a phone, in the same order either way. */
 .panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
-.panel { display: flex; flex-direction: column; gap: 16px; padding: 22px 24px 24px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); animation: panel-settle 320ms ease-out both; }
+.panel { display: flex; flex-direction: column; gap: 16px; padding: 22px 24px 24px; border: 1px solid var(--rule); border-radius: var(--r-card); background: var(--surface); animation: panel-settle 320ms ease-out both; }
 .panel:nth-child(2) { animation-delay: 45ms; }
 .panel:nth-child(3) { animation-delay: 90ms; }
 .panel.wide { grid-column: 1 / -1; }
@@ -41,7 +41,7 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .panel-more { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; font-size: 15px; text-decoration: none; }
 .panel-lede { margin: 0; font-family: var(--read); font-size: 16px; color: var(--text-2); }
 .panel-foot { padding-top: 14px; border-top: 1px solid var(--rule); }
-.placeholder { min-height: 220px; border-radius: 6px; background: var(--raised); }
+.placeholder { min-height: 220px; border-radius: var(--r-ctrl); background: var(--raised); }
 .card-title { margin: 0; font-family: var(--display); font-weight: 600; font-size: 26px; line-height: 1.15; }
 .facts { margin: 0; font-size: 14px; color: var(--text-2); overflow-wrap: anywhere; }
 .link-btn { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; text-decoration: none; }
@@ -51,12 +51,12 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 /* Characters: a small cast. Without approved portraits, each card is the name in display type on a
    quiet block, never a borrowed silhouette. */
 .cast { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.character { position: relative; display: flex; flex-direction: column; gap: 4px; min-height: 230px; padding: 14px; border-radius: 6px; background: var(--raised); border: 1px solid var(--rule); color: var(--text); text-decoration: none; transition: transform 200ms ease-out; }
+.character { position: relative; display: flex; flex-direction: column; gap: 4px; min-height: 230px; padding: 14px; border-radius: var(--r-ctrl); background: var(--raised); border: 1px solid var(--rule); color: var(--text); text-decoration: none; transition: transform 200ms ease-out; }
 .character:hover, .character:focus-visible { transform: translateY(-3px); }
 .character.lead { background: var(--text); color: var(--ground); border-color: var(--text); }
 .cast.solo { grid-template-columns: minmax(0, 1fr); max-width: 420px; }
 .cast.solo .character { min-height: 200px; }
-.character .tag { align-self: flex-start; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; border: 1px solid currentColor; opacity: 0.8; }
+.character .tag { align-self: flex-start; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: var(--r-chip); border: 1px solid currentColor; opacity: 0.8; }
 .character-initial { margin-top: auto; font-family: var(--display); font-weight: 600; font-size: 64px; line-height: 1; opacity: 0.18; }
 .character-name { font-family: var(--display); font-weight: 600; font-size: 24px; }
 .character-line { font-size: 13px; line-height: 1.4; opacity: 0.85; }
@@ -69,7 +69,7 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .world-card + .world-card { padding-top: 18px; border-top: 1px solid var(--rule); }
 .world-text { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 .world-premise { margin: 0; font-family: var(--read); font-size: 16px; line-height: 1.45; }
-.cover { display: block; text-decoration: none; width: 132px; aspect-ratio: 3 / 4; border-radius: 6px; overflow: hidden; transition: transform 180ms ease-out; }
+.cover { display: block; text-decoration: none; width: 132px; aspect-ratio: 3 / 4; border-radius: var(--r-ctrl); overflow: hidden; transition: transform 180ms ease-out; }
 .world-card:hover .cover { transform: translateY(-2px); }
 .text-cover { box-sizing: border-box; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 14px; background: #2F3B33; color: #EDE5D6; border-left: 6px solid #1F2722; }
 .text-cover-over { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; }
@@ -84,13 +84,13 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 
 /* Adventure: the saved game, or an included opening in its own words. */
 .adventure { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
-.scene { box-sizing: border-box; width: 100%; padding: 28px clamp(18px, 4vw, 48px); border-radius: 6px; background: #2F3B33; color: #EDE5D6; }
+.scene { box-sizing: border-box; width: 100%; padding: 28px clamp(18px, 4vw, 48px); border-radius: var(--r-ctrl); background: #2F3B33; color: #EDE5D6; }
 .scene-line { margin: 0; max-width: 60ch; font-family: var(--read); font-style: italic; font-size: clamp(18px, 2vw, 22px); line-height: 1.5; }
 
 .home-list { display: flex; flex-direction: column; gap: 18px; }
 .home-item { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 18px; align-items: start; }
 .home-item + .home-item { padding-top: 18px; border-top: 1px solid var(--rule); }
-.home-item-cover { display: block; width: 132px; aspect-ratio: 4 / 3; border-radius: 6px; overflow: hidden; border: 1px solid var(--rule); background: var(--raised); text-decoration: none; line-height: 0; }
+.home-item-cover { display: block; width: 132px; aspect-ratio: 4 / 3; border-radius: var(--r-ctrl); overflow: hidden; border: 1px solid var(--rule); background: var(--raised); text-decoration: none; line-height: 0; }
 .home-item-cover img, .home-item-cover .media-image { width: 100%; height: 100%; object-fit: cover; display: block; }
 .home-item-cover.bare { display: flex; align-items: center; justify-content: center; line-height: 1; font-family: var(--display); font-weight: 600; font-size: 56px; color: var(--rule); }
 .home-people { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 14px; min-width: 0; width: 100%; }

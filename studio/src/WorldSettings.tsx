@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import type { World } from '../../core/records/index.js';
+import { WORLD_LOOKS, type World, type WorldLook } from '../../core/records/index.js';
+import { WORLD_LOOK_NAMES, WORLD_LOOK_NOTES } from '../../kit/src/look';
 import { NameField } from '../../kit/src/Fields';
 import { downloadJson, fileSafe, newId, readJsonFile } from '../../kit/src/util';
 import { exportTalks, importTalks } from './author/store';
@@ -74,6 +75,14 @@ export function WorldSettings({ world, onChange, onDelete }: { world: World; onC
           <span><b>A household.</b> People to chat with and the home they live in. It is for Chat, and isn&rsquo;t offered as an adventure.</span>
         </label>
       </fieldset>
+      <label className="field card">
+        <span className="sub">Look</span>
+        <select value={world.look ?? ''} onChange={(event) => { const { look: _look, ...rest } = world; onChange(event.target.value ? { ...rest, look: event.target.value as WorldLook } : rest); }}>
+          <option value="">Wet Ink, like the rest of the site</option>
+          {WORLD_LOOKS.map((look) => <option key={look} value={look}>{WORLD_LOOK_NAMES[look]}</option>)}
+        </select>
+        <span className="hint">{world.look ? WORLD_LOOK_NOTES[world.look] : 'The site\u2019s own paper and ink.'} Players see it inside this world unless they turned world looks off.</span>
+      </label>
       {household ? (
         <section className="card" aria-label="In Chat">
           <div className="row">

@@ -7,6 +7,7 @@ import { characterKey, initializeCollection, loadCollection, memberFor, patchMem
 import { animationSlot, portraitSource, posterSlot, readImageAsset, readImageDataUrl } from '../../kit/src/media';
 import { recordActivity } from '../../kit/src/activity';
 import { useTheme } from '../../kit/src/theme';
+import { useLook } from '../../kit/src/look';
 import { downloadJson, newId, readFileBytes, readJsonFile } from '../../kit/src/util';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
 import { HOUSE_VERSION, HOUSE_WORLD_ID, INCLUDED_WORLDS, RETIRED_HOUSE_ID, loadIncluded, loadResort } from '../../kit/src/included';
@@ -226,6 +227,9 @@ export function App() {
 
   const openId = view.name === 'chat' ? view.id : null;
   const open = chats?.find((chat) => chat.id === openId) ?? null;
+  // The world in view wears its look (kit/src/look.ts): a chat's, a character's or a home's.
+  const viewWorldId = open?.worldId ?? (view.name === 'character' ? view.worldId : view.name === 'house' ? view.at?.worldId : view.name === 'home' ? view.with?.worldId : undefined);
+  const [look, setLook] = useLook(worlds?.find((world) => world.id === viewWorldId)?.look);
   // A chat that really opened is what the Overview's Continue offers.
   useEffect(() => {
     if (!open) return;
@@ -437,7 +441,7 @@ export function App() {
         />
       ) : view.name === 'settings' ? (
         <SettingsView
-          connection={connection} onConnection={setConnection} settings={settings} onSettings={setSettings} theme={theme} onTheme={setTheme}
+          connection={connection} onConnection={setConnection} settings={settings} onSettings={setSettings} theme={theme} onTheme={setTheme} look={look} onLook={setLook}
           worlds={worlds ?? []} portraits={portraits} onPortrait={(owner, slot, file) => void setPortrait(owner, slot, file)}
           onBackup={() => void backup()} onRestore={(file) => void restore(file)} onImportChat={(file) => void importChat(file)} status={status}
         />

@@ -23,6 +23,7 @@ import { SourceTag, describeEntry, newId } from './shared';
 import { NarrationError, narrate, promptTokensOf, type Diagnostics } from './narration';
 import type { Prefs } from './prefs';
 import type { Theme } from '../../../kit/src/theme';
+import type { LookChoice } from '../../../kit/src/look';
 
 // Where the player can be taken: the prompt, or the menu space and what it is showing.
 export type View = 'story' | 'menu' | 'journal' | 'guide' | 'record' | 'test';
@@ -48,6 +49,9 @@ export interface PlayApi {
   // Paper, night or the device's choice: one setting for the whole site.
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  // A look over Wet Ink (kit/src/look.ts), the same choice as in Chat and the Studio.
+  look: LookChoice;
+  setLook: (look: LookChoice) => void;
   connection: Connection;
   setConnection: (next: Connection) => void;
   busy: boolean;
@@ -84,7 +88,7 @@ export interface PlayApi {
   leave: () => void;
 }
 
-export function Play({ module, initial, name, connection, setConnection, prefs, setPrefs, theme, setTheme, onChange, onClose }: {
+export function Play({ module, initial, name, connection, setConnection, prefs, setPrefs, theme, setTheme, look, setLook, onChange, onClose }: {
   module: PraxisModule;
   initial: Save;
   name: string;
@@ -94,6 +98,8 @@ export function Play({ module, initial, name, connection, setConnection, prefs, 
   setPrefs: (changes: Partial<Prefs>) => void;
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  look: LookChoice;
+  setLook: (look: LookChoice) => void;
   onChange: (save: Save) => void;
   onClose: () => void;
 }) {
@@ -319,6 +325,8 @@ export function Play({ module, initial, name, connection, setConnection, prefs, 
     setPrefs,
     theme,
     setTheme,
+    look,
+    setLook,
     connection,
     setConnection,
     busy,
@@ -489,7 +497,7 @@ export function Play({ module, initial, name, connection, setConnection, prefs, 
                   if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) { event.preventDefault(); send(); }
                 }}
               />
-              <button type="button" className="send" aria-label="Send your turn" onClick={send} disabled={busy || !draft.trim()}><SendIcon /></button>
+              <button type="button" className={`send${busy ? ' working' : ''}`} aria-label="Send your turn" onClick={send} disabled={busy || !draft.trim()}><SendIcon /></button>
             </div>
           </>
         )}

@@ -9,6 +9,7 @@ import { saveFormat, saveMode, saveModel, type FormatChoice, type NarrationMode 
 import { FORMAT_IDS, FORMAT_NAMES, guessFormat } from '../../../core/narration/formats';
 import { downloadJson, fileSafe } from './files';
 import { THEME_NAMES, type Theme } from '../../../kit/src/theme';
+import { LOOK_NAMES, type LookChoice } from '../../../kit/src/look';
 
 function Seg<T extends string | number>({ label, value, options, onPick }: { label: string; value: T; options: [T, string][]; onPick: (value: T) => void }) {
   return (
@@ -176,6 +177,11 @@ export function SettingsSection({ api }: { api: PlayApi }) {
           <Seg<Theme> label="Look" value={api.theme} options={[['paper', THEME_NAMES.paper], ['night', THEME_NAMES.night], ['auto', THEME_NAMES.auto]]} onPick={api.setTheme} />
           <span className="meta" style={{ lineHeight: 1.45 }}>Paper by day, ink by night. The same choice holds in Chat and the Studio.</span>
         </div>
+        <label className="lr stack">
+          <span className="name">Style</span>
+          <select className="select" value={api.look} onChange={(event) => api.setLook(event.target.value as LookChoice)}>{(Object.keys(LOOK_NAMES) as LookChoice[]).map((option) => <option key={option} value={option}>{LOOK_NAMES[option]}</option>)}</select>
+          <span className="meta" style={{ lineHeight: 1.45 }}>A skin over paper and ink. Worlds can choose one in Chat and the Studio.</span>
+        </label>
         <div className="lr stack">
           <span className="name">Text size</span>
           <Seg label="Text size" value={prefs.textSize} options={[['small', 'Smaller'], ['standard', 'Standard'], ['large', 'Larger']]} onPick={(textSize) => api.setPrefs({ textSize })} />
