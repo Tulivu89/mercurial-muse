@@ -478,7 +478,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
               </div>
             );
           })}
-          {busy?.kind === 'reply' && <div className="turn character"><span className="speaker">{charName}</span><div className="bubbles">{streaming.length ? bubbles(streaming, 'character') : typing}</div></div>}
+          {busy?.kind === 'reply' && <div className="turn character streaming"><span className="speaker">{charName}</span><div className="bubbles">{streaming.length ? bubbles(streaming, 'character') : typing}</div></div>}
           {error && <p className="status bad" role="alert">{error} {!connection.connected && <button type="button" className="link" onClick={onSettings}>Open Settings</button>}</p>}
         </main>
 
@@ -495,7 +495,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
             onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); send(); } }}
           />
           {busy
-            ? <button type="button" className="send" onClick={() => abort.current?.abort()} aria-label="Stop"><StopIcon /></button>
+            ? <button type="button" className="send working" onClick={() => abort.current?.abort()} aria-label="Stop"><StopIcon /></button>
             : <button type="submit" className={`send${draftIsNote ? ' noting' : ''}`} aria-label={draftIsNote ? 'Add the note' : 'Send'}>{draftIsNote ? <NoteIcon /> : <SendIcon />}</button>}
         </form>
       </div>

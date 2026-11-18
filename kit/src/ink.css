@@ -16,18 +16,24 @@
   --display: 'Fraunces', Georgia, serif;
   --read: 'Literata', Georgia, 'Times New Roman', serif;
   --ui: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Shapes: a look (looks.css) may change these, so every side reads them, never a number. */
+  --r-ctrl: 6px;
+  --r-card: 10px;
+  --r-chip: 4px;
   color-scheme: light;
 }
 
 :root[data-theme='night'] {
-  --ground: #16130F;
-  --surface: #201C16;
-  --raised: #2A251D;
-  --text: #EDE5D6;
-  --text-2: #A89E8D;
-  --rule: #3A342B;
-  --seal: #E46A4E;
-  --on-seal: #1A100B;
+  /* Ink Night (Nov 18): blue-black ink instead of the brown it replaced. */
+  --ground: #12151A;
+  --surface: #1A1E25;
+  --raised: #222731;
+  --text: #ECE7DD;
+  --text-2: #A3A7B0;
+  --rule: #303642;
+  --seal: #E8735A;
+  --on-seal: #14100D;
   --blue: #8FB1D9;
   --on-blue: #0F1620;
   color-scheme: dark;

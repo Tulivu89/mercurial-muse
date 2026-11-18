@@ -1,0 +1,284 @@
+/* Looks (kit/src/look.ts, docs/looks.md): skins a world can wear over Wet Ink. Each look
+   redefines the tokens of ink.css and gives the shared parts (the header, buttons, Send, bubbles,
+   headings, portraits) their own behaviour. Loaded after ink.css, so a look's tokens win over
+   paper and night. Feed, Outrun and Phosphor bring night with them (theme.ts); Halcyon has both.
+
+   What every look keeps, so it stays easy to read:
+   - Story text in a reading face at 7:1 or better. Display faces only on headings, names, buttons.
+   - Scanlines on the header band and on pictures, never behind words someone reads.
+   - Motion when something arrives or is touched, and while a reply is written. Nothing loops on
+     text, and all of it stops under reduced motion.
+   - One colour to act (--seal) and one for the player (--blue), as in Wet Ink. */
+
+/* ── Shared ─────────────────────────────────────────────────────────────────────────────── */
+:root[data-look] {
+  --r-ctrl: 2px;
+  --r-card: 3px;
+  --r-chip: 2px;
+  --scan: 0.3;
+  --look-ease: 120ms ease-out;
+}
+:root[data-look] .site-bar { position: relative; }
+:root[data-look] .site-bar > * { position: relative; z-index: 1; }
+:root[data-look] .site-bar::after,
+:root[data-look] .chat-head::after,
+:root[data-look] .portrait::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.55) 0 1px, transparent 1px 3px);
+  opacity: var(--scan);
+}
+:root[data-look] .chat-head > * { position: relative; z-index: 1; }
+:root[data-look] .portrait { position: relative; background: var(--raised); color: var(--text-2); }
+:root[data-look] .portrait::after { z-index: 1; }
+
+/* The player's own words: tinted, edged in their colour, in the story's own ink. */
+:root[data-look] .bubble.user { background: color-mix(in srgb, var(--blue) 13%, var(--surface)); border-color: color-mix(in srgb, var(--blue) 55%, var(--surface)); color: var(--text); }
+:root[data-look] .bubble.user .narration { color: var(--text-2); opacity: 1; }
+
+/* Controls answer the hand. */
+:root[data-look] .btn, :root[data-look] .icon-btn, :root[data-look] .bar-btn, :root[data-look] .chip-btn,
+:root[data-look] .send, :root[data-look] .seg button, :root[data-look] .site-gear {
+  transition: background-color var(--look-ease), border-color var(--look-ease), box-shadow var(--look-ease), color var(--look-ease);
+}
+
+/* A title arrives in steps with a short colour split, instead of the wet edge. */
+:root[data-look] .ink-write {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--reveal) - 2%), transparent var(--reveal));
+  mask-image: linear-gradient(90deg, #000 calc(var(--reveal) - 2%), transparent var(--reveal));
+  animation: look-write 420ms 80ms steps(14, end) backwards, look-split 420ms 80ms steps(3, end) backwards;
+}
+@keyframes look-write { from { --reveal: 0%; } to { --reveal: 104%; } }
+@keyframes look-split {
+  0% { text-shadow: -3px 0 var(--blue), 3px 0 var(--seal); }
+  66% { text-shadow: -1px 0 var(--blue), 1px 0 var(--seal); }
+  100% { text-shadow: none; }
+}
+/* The marks snap in like a hologram finding its place. */
+:root[data-look] .mk.land { animation: look-snap 360ms cubic-bezier(.2, .9, .3, 1) both, mk-gleam 500ms ease-out both; }
+@keyframes look-snap {
+  0% { opacity: 0; transform: translateY(-10px) scaleY(1.12); filter: drop-shadow(-2px 0 var(--blue)); }
+  65% { opacity: 1; transform: translateY(1px); filter: drop-shadow(2px 0 var(--seal)); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+
+/* ── Live Feed: a broadcast. Navy-black, magenta acts, cyan is the player. ──────────────── */
+:root[data-look='feed'] {
+  --ground: #0A0E15; --surface: #10151F; --raised: #171E2B;
+  --text: #E8EEF6; --text-2: #9AA8BC; --rule: #263145;
+  --seal: #FF4D94; --on-seal: #16040C; --blue: #46D9F5; --on-blue: #04141A;
+  --display: 'Chakra Petch', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --read: 'IBM Plex Sans', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --ui: 'IBM Plex Sans', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  --mk-0: #4B5B73; --mk-1: #293445; --mk-2: #161E2B; --mk-3: #0B1017;
+  --mk-shine: #FFFFFF; --mk-shine-a: 0.9; --mk-rim: #46D9F5; --mk-rim-a: 0.85;
+  --mk-cut: #FF4D94; --mk-cut-a: 0.8; --mk-shadow-a: 0.65;
+  --scan: 0.32;
+  color-scheme: dark;
+}
+:root[data-look='feed'] h1, :root[data-look='feed'] .site-wordmark { font-family: var(--display); font-weight: 700; letter-spacing: 0.02em; }
+:root[data-look='feed'] h1 { text-transform: uppercase; }
+:root[data-look='feed'] .site-switch a { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.06em; }
+:root[data-look='feed'] .btn:hover:not(:disabled), :root[data-look='feed'] .icon-btn:hover:not(:disabled),
+:root[data-look='feed'] .bar-btn:hover:not(:disabled), :root[data-look='feed'] .chip-btn:hover:not(:disabled),
+:root[data-look='feed'] .seg button:hover:not(:disabled) { border-color: var(--blue); color: var(--text); }
+:root[data-look='feed'] .btn.primary:hover:not(:disabled) { box-shadow: -2px 0 0 var(--blue), 2px 0 0 #FFFFFF; }
+/* Send jolts when touched, and is on air while a reply is written. */
+:root[data-look='feed'] .send:hover:not(:disabled) svg { animation: feed-jolt 300ms steps(1, end); }
+@keyframes feed-jolt {
+  0% { transform: translateX(-2px); filter: drop-shadow(2px 0 var(--blue)); }
+  33% { transform: translateX(2px); filter: drop-shadow(-2px 0 #FFFFFF); }
+  66%, 100% { transform: none; filter: none; }
+}
+:root[data-look='feed'] .send.working { animation: feed-air 1.4s ease-out infinite; }
+@keyframes feed-air {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--seal) 70%, transparent); }
+  100% { box-shadow: 0 0 0 9px transparent; }
+}
+
+/* ── Outrun: the owner's Vaporwave Outrun, brought over from Character Engine. ─────────── */
+:root[data-look='outrun'] {
+  --ground: #090014; --surface: #140A28; --raised: #1D1140;
+  --text: #ECE6FF; --text-2: #ABA0D8; --rule: #2E1C5C;
+  --seal: #FF3DF0; --on-seal: #0B0018; --blue: #4DF5FF; --on-blue: #06131A;
+  --display: 'Orbitron', 'Chakra Petch', system-ui, sans-serif;
+  --read: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  --ui: 'Chakra Petch', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  --mk-0: #3D2E6B; --mk-1: #231942; --mk-2: #120C24; --mk-3: #070312;
+  --mk-shine: #4DF5FF; --mk-shine-a: 0.85; --mk-rim: #4DF5FF; --mk-rim-a: 0.9;
+  --mk-cut: #FF3DF0; --mk-cut-a: 0.75; --mk-shadow-a: 0.7;
+  --scan: 0.4;
+  color-scheme: dark;
+}
+/* The sunset behind everything, faint enough to read over. */
+:root[data-look='outrun'] body { background-image: radial-gradient(ellipse at 50% 30%, rgb(255 153 0 / 0.07) 0%, rgb(255 61 240 / 0.04) 38%, transparent 68%); background-attachment: fixed; }
+/* The horizon grid lives in the header band, still. */
+:root[data-look='outrun'] .site-bar { overflow: hidden; }
+:root[data-look='outrun'] .site-bar::before {
+  content: ''; position: absolute; left: -50%; right: -50%; bottom: -30px; height: 90px; pointer-events: none; z-index: 0;
+  background-image: linear-gradient(transparent 94%, rgb(255 61 240 / 0.6) 94%), linear-gradient(90deg, transparent 94%, rgb(77 245 255 / 0.5) 94%);
+  background-size: 40px 40px; transform: perspective(300px) rotateX(70deg); transform-origin: 50% 100%; opacity: 0.35;
+}
+:root[data-look='outrun'] h1, :root[data-look='outrun'] .site-wordmark {
+  font-family: var(--display); font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #9BFBFF;
+  text-shadow: -1px 0 rgb(255 61 240 / 0.45), 1px 0 rgb(77 245 255 / 0.45), 0 0 14px rgb(77 245 255 / 0.35);
+}
+:root[data-look='outrun'] h1 { font-size: 0.82em; }
+:root[data-look='outrun'] .site-wordmark { font-size: 18px; }
+:root[data-look='outrun'] .bubble { line-height: 1.7; }
+:root[data-look='outrun'] .btn, :root[data-look='outrun'] .icon-btn, :root[data-look='outrun'] .bar-btn, :root[data-look='outrun'] .chip-btn, :root[data-look='outrun'] .seg button {
+  background: linear-gradient(180deg, #1E1240, #150B2C); color: var(--text); border-color: transparent;
+  box-shadow: inset 0 0 0 1px rgb(157 120 255 / 0.28), 0 2px 0 rgb(0 0 0 / 0.6);
+}
+:root[data-look='outrun'] .btn:hover:not(:disabled), :root[data-look='outrun'] .icon-btn:hover:not(:disabled), :root[data-look='outrun'] .bar-btn:hover:not(:disabled),
+:root[data-look='outrun'] .chip-btn:hover:not(:disabled), :root[data-look='outrun'] .seg button:hover:not(:disabled) {
+  background: linear-gradient(180deg, #2A1A5C, #1B1038); color: #FFFFFF; box-shadow: inset 0 0 0 1px var(--blue), 0 0 14px rgb(77 245 255 / 0.35);
+}
+:root[data-look='outrun'] .btn.primary, :root[data-look='outrun'] .seg button[aria-pressed='true'] {
+  background: var(--seal); color: var(--on-seal); box-shadow: 0 0 18px rgb(255 61 240 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.35);
+}
+:root[data-look='outrun'] .btn.primary:hover:not(:disabled) { background: #FF5CF3; box-shadow: 0 0 24px rgb(255 61 240 / 0.6), inset 0 0 0 1px rgb(255 255 255 / 0.5); }
+
+/* Send is a level meter: dim bars at rest, the rainbow when touched, fast and magenta while
+   the reply is written. */
+:root[data-look='outrun'] .send {
+  position: relative; overflow: hidden; width: 56px; background: #000; color: #9BFBFF; border: 1px solid #C400C4;
+  box-shadow: inset 0 0 22px #000, 0 0 12px rgb(255 61 240 / 0.25);
+}
+:root[data-look='outrun'] .send > * { position: relative; z-index: 3; filter: drop-shadow(0 0 2px #000) drop-shadow(0 0 1px #000); }
+:root[data-look='outrun'] .send::before, :root[data-look='outrun'] .send::after {
+  content: ''; position: absolute; inset: 4px; pointer-events: none; background-repeat: no-repeat;
+  background-position: 0 bottom, 16.6667% bottom, 33.3333% bottom, 50% bottom, 66.6667% bottom, 83.3333% bottom, 100% bottom;
+  -webkit-mask-image: repeating-linear-gradient(to top, #000 0 3px, transparent 3px 4px);
+  mask-image: repeating-linear-gradient(to top, #000 0 3px, transparent 3px 4px);
+}
+:root[data-look='outrun'] .send::before {
+  z-index: 1; opacity: 0.3;
+  background-image: linear-gradient(#2B1B4D, #2B1B4D), linear-gradient(#2B1B4D, #2B1B4D), linear-gradient(#2B1B4D, #2B1B4D), linear-gradient(#2B1B4D, #2B1B4D), linear-gradient(#2B1B4D, #2B1B4D), linear-gradient(#2B1B4D, #2B1B4D), linear-gradient(#2B1B4D, #2B1B4D);
+  background-size: calc(100% / 7) 28px;
+}
+:root[data-look='outrun'] .send::after {
+  --vu: linear-gradient(to top, #FF3DF0 0 4px, #9E5BFF 4px 8px, #4DF5FF 8px 12px, #00FF66 12px 16px, #FFE14D 16px 20px, #FF9900 20px 24px, #FF3B5C 24px 28px);
+  z-index: 2; opacity: 0; transition: opacity 150ms linear; filter: drop-shadow(0 0 3px rgb(77 245 255 / 0.55));
+  background-image: var(--vu), var(--vu), var(--vu), var(--vu), var(--vu), var(--vu), var(--vu);
+  background-size: calc(100% / 7) 24px, calc(100% / 7) 16px, calc(100% / 7) 28px, calc(100% / 7) 12px, calc(100% / 7) 20px, calc(100% / 7) 16px, calc(100% / 7) 8px;
+}
+:root[data-look='outrun'] .send:hover:not(:disabled), :root[data-look='outrun'] .send:focus-visible { border-color: var(--blue); box-shadow: inset 0 0 22px #000, 0 0 22px rgb(77 245 255 / 0.5); }
+:root[data-look='outrun'] .send:hover:not(:disabled)::after, :root[data-look='outrun'] .send:focus-visible::after { opacity: 1; animation: vu-beat 1.2s steps(1, end) infinite; }
+:root[data-look='outrun'] .send:hover:not(:disabled)::before { animation: vu-warm 1.2s ease-in-out infinite; }
+:root[data-look='outrun'] .send.working { border-color: var(--seal); color: #FFB3F7; box-shadow: inset 0 0 22px #000, 0 0 26px rgb(255 61 240 / 0.55); }
+:root[data-look='outrun'] .send.working::after { opacity: 1; animation: vu-beat 0.62s steps(1, end) infinite; filter: drop-shadow(0 0 5px rgb(255 61 240 / 0.7)); }
+:root[data-look='outrun'] .send.working::before { opacity: 0.45; }
+:root[data-look='outrun'] .send.noting { border-color: var(--blue); }
+:root[data-look='outrun'] .send:disabled:not(.working) { opacity: 0.55; }
+@keyframes vu-warm { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.42; } }
+@keyframes vu-beat {
+  0% { background-size: calc(100%/7) 28px, calc(100%/7) 24px, calc(100%/7) 16px, calc(100%/7) 20px, calc(100%/7) 12px, calc(100%/7) 16px, calc(100%/7) 8px; }
+  12% { background-size: calc(100%/7) 12px, calc(100%/7) 20px, calc(100%/7) 24px, calc(100%/7) 12px, calc(100%/7) 20px, calc(100%/7) 8px, calc(100%/7) 16px; }
+  25% { background-size: calc(100%/7) 24px, calc(100%/7) 12px, calc(100%/7) 20px, calc(100%/7) 28px, calc(100%/7) 16px, calc(100%/7) 12px, calc(100%/7) 20px; }
+  37% { background-size: calc(100%/7) 8px, calc(100%/7) 24px, calc(100%/7) 12px, calc(100%/7) 16px, calc(100%/7) 24px, calc(100%/7) 20px, calc(100%/7) 12px; }
+  50% { background-size: calc(100%/7) 28px, calc(100%/7) 20px, calc(100%/7) 24px, calc(100%/7) 12px, calc(100%/7) 8px, calc(100%/7) 16px, calc(100%/7) 24px; }
+  62% { background-size: calc(100%/7) 16px, calc(100%/7) 8px, calc(100%/7) 16px, calc(100%/7) 24px, calc(100%/7) 20px, calc(100%/7) 12px, calc(100%/7) 8px; }
+  75% { background-size: calc(100%/7) 24px, calc(100%/7) 28px, calc(100%/7) 20px, calc(100%/7) 16px, calc(100%/7) 12px, calc(100%/7) 24px, calc(100%/7) 16px; }
+  87% { background-size: calc(100%/7) 12px, calc(100%/7) 16px, calc(100%/7) 8px, calc(100%/7) 20px, calc(100%/7) 28px, calc(100%/7) 12px, calc(100%/7) 20px; }
+  100% { background-size: calc(100%/7) 28px, calc(100%/7) 24px, calc(100%/7) 16px, calc(100%/7) 20px, calc(100%/7) 12px, calc(100%/7) 16px, calc(100%/7) 8px; }
+}
+:root[data-look='outrun'] ::selection { background: rgb(255 61 240 / 0.55); color: #FFFFFF; }
+
+/* ── Phosphor: a terminal. Mono type, amber acts, green is the player. ───────────────────── */
+:root[data-look='phosphor'] {
+  --ground: #060908; --surface: #0B100E; --raised: #111915;
+  --text: #D4F2E0; --text-2: #86A898; --rule: #1F2E27;
+  --seal: #FFB547; --on-seal: #1A1000; --blue: #5CF29A; --on-blue: #04140B;
+  --display: 'Space Mono', 'IBM Plex Mono', ui-monospace, monospace;
+  --read: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  --ui: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  --r-ctrl: 0; --r-card: 0; --r-chip: 0;
+  --mk-0: #3A5A47; --mk-1: #1E3328; --mk-2: #0E1A14; --mk-3: #050A07;
+  --mk-shine: #D4F2E0; --mk-shine-a: 0.7; --mk-rim: #5CF29A; --mk-rim-a: 0.8;
+  --mk-cut: #FFB547; --mk-cut-a: 0.8; --mk-shadow-a: 0.7;
+  --scan: 0.45;
+  color-scheme: dark;
+}
+:root[data-look='phosphor'] h1 { font-family: var(--display); font-weight: 700; letter-spacing: 0; text-shadow: 0 0 14px rgb(92 242 154 / 0.3); }
+:root[data-look='phosphor'] h1::before { content: '> '; color: var(--seal); }
+:root[data-look='phosphor'] .portrait img, :root[data-look='phosphor'] .portrait .media-image { filter: grayscale(1) contrast(1.1) sepia(1) hue-rotate(80deg) saturate(1.6) brightness(0.9); }
+:root[data-look='phosphor'] .ink-write { animation: look-write 700ms 80ms steps(24, end) backwards; }
+/* Replies as a transcript: the speaker on its own line, no bubbles. */
+:root[data-look='phosphor'] .chat .turn { max-width: 100%; align-self: stretch; align-items: stretch; }
+:root[data-look='phosphor'] .chat .speaker { display: block; color: var(--seal); text-transform: uppercase; letter-spacing: 0.06em; }
+:root[data-look='phosphor'] .chat .turn.user .speaker { color: var(--blue); }
+:root[data-look='phosphor'] .chat .speaker::after { content: ' \203A'; }
+:root[data-look='phosphor'] .bubble { background: none; border: 0; padding: 0; max-width: 72ch; }
+:root[data-look='phosphor'] .bubble.user { background: none; color: var(--blue); border-left: 2px solid var(--blue); padding-left: 12px; }
+:root[data-look='phosphor'] .turn.streaming .bubble:last-child > :last-child::after {
+  content: ''; display: inline-block; width: 0.6em; height: 1.05em; margin-left: 2px; vertical-align: -0.15em; background: var(--text);
+  animation: phosphor-blink 1s steps(1, end) infinite;
+}
+/* Buttons light up like a selected line. */
+:root[data-look='phosphor'] .btn:hover:not(:disabled), :root[data-look='phosphor'] .icon-btn:hover:not(:disabled), :root[data-look='phosphor'] .bar-btn:hover:not(:disabled),
+:root[data-look='phosphor'] .chip-btn:hover:not(:disabled), :root[data-look='phosphor'] .seg button:hover:not(:disabled) { background: var(--text); color: var(--ground); border-color: var(--text); }
+:root[data-look='phosphor'] .btn.primary:hover:not(:disabled) { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
+:root[data-look='phosphor'] .send:hover:not(:disabled) { background: var(--ground); color: var(--seal); box-shadow: inset 0 0 0 2px var(--seal); }
+:root[data-look='phosphor'] .send.working svg { animation: phosphor-blink 1s steps(1, end) infinite; }
+@keyframes phosphor-blink { 50% { opacity: 0; } }
+
+/* ── Halcyon: the sponsor's lobby. Glass, clipped corners, rose-gold acts, ice is the player. */
+:root[data-look='halcyon'] {
+  --ground: #0D0C12; --surface: #18161F; --raised: #221F2C;
+  --text: #F3F0F7; --text-2: #A9A2B8; --rule: #3A3548;
+  --seal: #F4AE93; --on-seal: #1C0E08; --blue: #A6DBFF; --on-blue: #08131C;
+  --display: 'Syncopate', 'Instrument Sans', system-ui, sans-serif;
+  --read: 'Instrument Sans', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --ui: 'Instrument Sans', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --r-ctrl: 0; --r-card: 0; --r-chip: 0;
+  --mk-shine: #F4AE93; --mk-rim: #A6DBFF; --mk-rim-a: 0.7; --mk-cut: #F4AE93; --mk-cut-a: 0.8;
+  --scan: 0.2;
+  --clip: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  color-scheme: dark;
+}
+:root[data-look='halcyon'][data-theme='paper'] {
+  --ground: #EEF0F4; --surface: #FFFFFF; --raised: #F7F8FA;
+  --text: #14131A; --text-2: #5A5868; --rule: #CDD1DB;
+  --seal: #A64B33; --on-seal: #FFFFFF; --blue: #1F5F8C; --on-blue: #FFFFFF;
+  --mk-cut: #A64B33; --mk-rim: #1F5F8C; --mk-rim-a: 0.4;
+  --scan: 0.1;
+  color-scheme: light;
+}
+:root[data-look='halcyon'] .site-bar { border-bottom: 0; box-shadow: inset 0 -2px 0 0 transparent; }
+:root[data-look='halcyon'] .site-bar::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; z-index: 1; background: linear-gradient(90deg, #F4AE93, #C9B6F2, #A6DBFF); }
+:root[data-look='halcyon'] h1, :root[data-look='halcyon'] .site-wordmark { font-family: var(--display); font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; }
+:root[data-look='halcyon'] h1 { font-size: 0.74em; line-height: 1.25; }
+:root[data-look='halcyon'] .site-wordmark { font-size: 15px; }
+:root[data-look='halcyon'] .site-switch a { text-transform: uppercase; letter-spacing: 0.12em; font-size: 13px; }
+:root[data-look='halcyon'] .card, :root[data-look='halcyon'] .bubble, :root[data-look='halcyon'] .btn.primary, :root[data-look='halcyon'] .send, :root[data-look='halcyon'] .portrait { clip-path: var(--clip); }
+:root[data-look='halcyon'] .btn, :root[data-look='halcyon'] .seg button { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.86em; }
+:root[data-look='halcyon'] .btn:hover:not(:disabled), :root[data-look='halcyon'] .icon-btn:hover:not(:disabled), :root[data-look='halcyon'] .bar-btn:hover:not(:disabled),
+:root[data-look='halcyon'] .chip-btn:hover:not(:disabled), :root[data-look='halcyon'] .seg button:hover:not(:disabled) { border-color: var(--seal); background: var(--raised); }
+:root[data-look='halcyon'] .ink-write { animation: halcyon-signal 620ms steps(1, end) 80ms backwards; -webkit-mask-image: none; mask-image: none; }
+@keyframes halcyon-signal {
+  0% { opacity: 0; }
+  10% { opacity: 0.85; transform: skewX(-8deg) translateX(-3px); }
+  16% { opacity: 0.15; }
+  24% { opacity: 1; transform: translateX(2px); clip-path: inset(0 0 50% 0); }
+  32% { opacity: 0.5; clip-path: none; transform: none; }
+  44%, 100% { opacity: 1; transform: none; clip-path: none; }
+}
+/* A light passes over Send when touched, and keeps passing while a reply is written. */
+:root[data-look='halcyon'] .send, :root[data-look='halcyon'] .btn.primary { position: relative; overflow: hidden; }
+:root[data-look='halcyon'] .send::after, :root[data-look='halcyon'] .btn.primary::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; transform: translateX(-120%);
+  background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 0.55) 48%, rgb(166 219 255 / 0.4) 54%, transparent 70%);
+}
+:root[data-look='halcyon'] .send:hover:not(:disabled)::after, :root[data-look='halcyon'] .btn.primary:hover:not(:disabled)::after { animation: halcyon-sweep 650ms ease-out; }
+:root[data-look='halcyon'] .send.working::after { animation: halcyon-sweep 2.4s ease-in-out infinite; }
+@keyframes halcyon-sweep { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
+
+/* ── Reduced motion: everything holds still, and the meter shows a fixed reading. ───────── */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-look] .ink-write, :root[data-look] .mk.land, :root[data-look] .send, :root[data-look] .send::before,
+  :root[data-look] .send::after, :root[data-look] .send svg, :root[data-look] .turn.streaming .bubble:last-child > :last-child::after { animation: none !important; transition: none !important; }
+  :root[data-look] .ink-write { -webkit-mask-image: none; mask-image: none; }
+}

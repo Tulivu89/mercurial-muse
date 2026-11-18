@@ -8,6 +8,11 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.27.6 - Looks - 2026-11-18
+
+- **Settings › Style**: a look over paper and ink (`docs/looks.md`), the same choice as in Chat and the Studio. Send shows when a turn is being written, so a look can bring it to life.
+- **Night is Ink Night**: blue-black instead of brown. Corners come from the site's shape tokens.
+
 ## 0.27.5 - Abernys retired - 2026-11-15
 
 - New game offers Bogwater only, until a game of its own replaces it. Port Covenant stays as a test fixture and isn't offered.

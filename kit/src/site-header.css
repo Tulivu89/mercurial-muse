@@ -8,7 +8,7 @@
 .site-switch a { display: inline-flex; align-items: center; min-height: 48px; padding: 0 10px; border-bottom: 2px solid transparent; color: var(--text-2); font-size: 15px; font-weight: 700; text-decoration: none; }
 .site-switch a:hover { color: var(--text); }
 .site-switch a[aria-current='page'] { color: var(--text); border-bottom-color: var(--seal); }
-.site-gear { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text-2); cursor: pointer; }
+.site-gear { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--r-ctrl); background: none; color: var(--text-2); cursor: pointer; }
 .site-gear:hover { color: var(--text); }
 .site-bar :focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
 @media (min-width: 620px) {

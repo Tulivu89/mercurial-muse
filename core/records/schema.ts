@@ -218,6 +218,10 @@ export type StoryRecord = z.infer<typeof recordSchema>;
 
 export const WORLD_USES = ['world', 'household'] as const;
 export type WorldUse = (typeof WORLD_USES)[number];
+// A look the site wears while someone is inside the world (kit/src/look.ts, kit/src/looks.css).
+// Unset, the world is in Wet Ink like the rest of the site.
+export const WORLD_LOOKS = ['feed', 'outrun', 'phosphor', 'halcyon'] as const;
+export type WorldLook = (typeof WORLD_LOOKS)[number];
 
 // Conditions are shared: defined once in the world, pointed at by any record's When text.
 export const conditionSchema = z.object({ id, label: z.string().min(1).max(120) });
@@ -233,6 +237,8 @@ export const worldSchema = z.object({
   // What the world is for. A household is a world made for Chat: its people are met there and
   // its places are Homes, and it isn't offered as an adventure. Unset, it is a world like any other.
   use: z.enum(WORLD_USES).optional(),
+  // The look the site wears inside this world. A player can turn world looks off in Settings.
+  look: z.enum(WORLD_LOOKS).optional(),
   conditions: z.array(conditionSchema).max(200).default([]),
   records: z.array(recordSchema).max(5000).default([]),
   // The world's own rules: only what it changes from the standard ruleset (core/rules).

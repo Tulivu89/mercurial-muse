@@ -7,6 +7,7 @@ import { SiteHeader } from '../../kit/src/SiteHeader';
 import { ConnectForm } from '../../kit/src/Connect';
 import { initialConnection, reconnect, type Connection } from '../../kit/src/connection';
 import { THEME_NAMES, useTheme, type Theme } from '../../kit/src/theme';
+import { LOOK_NAMES, useLook, type LookChoice } from '../../kit/src/look';
 import { WorldView } from './WorldView';
 import { NOWHERE, navigate, useRoute, type Route } from './route';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
@@ -61,6 +62,8 @@ export function App({ generate }: { generate?: Generate } = {}) {
   }, [flush]);
 
   const open = worlds?.find((world) => world.id === route.worldId) ?? null;
+  // An open world wears its look (kit/src/look.ts), so its author sees it as players will.
+  const [look, setLook] = useLook(open?.look);
   // An address for a world this browser doesn't have, from an old link or another device.
   useEffect(() => {
     if (!worlds || !route.worldId || open) return undefined;
@@ -83,21 +86,28 @@ export function App({ generate }: { generate?: Generate } = {}) {
       {open
         ? <WorldView key={open.id} world={open} onChange={save} onDelete={() => void remove(open)} onStatus={setStatus} status={status} />
         : <Home worlds={worlds} status={status} onOpen={(id) => { setStatus(null); navigate({ ...NOWHERE, worldId: id }); }} onCreate={(world, at) => { save(world); navigate({ ...NOWHERE, worldId: world.id, page: world.records.length ? null : 'about', ...at }); }} onStatus={setStatus} />}
-      {settings && <Settings theme={theme} onTheme={setTheme} connection={connection} onConnection={setConnection} helper={helper} onHelper={changeHelper} onClose={() => setSettings(false)} />}
+      {settings && <Settings theme={theme} onTheme={setTheme} look={look} onLook={setLook} connection={connection} onConnection={setConnection} helper={helper} onHelper={changeHelper} onClose={() => setSettings(false)} />}
     </AuthorProvider>
   );
 }
 
 // One Settings for the site: the look, and the model key that Chat and the adventure already
 // share (kit/src/connection.ts).
-function Settings({ theme, onTheme, connection, onConnection, helper, onHelper, onClose }: { theme: Theme; onTheme: (theme: Theme) => void; connection: Connection; onConnection: (connection: Connection) => void; helper: HelperPrefs; onHelper: (helper: HelperPrefs) => void; onClose: () => void }) {
+function Settings({ theme, onTheme, look, onLook, connection, onConnection, helper, onHelper, onClose }: { theme: Theme; onTheme: (theme: Theme) => void; look: LookChoice; onLook: (look: LookChoice) => void; connection: Connection; onConnection: (connection: Connection) => void; helper: HelperPrefs; onHelper: (helper: HelperPrefs) => void; onClose: () => void }) {
   return (
     <Sheet title="Settings" onClose={onClose}>
       <label className="field">
-        <span>Look</span>
+        <span>Paper or night</span>
         <select value={theme} onChange={(event) => onTheme(event.target.value as Theme)}>
           {(Object.keys(THEME_NAMES) as Theme[]).map((option) => <option key={option} value={option}>{THEME_NAMES[option]}</option>)}
         </select>
+      </label>
+      <label className="field">
+        <span>Look</span>
+        <select value={look} onChange={(event) => onLook(event.target.value as LookChoice)}>
+          {(Object.keys(LOOK_NAMES) as LookChoice[]).map((option) => <option key={option} value={option}>{LOOK_NAMES[option]}</option>)}
+        </select>
+        <span className="hint">A world can choose a look of its own, such as Live Feed for HOG Wild. Follow the world to wear it there, or pick one look for everywhere.</span>
       </label>
       <h3 className="sub">Your model</h3>
       <p className="hint">One key for the adventure, Chat and the Studio. It is kept on this device if you ask, and goes with each request; the site&rsquo;s server never stores it. In the Studio it writes drafts: nothing it writes changes a record until you keep it.</p>

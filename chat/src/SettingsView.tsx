@@ -7,18 +7,21 @@ import { downloadJson } from '../../kit/src/util';
 import { ConnectForm, ModelFields } from '../../kit/src/Connect';
 import type { Connection } from '../../kit/src/connection';
 import { THEME_NAMES, type Theme } from '../../kit/src/theme';
+import { LOOK_NAMES, type LookChoice } from '../../kit/src/look';
 import { castOf, type Status } from './Home';
 import { AUTO_CAP, contextTokensFor, type Layout, type Settings, type TextSize } from './settings';
 import { portraitOwner, type PortraitSet } from './store';
 import type { World } from '../../core/records/index.js';
 
-export function SettingsView({ connection, onConnection, settings, onSettings, theme, onTheme, worlds, portraits, onPortrait, onBackup, onRestore, onImportChat, status }: {
+export function SettingsView({ connection, onConnection, settings, onSettings, theme, onTheme, look, onLook, worlds, portraits, onPortrait, onBackup, onRestore, onImportChat, status }: {
   connection: Connection;
   onConnection: (connection: Connection) => void;
   settings: Settings;
   onSettings: (settings: Settings) => void;
   theme: Theme;
   onTheme: (theme: Theme) => void;
+  look: LookChoice;
+  onLook: (look: LookChoice) => void;
   worlds: World[];
   portraits: Record<string, PortraitSet>;
   onPortrait: (owner: string, slot: string, file: File | null) => void;
@@ -97,6 +100,9 @@ export function SettingsView({ connection, onConnection, settings, onSettings, t
         <div className="row">
           <label className="field grow"><span>Paper or night</span>
             <select value={theme} onChange={(event) => onTheme(event.target.value as Theme)}>{(Object.keys(THEME_NAMES) as Theme[]).map((option) => <option key={option} value={option}>{THEME_NAMES[option]}</option>)}</select>
+          </label>
+          <label className="field grow"><span>Look</span>
+            <select value={look} onChange={(event) => onLook(event.target.value as LookChoice)}>{(Object.keys(LOOK_NAMES) as LookChoice[]).map((option) => <option key={option} value={option}>{LOOK_NAMES[option]}</option>)}</select>
           </label>
           <label className="field grow"><span>Text size</span>
             <select value={settings.textSize} onChange={(event) => onSettings({ ...settings, textSize: event.target.value as TextSize })}>

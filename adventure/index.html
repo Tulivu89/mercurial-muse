@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#16130F" />
+    <meta name="theme-color" content="#12151A" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,500&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Atkinson+Hyperlegible+Next:wght@400;600;700&display=swap" />
@@ -17,7 +17,7 @@
           var chosen = localStorage.getItem('inkwyrm.theme');
           var night = chosen === 'night' || (chosen !== 'paper' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
           document.documentElement.dataset.theme = night ? 'night' : 'paper';
-          document.documentElement.style.background = night ? '#16130F' : '#F3EEE4';
+          document.documentElement.style.background = night ? '#12151A' : '#F3EEE4';
         } catch (error) { /* the stylesheet's own default stands */ }
       })();
     </script>
