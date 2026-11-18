@@ -150,6 +150,14 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.6.1 - Gemini direct - 2026-11-18
+
+The second phase of the prompt setup review (P2). The site's server, so the adventure gets it too:
+
+- **Google AI Studio goes to Google's own Gemini API,** not its OpenAI-style route, which can't take safety settings. Every harm category Google lets a caller set is OFF, as SillyTavern, Agnai and RisuAI do. The player's key goes in Google's own header, as before never stored. The leading system messages become the system instruction (folded into the first turn for Gemma), and turns are put in Google's shape. Thinking stays out of the reply, and its count reaches the line under a cut reply. Only the stop strings Google takes are sent (five at most, 16 characters each).
+- **Filters say why.** Google's finish reasons read as the rest of the site's: a SAFETY or PROHIBITED_CONTENT stop shows as the filter line under the reply; a blocked prompt fails with Google's reason ("filtered the reply (PROHIBITED_CONTENT)").
+- **Gemini on OpenRouter** is sent the same safety settings.
+
 ### 0.6.0 - Length in words, carrying on, emotions after - 2026-11-18
 
 The first phase of the prompt setup review (`docs/reviews/prompt-setup/decision.md`, P1), for every model but Xialong:

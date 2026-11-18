@@ -8,8 +8,20 @@
 //
 // This lives until Orbis's generation gateway can carry Praxis; see the charter.
 import { CUSTOM_PROVIDER, type ProviderInfo } from '../../core/narration/providers.js';
-import { buildUpstream, diagnosticsFor, emptyReplyReason, narrationRequestSchema, readModels, readReply } from '../../core/narration/upstream.js';
+import { buildUpstream, diagnosticsFor, emptyReplyReason, narrationRequestSchema, readModels, readReply, type NarrationRequest } from '../../core/narration/upstream.js';
 import { readStreamChunk, sseReader, thinkingFilter } from '../../core/narration/stream.js';
+import { geminiBase, geminiUpstream, readGeminiChunk, readGeminiReply } from '../../core/narration/gemini.js';
+
+// How each kind of API is called: where, with the key in which header, and how its replies read.
+// Google's own Gemini API takes the key in its own header and answers in its own shape.
+function apiFor(provider: ProviderInfo, request: NarrationRequest, stream: boolean, key: string) {
+  if (provider.api === 'gemini') {
+    const upstream = geminiUpstream(request, provider, stream);
+    return { upstream, url: `${geminiBase(provider.base)}${upstream.path}`, auth: { 'x-goog-api-key': key } as Record<string, string>, readWhole: readGeminiReply, readChunk: readGeminiChunk };
+  }
+  const upstream = buildUpstream(request, provider, stream);
+  return { upstream, url: `${provider.base}${upstream.path}`, auth: { Authorization: `Bearer ${key}` } as Record<string, string>, readWhole: readReply, readChunk: readStreamChunk };
+}
 
 export interface RelayResult {
   status: number;
@@ -93,7 +105,8 @@ export async function relayChat(fetchImpl: Fetch, providers: ProviderInfo[], raw
   if (!provider) return unknownProvider(request.provider);
   const key = cleanKey(rawKey);
   if (!key) return missingKey(provider);
-  const upstream = buildUpstream(request, provider);
+  const api = apiFor(provider, request, false, key);
+  const { upstream } = api;
   const mode = upstream.path === '/completions' ? 'prompt' : 'chat';
 
   // How long the provider took, measured here so the browser's own distance to this server
@@ -102,9 +115,9 @@ export async function relayChat(fetchImpl: Fetch, providers: ProviderInfo[], raw
   const upstreamMs = () => Math.round(performance.now() - started);
   let response: Response;
   try {
-    response = await fetchImpl(`${provider.base}${upstream.path}`, {
+    response = await fetchImpl(api.url, {
       method: 'POST',
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...api.auth },
       body: JSON.stringify(upstream.body),
       signal: AbortSignal.timeout(180_000),
     });
@@ -117,7 +130,7 @@ export async function relayChat(fetchImpl: Fetch, providers: ProviderInfo[], raw
     return { status: failed.status, body: { ...body, diagnostics: { ...body.diagnostics, endpoint: upstream.path, mode, format: upstream.format, upstreamMs: upstreamMs() } } };
   }
   const json = await response.json().catch(() => null);
-  const reply = readReply(json);
+  const reply = api.readWhole(json);
   const diagnostics = { ...diagnosticsFor(upstream, mode, provider, response.status, reply, request.max_tokens, upstreamMs()), model: reply.model ?? request.model };
   if (!reply.content) {
     logEmptyReply(provider.id, upstream.path, reply, request.max_tokens);
@@ -147,7 +160,8 @@ export async function relayStream(fetchImpl: Fetch, providers: ProviderInfo[], r
   if (!provider) return fail(unknownProvider(request.provider));
   const key = cleanKey(rawKey);
   if (!key) return fail(missingKey(provider));
-  const upstream = buildUpstream(request, provider, true);
+  const api = apiFor(provider, request, true, key);
+  const { upstream } = api;
   const mode = upstream.path === '/completions' ? 'prompt' : 'chat';
   const started = performance.now();
   const upstreamMs = () => Math.round(performance.now() - started);
@@ -155,9 +169,9 @@ export async function relayStream(fetchImpl: Fetch, providers: ProviderInfo[], r
 
   let response: Response;
   try {
-    response = await fetchImpl(`${provider.base}${upstream.path}`, {
+    response = await fetchImpl(api.url, {
       method: 'POST',
-      headers: { Accept: 'text/event-stream, application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      headers: { Accept: 'text/event-stream, application/json', 'Content-Type': 'application/json', ...api.auth },
       body: JSON.stringify(upstream.body),
       signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
     });
@@ -183,7 +197,7 @@ export async function relayStream(fetchImpl: Fetch, providers: ProviderInfo[], r
   // The provider answered whole after all.
   if (!(response.headers.get('content-type') ?? '').includes('text/event-stream') || !response.body) {
     const json = await response.json().catch(() => null);
-    const reply = readReply(json);
+    const reply = api.readWhole(json);
     if (reply.content) send({ event: 'delta', data: { text: reply.content } });
     return finish(reply, json !== null, { streamed: false });
   }
@@ -197,12 +211,14 @@ export async function relayStream(fetchImpl: Fetch, providers: ProviderInfo[], r
   let usage: Record<string, unknown> | null = null;
   let firstChunk = '';
   let streamError: string | null = null;
+  let filterReason = '';
   const take = (payloads: string[]) => {
     for (const payload of payloads) {
       if (!firstChunk && payload.trim() !== '[DONE]') firstChunk = payload.slice(0, 600);
-      const chunk = readStreamChunk(payload);
+      const chunk = api.readChunk(payload);
       if (!chunk) continue;
       if (chunk.error) streamError = chunk.error;
+      if ('filterReason' in chunk && typeof chunk.filterReason === 'string' && chunk.filterReason) filterReason = chunk.filterReason;
       reasoning += chunk.reasoning;
       finishReason = chunk.finishReason ?? finishReason;
       model = chunk.model ?? model;
@@ -226,7 +242,7 @@ export async function relayStream(fetchImpl: Fetch, providers: ProviderInfo[], r
   }
   const content = filter.text();
   if (!content.trim() && streamError) return fail({ status: 502, body: { error: streamError, diagnostics: { provider: provider.id, endpoint: upstream.path, mode, upstreamMs: upstreamMs(), firstChunk } } });
-  finish({ content: content.trim() ? content : '', reasoning, finishReason, model, usage, choice: null }, true, { streamed: true, firstChunk });
+  finish({ content: content.trim() ? content : '', reasoning, finishReason, model, usage, choice: null, ...(filterReason ? { filterReason } : {}) }, true, { streamed: true, firstChunk, ...(filterReason ? { filterReason } : {}) });
 }
 
 // Server log for an empty reply. Structure only: never provider text, prompts, keys or reasoning.

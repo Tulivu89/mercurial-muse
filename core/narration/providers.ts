@@ -9,6 +9,17 @@ import { z } from 'zod';
 
 export const CUSTOM_PROVIDER = 'custom';
 
+// Every category Google lets a caller set, at OFF: the service is for adult fiction and the player
+// chose the provider. Google's own fixed protections still apply. Sent to Google's own API
+// (core/narration/gemini.ts) and with Gemini models on OpenRouter.
+export const GEMINI_SAFETY = [
+  'HARM_CATEGORY_HARASSMENT',
+  'HARM_CATEGORY_HATE_SPEECH',
+  'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+  'HARM_CATEGORY_DANGEROUS_CONTENT',
+  'HARM_CATEGORY_CIVIC_INTEGRITY',
+].map((category) => ({ category, threshold: 'OFF' }));
+
 export const providerSchema = z.object({
   id: z.string().regex(/^[a-z0-9][a-z0-9-]{1,31}$/),
   name: z.string().trim().min(1).max(60),
@@ -24,6 +35,9 @@ export const providerSchema = z.object({
   // Tokens added to the reply allowance for models that think first and can't be told not to,
   // where the thinking counts against it: the player's reply length stays the reply's.
   thinkingRoom: z.number().int().min(0).max(32_000).optional(),
+  // Which API narration goes to: the OpenAI-style one at `base` (the default), or Google's own
+  // Gemini API one level up from it, where safety settings can be set.
+  api: z.enum(['openai', 'gemini']).optional(),
   keyLabel: z.string().max(60).default('API key'),
   keyHint: z.string().max(40).default(''),
   // Where the player finds their key, in a few words.
@@ -66,7 +80,7 @@ export const BUILT_IN_PROVIDERS: ProviderInfo[] = [
   },
   {
     // Google's OpenAI-compatible door to Gemini. Its keys come with a free daily allowance.
-    id: 'google', name: 'Google AI Studio (Gemini)', base: 'https://generativelanguage.googleapis.com/v1beta/openai', completions: false, chatPrefill: 'system', thinkingRoom: 4096,
+    id: 'google', name: 'Google AI Studio (Gemini)', base: 'https://generativelanguage.googleapis.com/v1beta/openai', completions: false, chatPrefill: 'system', thinkingRoom: 4096, api: 'gemini',
     keyLabel: 'API key', keyHint: 'AIza…', keyNote: 'On aistudio.google.com under Get API key.',
   },
 ];
