@@ -168,6 +168,7 @@ export function SettingsSection({ api }: { api: PlayApi }) {
           <Seg<string> label="When you make a check" value={options.alwaysSucceed ? 'succeed' : 'roll'} options={[['roll', 'Roll the dice'], ['succeed', 'Succeed, no roll']]} onPick={(pick) => change({ alwaysSucceed: pick === 'succeed' })} />
           <span className="meta" style={{ lineHeight: 1.45 }}>Either choice is always one tap away on the check itself. The ledger records who decided.</span>
         </div>
+        <Switch id="evaluator" label="Propose a check from what you write" hint="When your turn tries something uncertain, the suggestions model names a check from what's here. You roll it, change it or set it aside; it never rolls by itself." on={prefs.evaluator} onToggle={() => api.setPrefs({ evaluator: !prefs.evaluator })} />
       </div>
 
       <div className="sub"><p className="label">Reading</p></div>

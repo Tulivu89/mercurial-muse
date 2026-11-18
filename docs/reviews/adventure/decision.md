@@ -1,6 +1,6 @@
 # The adventure: decision
 
-Nov 18, 2026 · @AmbiProp · Answered by the owner Nov 18; A1 next
+Nov 18, 2026 · @AmbiProp · Answered by the owner Nov 18; A1 built Nov 18 (adventure 0.28.0); A2 next
 
 From Marinara Engine's game mode (`marinara.md`) and the owner's priority (Nov 18): **our AI-friendly dice system first**, because it bridges the model's creative side and the rules' deterministic side. Other rule systems should be addable, though they won't slot in the way ours does.
 

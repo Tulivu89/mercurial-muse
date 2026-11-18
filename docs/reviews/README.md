@@ -32,8 +32,8 @@ A short topic can keep its notes inside `decision.md`.
 | Prompt setup: system prompts per model, reply length, mature content, refusals, emotions | `prompt-setup/brief.md`, Nov 17 (notes: `sillytavern.md`, `agnai-risuai.md`) | `prompt-setup/decision.md`, Nov 17 | P1 to P3 built Nov 18 (Chat 0.6.0 to 0.7.0) |
 | Memory in long chats | `memory/brief.md`, Nov 18 (notes: `sillytavern.md`, `risuai-talemate.md`) | `memory/decision.md`, Nov 18 | C1 to C4 built Nov 18 (Chat 0.8.0 to 0.9.1) |
 | Feature sweep | `features/brief.md`, Nov 18 (notes: `apps.md`) | `features/decision.md`, Nov 18 | Answered Nov 18; F1 built (Chat 0.9.0) |
-| The adventure: Marinara's game mode, our dice, other rule systems | — | `adventure/decision.md`, Nov 18 (notes: `marinara.md`) | Waiting on the owner |
-| Group chat: four apps against our plan | — | `group-chat/decision.md`, Nov 18 | Waiting on the owner |
+| The adventure: Marinara's game mode, our dice, other rule systems | — | `adventure/decision.md`, Nov 18 (notes: `marinara.md`) | A1 built Nov 18 (adventure 0.28.0) |
+| Group chat: four apps against our plan | — | `group-chat/decision.md`, Nov 18 | Answered Nov 18; folded into `docs/model-jobs.md` |
 
 ## Sources
 

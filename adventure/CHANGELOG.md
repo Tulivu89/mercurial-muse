@@ -8,6 +8,20 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.28.0 - The evaluator - 2026-11-18
+
+The bridge between your own words and the dice (`docs/reviews/adventure/decision.md`, A1; charter, Next 4).
+
+- **A check proposed from what you write.**
+  - After a turn in your own words, the suggestions model reads it against closed lists the rules give: the approaches, who and what is here, and what each approach can do to each of them. If it sounds like something uncertain, it proposes one check, with what you want from it, above the turn box.
+  - **Roll it** settles it through the rules like any check.
+  - **Change** opens the check with it filled in.
+  - **Not a check** sets it aside, and so does your next turn.
+  - Nothing rolls by itself.
+- **Options:** a chip beside *Make a check* asks for up to three checks that fit the scene, each with a few words for its button.
+- **Only what's on the lists:** a proposal naming an approach, target or aim that isn't there is refused (`engine/evaluator.ts`), shown in the call log, and never guessed at. The model picks labels; the dice and the tables decide.
+- **Settings › Checks › Propose a check from what you write,** on by default.
+
 ## 0.27.6 - Looks - 2026-11-18
 
 - **Settings › Style**: a look over paper and ink (`docs/looks.md`), the same choice as in Chat and the Studio. Send shows when a turn is being written, so a look can bring it to life.

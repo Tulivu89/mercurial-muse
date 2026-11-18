@@ -11,10 +11,12 @@ export interface Prefs {
   showNumbers: boolean;
   // The model that writes journal suggestions. Empty means the narration model.
   helperModel: string;
+  // After you write something, the helper proposes a check when it sounds like one (the evaluator).
+  evaluator: boolean;
 }
 
 const KEY = 'praxis.prefs';
-export const DEFAULT_PREFS: Prefs = { textSize: 'standard', storyFace: 'serif', showDrafts: true, showNumbers: false, helperModel: 'glm-4-6' };
+export const DEFAULT_PREFS: Prefs = { textSize: 'standard', storyFace: 'serif', showDrafts: true, showNumbers: false, helperModel: 'glm-4-6', evaluator: true };
 
 function load(): Prefs {
   try {
@@ -27,6 +29,7 @@ function load(): Prefs {
       showDrafts: typeof parsed.showDrafts === 'boolean' ? parsed.showDrafts : DEFAULT_PREFS.showDrafts,
       showNumbers: typeof parsed.showNumbers === 'boolean' ? parsed.showNumbers : DEFAULT_PREFS.showNumbers,
       helperModel: typeof parsed.helperModel === 'string' ? parsed.helperModel : DEFAULT_PREFS.helperModel,
+      evaluator: parsed.evaluator !== false,
     };
   } catch {
     return DEFAULT_PREFS;
