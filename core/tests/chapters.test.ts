@@ -46,7 +46,7 @@ describe('chapters', () => {
   it('reads a chapter and its keys, and counts failures', () => {
     const c = queueChapters(chatWith(5), 10, ids('ch'), NOW);
     expect(readChapter('<think>hm</think>Chapter 1: Ada sized Sam up at the booth and let him stay past two.\nKeys: booth, curfew, Ada Moss', c))
-      .toEqual({ text: 'Ada sized Sam up at the booth and let him stay past two.', keys: ['booth', 'curfew'] });
+      .toEqual({ text: 'Ada sized Sam up at the booth and let him stay past two.', keys: ['booth', 'curfew'], facts: [] });
     expect(readChapter('ok', c)).toBeNull();
     let failed = c;
     for (let i = 0; i < CHAPTER_TRIES; i += 1) failed = chapterWritten(failed, c.chapters[0]!.id, null, NOW);
@@ -159,5 +159,36 @@ describe('folding (C3)', () => {
     expect(storySoFar(c, c.messages.length, Infinity, 'remember key0?')).toContain('Chapter 1. Chapter text 0.');
     // The fold's next request carries the summary so far.
     expect(foldRequest(c, c.chapters.slice(2, 3), 'usual')[1]!.content).toContain('=== The summary so far ===');
+  });
+});
+
+describe('facts and Xialong (C4)', () => {
+  it('offers lasting things about the player for the journal, kept or dismissed', async () => {
+    const { settleFact } = await import('../chat/index.js');
+    let c = queueChapters(chatWith(5), 10, ids('ch'), NOW);
+    expect(chapterRequest(c, c.chapters[0]!, 'usual')![0]!.content).toContain('"About Sam:"');
+    const read = readChapter('Ada and Sam argued about the curfew.\nAbout Sam: Sam drives a night cab.\nAbout Sam: Sam hates rain.\nKeys: curfew', c)!;
+    expect(read).toEqual({ text: 'Ada and Sam argued about the curfew.', keys: ['curfew'], facts: ['Sam drives a night cab.', 'Sam hates rain.'] });
+    c = chapterWritten(c, c.chapters[0]!.id, read, NOW);
+    expect(c.chapters[0]!.facts).toHaveLength(2);
+    c = settleFact(c, c.chapters[0]!.id, 'Sam drives a night cab.', true, 'j1', NOW);
+    c = settleFact(c, c.chapters[0]!.id, 'Sam hates rain.', false, '', NOW);
+    expect(c.journal.map((entry) => entry.text)).toEqual(['Sam drives a night cab.']);
+    expect(c.chapters[0]!.facts).toEqual([]);
+  });
+
+  it('gives Xialong the story so far as an always-on brain, before CharacterRoom\'s rollover', async () => {
+    let c = queueChapters(chatWith(20), 10, ids('ch'), NOW);
+    c = chapterWritten(c, c.chapters[0]!.id, { text: 'Ada let Sam into the booth after hours.', keys: [] }, NOW);
+    c = { ...c, roll: { startIndex: 10, pathIdList: [], trimmed: true } };
+    const next = ids('w');
+    let w: World = newWorld('w', 'Low Tide', 1);
+    w = putRecord(w, { ...newRecord('character', 'ada', 'Ada Moss', next), sections: [{ id: 's1', title: 'Look', reach: 'here', keys: [], when: null, text: 'Broad shoulders.' }] }, 2);
+    const options: BuildOptions = { model: 'xialong-v1', canPrefill: false, contextTokens: 28_000, replyTokens: 1000, nowMs: NOW, upTo: c.messages.length, continuing: false, firstBuild: false, dryRun: true, rngInt: (min) => min };
+    const built = (await buildRequest(c, w, options))!;
+    expect(built.profile).toBe('aetherroom');
+    expect(JSON.stringify(built.messages)).toContain('Ada let Sam into the booth after hours.');
+    const plain = (await buildRequest({ ...c, chapters: [] }, w, options))!;
+    expect(JSON.stringify(plain.messages)).not.toContain('The story so far');
   });
 });

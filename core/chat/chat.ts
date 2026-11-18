@@ -74,6 +74,8 @@ export const chapterSchema = z.object({
   at: z.number().nonnegative().default(0),
   // Folded into the Earlier summary (C3): no longer sent on its own, except when its keys come up.
   folded: z.boolean().default(false),
+  // Lasting things about the player it noticed (C4), offered for the journal until kept or dismissed.
+  facts: z.array(z.string().min(1).max(400)).max(4).default([]),
 });
 export type Chapter = z.infer<typeof chapterSchema>;
 

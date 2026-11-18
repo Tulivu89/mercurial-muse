@@ -255,7 +255,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
       }
       after = { ...next, roll: built.roll, windowStart: built.windowStart, plans: built.plans };
       // Messages that just left the window wait to be written up as chapters.
-      if (built.profile === 'general' && settings.chapters) after = queueChapters(after, built.windowStart, newId, now);
+      if (settings.chapters) after = queueChapters(after, built.profile === 'aetherroom' ? built.roll.startIndex : built.windowStart, newId, now);
       onChange(after);
     } else if (!failure && !controller.signal.aborted) {
       failure = 'The model wrote nothing that reads as a reply. What was sent shows what came back.';
@@ -270,7 +270,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     setError(failure);
     if (!after || failure || leaving.current) return;
     if (settings.readAloud && !(endedAt === 'limit' && settings.autoContinue && auto < AUTO_CONTINUES)) readAloudChat(after, replyId);
-    if (built.profile === 'general' && settings.chapters && chaptersToWrite(after).length) void writeChapters(after);
+    if (settings.chapters && chaptersToWrite(after).length) void writeChapters(after);
     // Cut at the limit: carry it on without asking, up to twice.
     if (endedAt === 'limit' && settings.autoContinue && auto < AUTO_CONTINUES && built.profile === 'general') {
       await runTurn('continue', replyId, after, auto + 1);

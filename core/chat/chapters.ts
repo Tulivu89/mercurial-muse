@@ -66,7 +66,7 @@ export function queueChapters(chat: Chat, windowStart: number, ids: () => string
       chars += messageText(chat.messages[end]!).length;
       end += 1;
     }
-    added.push({ id: ids(), fromId: chat.messages[start]!.id, toId: chat.messages[end - 1]!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: now, folded: false });
+    added.push({ id: ids(), fromId: chat.messages[start]!.id, toId: chat.messages[end - 1]!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: now, folded: false, facts: [] });
     start = end;
   }
   return { ...chat, chapters: [...chat.chapters, ...added] };
@@ -90,7 +90,8 @@ export function chapterRequest(chat: Chat, chapter: Chapter, length: ChapterLeng
       content: [
         `You are keeping the record of a story between ${char} and ${user}. You are writing a document, not the story: do not continue the roleplay and do not speak as anyone.`,
         `Write up the transcript you are given as one chapter: ${CHAPTER_SENTENCES[length]} of plain prose in the past tense. Name ${char} and ${user}. Say what happened, what changed between them, and anything either of them learned, promised or decided. Keep places, objects and times that matter. No quoted dialogue, no headings, no commentary.`,
-        'After the chapter, write one last line that starts "Keys:" with up to six words or names from it that should bring it back to mind, separated by commas.',
+        `After the chapter, if it shows something lasting about ${user} that ${char} would remember (something ${user} said about themselves, a liking, a habit, a fact of their life), write it on a line that starts "About ${user}:", two such lines at most, none if there is nothing.`,
+        'Then write one last line that starts "Keys:" with up to six words or names from the chapter that should bring it back to mind, separated by commas.',
       ].join('\n\n'),
     },
     {
@@ -108,18 +109,22 @@ export function chapterRequest(chat: Chat, chapter: Chapter, length: ChapterLeng
 }
 
 // The model's text as a chapter and its keys. Null when nothing usable came back.
-export function readChapter(text: string, chat: Chat): { text: string; keys: string[] } | null {
-  const clean = text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/^\s*(chapter[^\n:]*:|summary:)\s*/i, '').trim();
+export function readChapter(text: string, chat: Chat): { text: string; keys: string[]; facts: string[] } | null {
+  let clean = text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/^\s*(chapter[^\n:]*:|summary:)\s*/i, '').trim();
   const keysLine = /\n?\s*Keys\s*:\s*([^\n]*)\s*$/i.exec(clean);
-  const body = (keysLine ? clean.slice(0, keysLine.index) : clean).replace(/^=+.*$/gm, '').trim();
+  if (keysLine) clean = clean.slice(0, keysLine.index);
+  // "About <player>:" lines are offered for the journal, not kept in the chapter.
+  const about = new RegExp(`^\\s*About ${chat.userName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:\\s*(.+)$`, 'gim');
+  const facts = [...clean.matchAll(about)].map((match) => match[1]!.trim()).filter(Boolean).slice(0, 2);
+  const body = clean.replace(about, '').replace(/^=+.*$/gm, '').trim();
   if (body.length < 20) return null;
   const names = new Set([chat.characterName.toLowerCase(), chat.userName.toLowerCase()]);
   const keys = (keysLine?.[1] ?? '').split(',').map((key) => key.replace(/["“”.]/g, '').trim()).filter((key) => key && key.length <= 60 && !names.has(key.toLowerCase()));
-  return { text: body.slice(0, 8000), keys: [...new Set(keys)].slice(0, 6) };
+  return { text: body.slice(0, 8000), keys: [...new Set(keys)].slice(0, 6), facts: facts.map((fact) => fact.slice(0, 400)) };
 }
 
 // A chapter written, or a try that failed.
-export function chapterWritten(chat: Chat, chapterId: string, written: { text: string; keys: string[] } | null, now: number): Chat {
+export function chapterWritten(chat: Chat, chapterId: string, written: { text: string; keys: string[]; facts?: string[] } | null, now: number): Chat {
   return {
     ...chat,
     updatedAt: now,
@@ -259,7 +264,7 @@ export function chatsToCarry(chat: Chat, chats: readonly Chat[]): Chat[] {
 export function endingRequest(source: Chat, length: ChapterLength): Message[] | null {
   const from = Math.max(coveredUpTo(source), source.messages.length - CHAPTER_SPAN_MESSAGES);
   if (from >= source.messages.length) return null;
-  const tail: Chapter = { id: 'ending', fromId: source.messages[from]!.id, toId: source.messages.at(-1)!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: 0, folded: false };
+  const tail: Chapter = { id: 'ending', fromId: source.messages[from]!.id, toId: source.messages.at(-1)!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: 0, folded: false, facts: [] };
   return chapterRequest({ ...source, chapters: [...source.chapters, tail] }, tail, length);
 }
 
@@ -275,4 +280,11 @@ export function bringMemory(chat: Chat, source: Chat, ending: string, ids: () =>
   const when = new Date(source.createdAt || source.updatedAt).toISOString().slice(0, 10);
   const earlier = text ? [...chat.earlier, { id: ids(), fromChatId: source.id, title: `The chat from ${when}`, text: text.slice(0, 20_000), at: now }] : chat.earlier;
   return { ...chat, journal, diary: carry(chat.diary, source.diary), process: carry(chat.process, source.process), earlier, earlierAsked: true, updatedAt: now };
+}
+
+// A fact a chapter offered: kept in the journal, or dismissed. Either way it is no longer offered.
+export function settleFact(chat: Chat, chapterId: string, fact: string, keep: boolean, entryId: string, now: number): Chat {
+  const chapters = chat.chapters.map((chapter) => (chapter.id === chapterId ? { ...chapter, facts: chapter.facts.filter((entry) => entry !== fact) } : chapter));
+  const journal = keep && !chat.journal.some((entry) => entry.text.trim() === fact.trim()) ? [...chat.journal, { id: entryId, text: fact.trim(), at: now, active: true }] : chat.journal;
+  return { ...chat, chapters, journal, updatedAt: now };
 }

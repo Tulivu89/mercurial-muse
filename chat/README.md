@@ -150,6 +150,12 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.9.1 - Facts from chapters, and chapters for Xialong - 2026-11-18
+
+Memory review C4, the last phase:
+- **A chapter offers what it learned about you:** up to two lines ("Sam drives a night cab"), shown under it in Memory with *Keep in the journal* or *Dismiss*. Nothing goes into the journal without a tap.
+- **Xialong gets chapters too.** What leaves CharacterRoom's rollover is written up the same way, and the story so far rides as an always-on brain. The AetherRoom kernel is untouched, and a chat with no chapters builds byte for byte as before.
+
 ### 0.9.0 - Branches, Write my turn, read aloud, on the home screen - 2026-11-18
 
 Phase F1 of the feature sweep (`docs/reviews/features/decision.md`), the small things every other app has:
