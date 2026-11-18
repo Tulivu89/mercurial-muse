@@ -80,6 +80,16 @@ export function SettingsView({ connection, onConnection, settings, onSettings, t
         </p>
       </section>
 
+      <section className="card" aria-label="Replies">
+        <h2>Replies</h2>
+        <label className="check"><input type="checkbox" checked={settings.autoContinue} onChange={(event) => onSettings({ ...settings, autoContinue: event.target.checked })} /> Carry on a reply that reaches its length limit, up to twice, without asking</label>
+        <label className="check"><input type="checkbox" checked={settings.trimCut} onChange={(event) => onSettings({ ...settings, trimCut: event.target.checked })} /> Trim the half sentence off a reply that is still cut off</label>
+        <label className="check"><input type="checkbox" checked={settings.emotions === 'auto'} onChange={(event) => onSettings({ ...settings, emotions: event.target.checked ? 'auto' : 'off' })} /> Pick each reply's emotion for portraits and moods</label>
+        <p className="hint">
+          Models other than Xialong write no emotion line. Where a character has emotion portraits, or a chat keeps moods, a short second request after each reply picks the emotion. It costs a few tokens. Xialong writes its own, as in CharacterRoom.
+        </p>
+      </section>
+
       <section className="card" aria-label="Display">
         <h2>Display</h2>
         <div className="row">

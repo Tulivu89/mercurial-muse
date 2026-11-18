@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  addAlternative, addReply, endedFrom, joinText, markEnded, mergeParts, thinkingTokens, keyVariants, addUserMessage, buildRequest, budgetFor, deleteMessage, editMessage, editableText, exportChat, newChat, parseReply, pickedAlt, profileFor,
+  addAlternative, addReply, emotionPick, GENERAL_LENGTHS, generalLengthOf, lengthWords, readEmotionPick, replyTokensFor, setReplyEmotion, trimToSentence, wantsEmotions, endedFrom, joinText, markEnded, mergeParts, thinkingTokens, keyVariants, addUserMessage, buildRequest, budgetFor, deleteMessage, editMessage, editableText, exportChat, newChat, parseReply, pickedAlt, profileFor,
   readChatFile, readReply, remember, replaceMacros, replyText, resolvePortrait, sceneFor, sheetFor, stepAlternative, windowStartFor, type BuildOptions, type Chat,
 } from '../chat/index.js';
 import { formatPrompt } from '../narration/formats.js';
@@ -94,6 +94,39 @@ describe('replies', () => {
     const back = readChatFile(JSON.parse(JSON.stringify(exportChat(marked, NOW))));
     expect(back.ok && pickedAlt(back.chat.messages.at(-1)!).ended).toBe('filter');
   });
+  it('asks for a length in words, with an allowance to match', () => {
+    expect(lengthWords('roleplay', 'unspecified')).toBe('two to four paragraphs');
+    expect(lengthWords('novel', 'short')).toBe('one paragraph');
+    expect(lengthWords('chat', 'long')).toBe('several lines');
+    expect(lengthWords('roleplay', 'spammy very long')).toBe('six paragraphs or more');
+    expect(replyTokensFor('long', 300)).toBe(1100);
+    expect(replyTokensFor('short', 1000)).toBe(1000);
+    expect(GENERAL_LENGTHS).toContain(generalLengthOf('medium'));
+    expect(generalLengthOf('spammy long')).toBe('long');
+  });
+  it('picks an emotion after the reply only where something shows it', () => {
+    expect(wantsEmotions(['avatar'], false)).toBe(false);
+    expect(wantsEmotions(['avatar', 'neutral'], false)).toBe(false);
+    expect(wantsEmotions(['avatar', 'happy'], false)).toBe(true);
+    expect(wantsEmotions([], true)).toBe(true);
+    const ask = emotionPick('*She laughs.*', 'Ada Moss', ['smug', 'neutral', 'smug']);
+    expect(ask[0]!.content).toContain('one word from this list');
+    expect(ask[0]!.content).toContain('has just shown smug');
+    expect(ask[1]!.content).toBe('*She laughs.*');
+    expect(readEmotionPick('Laughing.')).toBe('laughing');
+    expect(readEmotionPick('<think>maybe sad</think> playful')).toBe('playful');
+    expect(readEmotionPick('She seems lovestruck')).toBe('love');
+    expect(readEmotionPick('dunno')).toBeNull();
+    let c = addReply(chat(), [{ text: 'A', emotion: 'neutral' }, { text: 'b', emotion: 'neutral' }], 'r1', NOW + 1);
+    c = setReplyEmotion(c, 'r1', 'happy');
+    expect(pickedAlt(c.messages.at(-1)!).parts.map((part) => part.emotion)).toEqual(['neutral', 'happy']);
+  });
+  it('trims a cut-off reply back to its last sentence end', () => {
+    expect(trimToSentence('She laughs. Then she turns and the')).toBe('She laughs.');
+    expect(trimToSentence('*She laughs.* Then she')).toBe('*She laughs.*');
+    expect(trimToSentence('Done.')).toBe('Done.');
+    expect(trimToSentence('no end at all')).toBe('no end at all');
+  });
   it('finds a stand-in portrait for an empty slot', () => {
     expect(resolvePortrait('laughing', ['happy', 'avatar'])).toBe('happy');
     expect(resolvePortrait('angry', ['neutral', 'avatar'])).toBe('neutral');
@@ -144,29 +177,30 @@ describe('the General profile', () => {
     expect(built.profile).toBe('general');
     expect(built.messages.map((message) => message.role)).toEqual(['system', 'system', 'user', 'assistant', 'user']);
     const system = built.messages[0]!.content;
-    const order = ['You are Ada Moss', '## Ada Moss', 'Personality: Dry. Calls everyone Sam or pal.', 'Ada Moss doesn\'t know Sam yet.', '## Sam, who Ada Moss is talking to', 'A night-shift cabbie.', '## The scenario', 'Environment: A radio booth.', 'Nobody is out after two.', '## How Ada Moss writes', 'Caller: hi', 'Ada Moss: You\'re on the air.\nMake it count.\n  Emotion: smug'];
+    const order = ['You are Ada Moss', '## Ada Moss', 'Personality: Dry. Calls everyone Sam or pal.', 'Ada Moss doesn\'t know Sam yet.', '## Sam, who Ada Moss is talking to', 'A night-shift cabbie.', '## The scenario', 'Environment: A radio booth.', 'Nobody is out after two.', '## How Ada Moss writes', 'Caller: hi', 'Ada Moss: You\'re on the air.\nMake it count.'];
+    expect(system).not.toContain('Emotion');
     let at = -1;
     for (const needle of order) { const found = system.indexOf(needle, at + 1); expect(found, needle).toBeGreaterThan(at); at = found; }
     // Nothing behind a key, a condition that doesn't hold, a Never, or another scenario.
     for (const absent of ['lost the station tapes', 'last tape', 'Based on nobody', 'NOT THIS ONE', 'harbour town']) expect(system).not.toContain(absent);
     expect(built.messages[1]!.content).toContain('- Sam drives nights.');
     expect(built.messages[2]!.content).toBe('[The chat begins.]');
-    expect(built.messages[3]!.content).toBe('Ada Moss: *The ON AIR light is off.*\nYou lost, pal?\n  Emotion: bored');
+    expect(built.messages[3]!.content).toBe('Ada Moss: *The ON AIR light is off.*\nYou lost, pal?');
     const last = built.messages[4]!.content;
-    expect(last.startsWith('Tell me about the flood.\n\n[Style: roleplay; response length: medium.')).toBe(true);
+    expect(last.startsWith('Tell me about the flood.\n\n[Style: roleplay. Length: two to four paragraphs.')).toBe(true);
     expect(last).toContain('Ada Moss, The flood: She lost the station tapes in the flood.');
     expect(last.endsWith('Reply as Ada Moss only.]')).toBe(true);
     expect(built.prefill).toBe('Ada Moss:');
   });
 
-  it('sends a reply that came in pieces back as one turn with one emotion line', async () => {
+  it('sends a reply that came in pieces back as one turn, with no emotion line', async () => {
     let c = addUserMessage(chat(), 'Go on.', 'u1', NOW + 1);
     c = addReply(c, [{ text: 'Not tonight. *She', emotion: 'neutral' }, { text: 'reaches for the dial.*', emotion: 'smug' }], 'r1', NOW + 2);
     c = addUserMessage(c, 'And?', 'u2', NOW + 3);
     const built = (await buildRequest(c, world(), options('glm-4-6', { upTo: 4 })))!;
     const reply = built.messages.find((message) => message.role === 'assistant' && message.content.includes('dial'))!;
-    expect(reply.content).toContain('Ada Moss: Not tonight. *She reaches for the dial.*\n  Emotion: smug');
-    expect(reply.content.match(/Emotion:/g)).toHaveLength(1);
+    expect(reply.content).toContain('Ada Moss: Not tonight. *She reaches for the dial.*');
+    expect(reply.content).not.toContain('Emotion:');
   });
 
   it('keeps the prefix the same from one turn to the next', async () => {

@@ -6,7 +6,8 @@ import { useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import {
   PROFILE_NAMES, XIALONG, addAlternative, addNote, addReply, addUserMessage, buildRequest, buildSide, clockNow, clockTracks, deleteMessage, editMessage, editableText, formatMinutes,
   hasSchedule, isNoteText, lastEmotion, messageText, pickedAlt, profileFor, readReply, readSide, recentEmotions, replacePicked, sceneFor, sideTask,
-  SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type HomeRef, type Life, type PackSettings, type ReplyPart, type SideKind, endedFrom, markEnded, thinkingTokens } from '../../core/chat/index.js';
+  SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type HomeRef, type Life, type PackSettings, type ReplyPart, type SideKind, endedFrom, markEnded, thinkingTokens,
+  EMOTION_PICK_TOKENS, emotionPick, mergeParts, readEmotionPick, replyTokensFor, setReplyEmotion, trimToSentence, wantsEmotions } from '../../core/chat/index.js';
 import type { World } from '../../core/records/index.js';
 import { canPrefill, generate, requestFor, type Connection, type GenerateOptions, type NarrationError } from '../../kit/src/connection';
 import { clock as clockText, downloadJson, fileSafe, newId } from '../../kit/src/util';
@@ -18,7 +19,7 @@ import { ContextPanel, DetailsPanel, MemoryPanel, SentPanel, TimePanel, type Exp
 import { Portrait } from './Portrait';
 import { InkMark } from '../../kit/src/Mark';
 import { RichText } from './RichText';
-import { contextTokensFor, type Settings } from './settings';
+import { AUTO_CONTINUES, contextTokensFor, type Settings } from './settings';
 import type { PostApi } from './posting';
 import type { PortraitSet, Sent } from './store';
 import type { PersonaRef } from './You';
@@ -125,11 +126,14 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
   };
 
   const target = profile === 'aetherroom' ? { ...connection, mode: 'chat' as const } : connection;
+  // Models other than xialong are asked for a length in words; the allowance is at least what
+  // that length needs.
+  const replyTokens = profile === 'general' ? replyTokensFor(chat.responseLength, settings.replyTokens) : settings.replyTokens;
   const buildOptions = (upTo: number, continuing: boolean, dryRun: boolean, draft?: string) => ({
     model: connection.model,
     canPrefill: profile === 'general' && canPrefill(connection),
     contextTokens: contextTokensFor(settings, connection),
-    replyTokens: settings.replyTokens,
+    replyTokens,
     nowMs: Date.now(),
     upTo, continuing, draft, dryRun, needs,
     firstBuild: firstBuild.current,
@@ -181,7 +185,8 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     return task;
   }
 
-  async function runTurn(kind: Kind, targetId?: string, base: Chat = chatRef.current) {
+  // `auto` counts the times this reply has been carried on without asking.
+  async function runTurn(kind: Kind, targetId?: string, base: Chat = chatRef.current, auto = 0): Promise<void> {
     if (busy) return;
     const blocked = ready();
     if (blocked) { setError(blocked); return; }
@@ -191,7 +196,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     const built = await buildRequest(base, world!, buildOptions(upTo, kind === 'continue', false));
     if (!built || leaving.current) return;
 
-    const options: GenerateOptions = { ...samplers(settings.replyTokens), ...(built.profile === 'general' ? { stop: [`\n${userName}:`] } : {}), ...(built.prefill ? { prefill: built.prefill } : {}) };
+    const options: GenerateOptions = { ...samplers(replyTokens), ...(built.profile === 'general' ? { stop: [`\n${userName}:`] } : {}), ...(built.prefill ? { prefill: built.prefill } : {}) };
     const controller = new AbortController();
     abort.current = controller;
     setError('');
@@ -220,17 +225,27 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     firstBuild.current = false;
 
     const parts = text.trim() ? readReply(text, built.lead, charName, userName, built.profile === 'general') : [];
+    let after: Chat | null = null;
+    let endedAt: ReturnType<typeof endedFrom>;
+    const replyId = kind === 'reply' ? newId() : targetId!;
     if (parts.length && !failure) {
       const now = Date.now();
-      const replyId = kind === 'reply' ? newId() : targetId!;
       const added = kind === 'reply' ? addReply(base, parts, replyId, now, connection.model)
         : kind === 'regenerate' ? addAlternative(base, targetId!, parts, now, connection.model)
           : replacePicked(base, targetId!, parts, now);
       // A stopped reply says why, unless the player stopped it.
       const said = diagnostics as { finishReason?: unknown; usage?: unknown } | null;
       const ended = controller.signal.aborted ? undefined : endedFrom(said?.finishReason);
-      const next = markEnded(added, replyId, ended, thinkingTokens(said?.usage));
-      onChange({ ...next, roll: built.roll, windowStart: built.windowStart, plans: built.plans });
+      endedAt = ended;
+      let next = markEnded(added, replyId, ended, thinkingTokens(said?.usage));
+      // Still cut off with no more carrying on: back to the last sentence end, if asked.
+      const lastTry = !settings.autoContinue || auto >= AUTO_CONTINUES;
+      if (ended === 'limit' && lastTry && settings.trimCut && built.profile === 'general') {
+        const whole = mergeParts(pickedAlt(next.messages.find((message) => message.id === replyId)!).parts);
+        if (whole[0]) next = replacePicked(next, replyId, [{ ...whole[0], text: trimToSentence(whole[0].text) }], now);
+      }
+      after = { ...next, roll: built.roll, windowStart: built.windowStart, plans: built.plans };
+      onChange(after);
     } else if (!failure && !controller.signal.aborted) {
       failure = 'The model wrote nothing that reads as a reply. What was sent shows what came back.';
     }
@@ -242,6 +257,23 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     onSent?.(record);
     setBusy(null);
     setError(failure);
+    if (!after || failure || leaving.current) return;
+    // Cut at the limit: carry it on without asking, up to twice.
+    if (endedAt === 'limit' && settings.autoContinue && auto < AUTO_CONTINUES && built.profile === 'general') {
+      await runTurn('continue', replyId, after, auto + 1);
+      return;
+    }
+    // The emotion, picked after the reply where something shows it.
+    if (built.profile === 'general' && settings.emotions === 'auto' && wantsEmotions(Object.keys(portraits ?? {}), after.moods)) {
+      const reply = after.messages.find((message) => message.id === replyId);
+      const whole = reply ? mergeParts(pickedAlt(reply).parts)[0]?.text ?? '' : '';
+      if (!whole.trim()) return;
+      try {
+        const picked = await generateImpl(emotionPick(whole, charName, recentEmotions(after, 4, after.messages.length - 1)), target, { maxTokens: EMOTION_PICK_TOKENS, temperature: 0.2 });
+        const emotion = readEmotionPick(picked.text);
+        if (emotion && !leaving.current) onChange(setReplyEmotion(chatRef.current, replyId, emotion));
+      } catch { /* the reply stands with no emotion; nothing to show */ }
+    }
   }
 
   // A note goes in without asking for a reply: the scene is set, and the next message or an
@@ -424,7 +456,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
                 {theirs && alt.ended && !replaced && (
                   <p className="ended" role="note">
                     {endedText(alt.ended, alt.thinking, connection.providers.find((entry) => entry.id === connection.provider)?.name)}
-                    {isLast && !busy && <> <button type="button" className="link" onClick={() => void run('continue', message.id)}>Continue</button></>}
+                    {isLast && !busy && <> <button type="button" className="link" onClick={() => void run('continue', message.id)}>Continue</button> · <button type="button" className="link" onClick={() => void run('regenerate', message.id)}>Try again</button></>}
                   </p>
                 )}
                 {!busy && (open || (isLast && theirs)) && (
@@ -498,7 +530,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
           {panel === 'context' && <ContextPanel preview={preview} budget={contextTokensFor(settings, connection)} gone={!world} model={connection.model} charName={charName} />}
           {panel === 'memory' && <MemoryPanel chat={chat} onChange={onChange} charName={charName} userName={userName} model={connection.model} side={side} onRemember={() => setMemory('chat')} />}
           {panel === 'time' && <TimePanel chat={chat} onChange={onChange} scene={scene} charName={charName} />}
-          {panel === 'details' && <DetailsPanel chat={chat} onChange={onChange} scene={scene} world={world} charName={charName} onDelete={onDelete} exports={world ? exports : undefined} />}
+          {panel === 'details' && <DetailsPanel chat={chat} onChange={onChange} scene={scene} world={world} charName={charName} onDelete={onDelete} exports={world ? exports : undefined} profile={profile} />}
         </aside>
       )}
     </div>

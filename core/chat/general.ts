@@ -9,7 +9,7 @@
 import type { Message } from '../narration/formats.js';
 import { contextFor, type ContextAnswer, type ContextBlock } from '../records/context.js';
 import { messageSchema, pickedAlt, type Chat, type ResponseLength, type Style } from './chat.js';
-import { EMOTIONS, mergeParts, openReplyText, replyText } from './emotions.js';
+import { mergeParts, openReplyText } from './emotions.js';
 import { replaceMacros } from './macros.js';
 import { recentText, type Scene } from './scene.js';
 import type { z } from 'zod';
@@ -30,9 +30,8 @@ export function rulesFor(charName: string, userName: string): string {
   return [
     `You are ${charName}, in a private one-on-one chat with ${userName}. Write only ${charName}'s side: what ${charName} says, does and thinks. Never write ${userName}'s words or actions, and never step outside ${charName} to narrate or explain.`,
     'Format: speech is plain text with no quotation marks. *Narration and actions go in single asterisks.* (Thoughts go in parentheses.) [Square brackets are notes from outside the story: follow them, and never answer them or write your own.] A bracketed line on its own in the chat is a directive: what it says is true from then on.',
-    `Write every reply in this shape, ending with the emotion ${charName} is showing, one word from the list:\n${charName}: the reply\n  Emotion: word`,
-    `Emotions: ${EMOTIONS.join(', ')}.`,
-    `Styles, set in the note with the latest message: ${Object.values(STYLE_RULE).join('; ')}.`,
+    `Start every reply with "${charName}:" and write the whole reply in one go, ending where ${charName} has finished for now.`,
+    `Styles and lengths, set in the note with the latest message: ${Object.values(STYLE_RULE).join('; ')}.`,
     `The example chats show how ${charName} sounds; match that voice and never reuse their lines. Use what you know about ${charName}, ${userName} and the scene without reciting it.`,
   ].join('\n\n');
 }
@@ -82,10 +81,40 @@ export interface GeneralBuild {
   costs: number[];
 }
 
+// A reply as the model sees it: the character's name and the text, in one piece, with no emotion
+// line. Emotions are picked after a reply where something shows them (core/chat/helpers.ts).
 export function turnText(message: ChatMessage, charName: string): string {
   const parts = pickedAlt(message).parts;
-  return message.from === 'character' ? replyText(mergeParts(parts), charName, false) : parts.map((part) => part.text).join('\n');
+  return message.from === 'character' ? openReplyText(mergeParts(parts), charName, false) : parts.map((part) => part.text).join('\n');
 }
+
+// How long a reply should be, in words a model follows. Unspecified is the middle length. The
+// spammy lengths are CharacterRoom's (several short messages in a row) and read as their size.
+const PROSE_LENGTH: Record<'short' | 'medium' | 'long' | 'very long', string> = {
+  short: 'one paragraph',
+  medium: 'two to four paragraphs',
+  long: 'four to six paragraphs',
+  'very long': 'six paragraphs or more',
+};
+const CHAT_LENGTH: Record<'short' | 'medium' | 'long' | 'very long', string> = {
+  short: 'one or two short lines',
+  medium: 'a few lines',
+  long: 'several lines',
+  'very long': 'a long run of lines',
+};
+export function lengthSize(length: ResponseLength): 'short' | 'medium' | 'long' | 'very long' {
+  if (length === 'short' || length === 'para' || length === 'rapid spam' || length === 'spammy short' || length === 'spammy para') return 'short';
+  if (length === 'long' || length === 'spammy long') return 'long';
+  if (length === 'very long' || length === 'spammy very long') return 'very long';
+  return 'medium';
+}
+export function lengthWords(style: Style, length: ResponseLength): string {
+  const size = lengthSize(length);
+  return style === 'chat' ? CHAT_LENGTH[size] : PROSE_LENGTH[size];
+}
+// The least reply allowance a length needs, so asking for long doesn't run into a small cap.
+export const LENGTH_TOKENS: Record<'short' | 'medium' | 'long' | 'very long', number> = { short: 300, medium: 700, long: 1100, 'very long': 1600 };
+export const replyTokensFor = (length: ResponseLength, setting: number) => Math.max(setting, LENGTH_TOKENS[lengthSize(length)]);
 
 export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions): GeneralBuild {
   const { charName, userName, character, persona, scenario } = scene;
@@ -115,7 +144,7 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
   const examples = character.examples.filter((example) => example.messages.length).map((example, index) => [
     `${index + 1}.`,
     ...example.messages.map((message) => (message.fromCharacter
-      ? `${charName}: ${message.text}${message.emotion ? `\n  Emotion: ${message.emotion}` : ''}`
+      ? `${charName}: ${message.text}`
       : `${example.userName || userName}: ${message.text}`)),
   ].join('\n'));
 
@@ -165,7 +194,7 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
     ...others.flatMap((block) => (cameByKey(block) ? block.parts.map((part) => `${block.name}: ${part.reach === 'line' ? part.text : part.text}`) : blockText(block, false).map((line) => `${block.name}, ${line}`))),
   ].map(macros);
   momentLines.push(...(options.momentLines ?? []).map(macros));
-  const style = `Style: ${chat.style}${chat.responseLength !== 'unspecified' ? `; response length: ${chat.responseLength}` : ''}.`;
+  const style = `Style: ${chat.style}. Length: ${lengthWords(chat.style, chat.responseLength)}.`;
   const ask = carried && !options.canPrefill
     ? `Carry on ${charName}'s last message from exactly where it stops. Don't repeat any of it.`
     : !history.length ? `Write ${charName}'s greeting.` : `Reply as ${charName} only.`;
@@ -206,3 +235,12 @@ export function budgetFor(contextTokens: number, replyTokens: number, prefixToke
 }
 
 export const responseLengthName = (length: ResponseLength) => (length === 'unspecified' ? 'Up to the character' : length.charAt(0).toUpperCase() + length.slice(1));
+// The lengths offered for models other than xialong, which has CharacterRoom's whole list.
+// Unspecified stands for medium, so a chat that never chose one gets the usual length.
+export const GENERAL_LENGTHS: readonly ResponseLength[] = ['short', 'unspecified', 'long', 'very long'];
+export const generalLengthName = (length: ResponseLength) => {
+  const size = lengthSize(length);
+  return size === 'medium' ? 'Medium: two to four paragraphs' : size === 'short' ? 'Short: one paragraph' : size === 'long' ? 'Long: four to six paragraphs' : 'Very long: six or more';
+};
+// The list entry a chat's length shows as, for models other than xialong.
+export const generalLengthOf = (length: ResponseLength): ResponseLength => { const size = lengthSize(length); return size === 'medium' ? 'unspecified' : size; };

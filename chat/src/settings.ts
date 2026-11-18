@@ -17,10 +17,19 @@ export interface Settings {
   userName: string;
   // The persona a new chat starts with: "worldId:recordId", or empty for just a name.
   persona: string;
+  // A reply that reaches its length limit is carried on without asking, up to twice.
+  autoContinue: boolean;
+  // Models other than xialong write no emotion line; 'auto' picks one after the reply where
+  // emotion portraits or moods use it, 'off' never does.
+  emotions: 'auto' | 'off';
+  // A reply still cut off after carrying on loses its half sentence.
+  trimCut: boolean;
 }
 
 const KEY = 'inkwyrm.chat.settings';
-export const DEFAULT_SETTINGS: Settings = { contextTokens: 0, replyTokens: 1000, temperature: 0.8, textSize: 'medium', layout: 'bubbles', rail: true, userName: '', persona: '' };
+export const DEFAULT_SETTINGS: Settings = { contextTokens: 0, replyTokens: 1000, temperature: 0.8, textSize: 'medium', layout: 'bubbles', rail: true, userName: '', persona: '', autoContinue: true, emotions: 'auto', trimCut: false };
+// How many times a reply is carried on without asking.
+export const AUTO_CONTINUES = 2;
 
 export function readSettings(): Settings {
   try {
@@ -35,6 +44,9 @@ export function readSettings(): Settings {
       rail: stored.rail !== false,
       userName: typeof stored.userName === 'string' ? stored.userName.slice(0, 120) : '',
       persona: typeof stored.persona === 'string' ? stored.persona.slice(0, 200) : '',
+      autoContinue: stored.autoContinue !== false,
+      emotions: stored.emotions === 'off' ? 'off' : 'auto',
+      trimCut: stored.trimCut === true,
     };
   } catch {
     return DEFAULT_SETTINGS;

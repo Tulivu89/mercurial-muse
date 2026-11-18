@@ -150,6 +150,15 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.6.0 - Length in words, carrying on, emotions after - 2026-11-18
+
+The first phase of the prompt setup review (`docs/reviews/prompt-setup/decision.md`, P1), for every model but Xialong:
+
+- **Length in words.** The note with each turn asks for a length a model follows: "two to four paragraphs" by default, one paragraph for Short, four to six for Long, six or more for Very long (lines instead of paragraphs in the chat style). The reply allowance is at least what that length needs. A chat's details offer these four. Xialong keeps CharacterRoom's list.
+- **Carrying on without asking.** A reply that reaches its length limit is carried on, up to twice (Settings › Replies, on by default). The line under a reply that is still cut off offers Continue and Try again.
+- **No emotion line.** The rules no longer ask for one, and the chat and the example chats go back to the model without them. Where a character has emotion portraits, or a chat keeps moods, a one-word request after the reply picks the emotion from the 24, steering away from the last few (`core/chat/helpers.ts`: the first helper, a small step after a reply that others can join). It can be turned off in Settings › Replies.
+- **Trimming,** as an option, off: a reply still cut off after carrying on loses its half sentence.
+
 ### 0.5.2 - Replies that stop say why - 2026-11-17
 
 From the owner's Gemini 3.8 Flash test pack (Lux, HOG Wild): replies stopped partway, and every Continue made the next stop more likely.
