@@ -7,7 +7,7 @@ import {
   PROFILE_NAMES, XIALONG, addAlternative, addNote, addReply, addUserMessage, buildRequest, buildSide, clockNow, clockTracks, deleteMessage, editMessage, editableText, formatMinutes,
   hasSchedule, isNoteText, lastEmotion, messageText, pickedAlt, profileFor, readReply, readSide, recentEmotions, replacePicked, sceneFor, sideTask,
   SETTINGS_EXPORT_FORMAT, exportChat, makeTestPack, samplersFor, statusText, stepAlternative, type Built, type Chat, type ChatMessage, type HomeRef, type Life, type PackSettings, type ReplyPart, type SideKind, endedFrom, markEnded, thinkingTokens,
-  CHAPTER_TOKENS, FOLD_TOKENS, STORY_SHARE, chaptersFolded, foldDue, foldRequest, bringMemory, chatsToCarry, endingRequest, chapterRequest, chapterWritten, chaptersToWrite, queueChapters, readChapter,
+  CHAPTER_TOKENS, FOLD_TOKENS, STORY_SHARE, coveredUpTo, chaptersFolded, foldDue, foldRequest, bringMemory, chatsToCarry, endingRequest, chapterRequest, chapterWritten, chaptersToWrite, queueChapters, readChapter,
   EMOTION_PICK_TOKENS, emotionPick, mergeParts, readEmotionPick, replyTokensFor, setReplyEmotion, trimToSentence, wantsEmotions } from '../../core/chat/index.js';
 import type { World } from '../../core/records/index.js';
 import { canPrefill, generate, requestFor, type Connection, type GenerateOptions, type NarrationError } from '../../kit/src/connection';
@@ -250,7 +250,8 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
       }
       after = { ...next, roll: built.roll, windowStart: built.windowStart, plans: built.plans };
       // Messages that just left the window wait to be written up as chapters.
-      if (built.profile === 'general' && settings.chapters) after = queueChapters(after, built.windowStart, newId, now);
+      // On xialong the kernel trims the transcript itself: what it no longer sends has left.
+      if (settings.chapters) after = queueChapters(after, built.profile === 'general' ? built.windowStart : built.firstSent, newId, now);
       onChange(after);
     } else if (!failure && !controller.signal.aborted) {
       failure = 'The model wrote nothing that reads as a reply. What was sent shows what came back.';
@@ -264,7 +265,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     setBusy(null);
     setError(failure);
     if (!after || failure || leaving.current) return;
-    if (built.profile === 'general' && settings.chapters && chaptersToWrite(after).length) void writeChapters(after);
+    if (settings.chapters && chaptersToWrite(after).length) void writeChapters(after);
     // Cut at the limit: carry it on without asking, up to twice.
     if (endedAt === 'limit' && settings.autoContinue && auto < AUTO_CONTINUES && built.profile === 'general') {
       await runTurn('continue', replyId, after, auto + 1);
@@ -305,7 +306,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
       // Grown past two thirds of their share: the oldest unpinned chapters fold into Earlier.
       await new Promise((resolve) => setTimeout(resolve, 0));
       const now = chatRef.current;
-      const due = foldDue(now, now.windowStart, Math.round(contextTokensFor(settings, connection) * STORY_SHARE));
+      const due = foldDue(now, profile === 'general' ? now.windowStart : coveredUpTo(now), Math.round(contextTokensFor(settings, connection) * STORY_SHARE));
       if (due.length && !leaving.current) {
         try {
           const result = await generateImpl(foldRequest(now, due, settings.chapterLength), target, { maxTokens: FOLD_TOKENS[settings.chapterLength], temperature: 0.3, thinking: settings.prompt.thinking });

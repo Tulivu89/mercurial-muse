@@ -5,7 +5,7 @@ import {
   CLOCK_STEPS, GENERAL_LENGTHS, PLAN_TURNS, PROFILE_NAMES, generalLengthName, generalLengthOf, type Profile, RESPONSE_LENGTHS, SIDE_NAMES, STYLES, STYLE_HINTS, STYLE_NAMES, addPlan, clockTracks, exportChat, formatDate,
   formatMinutes, formatStamp, hasSchedule, levelReaches, lorePool, minutesOfDay, moveClock, nextMorningMs, pinKey, responseLengthName, roundToHalfHour,
   requestText, setClockMode, setJournalEntry, setMemory, setPlan, setWhyText, statusText, storyActive, timeOfDayMs,
-  type Built, type Chat, type MemoryKind, type Scene, type SideEntry, type SideKind, chatToSillyTavern, chatToText, CHAPTER_TRIES, changeChapter, isStale } from '../../core/chat/index.js';
+  type Built, type Chat, type MemoryKind, type Scene, type SideEntry, type SideKind, chatToSillyTavern, chatToText, CHAPTER_TRIES, changeChapter, isStale, takeOffer } from '../../core/chat/index.js';
 import { BOND_CONDITIONS, KIND_NAMES, RELATIONSHIPS, type World } from '../../core/records/index.js';
 import { KeysField } from '../../kit/src/Fields';
 import { downloadJson, downloadText, fileSafe, newId } from '../../kit/src/util';
@@ -184,6 +184,8 @@ export function MemoryPanel({ chat, onChange, charName, userName, model, side, o
       {note && <p className="status bad" role="status">{note}</p>}
 
       <Earlier chat={chat} onChange={onChange} charName={charName} carry={carry} />
+
+      <Offers chat={chat} onChange={onChange} charName={charName} userName={userName} />
 
       <Chapters chat={chat} onChange={onChange} charName={charName} />
 
@@ -382,6 +384,34 @@ export function DetailsPanel({ chat, onChange, scene, world, charName, onDelete,
         <button type="button" className="btn small danger" onClick={onDelete}>Delete this chat</button>
       </div>
     </>
+  );
+}
+
+// Facts the chapters offer for the journal (memory review, C4). Nothing is kept until the player
+// takes one, and a fact can be put right before it is kept.
+export function Offers({ chat, onChange, charName, userName }: { chat: Chat; onChange: Change; charName: string; userName: string }) {
+  const offered = chat.chapters.flatMap((chapter) => chapter.offers.map((offer) => ({ chapter, offer })));
+  const [edits, setEdits] = useState<Record<string, string>>({});
+  if (!offered.length) return null;
+  const keyOf = (chapterId: string, offer: string) => `${chapterId}\u0000${offer}`;
+  return (
+    <section className="group" aria-label="Offered for the journal">
+      <h3>Worth remembering?</h3>
+      <p className="hint">Written up from the chapters: things {charName} might keep about {userName}. Keep one and it goes in the journal, sent with every reply. Nothing goes in on its own.</p>
+      {offered.map(({ chapter, offer }) => {
+        const key = keyOf(chapter.id, offer);
+        const text = edits[key] ?? offer;
+        return (
+          <div key={key} className="card">
+            <textarea className="input" aria-label="Offered fact" rows={2} maxLength={2000} value={text} onChange={(event) => setEdits({ ...edits, [key]: event.target.value })} />
+            <div className="row">
+              <button type="button" className="btn small primary" disabled={!text.trim()} onClick={() => onChange(takeOffer(chat, chapter.id, offer, text, newId(), Date.now()))}>Keep in the journal</button>
+              <button type="button" className="btn small quiet" onClick={() => onChange(takeOffer(chat, chapter.id, offer, null, '', Date.now()))}>No</button>
+            </div>
+          </div>
+        );
+      })}
+    </section>
   );
 }
 

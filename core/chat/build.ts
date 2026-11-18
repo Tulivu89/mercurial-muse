@@ -12,7 +12,7 @@ import { currentEventsLine, hoursApart, moodFor, moodLine, pickPlans, timeApartL
 import { recentText, sceneFor, type Scene } from './scene.js';
 import { sheetFor } from './sheet.js';
 import type { PromptSetup } from './prompt.js';
-import { STORY_SHARE } from './chapters.js';
+import { STORY_SHARE, storySoFarBrain } from './chapters.js';
 import { clockNow, clockTracks, storyActive } from './time.js';
 
 export type Profile = 'aetherroom' | 'general';
@@ -119,6 +119,10 @@ const answerFor = (scene: Scene, chat: Chat, options: BuildOptions) =>
 async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, side?: SideTask): Promise<Built> {
   const sheet = sheetFor(scene);
   if (options.needs) sheet.char.brains = [...(sheet.char.brains ?? []), { name: 'Needs', content: options.needs }];
+  // The chapters, as an always-on brain at the end of the sheet (memory review, C4). They change
+  // only when a chapter is written, so the sheet holds between cuts. aetherroom.ts is untouched.
+  const story = storySoFarBrain(chat, Math.round(options.contextTokens * STORY_SHARE), recentText(chat, options.upTo, options.draft));
+  if (story) sheet.char.brains = [...(sheet.char.brains ?? []), story];
   const history = chat.messages.slice(0, options.upTo);
   const carried = !side && options.continuing && history.at(-1)?.from === 'character' ? history.pop()! : null;
   const slot = carried ? openReplyText(pickedAlt(carried).parts, scene.charName, true) : '';
@@ -140,8 +144,8 @@ async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, 
     nowMs: scene.nowMs,
   };
   // Keys are matched on what was said, without the speakers' names in front of each line.
-  const story = [...history.map((message) => pickedAlt(message).parts.map((part) => part.text).join('\n')), options.draft ?? ''].join('\n');
-  const brains = brainEntries(AETHERROOM_MODEL, story, ctx)?.temporaryLorebookEntries.filter((entry) => entry.active !== false) ?? [];
+  const said = [...history.map((message) => pickedAlt(message).parts.map((part) => part.text).join('\n')), options.draft ?? ''].join('\n');
+  const brains = brainEntries(AETHERROOM_MODEL, said, ctx)?.temporaryLorebookEntries.filter((entry) => entry.active !== false) ?? [];
 
   // A note is an in-chat system message: xialong reads square-bracketed system lines as
   // directions, the way it reads the style line.
@@ -177,7 +181,8 @@ async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, 
     built.push({ role: 'system', content: side.shape }, ...(side.frame ?? []).map((content) => ({ role: 'system' as const, content })), { role: 'system', content: side.style }, { role: 'assistant', content: lead });
   }
   const parts: BuiltPart[] = [
-    { label: 'Sheet', tokens: estimateTokens(built[0]?.content ?? '') },
+    { label: 'Sheet', tokens: estimateTokens(built[0]?.content ?? '') - (story ? estimateTokens(story.content) : 0) },
+    ...(story ? [{ label: 'The story so far', tokens: estimateTokens(story.content) }] : []),
     { label: 'Brains and memories', tokens: brains.reduce((sum, entry) => sum + estimateTokens(entry.content), 0) },
     { label: 'Transcript', tokens: built.slice(1).filter((message) => message.role !== 'system').reduce((sum, message) => sum + estimateTokens(message.content), 0) },
   ];

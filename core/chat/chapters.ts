@@ -66,7 +66,7 @@ export function queueChapters(chat: Chat, windowStart: number, ids: () => string
       chars += messageText(chat.messages[end]!).length;
       end += 1;
     }
-    added.push({ id: ids(), fromId: chat.messages[start]!.id, toId: chat.messages[end - 1]!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: now, folded: false });
+    added.push({ id: ids(), fromId: chat.messages[start]!.id, toId: chat.messages[end - 1]!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: now, folded: false, offers: [] });
     start = end;
   }
   return { ...chat, chapters: [...chat.chapters, ...added] };
@@ -90,7 +90,8 @@ export function chapterRequest(chat: Chat, chapter: Chapter, length: ChapterLeng
       content: [
         `You are keeping the record of a story between ${char} and ${user}. You are writing a document, not the story: do not continue the roleplay and do not speak as anyone.`,
         `Write up the transcript you are given as one chapter: ${CHAPTER_SENTENCES[length]} of plain prose in the past tense. Name ${char} and ${user}. Say what happened, what changed between them, and anything either of them learned, promised or decided. Keep places, objects and times that matter. No quoted dialogue, no headings, no commentary.`,
-        'After the chapter, write one last line that starts "Keys:" with up to six words or names from it that should bring it back to mind, separated by commas.',
+        `After the chapter, if the transcript shows something lasting about ${user} that ${char} should know from now on (a fact of ${user}'s life, something they love or can't stand, a promise made to them), write it as one short sentence about ${user} on a line that starts "Fact:". Two such lines at most, and none when nothing lasting came up.`,
+        'Then write one last line that starts "Keys:" with up to six words or names from the chapter that should bring it back to mind, separated by commas.',
       ].join('\n\n'),
     },
     {
@@ -101,25 +102,32 @@ export function chapterRequest(chat: Chat, chapter: Chapter, length: ChapterLeng
         transcript,
         '=== End of transcript ===',
         '',
-        'Write the chapter now, then the Keys line.',
+        'Write the chapter now, then any Fact lines, then the Keys line.',
       ].filter((line, at) => at > 0 || line).join('\n'),
     },
   ];
 }
 
-// The model's text as a chapter and its keys. Null when nothing usable came back.
-export function readChapter(text: string, chat: Chat): { text: string; keys: string[] } | null {
+// The model's text as a chapter, its keys and the facts it offers. Null when nothing usable came back.
+export interface WrittenChapter { text: string; keys: string[]; facts?: string[] }
+export function readChapter(text: string, chat: Chat): WrittenChapter | null {
   const clean = text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/^\s*(chapter[^\n:]*:|summary:)\s*/i, '').trim();
   const keysLine = /\n?\s*Keys\s*:\s*([^\n]*)\s*$/i.exec(clean);
-  const body = (keysLine ? clean.slice(0, keysLine.index) : clean).replace(/^=+.*$/gm, '').trim();
+  const rest = keysLine ? clean.slice(0, keysLine.index) : clean;
+  const facts = [...rest.matchAll(/^[ \t]*[-*]?[ \t]*Fact\s*:[ \t]*(.+)$/gim)]
+    .map((match) => match[1]!.replace(/\s+/g, ' ').replace(/^["“]|["”]$/g, '').trim())
+    .filter((fact) => fact.length >= 8 && !/^(none|nothing|n\/a)\b/i.test(fact))
+    .map((fact) => fact.slice(0, 300));
+  const body = rest.replace(/^[ \t]*[-*]?[ \t]*Fact\s*:.*$/gim, '').replace(/^=+.*$/gm, '').trim();
   if (body.length < 20) return null;
   const names = new Set([chat.characterName.toLowerCase(), chat.userName.toLowerCase()]);
   const keys = (keysLine?.[1] ?? '').split(',').map((key) => key.replace(/["“”.]/g, '').trim()).filter((key) => key && key.length <= 60 && !names.has(key.toLowerCase()));
-  return { text: body.slice(0, 8000), keys: [...new Set(keys)].slice(0, 6) };
+  return { text: body.slice(0, 8000), keys: [...new Set(keys)].slice(0, 6), facts: [...new Set(facts)].slice(0, 2) };
 }
 
 // A chapter written, or a try that failed.
-export function chapterWritten(chat: Chat, chapterId: string, written: { text: string; keys: string[] } | null, now: number): Chat {
+export function chapterWritten(chat: Chat, chapterId: string, written: WrittenChapter | null, now: number): Chat {
+  const known = (fact: string) => chat.journal.some((entry) => entry.text.trim().toLowerCase() === fact.toLowerCase());
   return {
     ...chat,
     updatedAt: now,
@@ -127,7 +135,8 @@ export function chapterWritten(chat: Chat, chapterId: string, written: { text: s
       if (chapter.id !== chapterId) return chapter;
       if (!written) return { ...chapter, state: 'failed', tries: chapter.tries + 1 };
       const covered = chapterMessages(chat, chapter) ?? [];
-      return { ...chapter, ...written, state: 'written', tries: chapter.tries + 1, seal: sealOf(covered), at: now };
+      const offers = (written.facts ?? []).filter((fact) => !known(fact));
+      return { ...chapter, text: written.text, keys: written.keys, offers, state: 'written', tries: chapter.tries + 1, seal: sealOf(covered), at: now };
     }),
   };
 }
@@ -144,6 +153,15 @@ export function changeChapter(chat: Chat, chapterId: string, patch: Partial<Pick
       return { ...chapter, ...patch, ...(patch.text !== undefined && covered ? { seal: sealOf(covered) } : {}) };
     });
   return { ...chat, chapters, updatedAt: now };
+}
+
+// A fact a chapter offered (C4): kept in the journal as written (or as the player changed it),
+// or turned down. Either way it leaves the chapter's offers.
+export function takeOffer(chat: Chat, chapterId: string, offer: string, keep: string | null, entryId: string, now: number): Chat {
+  const chapters = chat.chapters.map((chapter) => (chapter.id === chapterId ? { ...chapter, offers: chapter.offers.filter((entry) => entry !== offer) } : chapter));
+  const clean = keep?.replace(/\s+/g, ' ').trim().slice(0, 2000) ?? '';
+  const journal = clean ? [...chat.journal, { id: entryId, text: clean, at: now, active: true }] : chat.journal;
+  return { ...chat, chapters, journal, updatedAt: now };
 }
 
 const tokensOf = (text: string) => Math.ceil(text.length / 3.5);
@@ -191,6 +209,15 @@ export function storySoFar(chat: Chat, windowStart: number, budget = Infinity, r
     ...(fold ? [fold] : []),
     ...numbered.map(({ chapter, number }) => `Chapter ${number}. ${chapter.text.trim()}`),
   ].join('\n\n');
+}
+
+// The story so far as CharacterRoom's always-on brain entry, for xialong (C4). The AetherRoom
+// kernel trims the transcript itself, so a chapter is written only once its messages have left
+// it: every written chapter is out of view.
+export function storySoFarBrain(chat: Chat, budget: number, recentText = ''): { name: string; content: string } | null {
+  const text = storySoFar(chat, coveredUpTo(chat), budget, recentText);
+  if (!text) return null;
+  return { name: 'The story so far', content: text.replace(/^## The story so far\s*/, '') };
 }
 
 // --- Folding (C3)
@@ -259,7 +286,7 @@ export function chatsToCarry(chat: Chat, chats: readonly Chat[]): Chat[] {
 export function endingRequest(source: Chat, length: ChapterLength): Message[] | null {
   const from = Math.max(coveredUpTo(source), source.messages.length - CHAPTER_SPAN_MESSAGES);
   if (from >= source.messages.length) return null;
-  const tail: Chapter = { id: 'ending', fromId: source.messages[from]!.id, toId: source.messages.at(-1)!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: 0, folded: false };
+  const tail: Chapter = { id: 'ending', fromId: source.messages[from]!.id, toId: source.messages.at(-1)!.id, text: '', keys: [], pinned: false, state: 'pending', tries: 0, seal: '', at: 0, folded: false, offers: [] };
   return chapterRequest({ ...source, chapters: [...source.chapters, tail] }, tail, length);
 }
 

@@ -46,7 +46,7 @@ describe('chapters', () => {
   it('reads a chapter and its keys, and counts failures', () => {
     const c = queueChapters(chatWith(5), 10, ids('ch'), NOW);
     expect(readChapter('<think>hm</think>Chapter 1: Ada sized Sam up at the booth and let him stay past two.\nKeys: booth, curfew, Ada Moss', c))
-      .toEqual({ text: 'Ada sized Sam up at the booth and let him stay past two.', keys: ['booth', 'curfew'] });
+      .toEqual({ text: 'Ada sized Sam up at the booth and let him stay past two.', keys: ['booth', 'curfew'], facts: [] });
     expect(readChapter('ok', c)).toBeNull();
     let failed = c;
     for (let i = 0; i < CHAPTER_TRIES; i += 1) failed = chapterWritten(failed, c.chapters[0]!.id, null, NOW);
@@ -159,5 +159,48 @@ describe('folding (C3)', () => {
     expect(storySoFar(c, c.messages.length, Infinity, 'remember key0?')).toContain('Chapter 1. Chapter text 0.');
     // The fold's next request carries the summary so far.
     expect(foldRequest(c, c.chapters.slice(2, 3), 'usual')[1]!.content).toContain('=== The summary so far ===');
+  });
+});
+
+describe('facts and xialong (C4)', () => {
+  it('asks for facts about the player, and reads them apart from the chapter', () => {
+    const c = queueChapters(chatWith(5), 10, ids('ch'), NOW);
+    const [system] = chapterRequest(c, c.chapters[0]!, 'usual')!;
+    expect(system!.content).toContain('"Fact:"');
+    const read = readChapter('Ada let Sam stay past two and learned he drives nights.\nFact: Sam drives a night bus.\nFact: none\nKeys: booth, night bus', c)!;
+    expect(read).toEqual({ text: 'Ada let Sam stay past two and learned he drives nights.', keys: ['booth', 'night bus'], facts: ['Sam drives a night bus.'] });
+    expect(readChapter('Ada and Sam talked about nothing much at the booth.\nKeys: booth', c)!.facts).toEqual([]);
+  });
+
+  it('offers only facts the journal lacks, and keeps one only when taken', async () => {
+    const { remember, takeOffer } = await import('../chat/index.js');
+    let c = remember(queueChapters(chatWith(5), 10, ids('ch'), NOW), 'Sam drives a night bus.', 'j1', NOW);
+    const id = c.chapters[0]!.id;
+    c = chapterWritten(c, id, { text: 'Ada and Sam talked at the booth.', keys: [], facts: ['Sam drives a night bus.', 'Sam hates sugar in tea.'] }, NOW);
+    expect(c.chapters[0]!.offers).toEqual(['Sam hates sugar in tea.']);
+    expect(c.journal).toHaveLength(1);
+    const kept = takeOffer(c, id, 'Sam hates sugar in tea.', 'Sam takes his tea without sugar.', 'j2', NOW);
+    expect(kept.journal.map((entry) => entry.text)).toEqual(['Sam drives a night bus.', 'Sam takes his tea without sugar.']);
+    expect(kept.chapters[0]!.offers).toEqual([]);
+    const refused = takeOffer(c, id, 'Sam hates sugar in tea.', null, '', NOW);
+    expect(refused.journal).toHaveLength(1);
+    expect(refused.chapters[0]!.offers).toEqual([]);
+  });
+
+  it('sends xialong the story so far as an always-on brain in the sheet', async () => {
+    let c = queueChapters(chatWith(30), 20, ids('ch'), NOW);
+    c = chapterWritten(c, c.chapters[0]!.id, { text: 'Ada let Sam into the booth after hours.', keys: ['booth'] }, NOW);
+    const next = ids('w');
+    let w: World = newWorld('w', 'Low Tide', 1);
+    w = putRecord(w, { ...newRecord('character', 'ada', 'Ada Moss', next), sections: [{ id: 's1', title: 'Look', reach: 'always', keys: [], when: null, text: 'Broad shoulders.' }] }, 2);
+    const options: BuildOptions = { model: 'xialong-v1', canPrefill: false, contextTokens: 28_672, replyTokens: 1000, nowMs: NOW, upTo: c.messages.length, continuing: false, firstBuild: false, dryRun: true, rngInt: (min) => min };
+    const built = (await buildRequest(c, w, options))!;
+    expect(built.profile).toBe('aetherroom');
+    expect(built.messages[0]!.content).toContain('----\nThe story so far\n');
+    expect(built.messages[0]!.content).toContain('Chapter 1. Ada let Sam into the booth after hours.');
+    expect(built.parts.map((part) => part.label)).toContain('The story so far');
+    // No chapters, no brain.
+    const plain = (await buildRequest(chatWith(3), w, options))!;
+    expect(plain.messages[0]!.content).not.toContain('The story so far');
   });
 });

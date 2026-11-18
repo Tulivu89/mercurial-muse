@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { SIDE_NAMES, addPlan, remember, type Built, type Chat, type SideKind } from '../../core/chat/index.js';
 import { newId } from '../../kit/src/util';
 import { CloseIcon } from './icons';
-import type { SideApi } from './Panels';
+import { Offers, type SideApi } from './Panels';
 
 type Choice = 'journal' | SideKind;
 const KEPT_IN: Record<SideKind, string> = { diary: 'the diary', process: 'feelings', plan: 'plans' };
@@ -80,6 +80,8 @@ export function MemorySheet({ chat, onChange, charName, userName, model, side, a
         </section>
       )}
       {note && <p className="status bad" role="status">{note}</p>}
+
+      {!at && <Offers chat={chat} onChange={onChange} charName={charName} userName={userName} />}
 
       <div className="doors-list" role="group" aria-label="What to keep">
         {options.map((option) => (

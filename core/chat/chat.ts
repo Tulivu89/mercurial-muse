@@ -74,6 +74,9 @@ export const chapterSchema = z.object({
   at: z.number().nonnegative().default(0),
   // Folded into the Earlier summary (C3): no longer sent on its own, except when its keys come up.
   folded: z.boolean().default(false),
+  // Facts about the player the chapter offers for the journal (C4). Nothing is kept until the
+  // player takes one; an offer taken or turned down leaves this list.
+  offers: z.array(z.string().min(1).max(300)).max(2).default([]),
 });
 export type Chapter = z.infer<typeof chapterSchema>;
 

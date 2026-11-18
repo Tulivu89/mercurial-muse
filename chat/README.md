@@ -31,7 +31,7 @@ Inkwyrm's chat side, at `/chat/` on the site: CharacterRoom, rebuilt as a web ap
   - sets follow the schedule: the outfit an event calls for, and the room of the scenario it happens in. A chat can pin one instead; a locked one waits for the relationship.
 - **Memory:**
   - the brain button beside the message box asks which of four to keep: a journal entry you write, or a diary entry, a feeling or a plan the character writes from the chat so far. Each generated one shows what it will send first;
-  - the journal: facts the character keeps about you, sent with every reply;
+  - the journal: facts the character keeps about you, sent with every reply. Chapters can offer one or two facts for it, kept only when you tap Keep;
   - a diary (Reflect) and feelings (Process), written by the model when you ask, and recalled when one of their keys is said;
   - plans (Plan, or your own): limited to a few turns or ongoing, counting down by your messages;
   - moods: the character's last few emotions, or time away, put them in one of nine states of mind;
@@ -99,6 +99,7 @@ The build sessions have no key and cannot reach NovelAI. The owner's first live 
 2. **The General rules on GLM-4.6, DeepSeek and an OpenRouter model.** Check that replies end with an Emotion line and stay on the character's side.
 3. **A post on Xialong.** It is sent CharacterRoom's messages and started on `Thread:`, the same open turn as item 1. A comment is started on the commenter's name when a housemate writes it.
 4. **A note on Xialong.** It goes as a system message in the chat. If she answers a note out loud instead of taking it as true, say so, and it can ride in the player's turn as it does for other models.
+5. **Chapters on Xialong.** A chapter, a fold and how an earlier chat ended are asked for in plain instructions ("you are keeping the record… do not continue the roleplay"), sent to xialong in chat mode. If she answers in character instead of writing a document, those requests want another model, which is what the Side job (`docs/model-jobs.md`) is for.
 
 ## How the Phase B parts reach each model
 
@@ -149,6 +150,12 @@ npm run dev:chat
 Open `http://localhost:5178/chat/`. The first command installs, the second starts the adventure's API (the relay), the third starts Chat.
 
 ## Changelog
+
+### 0.8.3 - Facts from chapters, and chapters on Xialong - 2026-11-18
+
+Memory review C4.
+- **A chapter can offer one or two facts about you** for the journal: a fact of your life, something you love or can't stand, a promise made to you. They wait under **Worth remembering?**, in the brain button's sheet and in Memory. **Keep in the journal** (after putting the wording right, if you like) or **No**. Nothing goes in on its own, and a fact already in the journal isn't offered again.
+- **Chapters on Xialong.** When CharacterRoom's kernel stops sending older messages, they are written up as chapters too, and the story so far goes to her as an always-on brain, **The story so far**, at the end of the sheet. It changes only when a chapter is written. `aetherroom.ts` is untouched; its parity test still holds. Memory brought in from an earlier chat reaches her the same way.
 
 ### 0.8.2 - Folding - 2026-11-18
 
