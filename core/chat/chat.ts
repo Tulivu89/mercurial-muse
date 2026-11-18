@@ -58,6 +58,36 @@ export type JournalEntry = z.infer<typeof journalEntrySchema>;
 export const memorySchema = z.object({ id, name: z.string().max(200).default(''), content: z.string().max(8000), keys: z.array(z.string().min(1).max(80)).max(40).default([]), at: z.number().nonnegative().default(0) });
 export type Memory = z.infer<typeof memorySchema>;
 
+// A chapter: the messages that left the General window, written up once by a side request
+// (core/chat/chapters.ts; docs/reviews/memory/decision.md). It covers the messages from `fromId`
+// to `toId`; `seal` is what they said when it was written, so a later edit marks it out of date.
+export const chapterSchema = z.object({
+  id,
+  fromId: id,
+  toId: id,
+  text: z.string().max(8000).default(''),
+  keys: z.array(z.string().min(1).max(80)).max(12).default([]),
+  pinned: z.boolean().default(false),
+  state: z.enum(['pending', 'written', 'failed']).default('pending'),
+  tries: z.number().int().nonnegative().default(0),
+  seal: z.string().max(40).default(''),
+  at: z.number().nonnegative().default(0),
+  // Folded into the Earlier summary (C3): no longer sent on its own, except when its keys come up.
+  folded: z.boolean().default(false),
+});
+export type Chapter = z.infer<typeof chapterSchema>;
+
+// What another chat with the same character came to, brought into this one (memory review, C2):
+// that chat's chapters and how it ended, written up. It goes before this chat's own chapters.
+export const earlierSchema = z.object({
+  id,
+  fromChatId: id,
+  title: z.string().max(200).default(''),
+  text: z.string().max(20_000).default(''),
+  at: z.number().nonnegative().default(0),
+});
+export type Earlier = z.infer<typeof earlierSchema>;
+
 // A plan: something the character means to do in the next few turns (CharacterRoom's Plans, F-20).
 // The AI's own or the player's, limited to a number of turns or ongoing.
 export const PLAN_TURNS = 3;
@@ -109,6 +139,13 @@ export const chatSchema = z.object({
   diary: z.array(memorySchema).max(500).default([]),
   process: z.array(memorySchema).max(500).default([]),
   plans: z.array(planSchema).max(100).default([]),
+  // What left the window, in chapters, oldest first.
+  chapters: z.array(chapterSchema).max(2000).default([]),
+  // Memory brought in from earlier chats with the same character, and whether it was offered.
+  earlier: z.array(earlierSchema).max(50).default([]),
+  earlierAsked: z.boolean().default(false),
+  // The oldest chapters, folded into one summary when the chapters outgrow their share (C3).
+  fold: z.object({ text: z.string().max(12_000).default(''), at: z.number().nonnegative().default(0) }).default({ text: '', at: 0 }),
   // Set members pinned for this chat, by "recordId:setId": an outfit, a location.
   pins: z.record(z.string().max(200), id).default({}),
   createdAt: z.number().nonnegative().default(0),
@@ -135,7 +172,7 @@ export function newChat(input: NewChat, ids: () => string, now: number): Chat {
     personaId: input.personaId, scenarioId: input.scenarioId, userName: input.userName.trim() || 'User',
     relationship: input.relationship, style: input.style, responseLength: input.responseLength,
     messages: [], journal: [], loreOff: [], roll: { startIndex: 0, pathIdList: [], trimmed: false }, windowStart: 0, draft: '',
-    clock: { ...DEFAULT_CLOCK }, moods: false, diary: [], process: [], plans: [], pins: {}, createdAt: now, updatedAt: now,
+    clock: { ...DEFAULT_CLOCK }, moods: false, diary: [], process: [], plans: [], chapters: [], earlier: [], earlierAsked: false, fold: { text: '', at: 0 }, pins: {}, createdAt: now, updatedAt: now,
   };
   const text = input.greeting?.text.trim();
   if (text) {

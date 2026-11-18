@@ -124,7 +124,7 @@ export function MemorySheet({ chat, onChange, charName, userName, model, side, a
         </section>
       )}
 
-      <button type="button" className="link" onClick={onAll}>Everything {charName} keeps: journal, diary, feelings, plans</button>
+      <button type="button" className="link" onClick={onAll}>Everything {charName} keeps: chapters, journal, diary, feelings, plans</button>
     </div>
   );
 }

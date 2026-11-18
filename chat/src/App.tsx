@@ -431,6 +431,7 @@ export function App() {
         onHome={(at) => { flush(); go({ name: 'house', at }); }}
         posting={posting} allPortraits={portraits} onPicture={(owner, slot, file) => void setPortrait(owner, slot, file)}
         personas={personas}
+        otherChats={chats ?? []}
       />
     );
   }

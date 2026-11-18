@@ -5,7 +5,7 @@ import {
   CLOCK_STEPS, GENERAL_LENGTHS, PLAN_TURNS, PROFILE_NAMES, generalLengthName, generalLengthOf, type Profile, RESPONSE_LENGTHS, SIDE_NAMES, STYLES, STYLE_HINTS, STYLE_NAMES, addPlan, clockTracks, exportChat, formatDate,
   formatMinutes, formatStamp, hasSchedule, levelReaches, lorePool, minutesOfDay, moveClock, nextMorningMs, pinKey, responseLengthName, roundToHalfHour,
   requestText, setClockMode, setJournalEntry, setMemory, setPlan, setWhyText, statusText, storyActive, timeOfDayMs,
-  type Built, type Chat, type MemoryKind, type Scene, type SideEntry, type SideKind, chatToSillyTavern, chatToText } from '../../core/chat/index.js';
+  type Built, type Chat, type MemoryKind, type Scene, type SideEntry, type SideKind, chatToSillyTavern, chatToText, CHAPTER_TRIES, changeChapter, isStale } from '../../core/chat/index.js';
 import { BOND_CONDITIONS, KIND_NAMES, RELATIONSHIPS, type World } from '../../core/records/index.js';
 import { KeysField } from '../../kit/src/Fields';
 import { downloadJson, downloadText, fileSafe, newId } from '../../kit/src/util';
@@ -118,8 +118,10 @@ export interface SideApi {
   write: (ready: { kind: SideKind; built: Built; maxTokens: number }, onText: (text: string) => void) => Promise<SideEntry | string>;
 }
 
-export function MemoryPanel({ chat, onChange, charName, userName, model, side, onRemember }: {
-  chat: Chat; onChange: Change; charName: string; userName: string; model: string; side: SideApi; onRemember: () => void;
+export interface CarryApi { from: Chat[]; bring: (source: Chat) => void; busy: boolean }
+
+export function MemoryPanel({ chat, onChange, charName, userName, model, side, onRemember, carry }: {
+  chat: Chat; onChange: Change; charName: string; userName: string; model: string; side: SideApi; onRemember: () => void; carry?: CarryApi;
 }) {
   const [ready, setReady] = useState<{ kind: SideKind; built: Built; maxTokens: number } | null>(null);
   const [busy, setBusy] = useState<SideKind | null>(null);
@@ -180,6 +182,10 @@ export function MemoryPanel({ chat, onChange, charName, userName, model, side, o
         </section>
       )}
       {note && <p className="status bad" role="status">{note}</p>}
+
+      <Earlier chat={chat} onChange={onChange} charName={charName} carry={carry} />
+
+      <Chapters chat={chat} onChange={onChange} charName={charName} />
 
       <section className="group" aria-label="Journal">
         <div className="row between"><h3>Journal</h3><button type="button" className="btn small quiet" onClick={onRemember}>Add an entry</button></div>
@@ -376,5 +382,88 @@ export function DetailsPanel({ chat, onChange, scene, world, charName, onDelete,
         <button type="button" className="btn small danger" onClick={onDelete}>Delete this chat</button>
       </div>
     </>
+  );
+}
+
+// What left the window, written up (core/chat/chapters.ts): each chapter with the messages it
+// covers, to read, edit, pin, redo or remove. The chat itself keeps every message.
+function Chapters({ chat, onChange, charName }: { chat: Chat; onChange: Change; charName: string }) {
+  const indexOf = (id: string) => chat.messages.findIndex((message) => message.id === id);
+  return (
+    <section className="group" aria-label="Chapters">
+      <h3>Chapters</h3>
+      <p className="hint">
+        When older messages leave what {charName} is sent, they are written up here as chapters, and the chapters go with every reply as the story so far. The chat keeps every message. Edit a chapter to set it straight; Redo writes it again from its messages.
+      </p>
+      {chat.chapters.length === 0 && <p className="hint">No chapters yet: everything still fits.</p>}
+      {(chat.fold.text || chat.chapters.some((chapter) => chapter.folded)) && (
+        <div className="card">
+          <b>Earlier</b>
+          <p className="hint">The oldest chapters, folded into one summary when the chapters outgrew their share of what {charName} is sent. A folded chapter still comes back on its own when one of its keys comes up.</p>
+          <textarea className="input" aria-label="Earlier" rows={5} value={chat.fold.text} onChange={(event) => onChange({ ...chat, fold: { ...chat.fold, text: event.target.value }, updatedAt: Date.now() })} />
+        </div>
+      )}
+      {chat.chapters.map((chapter, index) => {
+        const from = indexOf(chapter.fromId);
+        const to = indexOf(chapter.toId);
+        const stale = isStale(chat, chapter);
+        const state = chapter.state === 'pending' ? 'Waiting to be written after the next reply.'
+          : chapter.state === 'failed' ? (chapter.tries >= CHAPTER_TRIES ? 'It could not be written. Redo to try again.' : 'It could not be written yet; it will be tried again.')
+            : stale ? 'Out of date: its messages have changed since. Redo, or edit it by hand.' : '';
+        return (
+          <div key={chapter.id} className={`card chapter${stale ? ' stale' : ''}`}>
+            <div className="row between">
+              <b>Chapter {index + 1}</b>
+              <span className="hint">{from >= 0 && to >= 0 ? `Messages ${from + 1} to ${to + 1}` : 'Its messages are gone'}</span>
+            </div>
+            {state && <p className="hint">{state}</p>}
+            {chapter.folded && !chapter.pinned && <p className="hint">Folded into Earlier; it comes back on its own when one of its keys comes up.</p>}
+            {chapter.state === 'written' && (
+              <>
+                <textarea className="input" aria-label={`Chapter ${index + 1}`} rows={4} value={chapter.text} onChange={(event) => onChange(changeChapter(chat, chapter.id, { text: event.target.value }, Date.now()))} />
+                <KeysField label="Keys" value={chapter.keys} onChange={(keys) => onChange(changeChapter(chat, chapter.id, { keys }, Date.now()))} />
+              </>
+            )}
+            <div className="row between">
+              <label className="checks"><input type="checkbox" checked={chapter.pinned} onChange={(event) => onChange(changeChapter(chat, chapter.id, { pinned: event.target.checked }, Date.now()))} /> Keep as written, never folded</label>
+              <span className="row">
+                {(chapter.state !== 'pending') && <button type="button" className="link" onClick={() => onChange(changeChapter(chat, chapter.id, 'redo', Date.now()))}>Redo</button>}
+                <button type="button" className="link danger" onClick={() => { if (window.confirm(`Remove chapter ${index + 1}? Its messages stay in the chat; ${charName} stops being sent this chapter.`)) onChange(changeChapter(chat, chapter.id, null, Date.now())); }}>Remove</button>
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </section>
+  );
+}
+
+// Memory brought in from other chats with the same character, and the way to bring more.
+function Earlier({ chat, onChange, charName, carry }: { chat: Chat; onChange: Change; charName: string; carry?: CarryApi }) {
+  const [pick, setPick] = useState('');
+  const chosen = carry?.from.find((other) => other.id === pick) ?? carry?.from[0];
+  const set = (id: string, text: string | null) => onChange({ ...chat, earlier: text === null ? chat.earlier.filter((entry) => entry.id !== id) : chat.earlier.map((entry) => (entry.id === id ? { ...entry, text } : entry)), updatedAt: Date.now() });
+  return (
+    <section className="group" aria-label="Before this chat">
+      <h3>Before this chat</h3>
+      <p className="hint">What {charName} remembers from other chats with you: each one's chapters and how it ended, sent first in the story so far. Bringing one in also copies its journal, diary and feelings.</p>
+      {chat.earlier.map((entry) => (
+        <div key={entry.id} className="card">
+          <b>{entry.title}</b>
+          <textarea className="input" aria-label={entry.title} rows={4} value={entry.text} onChange={(event) => set(entry.id, event.target.value)} />
+          <button type="button" className="link danger" onClick={() => set(entry.id, null)}>Remove</button>
+        </div>
+      ))}
+      {carry && carry.from.length > 0 ? (
+        <div className="row">
+          <label className="field grow"><span>Another chat with {charName}</span>
+            <select value={chosen?.id ?? ''} onChange={(event) => setPick(event.target.value)}>
+              {carry.from.map((other) => <option key={other.id} value={other.id}>{new Date(other.updatedAt).toLocaleDateString()} · {other.messages.length} messages{other.userName !== chat.userName ? ` · as ${other.userName}` : ''}</option>)}
+            </select>
+          </label>
+          <button type="button" className="btn small" style={{ alignSelf: 'flex-end' }} disabled={carry.busy || !chosen} onClick={() => chosen && carry.bring(chosen)}>{carry.busy ? 'Bringing it in…' : 'Bring it in'}</button>
+        </div>
+      ) : <p className="hint">No other chats with {charName} to bring in.</p>}
+    </section>
   );
 }

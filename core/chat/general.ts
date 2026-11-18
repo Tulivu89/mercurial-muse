@@ -11,6 +11,7 @@ import { contextFor, type ContextAnswer, type ContextBlock } from '../records/co
 import { messageSchema, pickedAlt, type Chat, type ResponseLength, type Style } from './chat.js';
 import { mergeParts, openReplyText } from './emotions.js';
 import { DEFAULT_PROMPT, rulesText, type PromptSetup } from './prompt.js';
+import { storySoFar } from './chapters.js';
 import { CARD_POST_TITLE, CARD_PROMPT_TITLE } from '../records/tavern.js';
 import { replaceMacros } from './macros.js';
 import { recentText, type Scene } from './scene.js';
@@ -65,6 +66,8 @@ export interface GeneralOptions {
   task?: { rules: string; ask: string; lead: string };
   // The player's prompt setup; left out, the defaults.
   prompt?: PromptSetup;
+  // What the story so far may take (core/chat/chapters.ts); left out, no limit.
+  storyTokens?: number;
 }
 
 export interface GeneralPart { label: string; text: string; tokens: number }
@@ -166,6 +169,9 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
   const facts = chat.journal.filter((entry) => entry.active && entry.text.trim()).map((entry) => `- ${macros(entry.text.trim())}`);
   const journal = facts.length ? `## What ${charName} knows about ${userName}\n${charName} knows the following about ${userName} and is comfortable bringing it up.\n${facts.join('\n')}` : '';
   if (journal) parts.push({ label: 'Journal', text: journal, tokens: estimateTokens(journal) });
+  // What left the window, written up as chapters (core/chat/chapters.ts).
+  const story = macros(storySoFar(chat, Math.min(options.windowStart, options.upTo), options.storyTokens ?? Infinity, recentText(chat, options.upTo, options.draft)));
+  if (story) parts.push({ label: 'The story so far', text: story, tokens: estimateTokens(story) });
   const prefixTokens = parts.reduce((sum, part) => sum + part.tokens, 0);
 
   // 6. The transcript, from the window's start.
@@ -211,7 +217,8 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
   const transcriptTokens = turns.reduce((sum, turn) => sum + estimateTokens(turn.content), 0) - estimateTokens(moment);
   parts.splice(parts.length - 1, 0, { label: 'Transcript', text: '', tokens: Math.max(0, transcriptTokens) });
 
-  const messages: Message[] = [{ role: 'system', content: system }, ...(journal ? [{ role: 'system' as const, content: journal }] : []), ...turns];
+  const kept = [journal, story].filter(Boolean).join('\n\n');
+  const messages: Message[] = [{ role: 'system', content: system }, ...(kept ? [{ role: 'system' as const, content: kept }] : []), ...turns];
   const lead = options.task ? options.task.lead : carried ? openText : `${charName}:`;
   return { messages, prefill: options.canPrefill ? lead : '', lead, answer, parts, prefixTokens, costs };
 }

@@ -12,6 +12,7 @@ import { currentEventsLine, hoursApart, moodFor, moodLine, pickPlans, timeApartL
 import { recentText, sceneFor, type Scene } from './scene.js';
 import { sheetFor } from './sheet.js';
 import type { PromptSetup } from './prompt.js';
+import { STORY_SHARE } from './chapters.js';
 import { clockNow, clockTracks, storyActive } from './time.js';
 
 export type Profile = 'aetherroom' | 'general';
@@ -219,13 +220,13 @@ function generalMoment(chat: Chat, scene: Scene, options: BuildOptions, windowSt
 }
 
 function buildGeneralProfile(chat: Chat, scene: Scene, options: BuildOptions, side?: SideTask): Built {
-  const base = { upTo: options.upTo, canPrefill: options.canPrefill, continuing: !side && options.continuing, nowMs: scene.nowMs, draft: options.draft, prompt: options.prompt };
+  const base = { upTo: options.upTo, canPrefill: options.canPrefill, continuing: !side && options.continuing, nowMs: scene.nowMs, draft: options.draft, prompt: options.prompt, storyTokens: Math.round(options.contextTokens * STORY_SHARE) };
   const task = side ? {
     rules: `You are ${scene.charName}. Below is who you are, who ${scene.userName} is, and your chat with them so far. After it you will be asked to write something of your own, in your own voice. Write only that, in the form asked for, and nothing after it.`,
     ask: [side.shape, ...(side.frame ?? []), side.style, `Write it now as ${scene.charName}. ${side.layout ?? `Start with "Title:", then "Content:"${side.kind === 'plan' ? '' : ', then "Activation Keys:" with a few comma-separated words or names from the chat that should bring it back to mind'}.`}`].join('\n'),
     lead: side.lead ?? 'Title:',
   } : undefined;
-  const sized = buildGeneral(chat, scene, { ...base, windowStart: 0, task });
+  const sized = buildGeneral(chat, scene, { ...base, windowStart: chat.windowStart, task });
   const budget = budgetFor(options.contextTokens, side ? side.maxTokens : options.replyTokens, sized.prefixTokens);
   const windowStart = windowStartFor(sized.costs, chat.windowStart, budget.high, budget.low);
   const moment = side ? { lines: [], plans: chat.plans } : generalMoment(chat, scene, options, windowStart);
