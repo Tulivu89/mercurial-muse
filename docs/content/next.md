@@ -2,6 +2,21 @@
 
 Nov 15, 2026 · @AmbiProp · The plan after the pilot: the play-test, then three days of Fable 5.2 spent on the content everything later is compared to and the seeds it grows from. Read with `docs/content/standard.md` (seed, frame, fill) and `docs/content/process-retrospective.md` (what made the pilot land in one pass).
 
+## Next priority (Nov 18): the adventure module
+
+The owner's call: **worldbuilding for an adventure module comes next**, so adventure development can go on. Bogwater is retired, and the adventure now has features with nothing to test them on. These are the evaluator (free text proposes a check, adventure 0.28.0) and, coming, opponents' moves, progress clocks and story events (`docs/reviews/adventure/decision.md`, A2 and A3). The module is their test bed.
+
+- **Which setting:** the owner picks. Volungraiv (Stream 2 below, starting from Qetzal) is the one the module process was written around. Mythic Overdrive (Stream 3) is the other candidate.
+- **How:** `docs/content/modules/process.md`. A slice built by hand over six checkpoints until it plays, a pattern page written from it, then frames and fills. The standard (`docs/content/standard.md`) is the last pass.
+- **What the first slice has to give the rules,** so each feature has something to bite on:
+  - **Things worth a check:** people, things and places with states and difficulties set on purpose, not left at Average.
+  - **At least one opponent with a tier and approaches,** for A2's opponent moves.
+  - **One thread with milestones on a clock,** for progress clocks.
+  - **Two or three moments a narrator could trip by name:** an arrival, a meeting, a deadline. These are A3's events. They can be written as plain notes now; the engine catches up.
+  - **Routes and a map that need travel time,** so the clock and levels matter.
+- **HOG Wild** is written and on the site; it waits on play and a lab run, not on a writing session. The adventure module can start in parallel.
+- **The session prompt** is Stream 2's below, with two changes: name the chosen setting, and add "This is the adventure's next module and test bed; read `docs/reviews/adventure/decision.md` for what its first slice must give the rules."
+
 ## Where things stand
 
 - **The dragon's resort is in.** `content/dragons-resort/world.json`: Qiulong, Errata and Echydna at Autumn's Leaves, 20 records, checker clean (0 missing, 0 over budget, 0 checks, 0 catches), every schedule stop real, round trip to an adventure module green. A test holds it there (`studio/tests/resort.test.ts`). The working papers for stages 0 to 7 are in `docs/content/dragons-resort/`.
@@ -93,5 +108,5 @@ Paste one into a new session per stream. Each assumes the repository is attached
 ## Not in the window
 
 - **The Studio's Look inside** (read-only preview) and moving the root to the Overview (F4): code, not content; any model.
-- **A game for the adventure** to replace Bogwater. The resort isn't one. When it comes, it's its own seed.
+- ~~A game for the adventure~~: now the next priority (above).
 - **Abernys:** retired. Nothing in it gets a session.
