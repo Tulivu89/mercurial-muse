@@ -158,7 +158,8 @@ const clip = (keys: string[]) => keys.map((key) => key.slice(0, 60)).filter(Bool
 const section = (ids: Ids, title: string, reach: Section['reach'], body: string, keys: string[] = [], also: string[] = []): Section =>
   ({ id: ids(), title: title.slice(0, 120) || 'Entry', reach, keys: clip(keys), ...(also.length ? { also: clip(also) } : {}), when: null, text: body.slice(0, 20000) });
 
-interface BookEntry { title: string; reach: Section['reach']; keys: string[]; also: string[]; text: string }
+// `index` is the entry's place in the book as it came.
+export interface BookEntry { title: string; reach: Section['reach']; keys: string[]; also: string[]; text: string; index: number }
 
 // What a lorebook could do that came in without its effect, counted for the import notes.
 export interface BookLeftovers { decorators: Set<string>; regex: number; logic: number; extras: Set<string> }
@@ -187,7 +188,7 @@ export function bookEntries(book: Json | null, left: BookLeftovers = noLeftovers
   const raw = book?.entries;
   const entries: unknown[] = Array.isArray(raw) ? raw : isObject(raw) ? Object.values(raw) : [];
   const out: BookEntry[] = [];
-  for (const entry of entries) {
+  for (const [index, entry] of entries.entries()) {
     if (!isObject(entry)) continue;
     const { text: body, decorators } = splitDecorators(str(entry.content));
     const text = cardText(body).trim();
@@ -207,7 +208,7 @@ export function bookEntries(book: Json | null, left: BookLeftovers = noLeftovers
     if (selective && logic !== 0) left.logic += 1;
     if (entry.use_regex === true || keys.some((key) => /^\/.+\/[a-z]*$/.test(key))) left.regex += 1;
     for (const [field, set, word] of ENTRY_EXTRAS) if (set(extensions[field] ?? entry[field])) left.extras.add(word);
-    out.push({ title: str(entry.name) || str(entry.comment) || keys[0] || 'Lore', reach, keys, also, text });
+    out.push({ title: str(entry.name) || str(entry.comment) || keys[0] || 'Lore', reach, keys, also, text, index });
   }
   return out;
 }

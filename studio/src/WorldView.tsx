@@ -4,7 +4,7 @@
 // the browser's Back goes back.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import {
-  KIND_NAMES, RECORD_KINDS, importCardFile, newRecord, putRecord, recordById, removeRecord,
+  DIALECT_NAMES, KIND_NAMES, RECORD_KINDS, importCardFile, importLorebook, isLorebook, newRecord, putRecord, recordById, removeRecord,
   type RecordKind, type World,
 } from '../../core/records/index.js';
 import { useMoment } from './ContextPanel';
@@ -103,8 +103,23 @@ export function WorldView({ world, onChange, onDelete, onStatus, status }: {
     event.target.value = '';
     if (!file) return;
     try {
-      const imported = importCardFile(world, await readFileBytes(file), newId, Date.now());
-      if (!imported.ok) { onStatus({ text: imported.errors.join(' '), bad: true }); return; }
+      const bytes = await readFileBytes(file);
+      const imported = importCardFile(world, bytes, newId, Date.now());
+      if (!imported.ok) {
+        // Not a card: perhaps a lorebook, from SillyTavern, NovelAI, RisuAI, Agnai or a V3 card.
+        let raw: unknown = null;
+        try { raw = JSON.parse(new TextDecoder().decode(bytes)); } catch { /* a PNG or not JSON: the card's error stands */ }
+        if (raw !== null && isLorebook(raw)) {
+          const book = importLorebook(world, raw, newId, Date.now());
+          if (!book.ok) { onStatus({ text: book.errors.join(' '), bad: true }); return; }
+          onChange(book.world);
+          go({ kind: 'lore', inside: null, rec: null, page: null, door: null });
+          onStatus({ text: [`Brought in ${book.count} lore entr${book.count === 1 ? 'y' : 'ies'} from a ${DIALECT_NAMES[book.dialect]}.`, ...book.notes].join(' ') });
+          return;
+        }
+        onStatus({ text: imported.errors.join(' '), bad: true });
+        return;
+      }
       onChange(imported.result.world);
       go({ rec: imported.result.recordId, page: null, door: null });
       const name = recordById(imported.result.world, imported.result.recordId)?.name ?? 'the character';

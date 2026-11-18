@@ -91,6 +91,14 @@ Inkwyrm's Studio, at `/studio/` on the site: make worlds and characters in the r
 
     The import notes say what came in without its effect: other decorators, second lists that need all or none, pattern keys, SillyTavern's chance, sticky, cooldown, delay, groups and depth, and variables or if-blocks.
 
+  - **Lorebooks** (0.17.0, X2): **Import a card or lorebook** also reads lorebooks, each entry a Lore record:
+    - SillyTavern World Info;
+    - a Character Card V3 lorebook, or a V2 character book on its own;
+    - Agnai's memory books and RisuAI's exports;
+    - NovelAI's `.lorebook`: forced entries are Always, categories become tags.
+
+    Disabled entries are Never, second key lists become *And one of these too*, and the import notes say what came in without its effect. **Export as a lorebook** writes the world as a SillyTavern World Info file, which other apps read too. Lore records go as they are; characters, places, items, groups and factions go as one entry each under their names and keys, with their line and every section a scene could send, never a Never or When section.
+
   Pictures on a card are kept by Chat, which is where portraits live; import there to bring them.
 
 ## Phases (`docs/studio-brief.md`)
