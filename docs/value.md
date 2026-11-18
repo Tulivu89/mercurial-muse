@@ -49,3 +49,14 @@ No single feature is the draw: dice and records can be copied as easily as anyth
 - **Each part only has to be good, not unmatched.** What matters is that the parts join up: one character across Chat, Home, the Studio and the adventure.
 - **The paid offer is models plus the service** (roadmap step 9), with players' own keys staying free.
 - **Content is part of the combination,** not a separate store first.
+
+## Hosting models (the owner, Nov 18)
+
+Later, Inkwyrm could host models itself, as some writing services do, with the value of the site priced into usage or into a subscription with limits. What that would ask of the site, for when it's planned:
+- **Accounts** (roadmap step 8), because usage has to belong to someone.
+- **Metering:** tokens per request, which the relay already sees (`usage` in every reply's diagnostics).
+- **Limits and a balance**, checked before the relay forwards a request.
+- **A server-side key:** today there is none on purpose (`adventure/server/narration-relay.ts`).
+- **A moderation and terms stance** that fits an 18+ service.
+
+None of it changes the record model or the sides. The relay is the one place it touches.
