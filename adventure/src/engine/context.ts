@@ -157,18 +157,23 @@ function ancestry(world: PraxisModule, place: Place): string[] {
 // "Lucan Abreu, the High Arbiter, of the Humans": who someone is, before their description.
 function headOf(world: PraxisModule, character: Character): string {
   const species = world.world.species.find((entry) => entry.id === character.speciesId)?.name;
-  const role = typeof character.role === 'string' ? midSentence(character.role) : '';
+  const role = typeof character.role === 'string' ? midSentence(character.role.trim().replace(/[.!]+$/, '')) : '';
   return [character.name, role, species ? `of the ${species.replace(/^The /, '')}` : ''].filter(Boolean).join(', ');
 }
 
-// Someone present, in full: who they are, how they look, carry themselves and speak.
-const DOSSIER_CHARS = 420;
+// Someone present, in full: who they are, how they look, carry themselves and speak, and then
+// their past. The manner comes before the history, so the narrator plays the person in front of
+// it rather than reciting their story (Volungraiv's first run: asked to take Hollis's measure,
+// it recited his Background).
+// Manner is the longest: what they do when nobody acts on them, how they treat people, their
+// tastes and their reactions (docs/bids/character-record/brief.md).
+const DOSSIER_CHARS = { Looks: 500, Manner: 1200, Speech: 600 } as const;
 
 function profile(world: PraxisModule, character: Character): string {
   const extras = ([['Looks', character.appearance], ['Manner', character.personality], ['Speech', character.speech]] as const)
     .filter(([, value]) => typeof value === 'string' && value.trim())
-    .map(([label, value]) => `${label}: ${sentence(sentencesUpTo(value as string, DOSSIER_CHARS))}`);
-  return `${headOf(world, character)}: ${[sentence(character.description ?? ''), ...extras].filter(Boolean).join(' ')}`;
+    .map(([label, value]) => `${label}: ${sentence(sentencesUpTo(value as string, DOSSIER_CHARS[label]))}`);
+  return `${headOf(world, character)}: ${[...extras, sentence(character.description ?? '')].filter(Boolean).join(' ')}`;
 }
 
 // Groups and history that bear on a scene: groups its people belong to, groups whose
@@ -344,7 +349,7 @@ export function loreFor(module: PraxisModule, save: Save, turn: Turn): string {
     const as = followingAs(world, save, person.id);
     const due = as ? '' : dueElsewhere(world, save, person);
     const doing = as ? '' : doingNow(world, save, person);
-    const role = typeof person.role === 'string' && person.role.trim() ? midSentence(person.role.trim()) : '';
+    const role = typeof person.role === 'string' && person.role.trim() ? midSentence(person.role.trim().replace(/[.!]+$/, '')) : '';
     const state = as || (due ? `due at ${inSentence(due)} by now` : doing.replace(/\.$/, ''));
     const line = kept.has(person.id) ? '' : firstOf(person.description);
     return `${[person.name, role, state].filter(Boolean).join(', ')}${line ? `: ${line}` : '.'}`;

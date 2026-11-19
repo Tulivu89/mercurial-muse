@@ -1,6 +1,6 @@
 # Volungraiv: the character and world review
 
-Nov 19, 2026 · @AmbiProp · Every record in Lowgate's slice, read against the first run (`run-1.md`), the field tables (`docs/content/standard.md`, `docs/content/modules/process.md`, the `inkwyrm-records` skill) and the chat side's character pipeline (the bot-writing skill, `docs/content/pilot-brief.md`, `docs/content/process-retrospective.md`). This page diagnoses; it doesn't rewrite. The rewrite goes out with new instructions, and those are proposed at the end.
+Nov 19, 2026 · @AmbiProp · Every record in Lowgate's slice, read against the first run (`run-1.md`), the field tables (`docs/content/standard.md`, `docs/content/modules/process.md`, the `inkwyrm-records` skill) and the chat side's character pipeline (the bot-writing skill, `docs/content/pilot-brief.md`, `docs/content/process-retrospective.md`). This page diagnoses; it doesn't rewrite. **What came next:** the owner sent the record itself back to first principles, tested on a source character before any adaptation (`docs/bids/character-record/`). The rewrite goes out with new instructions, and those are proposed at the end.
 
 ## The answer
 

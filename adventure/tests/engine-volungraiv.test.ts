@@ -55,6 +55,17 @@ describe('Lowgate in the adventure', () => {
     expect(lore).toContain('The Peace: Pay at the gate, and harm done to you inside the walls is answered');
   });
 
+  it('gives the narrator a person in front of it before their past: Looks, Manner, Speech, then the rest', () => {
+    const save = must(say(module, startSave(module), 't1', '*I look Hollis over.*')).save;
+    const lore = contextPlan(module, save).messages[1]!.content;
+    const hollis = lore.split('\n').find((line) => line.startsWith('[ Hollis Crane,') && line.includes('Looks:'))!;
+    expect(hollis).not.toContain('Gate.,');
+    const at = (words: string) => hollis.indexOf(words);
+    expect(at('Looks:')).toBeLessThan(at('Manner:'));
+    expect(at('Manner:')).toBeLessThan(at('Speech:'));
+    expect(at('Speech:')).toBeLessThan(at('He came up the Old Road as a caravan cook'));
+  });
+
   it('sells the Peace at the toll house: the coin, the token, and the Peace held', () => {
     const paid = must(act(module, startSave(module), 'pay', { type: 'scene', actionId: 'pay-for-the-peace' })).save;
     expect(value(paid, 'coin')).toBe(13);

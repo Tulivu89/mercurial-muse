@@ -15,6 +15,7 @@ Fixes from Volungraiv's first run (`docs/content/volungraiv/run-1.md`).
 - **A record's line reaches play.** A Studio record's line, the sentence for someone who has never met it, now comes into the module as a place's, group's, lore entry's or thing's `summary`. The narrator gets it first wherever the record comes up, so the Lee is *the caravanserai inside the Gate* and not just "a building". It also shows under the name in the World list and under each way out.
 - **Ways out read as travel:** each row says *Go to the Lee*, with the place's line under it and the time it takes.
 - **The evaluator asks for as little thinking as the model allows** (minimal on Gemini 3 Flash). The first run spent 5.7 seconds thinking about a three-line answer.
+- **A person before their past.** A present person reaches the narrator as Looks, Manner and Speech first, then their history and other sections. Before, the history came first, and the narrator recited it when asked to read someone. Manner may run to 1,200 characters and Speech to 600 (both were 420), for the character record being tested in `docs/bids/character-record/`. A line ending in a full stop no longer reads *the Gate., of the Humans*.
 - **Prices are told.** A scene action that takes or gives coin says how much, unless its own words already do, so the narrator never names a price of its own. The narrator's rules say an outcome's prices, things and details stand as given.
 
 ## 0.28.0 - The evaluator - 2026-11-18

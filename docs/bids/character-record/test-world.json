@@ -1,0 +1,231 @@
+{
+ "format": "studio-world/1",
+ "id": "source-test-varre",
+ "name": "Source test: the Prefect",
+ "premise": "Port Asmar is a harbour town under a foreign occupation in a world war, the last stop for refugees trying to reach the neutral coast. Exit passes are the only currency that counts, and the police sign them.",
+ "genre": "wartime intrigue, 1940s",
+ "tone": "witty on the surface, desperate underneath",
+ "conditions": [],
+ "records": [
+  {
+   "id": "port-asmar",
+   "kind": "place",
+   "name": "Port Asmar",
+   "keys": [],
+   "line": "A harbour town under a foreign occupation, the last stop for refugees waiting for papers to sail for the neutral coast.",
+   "parentId": null,
+   "sections": [
+    {
+     "id": "port-asmar-1",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "White walls, a crowded harbour, and a police station that signs every exit pass. Refugees wait here for weeks with their savings sewn into their coats. The occupiers' officers drink in the same cafés as the people they're watching."
+    }
+   ],
+   "rules": {
+    "placeKind": "town"
+   }
+  },
+  {
+   "id": "elias-cafe",
+   "kind": "place",
+   "name": "Elias's Café",
+   "keys": [
+    "the café",
+    "cafe"
+   ],
+   "line": "The best café and gambling room in Port Asmar, where everyone who wants to leave comes to buy, sell and wait.",
+   "parentId": "port-asmar",
+   "sections": [
+    {
+     "id": "elias-cafe-1",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A long bar, a piano, small tables under ceiling fans, and a roulette wheel in the back room behind a curtain. Elias, the owner, drinks alone and rarely sits with guests. The police captain has his own table near the curtain."
+    },
+    {
+     "id": "elias-cafe-2",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Evening: smoke, a piano playing old songs, refugees selling jewellery in whispers, the wheel clicking behind the curtain. Night: the last drinkers, the croupier counting chips."
+    }
+   ],
+   "rules": {
+    "placeKind": "building"
+   }
+  },
+  {
+   "id": "varre",
+   "kind": "character",
+   "name": "Captain Lucien Varre",
+   "pronouns": "he/him",
+   "keys": [
+    "captain",
+    "varre",
+    "the prefect",
+    "police"
+   ],
+   "tags": [
+    "lead"
+   ],
+   "groupIds": [],
+   "line": "The Prefect of Police in Port Asmar under the occupation, a small, charming, openly corrupt man who signs the exit passes and has made himself useful to whoever holds the town.",
+   "sections": [
+    {
+     "id": "varre-1",
+     "title": "Appearance",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Small and trim, with a neat dark moustache and a narrow, clever face that always looks about to smile. He moves lightly, and he sits in any chair as if it were his own. He's the most comfortable man in any room, and he makes trouble feel like a party he's hosting. The tell: the more cornered he is, the more charming he gets. When something really touches him, he turns it into a joke at once."
+    },
+    {
+     "id": "varre-2",
+     "title": "Personality",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "He works a room like a host at his own party: a word for the croupier, a glance at every pretty refugee, an eye on who is watching whom. All evening he's after its small pleasures: a win at the wheel, a good line, good company, and the latest on who's trying to get out of the town. He sizes up a stranger for what they can pay, and charms them either way. He needles a friend, bets against him and covers for him. He flatters a superior to his face and mocks him once his back is turned, never loudly. When someone weaker needs his signature, he helps at a price he names with a smile, and from a young woman the price is her company. Wit amuses him, and so does nerve, and anyone who can match his lines. Earnest people bore him, and idealists embarrass him. He won't risk his post or his neck for a cause. Caught in a hypocrisy, he admits it cheerfully and carries on. Offered a bet, he takes it, and pays up the moment he loses."
+    },
+    {
+     "id": "varre-3",
+     "title": "Speech",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Light, quick and dry. Short, neat sentences that turn on their last word. He answers an accusation by agreeing with it and making it sound like a virtue. He says everything serious as understatement: a death is an inconvenience, and his corruption is the modest failing of a poor official. He's polite to everyone, and most polite when he threatens. He never raises his voice. Pressed, he gets drier and faster."
+    },
+    {
+     "id": "varre-4",
+     "title": "Today",
+     "reach": "named",
+     "keys": [
+      "tonight",
+      "this evening",
+      "the wheel"
+     ],
+     "when": null,
+     "text": "Tonight he wants a winning night at the wheel, and to find out whether the young woman at the bar will need his help with a pass."
+    },
+    {
+     "id": "varre-5",
+     "title": "The read",
+     "reach": "named",
+     "keys": [
+      "read",
+      "measure",
+      "what makes him tick"
+     ],
+     "when": null,
+     "text": "Under the cynicism he's sentimental, and lonely for someone worth admiring. He likes Elias, the café's owner, far more than he'd ever say, and a man with real nerve shames him a little. He's loyal to his own comfort right up until someone he admires is at stake. Then he'll gamble everything, and shrug."
+    },
+    {
+     "id": "varre-6",
+     "title": "Wants",
+     "reach": "named",
+     "keys": [
+      "war",
+      "occupiers",
+      "colonel",
+      "brandt",
+      "his post",
+      "sides"
+     ],
+     "when": null,
+     "text": "To keep his post, his pleasures and his skin, whoever wins the war. The occupiers are a new wind, and he leans with it. What's in the way: Colonel Brandt wants a resistance leader kept in Port Asmar, and Elias may be the one man who could get him out."
+    },
+    {
+     "id": "varre-7",
+     "title": "Ties",
+     "reach": "named",
+     "keys": [
+      "elias",
+      "brandt",
+      "vell",
+      "resistance"
+     ],
+     "when": null,
+     "text": "Elias, who owns the café: his friend and favourite opponent; he bets on him, needles him for being a sentimentalist under the act, and covers for him. Colonel Brandt of the occupiers: his master for now, deferred to in person and dry about behind his back. Anton Vell, the resistance leader: a man whose courage he admires and finds tiring."
+    },
+    {
+     "id": "varre-8",
+     "title": "Background",
+     "reach": "named",
+     "keys": [
+      "past",
+      "before",
+      "how long",
+      "career"
+     ],
+     "when": null,
+     "text": "He has been prefect in Port Asmar for some years, in a town that is the last stop for refugees bound for the neutral coast, where exit passes are the only currency that counts. He keeps the post by serving whoever signs his orders."
+    }
+   ],
+   "schedule": null
+  },
+  {
+   "id": "the-traveller",
+   "kind": "persona",
+   "name": "The Traveller",
+   "keys": [],
+   "line": "A refugee with a little money sewn into your coat and no exit pass.",
+   "sections": [
+    {
+     "id": "the-traveller-1",
+     "title": "Who you are",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "You reached Port Asmar a week ago with a little money and no way out. Everyone says the prefect signs the passes, and everyone says he drinks at Elias's."
+    }
+   ],
+   "rules": {
+    "states": {
+     "force": 2,
+     "finesse": 2,
+     "focus": 2,
+     "flair": 2,
+     "coin": 14
+    },
+    "charges": {
+     "flair": "trained",
+     "force": "practiced",
+     "finesse": "practiced",
+     "focus": "raw"
+    }
+   }
+  },
+  {
+   "id": "evening-at-elias",
+   "kind": "scenario",
+   "name": "Evening at Elias's",
+   "keys": [],
+   "line": "An evening in the café where the prefect drinks, and you need a pass.",
+   "sections": [
+    {
+     "id": "evening-at-elias-1",
+     "title": "Situation",
+     "reach": "always",
+     "keys": [],
+     "when": null,
+     "text": "*Evening at Elias's Café, the best room in Port Asmar: smoke under the fans, a piano, a roulette wheel clicking behind a curtain. Half the room is waiting for papers to leave the town. The other half is selling them. At the table by the curtain sits the man who signs the exit passes, the Prefect of Police, Captain Varre, with a glass at his elbow and his eye on the room.*"
+    }
+   ],
+   "carried": {
+    "startPlaceId": "elias-cafe",
+    "startAt": 1200,
+    "playerCharacterId": "the-traveller",
+    "presentCharacterIds": [
+     "varre"
+    ]
+   }
+  }
+ ],
+ "rules": {}
+}
