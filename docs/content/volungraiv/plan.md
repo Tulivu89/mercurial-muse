@@ -1,6 +1,6 @@
 # Volungraiv: the plan
 
-Nov 19, 2026 · @AmbiProp · The adventure's first module and its test bed. This version comes from the owner's notes of Nov 19, which changed the scope, the kin, the Woed and the claim. It covers the scope, the loop, how the world gets built from sources and seeds, what version 1 holds, and what still needs a decision. Read with `docs/content/sources/README.md` (the source method), `docs/content/modules/process.md` (slice, pattern, frames and fills) and `docs/content/standard.md`.
+Nov 19, 2026 · @AmbiProp · The adventure's first module and its test bed. This version comes from the owner's notes of Nov 19, which changed the scope, the kin, the Woed and the claim, and from the owner's answers the same day, which settled the third power, the dead court and four names. It covers the scope, the loop, how the world gets built from sources and seeds, what version 1 holds, and what still needs a decision. Read with `docs/content/sources/README.md` (the source method), `docs/content/modules/process.md` (slice, pattern, frames and fills) and `docs/content/standard.md`.
 
 ## In short
 
@@ -57,7 +57,7 @@ The kit is the frame's checklist for every town after the slice, and the town's 
 
 - **The Witch Queen's kingdom.** In version 1 she's felt through an envoy in Qetzal, refugees and her coin. Her seat and her arena are seeds.
 - **Places at odds with her rule.** One is a seed in version 1, and the first to be built after it.
-- **The third power** (below).
+- **The Lightbringers** (below): their occupied coast is a seed.
 
 ### Rough sizes
 
@@ -114,21 +114,36 @@ Re-rooted: the court travels because the Woed is mercurial. It can haunt any woo
 | --- | --- | --- | --- |
 | **The Witch Queen** | Blood, a cult and an enslaved host | Qetzal's water and tolls; the Badlands brought to heel | Felt: an envoy, coin, refugees |
 | **The Bastards** | Force, and a monopoly each | Each other's ground | Built: one rules the frontier town; others are seeds |
-| **The third power** | To decide | | Seeded |
-| **The dead court** | Fear, and courtesy | Guests, and what it's owed | A travelling threat |
+| **The Lightbringers** | Occupation, and a creed that writes the law on bodies | Every shore they can reach, and the Witch Queen's kingdom most of all | Seeded: their occupied coast; a missionary or a deserter in Qetzal |
+| **The dead court** | Fear, and courtesy. Escrutia sits at its head and holds it together badly | Guests, and what it's owed; each courtier wants something of their own | A travelling threat |
 | **Qetzal** | Water and neutrality | To stay free | Built |
 
-#### The third power: three options
+#### The third power: the Lightbringers (settled Nov 19)
 
-The owner is right that two isn't enough: the Bastards are chaos, so the Witch Queen has no rival her own size. A third power should be a different kind of pressure, so that the player is always picking between kinds of rule.
+The Bastards are chaos, so the Witch Queen needed a rival her own size, and a different kind of pressure. **The Lightbringers** are a sun creed that writes the law on bodies, led by Solarkin priests with humans in the ranks. They're an invasion. Their own seat is a sunny island off the coast, and most of what they hold is occupied land, taken from people who never asked for their law. So the player picks between three kinds of rule, **law, appetite and force**, and none of them is clean.
 
-| Option | What it is | Sources | Its pressure |
-| --- | --- | --- | --- |
-| **A. The Lawgivers** (recommended) | A sun creed that writes the law on bodies. Solarkin priests lead it, with humans in the ranks. Places at odds with the Witch Queen look to it, and find a second tyranny. | Calvin's Geneva; Judge Dredd's street judges; the Inquisition | **Law against appetite against force.** Every choice is between three kinds of tyranny. |
-| B. Damhaven's march | A Succori lord holding ground around an open door to Damhaven, and growing | The Norman conquest; any hellgate | An invasion from outside, which catches the ordinary Succori in between |
-| C. A free league | The places at odds with the Witch Queen, banded together for trade and walls | The Hanseatic League | Grounded, but it drifts toward the intrigue this world is setting aside |
+| | Source | We take |
+| --- | --- | --- |
+| **Lead** | The crusader states, and the military orders that held them from island fortresses (the Hospitallers on Rhodes, then Malta) | A holy order ruling a coast from overseas; an island seat that can't be starved out; settlers, converts, and the people who were there first |
+| **Seasoning** | Calvin's Geneva | The law reaching into everyday life: what you eat, who you sleep with, what you wear |
+| **Seasoning** | Judge Dredd's street judges | Judgement on the spot, and the sentence written on you before you walk away |
 
-Recommendation: **A**, with **B** kept as a seed (the open door).
+Re-rooted: Solarkin already write crimes on the body, so the Lightbringers' law is the Solarkin custom made into an empire's. Their occupied land is where the floor meets the ceiling: collaborators, a resistance, branded people, and towns that were at odds with the Witch Queen and found out what the alternative costs.
+
+The name works. It's plain and readable on sight, and its pulls (Lucifer, a sword of legend) suit an invader who brings light whether you want it or not.
+
+**Pinned:** Damhaven's invasion. The Succori's open door stays a seed; a second invasion through it belongs to a later version.
+
+#### The dead court is a mess of interests
+
+Escrutia is its sovereign, and she holds a court that can't die and has nothing but time: barely. Her courtiers are the court's real engine, and the frame gives each one a want of their own. First ideas, for the frame to cut:
+
+- One wants the court to stop wandering and take a wood for good.
+- One wants a living heir, which the dead can't make.
+- One wants out of the Woed and back into the world as it was.
+- One keeps the guest list, and sells places on it.
+
+That makes the court a faction you can play. Side with one courtier against another, and the castle that rises next week is a different place.
 
 ### Seeds
 
@@ -143,10 +158,11 @@ The owner's magic school is the model. You can never enter it, it costs no conte
 | Her arena | The pits where her law is settled in public | A fighter bought out of them | House Batiatus; the Hippodrome |
 | A hidden First Children valley | A valley nobody has noticed, which is the point | A small trader who comes to market and leaves by no road | The Shire |
 | A Golkin warren | Holes in a ravine, and traps around them | A raid on the frontier town | Gollum's caves; folklore |
-| Damhaven's open door | A Succori rumour of a way home that opens both ways | A Succori trader in Qetzal | Option B above |
+| Damhaven's open door | A Succori rumour of a way home that opens both ways | A Succori trader in Qetzal | Pinned: a later version's invasion |
 | A titan's grave | A hill that is a skull, still warm | A Cinderkin pilgrim | Dark Lord Funk's Titan's Ribcage |
 | An empty hold | A fortress in a titan's ribs that nobody has held since the tyrant fell | A Bastard who failed to take it | Dark Lord Funk's Titan's Ribcage; the player's to claim |
-| A place at odds with the Witch Queen | A town that pays her nothing and is waiting to be made to | Refugees in Qetzal | To pick with the third power |
+| A place at odds with the Witch Queen | A town that pays her nothing and is waiting to be made to | Refugees in Qetzal | The town kit; it may already be under the Lightbringers |
+| The Lightbringers' occupied coast | Shore towns under the sun creed's law, and the island seat beyond them | A missionary, or a deserter with a brand | The crusader states; the Hospitallers' islands; Calvin's Geneva |
 
 The seeds don't need the owner's time until one is built. Each seed's line goes through the frame review like any other.
 
@@ -169,7 +185,7 @@ Two notes on it:
 
 | Stage | What's made | The owner | Sessions |
 | --- | --- | --- | --- |
-| **0. The last calls** | Answers to the questions below; `atlas.md`: the kin, the powers, the Woed, the seeds, each with sources; the world's premise and narrator lines | About half an hour | 1 |
+| **0. The last calls** | Answers to questions 6 to 9 below; `atlas.md`: the kin, the powers, the Woed, the seeds, each with sources; the world's premise and narrator lines | About half an hour | 1 |
 | **1. The slice** | The module process's part 1, checkpoints 1 to 6: Qetzal's gate quarter, built to the town kit, played | Six short checkpoints and an evening of play | 2 or 3 |
 | **2. The pattern** | `pattern.md`, with the town kit as tested in play | 15 minutes | 1 |
 | **3. Qetzal whole** | Its other quarters and threads, from sheets | A sheet and a frame per round | 2 or 3 |
@@ -189,16 +205,20 @@ As before: A7 and A8 from the standard, plus **S1** (does a sheet make the frame
 
 Settled on Nov 19: goblins become the First Children and the Golkin; the start is open, a nobody in Qetzal; Dark Lord Funk is lore in a drawer; the Wandering Woods are the Woed's edge, with the dead court; intrigue isn't this world's centre; there are seeds; the player can claim.
 
+Answered on Nov 19:
+
+1. **The third power:** the Lightbringers, an invasion from a sunny island seat, holding mostly occupied land. Damhaven's invasion is pinned for later.
+2. **Woed** is the name.
+3. **One Witch Queen** for now, with the Lightbringers as her rival.
+4. **First Children** stays: recognisable, and its own thing.
+5. **Escrutia** is the dead court's sovereign, over a mess of interests.
+
 Still open:
 
-1. **The third power:** A (the Lawgivers), B (Damhaven's march) or C (a free league)?
-2. **Woed or Woad?** Your notes have both. *Woad* is the blue dye ancient Britons painted themselves with, and a model will pull that in. *Woed* reads as wood and woe. Recommendation: Woed.
-3. **How many Witch Queens?** Your note says "witch queens". Is there one in the kingdom with others elsewhere or fallen, or several ruling now?
-4. **"First Children":** keep it? It sits close to Tolkien's Firstborn (the elves) and the Children of the Forest from *A Song of Ice and Fire*, and both pull toward ancient forest mystics. Plainer options: the Small Folk, the Elder Kin, the Littlekin.
-5. **The dead court's sovereign:** Escrutia, from Dark Lord Funk?
 6. **The claim:** level 1 in version 1, levels 2 and 3 to the adventure's roadmap after A3?
 7. **The seeds:** strike or add any from the table.
 8. **The slice:** still Qetzal's gate quarter?
+9. **The dead court's courtiers:** keep, cut or redirect the four first ideas above.
 
 ## The next session
 
