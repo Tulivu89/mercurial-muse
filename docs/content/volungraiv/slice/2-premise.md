@@ -4,6 +4,29 @@ Nov 19, 2026 · @AmbiProp · Checkpoint 2 of the module process's part 1 (`../..
 
 **What the owner adds here:** what's wrong, and what the place is really for. The questions are at the end, and a few lines answer them. The session then writes checkpoint 3, the frame: every record in the slice as one line.
 
+## The owner's answers (Nov 19)
+
+Answered, with adjustments that reach past this checkpoint. The atlas and Qetzal's sheet are rewritten to match, and checkpoint 3 is `3-frame.md`. Where the rest of this file disagrees with this section, this section is right.
+
+- **What's wrong: A, reframed.** A buy-out isn't a scandal in Qetzal: the system doesn't care as long as the money is good, and it never has. The question is a bad actor using the system to collapse it. *Will the people making money notice the play? If they do, would they give up immediate profit for an existential threat?* That's the thread, now called **Bought Out**.
+- **Qetzal is a shelter, not a well.** The Old Road, a relic of a past empire, crosses Volungraiv; Qetzal is a hard ride in across the Badlands, and a hard ride out the other side. Walls built between the ribs keep out the roaming behemoths. The storms break around its largest temple, built from the tallest bone, whose high tip brings the rain. The rain runs down from the wealth at the centre and the heights, and every level lower carries a taste of everything it ran over. **Tone the water down.**
+- **Koriar**, goddess of music and luck (chaotic good; Trickery and Life; her sign is knucklebones), has a massive temple-casino in Qetzal. She's a new god against the titans, and an affront to Gildra and anyone who thinks as she does.
+- **Gildra is the Witch Queen:** the base, and the visual. What she wants is the control Qetzal gives. It's vital trade, so whoever holds Qetzal holds anything of worth in the Badlands, and no one in the Badlands can take it: a chokepoint. (This replaces the proposal that her sire lies under the city.) The map is still to be drawn.
+- **No paperwork wants.** Contracts belong to the world and shape people through context. None of the characters wants one.
+- **Economy as worldbuilding, not mechanic.** The world's economy is rich; the mechanical economy stays the standard's, which is AI- and narrative-friendly. The two rules calls below are withdrawn. **No clichés about what things cost.**
+- **Scale:** as many places as can be built with quality and filled with hooks. The process gives a flow, and it's a guideline, not a rule. Qetzal is meant to be big and immersive. The temple-casino is an easy seed: guild and underworld connections, priests of profit, heists, the spire that brings the rain, the new gods.
+- **The Succori quarter** is like Carnival Row: the safest place the Succori can live in civilization, for those who want to. The disparity breeds crime, and since the Succori can't reach the underworld the way others can, their crime is unsanctioned unless someone else sponsors it. The Succori brothel isn't run by Succori.
+- **Nefera stays as she is,** kept in the city by her leverage and the Peace. **No one is banned from Qetzal who has money.**
+- Not answered, and kept as proposed: the underguilds' muscle from the camps (question 4), the Marrow (5), Vigga, and Kaelen's shape for the killer (6).
+
+**The premise, revised:**
+
+> Qetzal is the one city in the Badlands, a hard ride either way along the Old Road, walled between the ribs of a dead titan to keep the behemoths out. The glass storms break around its tallest bone, where Koriar's temple stands and its spire draws the rain, so every caravan crossing Volungraiv stops here. At the gate you can buy the Peace, a glass token and a promise that harm done to you inside the walls will be answered, and anyone with the money can buy it, or buy it out.
+
+**What Lowgate is for, revised:** it's where the Old Road comes in: the first roof after the Badlands, and the first place a stranger can buy the Peace. Most people who cross Volungraiv see Qetzal only from here.
+
+**Superseded below:** the first premise and the water-sellers as the ordinary thing (now Koriar's dusk band, heard on every level); the storm cellar (the city is the shelter, and the gate shuts on what's outside); the water queue; the two rules calls; the Succori trader as a mark (the mark is now a Succori thief, Quill); and Nefera as a Succori.
+
 ## The premise, in three sentences
 
 > Qetzal is the one city in the Badlands. Warm water that tastes of iron rises through a dead titan's bones under its streets, and nobody else for weeks in any direction has a well that doesn't fail. At the gate you buy the Peace, a glass token on a cord and a promise that whoever harms you inside the walls will answer for it, and the Peace is a contract, so someone can always pay more for it than you did.

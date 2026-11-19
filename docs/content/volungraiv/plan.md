@@ -1,10 +1,10 @@
 # Volungraiv: the plan
 
-Nov 19, 2026 · @AmbiProp · The adventure's first module and its test bed. This version comes from the owner's notes of Nov 19, which changed the scope, the kin, the Woed and the claim, and from the owner's answers the same day, which settled the third power, the dead court, four names, the claim, the seeds and the slice. The world itself is now on one page: `atlas.md`. It covers the scope, the loop, how the world gets built from sources and seeds, what version 1 holds, and what still needs a decision. Read with `docs/content/sources/README.md` (the source method), `docs/content/modules/process.md` (slice, pattern, frames and fills) and `docs/content/standard.md`.
+Nov 19, 2026 · @AmbiProp · The adventure's first module and its test bed. This version comes from the owner's notes of Nov 19, which changed the scope, the kin, the Woed and the claim, and from the owner's answers the same day, which settled the third power, the dead court, four names, the claim, the seeds and the slice. The world itself is now on one page: `atlas.md`. The owner's adjustments later that day (Qetzal as a shelter on the Old Road, Koriar's temple, Gildra as the Witch Queen, economy kept out of the rules, and no paperwork wants) are in the atlas and in `slice/2-premise.md`; where this plan disagrees with them, they're right. It covers the scope, the loop, how the world gets built from sources and seeds, what version 1 holds, and what still needs a decision. Read with `docs/content/sources/README.md` (the source method), `docs/content/modules/process.md` (slice, pattern, frames and fills) and `docs/content/standard.md`.
 
 ## In short
 
-- **The feel:** a grounded floor under a heavy metal ceiling. You start as a nobody paying for water, in second person, where wounds, prices and weather never bend. Above you are Witch Queens, a dead court that travels, and titans' bones. Big things are rare, seen at a distance first, and played straight. A nobody can rise far enough to depose one of them, or never try.
+- **The feel:** a grounded floor under a heavy metal ceiling. You start as a nobody at the end of a hard road, in second person, where wounds, distances and weather never bend. Above you are a Witch Queen, a dead court that travels, and titans' bones. Big things are rare, seen at a distance first, and played straight. A nobody can rise far enough to depose one of them, or never try.
 - **The loop:** the one Bethesda's games run on. A faceless stranger walks into any town and makes drama by meddling with its people, picks up a thread, or works for a place or a faction. Every town is built to a **town kit**, so the loop works anywhere.
 - **The scope:** deep where play starts, seeded everywhere else. **Qetzal** is built deep. **A frontier town under a Bastard** and **a wood of the Woed** are built to the kit. Everything else exists as **seeds**: a line, a door and one way in, costing nothing until someone steps through.
 - **The claim:** the player can take what exists (a town, a hold, a faction's seat) in version 1, from content alone. Founding a hold of their own, and keeping people there, needs adventure code. It's planned here and handed to the code sessions.
@@ -14,8 +14,8 @@ Nov 19, 2026 · @AmbiProp · The adventure's first module and its test bed. This
 
 | The floor (never bends) | The ceiling (huge, played straight) |
 | --- | --- |
-| Water costs money. A wound stays until it's treated. A storm closes the road. | A Witch Queen who is half a god by birth |
-| Everyone wants paying, and says what for | A dead court whose castle stands where yesterday was only trees |
+| The road is long and the storms close it. A wound stays until it's treated. | A Witch Queen who is half a god by birth |
+| Everyone wants something, and says what | A dead court whose castle stands where yesterday was only trees |
 | A nobody gets ignored, robbed or hired | Titans' bones as hills, and cities built on them |
 | Second person, present tense, blunt | Sex, sacrifice and conquest without euphemism |
 
@@ -55,7 +55,7 @@ The kit is the frame's checklist for every town after the slice, and the town's 
 
 ### What's seeded in version 1 and built later
 
-- **The Witch Queen's kingdom.** In version 1 she's felt through an envoy in Qetzal, refugees and her coin. Her seat and her arena are seeds.
+- **The Witch Queen's kingdom.** The Witch Queen is Gildra (the owner, Nov 19). In version 1 she's felt through her factor and her envoy in Qetzal, refugees and her coin. Her seat and her arena are seeds.
 - **Places at odds with her rule.** One is a seed in version 1, and the first to be built after it.
 - **The Lightbringers** (below): their occupied coast is a seed.
 
@@ -65,7 +65,7 @@ Guesses, to size the work. The slice and the pattern page set the real numbers.
 
 | | Places | People | Groups | Threads | Items and lore |
 | --- | --- | --- | --- | --- | --- |
-| The slice (Qetzal's gate quarter) | 6 | 6 | 4 | 1 | 6 |
+| The slice (Lowgate, Qetzal's gate quarter; grown Nov 19, see `slice/3-frame.md`) | 14 | 10 | 13 | 2 | 16 |
 | Qetzal whole | 25 | 35 | 10 | 4 | 30 |
 | The frontier town | 8 | 12 | 3 | 2 | 10 |
 | The Woed wood and the dead court | 8 | 10 | 3 | 2 | 10 |
@@ -112,11 +112,11 @@ Re-rooted: the court travels because the Woed is mercurial. It can haunt any woo
 
 | Power | Holds by | Wants | State in version 1 |
 | --- | --- | --- | --- |
-| **The Witch Queen** | Blood, a cult and an enslaved host | Qetzal's water and tolls; the Badlands brought to heel | Felt: an envoy, coin, refugees |
+| **The Witch Queen (Gildra)** | Blood, a cult and an enslaved host | Qetzal, the chokepoint on the Old Road; the Badlands brought to heel | Felt: a factor, an envoy, coin, refugees |
 | **The Bastards** | Force, and a monopoly each | Each other's ground | Built: one rules the frontier town; others are seeds |
 | **The Lightbringers** | Occupation, and a creed that writes the law on bodies | Every shore they can reach, and the Witch Queen's kingdom most of all | Seeded: their occupied coast; a missionary or a deserter in Qetzal |
 | **The dead court** | Fear, and courtesy. Escrutia sits at its head and holds it together badly | Guests, and what it's owed; each courtier wants something of their own | A travelling threat |
-| **Qetzal** | Water and neutrality | To stay free | Built |
+| **Qetzal** | The Peace, sold to anyone with money, and walls nobody in the Badlands can break | To stay free | Built |
 
 #### The third power: the Lightbringers (settled Nov 19)
 
@@ -188,7 +188,7 @@ Two notes on it:
 | Stage | What's made | The owner | Sessions |
 | --- | --- | --- | --- |
 | **0. The last calls** | Answers to questions 6 to 9 below; `atlas.md`: the kin, the powers, the Woed, the seeds, each with sources; the world's premise and narrator lines. **Done Nov 19.** | About half an hour | 1 |
-| **1. The slice** | The module process's part 1, checkpoints 1 to 6: Qetzal's gate quarter, built to the town kit, played. Checkpoint 1 settled; checkpoint 2 handed back Nov 19 (`slice/2-premise.md`) | Six short checkpoints and an evening of play | 2 or 3 |
+| **1. The slice** | The module process's part 1, checkpoints 1 to 6: Qetzal's gate quarter, built to the town kit, played. Checkpoints 1 and 2 settled; checkpoint 3 handed back Nov 19 (`slice/3-frame.md`) | Six short checkpoints and an evening of play | 2 or 3 |
 | **2. The pattern** | `pattern.md`, with the town kit as tested in play | 15 minutes | 1 |
 | **3. Qetzal whole** | Its other quarters and threads, from sheets | A sheet and a frame per round | 2 or 3 |
 | **4. The frontier town and the road** | A sheet, a frame, a fill; the first vacancy the player can take | The same | 1 or 2 |
@@ -211,7 +211,7 @@ Answered on Nov 19:
 
 1. **The third power:** the Lightbringers, an invasion from a sunny island seat, holding mostly occupied land. Damhaven's invasion is pinned for later.
 2. **Woed** is the name.
-3. **One Witch Queen** for now, with the Lightbringers as her rival.
+3. **One Witch Queen** for now, with the Lightbringers as her rival. She's **Gildra**, the base and the visual (later on Nov 19).
 4. **First Children** stays: recognisable, and its own thing.
 5. **Escrutia** is the dead court's sovereign, over a mess of interests.
 
@@ -222,6 +222,6 @@ Answered on Nov 19:
 
 ## The next session
 
-Once the owner has answered checkpoint 2 (`slice/2-premise.md`):
+Once the owner has answered checkpoint 3 (`slice/3-frame.md`):
 
-> Read `CLAUDE.md`, `docs/content/volungraiv/atlas.md`, `docs/content/volungraiv/plan.md`, `docs/content/volungraiv/sources/qetzal.md`, `docs/content/volungraiv/slice/2-premise.md` with the owner's answers, `docs/content/sources/README.md`, `docs/content/modules/process.md`, `docs/content/standard.md` and the `inkwyrm-records` skill. Dark Lord Funk (`docs/bids/content/darklordfunk_workbook.md`) is lore to mine, not a plan to follow. Don't read or draw on `docs/abernys/` or Bogwater. This is the adventure's next module and test bed; `docs/reviews/adventure/decision.md` says what its first slice must give the rules. Write checkpoint 3, the frame of Qetzal's gate quarter, as `docs/content/volungraiv/slice/3-frame.md`: every record as one line, in tables, with the town kit filled and the questions checkpoint 3 lists. Hand it back and stop. Never use the owner's real name; sign docs `@AmbiProp`.
+> Read `CLAUDE.md`, `docs/content/volungraiv/atlas.md`, `docs/content/volungraiv/plan.md`, `docs/content/volungraiv/sources/qetzal.md`, `docs/content/volungraiv/slice/2-premise.md` and `docs/content/volungraiv/slice/3-frame.md` with the owner's answers, `docs/content/sources/README.md`, `docs/content/modules/process.md`, `docs/content/standard.md`, the `inkwyrm-records` skill and pulp-voice's `references/anti-patterns.md`. Dark Lord Funk (`docs/bids/content/darklordfunk_workbook.md`) is lore to mine, not a plan to follow. Don't read or draw on `docs/abernys/` or Bogwater. This is the adventure's next module and test bed; `docs/reviews/adventure/decision.md` says what its first slice must give the rules. Write checkpoint 4, the gold pair: the place and the person the owner chose, in full, with their rules and a reason for each number, as `docs/content/volungraiv/slice/4-gold.md`. Economy is the world's, not the rules': mechanics stay the standard ruleset's. Hand it back and stop. Never use the owner's real name; sign docs `@AmbiProp`.
