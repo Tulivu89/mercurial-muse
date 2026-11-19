@@ -1,186 +1,205 @@
 # Volungraiv: the plan
 
-Nov 18, 2026 · @AmbiProp · The adventure's first module and its test bed. Where it starts, how it gets built from sources, what finished looks like, and what the owner decides first. Read with `docs/content/sources/README.md` (the source method), `docs/content/modules/process.md` (slice, pattern, frames and fills) and `docs/content/standard.md`. Nothing here is canon until the owner answers the questions at the end.
+Nov 19, 2026 · @AmbiProp · The adventure's first module and its test bed. This version comes from the owner's notes of Nov 19, which changed the scope, the kin, the Woed and the claim. It covers the scope, the loop, how the world gets built from sources and seeds, what version 1 holds, and what still needs a decision. Read with `docs/content/sources/README.md` (the source method), `docs/content/modules/process.md` (slice, pattern, frames and fills) and `docs/content/standard.md`.
 
 ## In short
 
-- **The method:** every region, town, faction, family, lead and thread starts from a named source: a lead source and one or two for seasoning. Each source gives a shape, a list of questions and a bar for quality. We keep the dynamics and re-root them in Volungraiv's own material (titan blood, the kin, the planes, contracts on skin), and never keep names or details. A source sheet turns into a frame; the frame turns into a fill.
-- **Where it starts:** settle the canon (the two drafts disagree), write a one-page atlas, then build **Qetzal** as the slice. Qetzal's source sheet is already drafted as a worked example (`sources/qetzal.md`).
-- **What finished means:** version 1 is **the Badlands, with Qetzal at its centre**, played end to end. The Witch Queen's kingdom and the Wandering Woods are edges in version 1 (rumours, a border place, people who came from there) and become full regions in versions 2 and 3.
-- **What it costs the owner:** about two hours to settle the canon and the atlas, then the six checkpoints of the slice, then five to fifteen minutes per frame after that.
+- **The feel:** a grounded floor under a heavy metal ceiling. You start as a nobody paying for water, in second person, where wounds, prices and weather never bend. Above you are Witch Queens, a dead court that travels, and titans' bones. Big things are rare, seen at a distance first, and played straight. A nobody can rise far enough to depose one of them, or never try.
+- **The loop:** the one Bethesda's games run on. A faceless stranger walks into any town and makes drama by meddling with its people, picks up a thread, or works for a place or a faction. Every town is built to a **town kit**, so the loop works anywhere.
+- **The scope:** deep where play starts, seeded everywhere else. **Qetzal** is built deep. **A frontier town under a Bastard** and **a wood of the Woed** are built to the kit. Everything else exists as **seeds**: a line, a door and one way in, costing nothing until someone steps through.
+- **The claim:** the player can take what exists (a town, a hold, a faction's seat) in version 1, from content alone. Founding a hold of their own, and keeping people there, needs adventure code. It's planned here and handed to the code sessions.
+- **Dark Lord Funk** is lore in a drawer: mined where it fits, never followed.
 
-## Where we're starting
+## The feel: a grounded floor, a metal ceiling
 
-### What exists
-
-| What | Where | State |
-| --- | --- | --- |
-| The premise, seven kin, three regions | `docs/bids/content/Initial content ideas.md` | The owner's current direction. A sketch. |
-| Dark Lord Funk: a premise, style, standing ladders, 48 places in four regions, 7 factions, 13 characters | `docs/bids/content/darklordfunk_workbook.md` and the card | An older take. The owner: the characters can mostly be adapted; the setting has drifted. |
-| The module process | `docs/content/modules/process.md` | Written for exactly this, with Qetzal named as the first place |
-| The standard, the checker, the records skill | `docs/content/standard.md`, `npm run content:check`, `.claude/skills/inkwyrm-records/` | Proven on the resort and HOG Wild (Homes, not modules) |
-| The rules a module can use | `core/rules/`, `core/map/` | Four approaches, tiers and ranks, states, standing, goods and prices, threads and milestones, travel by level on hex maps, the evaluator (adventure 0.28.0) |
-| What's coming that the module has to feed | `docs/reviews/adventure/decision.md` (A2, A3) | Opponents' moves, progress clocks, story events a narrator can trip |
-
-### Where the two drafts disagree
-
-Each row needs a call before the atlas. The proposal is a recommendation, not a decision.
-
-| Topic | Dark Lord Funk | Initial ideas | Proposal |
-| --- | --- | --- | --- |
-| **Who rules** | Three Witch Queens: Gildra (gold, debt, pleasure), Soriana (fire, arena, zealots), Escrutia (death, a legion that waits) | One Witch Queen, "one such remaining tyrant" | **One Witch Queen.** "Remaining" means others fell. The Badlands are what's left of a fallen tyrant's realm (below). Gildra and Soriana's material goes into the Witch Queen and her court; Escrutia stays out of version 1 or becomes the dead tyrant. |
-| **The map** | Ironpeak Crags, the Ashlands, the Gilded Expanse, the Sunless Coast | The Witch Queen's kingdom, the Badlands and the Bastards, the Wandering Woods | **The three regions from Initial ideas.** DLF's places are mined for parts: the Titan's Ribcage becomes a Bastard's hold, the arena and the ziggurat go to the kingdom, the Broken Steppes become Badlands ground. |
-| **Peoples** | Goblins, wolven, tauren, saurian, "Orekin Fae", "Cinderkin Fae", revenants | Cinderkin, Orekin, Beastkin, Lunarkin, Solarkin, Succori, humans | **The seven kin.** Wolven, tauren, saurian, vulpen and pantheren are beastkin peoples. Goblins need a call: beastkin, small Succori, or cut. |
-| **The player** | Echidna's apex descendant, come to conquer and break the taboo | Not set | **An open start in Qetzal**, with a few backgrounds. The conqueror is kept as a later scenario: it's a strong one, and the Badlands are built for a player who takes ground. |
-| **The taboo** | Titan blood must never cross with Echidna's line | Not mentioned | Keep it as deep lore, and decide whether the resort's Echydna is the same Mother of Monsters (a cross-world nod; no feature links worlds). |
-| **The tone** | Richard K. Morgan's hard surface and Tanith Lee's decadence; explicit; second person, present | "Heavy metal" tyranny, orgies of sacrifice | **Keep DLF's style lines** as the world's narrator instruction, checked against pulp-voice. |
-
-### What the module has to give the rules
-
-From `docs/content/next.md`, so each feature has something to bite on. The slice's coverage table (process, checkpoint 5) must fill every row.
-
-| The adventure needs | Volungraiv's first answer |
+| The floor (never bends) | The ceiling (huge, played straight) |
 | --- | --- |
-| Things worth a check, with difficulty set on purpose | The Peace token at Qetzal's gate, a Lunarkin contract, a lock in the counting-house, the glass storm |
-| An opponent with a tier and approaches (A2) | A Bastard's enforcer in the pits; a behemoth on the road, which can't be fought, only avoided |
-| A thread with milestones on a clock (A2) | The Witch Queen's envoy coming for Qetzal's answer, on a clock the player can hear ticking |
-| Moments a narrator can trip by name (A3) | **The storm bell** (glass storm: everyone under a roof), **the caravan comes in**, **the envoy arrives** |
-| Routes and a map that make travel cost time | Qetzal at a crossroads; the next town days away across open ground; storms that close a road |
+| Water costs money. A wound stays until it's treated. A storm closes the road. | A Witch Queen who is half a god by birth |
+| Everyone wants paying, and says what for | A dead court whose castle stands where yesterday was only trees |
+| A nobody gets ignored, robbed or hired | Titans' bones as hills, and cities built on them |
+| Second person, present tense, blunt | Sex, sacrifice and conquest without euphemism |
 
-## The method, for Volungraiv
+The rule that keeps both: **the ceiling is reached through the floor.** You don't meet the Witch Queen in the first hour. You meet her envoy's bodyguard, her coin and the people who fled her. Dark Lord Funk's style lines (Richard K. Morgan's hard surface, Tanith Lee's decadence) stay as the narrator's instruction, checked against pulp-voice.
 
-The full method is `docs/content/sources/README.md`. In this world it has one more layer: **the cosmology is the re-rooting.** Volungraiv is the mortal crossing point of the primal planes. Every borrowed drama is answered through what the planes, the titans and the kin make true here and nowhere else.
+**Intrigue stays out of the centre.** Councils, votes and long schemes aren't this world's engine. Power in Volungraiv is held by force, by money and by blood, and taken the same way. Qetzal's sheet is adjusted to match: its factions fight over who collects, not over who votes.
 
-### The cosmology, as a working table (proposal)
+## The loop, and the town kit
 
-| Plane | Who came from it | What it does to the world |
+A stranger in any town needs the same things to make a story. Every built town has all of these; a seed has none of them until it's built.
+
+| The kit | What it gives the loop | Records |
 | --- | --- | --- |
-| The titans' planes (fire, earth and metal) | The titans; through them the Blooded, Cinderkin and Orekin. Humans share their ancestors | Titan bones as landmarks; places where a titan died still run hot or heavy |
-| The planes of light | Solarkin | Glyphs on the skin: identity, and crimes written where everyone can read them |
-| The planes of darkness and night | Lunarkin | Contracts on the skin: who owns whom is legible to anyone who can read it |
-| The Woed | Beastkin, once human, sent back changed | The Wandering Woods are where the Woed touches the world (to confirm) |
-| Damhaven | Succori, the latest arrivals | Distrust, a shut-out quarter, and rumours of a door still open somewhere |
-| The seam between planes | Nobody; it's weather | **Glass storms** (lightning and sand fused into falling glass), wandering behemoths. The Badlands sit on the seam. |
+| **A roof for strangers** | Somewhere to sleep, eat and hear things | A place; the keeper (a door); rumours as lore, each pointing at a thread, a seed or a person |
+| **Who rules, and who'd replace them** | Something to back or bring down | Two people and the gap between them |
+| **Standing work** | Something to do on day one: escort, collect, hunt, fetch | A faction or employer whose When sections say what work it gives at each standing |
+| **Six to ten people with wants** | Drama the player makes by meddling | Each a use (door, lever, threat, prize, mark). At least two can be turned on each other. |
+| **Two threads** | Drama already moving | One local trouble; one that leads out to another region |
+| **A dangerous place nearby** | Somewhere to go in and come back richer or not at all | A ruin, a warren or a titan's grave, with a threat that has a tier |
+| **A vacancy** | Somewhere to leave a mark | A title, a hold or a seat the player can take |
+| **One thing sold nowhere else** | A reason to come back | A good with a price |
+| **The ordinary** | A place that's lived in | A bell, a food, a job: Atmosphere and schedules |
 
-This gives every region its weather and every people its use to a story. Three of these are rules as much as lore:
+The kit is the frame's checklist for every town after the slice, and the town's source sheet answers it. A sheet whose *becomes* column leaves a row of the kit empty isn't finished.
 
-- **Skin you can read.** A Lunarkin's arms say who they work for; a Solarkin's crimes are on show; a Cinderkin's scars glow and are hard to hide at night. Reading someone is a Focus check with something real to find, and a forged or redacted mark is a scene.
-- **Contracts that bind.** A contract inked on a Lunarkin is the deal, and breaking it marks them for life. That's leverage with teeth, and the player can end up with ink of their own.
-- **Storms that stop everything.** When the glass storm comes, everyone in Qetzal shares a roof with whoever's next to them. It's a named event, a travel hazard and the best scene engine the city has.
+## The scope
 
-### The atlas, first pass
+### What's built in version 1
 
-Each region and major faction with its sources. The owner cuts and redirects here; it's cheaper than anywhere later. Sources are named for their shape only.
+| Where | Built to | Sources (first pass) |
+| --- | --- | --- |
+| **Qetzal** | Deep: several quarters, its factions, three or four threads, the slice | Ankh-Morpork's guilds (inverted), Palmyra, Mos Eisley. See `sources/qetzal.md`. |
+| **A frontier town under a Bastard** | The town kit | Deadwood; Yojimbo's town between two bosses; Mad Max's warlord who holds the one thing everyone needs |
+| **A wood of the Woed** | The town kit, with a tribe in place of a town, and the dead court passing through | See *The Woed* below |
+| **The roads between them** | Places along the way, hazards, travel time | Mad Max's roads; the glass storms |
+| **Seeds** | A line, a door, one way in | See *Seeds* below |
 
-| Region | Lead source | Seasoning | What we take | Re-rooted in |
-| --- | --- | --- | --- | --- |
-| **Qetzal**, the free city | Ankh-Morpork's licensed guilds, inverted: the guilds really rule and the titular baron is for show | Palmyra, the caravan city between two empires; Mos Eisley's every-kind-of-traveller crowd | Crime that's licensed and taxed; a city that lives because two powers need it neutral; a crowd where every kin rubs shoulders | The Peace is a Lunarkin contract; the glass storm; the only roof in the Badlands |
-| **The Badlands and the Bastards** | Mad Max's wasteland warlords, each holding one thing everyone needs | Deadwood's frontier camps; Yojimbo's town between two bosses | Fiefs built on monopolies (water, a pass, fuel); colourful bosses; towns that are one bad week from changing hands | The Bastards are the unacknowledged Blooded heirs of the fallen tyrant, fighting over the estate. Behemoths, glass storms, titan bones. |
-| **The Witch Queen's kingdom** | Slaver's Bay: pyramid-ruled cities, bought soldiers, fighting pits | Commodus's Rome, where the ruler fights in her own arena; Dark Sun's sorcerer-king city with its templars and ziggurat | Order bought with chains; the arena as politics; a priesthood that is also the police | She is Blooded, a near-god by birth. Her cult is the old titan priesthood that still supplies her consorts. |
-| **The Wandering Woods** | The fae court in *Jonathan Strange & Mr Norrell*, which steals people for a ball that never ends | Ravenloft's mists, which take people from anywhere; The Witcher's swamp hags, three sisters behind closed doors | A court with rules that are traps; a border that comes to you; bargains | The Woed, the plane that made the beastkin. The woods remember them. |
+### What's seeded in version 1 and built later
 
-| Faction | Lead source | Seasoning | Where |
+- **The Witch Queen's kingdom.** In version 1 she's felt through an envoy in Qetzal, refugees and her coin. Her seat and her arena are seeds.
+- **Places at odds with her rule.** One is a seed in version 1, and the first to be built after it.
+- **The third power** (below).
+
+### Rough sizes
+
+Guesses, to size the work. The slice and the pattern page set the real numbers.
+
+| | Places | People | Groups | Threads | Items and lore |
+| --- | --- | --- | --- | --- | --- |
+| The slice (Qetzal's gate quarter) | 6 | 6 | 4 | 1 | 6 |
+| Qetzal whole | 25 | 35 | 10 | 4 | 30 |
+| The frontier town | 8 | 12 | 3 | 2 | 10 |
+| The Woed wood and the dead court | 8 | 10 | 3 | 2 | 10 |
+| Roads and seeds | 15 | 10 | 4 | 1 | 15 |
+| **Version 1** | **about 55** | **about 65** | **about 20** | **about 9** | **about 65** |
+
+That's smaller than the first plan's version 1, and it reaches further, because seeds cost a line each.
+
+## The world, revised
+
+### The kin
+
+Seven kin, with goblins replaced by the owner's First Children.
+
+| Kin | In short | Their use to a story |
+| --- | --- | --- |
+| Cinderkin | Titan blood; glowing ritual scars | Hard to hide at night; the scars are a rite someone can be denied |
+| Orekin | Titan blood; metal in the skin | Prized, and so hunted |
+| Humans | Natives, gaining ground, still exploited | The majority anywhere stable; the default nobody |
+| **First Children** (new) | Small folk, closest to the ancestor humans, Orekin and Cinderkin share. Insular and diverse. Some are communal, clever and quietly advanced, kept safe by never being noticed. | A people you find only by looking. A hidden village is a seed that opens to the player who earns it. |
+| └ **Golkin** | First Children warped by generations of hiding on the edges of other realms. Clever and cruel. | Warrens, traps and raids: the threat near any town |
+| Beastkin | Twisted by the Woed, sent back changed, looked down on | Packs and herds outside the walls; the Woed remembers them |
+| Lunarkin | Contracts written on the skin | Who owns whom, readable by anyone who can read it |
+| Solarkin | Glyphs of identity; crimes written on the body | A past nobody can hide |
+| Succori | From Damhaven, distrusted. The small, impish breed is somehow related to the First Children, and nobody explains how. | A shut-out quarter, and a rumour of a door still open |
+
+Sources for the First Children: the hobbits' Shire for the communal ones (small, insular, overlooked, and better off for it) and Gollum for what hiding does to the Golkin. The folklore of the little people, which nobody owns, seasons both.
+
+### The Woed
+
+The Woed is the primal plane that made the beastkin, and it touches the world wherever a forest gets dark enough. Its woods have tribes and horrors of their own, and they don't stay put. **The Wandering Woods are the Woed's edge**, not a separate region.
+
+**The dead court.** The revenants are a court that travels. Its castle stands wherever a forest darkens, because the Woed puts it there, and it's gone the next week. It keeps the old courtesies and the old appetites, and it collects.
+
+| | Source | We take |
+| --- | --- | --- |
+| **Lead** | Dracula's castle as the Castlevania games use it, a castle that rises in a new place each time | A fortress that arrives; a lord whose house is a trap with good manners |
+| **Seasoning** | The Unseelie Court of folklore | Courtesy as a weapon, bargains that bind, stolen guests who never leave |
+| **From Dark Lord Funk** | Escrutia, the revenant queen whose legion waits | Its sovereign, if the owner agrees: small, pale and patient, with a court that doesn't eat |
+
+Re-rooted: the court travels because the Woed is mercurial. It can haunt any wood in the world without the world needing a road to it. It's a named event (**the court arrives**), a threat with a tier, and a door to the Woed's deeper places.
+
+### Powers
+
+| Power | Holds by | Wants | State in version 1 |
 | --- | --- | --- | --- |
-| The guilds of Qetzal (the Compact) | Venice's councils | Ankh-Morpork's guilds | Qetzal |
-| The underguilds | Riften's broken thieves' guild | The Camorra; yakuza ink (it meets the Lunarkin's) | Qetzal |
-| A Lunarkin counting-house | The Iron Bank of Braavos | The Medici | Qetzal, with branches in the kingdom |
-| The Bastards (each one a faction of one) | Mad Max's warlords | Renaissance condottieri | The Badlands |
-| Beastkin packs and herds (DLF's wolven, tauren, saurian) | DLF's own factions, which are good | Khajiit caravans that camp outside city walls | The Badlands, outside Qetzal's gate |
-| The Witch Queen's cult | Dark Sun's templars | The Inquisition | The kingdom; an envoy in Qetzal |
-| Her enslaved host | The Unsullied | The Mamluks, the slave soldiers who took the throne | The kingdom; the envoy's guard |
-| The pit houses | House Batiatus's ludus | The Hippodrome's Blues and Greens, who rioted and nearly took the city | The kingdom's arena; one small pit in Qetzal |
-| The Wandering Court | The Seelie and Unseelie courts of folklore | Changeling's bargains | The Woods |
+| **The Witch Queen** | Blood, a cult and an enslaved host | Qetzal's water and tolls; the Badlands brought to heel | Felt: an envoy, coin, refugees |
+| **The Bastards** | Force, and a monopoly each | Each other's ground | Built: one rules the frontier town; others are seeds |
+| **The third power** | To decide | | Seeded |
+| **The dead court** | Fear, and courtesy | Guests, and what it's owed | A travelling threat |
+| **Qetzal** | Water and neutrality | To stay free | Built |
 
-### Lead characters
+#### The third power: three options
 
-The owner's example is the right goal. Players want the old wizard, and the vampire's daughter who walks out on her father's war. Each lead gets a source line in Mythic Overdrive's form; DLF's characters bring their own drafts as raw material, and the source line outranks the draft.
+The owner is right that two isn't enough: the Bastards are chaos, so the Witch Queen has no rival her own size. A third power should be a different kind of pressure, so that the player is always picking between kinds of rule.
 
-| Who | From | Source (proposal) | Where they'd live |
+| Option | What it is | Sources | Its pressure |
 | --- | --- | --- | --- |
-| The Witch Queen | Gildra, with Soriana's arena | To pick: Cersei's court and appetite, or Daenerys at her hardest in Meereen | Her temple-palace; version 2 |
-| Her heir, who wants out | New | Serana of Skyrim's Dawnguard: the daughter of a monstrous parent, sealed away for a plan she won't serve, and a companion | Comes to Qetzal in version 1. A follower and a thread. |
-| A wandering wizard | Nostromandu, re-sourced | Gandalf: arrives when he means to, knows more than he says, fond of small people, terrible when roused | Passes through Qetzal. A door to every region. |
-| A pit fighter | Vigga (wolven) | Spartacus or Crixus, to pick | Qetzal's pit in version 1; the kingdom's arena in version 2 |
-| A thief | Yumiko (vulpen) | To pick | Qetzal's underguilds |
-| A merchant | Nefera (pantheren) | To pick | Qetzal's market |
-| An assassin | Kaelen (Orekin) | To pick | Wherever her contract sends her |
-| A priestess | Ilia (human) | To pick | The Witch Queen's cult, or its envoy in Qetzal |
-| Qetzal's titular baron | New | Deadwood's Swearengen, cut down to a figurehead who knows it and minds | Qetzal |
-| Four Bastards | DLF's chieftains, and new | Mad Max's warlords, one shape each | Their holds in the Badlands |
+| **A. The Lawgivers** (recommended) | A sun creed that writes the law on bodies. Solarkin priests lead it, with humans in the ranks. Places at odds with the Witch Queen look to it, and find a second tyranny. | Calvin's Geneva; Judge Dredd's street judges; the Inquisition | **Law against appetite against force.** Every choice is between three kinds of tyranny. |
+| B. Damhaven's march | A Succori lord holding ground around an open door to Damhaven, and growing | The Norman conquest; any hellgate | An invasion from outside, which catches the ordinary Succori in between |
+| C. A free league | The places at odds with the Witch Queen, banded together for trade and walls | The Hanseatic League | Grounded, but it drifts toward the intrigue this world is setting aside |
 
-### How it makes stories without us
+Recommendation: **A**, with **B** kept as a seed (the open door).
 
-A module can't script its way to emergent play. It has to be built so that play makes the story. Six rules for every frame:
+### Seeds
 
-1. **Pressures, not plots.** Every settlement holds two forces that want things they can't both have, each on a clock. The player tips them; nobody waits for the player.
-2. **Vacancies.** Somewhere in every region there's a title, a seat or a name that can be taken: a barony, a seat on the Compact, a champion's place in the pit. The Badlands are built for this. A Bastard can fall, and the player can be the next one.
-3. **Every kin wants something from every other.** The kin are built so that meeting is already a hook: who reads whose skin, who owes whom, who is shut out where.
-4. **What the player does stays done.** A milestone flips When sections and states. The quarter after the riot is a different place, and the people in it say so.
-5. **Rumours travel.** What the player did reaches other towns as lore keyed on their name and deeds, one region over and a few days late.
-6. **Every person is a use** (process.md): a door, a lever, a threat, a prize or a mark. Ties are the web that makes a lever in one place pull a person in another.
+A seed is a record that costs nothing until it's entered: one Line, a door, and **one way in**. That can be a rumour, one person from inside, or a refusal the player can see. A seed has to play at the level of a line: the door is there, it won't open, and someone in town knows why. Inside it, the seed can later grow into a world of its own, built from its own source sheet.
+
+The owner's magic school is the model. You can never enter it, it costs no context, and once you step in it's a world.
+
+| Seed | Line (draft) | Way in | Source when it's built |
+| --- | --- | --- | --- |
+| The school | A door in a wall that opens for the people it chooses | A student who left, and won't say why | Earthsea's Roke, whose door asks for your true name; Unseen University |
+| The Witch Queen's seat | Her temple-palace, where the orgies and the sacrifices are the same event | Her envoy in Qetzal | Slaver's Bay; Commodus's Rome; Dark Sun's sorcerer-kings |
+| Her arena | The pits where her law is settled in public | A fighter bought out of them | House Batiatus; the Hippodrome |
+| A hidden First Children valley | A valley nobody has noticed, which is the point | A small trader who comes to market and leaves by no road | The Shire |
+| A Golkin warren | Holes in a ravine, and traps around them | A raid on the frontier town | Gollum's caves; folklore |
+| Damhaven's open door | A Succori rumour of a way home that opens both ways | A Succori trader in Qetzal | Option B above |
+| A titan's grave | A hill that is a skull, still warm | A Cinderkin pilgrim | Dark Lord Funk's Titan's Ribcage |
+| An empty hold | A fortress in a titan's ribs that nobody has held since the tyrant fell | A Bastard who failed to take it | Dark Lord Funk's Titan's Ribcage; the player's to claim |
+| A place at odds with the Witch Queen | A town that pays her nothing and is waiting to be made to | Refugees in Qetzal | To pick with the third power |
+
+The seeds don't need the owner's time until one is built. Each seed's line goes through the frame review like any other.
+
+## The claim
+
+The owner wants the player to be able to lay a claim: take an existing place or faction, or found their own hold, put it in the local lore, rule it, and keep a household there. This breaks into three levels. Only the first is content.
+
+| Level | What the player does | What it needs | When |
+| --- | --- | --- | --- |
+| **1. Take what exists** | Depose the frontier town's Bastard, take the empty hold, buy a seat in Qetzal, become a pack's chief | Authored vacancies: milestones that make the player the holder, and When sections saying how people act toward the new holder. Content only; the rules have this today. | Version 1 |
+| **2. Hold it** | People live at your hold and keep a day there; a treasury; the household you gathered | **Code.** Followers exist (`adventure/src/engine/follow.ts`: companions and captives, by bond), but they keep no schedule. A hold needs residents who stay home, with schedules, and an income. | After A2 and A3 |
+| **3. Found your own** | A new hold, named by the player, added to the map and to what people in the next town have heard | **Code.** Records the save creates, laid over the module the way the map keeps only an author's changes. Rumours of the player's deeds written into local lore. | Later |
+
+Two notes on it:
+
+- **A household is a set of people with wants.** The people a player gathers at a hold are leads, each with a want of their own and a line they won't cross. That's what keeps a harem a story: who resents whom, who wants the keys. They're written to the standard like anyone else.
+- **There's a bridge to Chat.** Chat already has Homes: a household, a day and a bond. A player's hold, with the people in it, is the same shape. Letting a hold from the adventure become a Home in Chat would join the two sides. It's a roadmap question, not a version 1 job.
 
 ## The order of work
 
 | Stage | What's made | The owner | Sessions |
 | --- | --- | --- | --- |
-| **0. Canon and atlas** | Answers to the questions below; the atlas as `atlas.md`; the world's premise, tone and narrator lines | About an hour, mostly picks | 1 |
-| **1. Qetzal's sheet** | `sources/qetzal.md`, finished from the owner's picks (a worked draft is already there) | 10 minutes | Part of stage 2 |
-| **2. The slice** | The module process, part 1, checkpoints 1 to 6: Qetzal's gate and market quarter, played | Six short checkpoints, and an evening of play | 2 or 3 |
-| **3. The pattern** | `pattern.md`: the gold set, the voice, names, numbers, decisions, budgets | 15 minutes | 1 |
-| **4. Qetzal whole** | Its other quarters, its factions, three or four threads; sheets for the families and the underguilds | A sheet and a frame per round | 2 or 3 |
-| **5. The Badlands** (version 1 done) | Three or four towns, four Bastards' holds, the roads and wild ground; each from its own sheet | The same, per town | 4 to 6 |
-| **6. The kingdom** (version 2) | The capital, the arena, the temple-palace, the cult | The same | 4 to 6 |
-| **7. The Woods** (version 3) | The court and its edges, which may want engine work (below) | The same | 3 or 4 |
+| **0. The last calls** | Answers to the questions below; `atlas.md`: the kin, the powers, the Woed, the seeds, each with sources; the world's premise and narrator lines | About half an hour | 1 |
+| **1. The slice** | The module process's part 1, checkpoints 1 to 6: Qetzal's gate quarter, built to the town kit, played | Six short checkpoints and an evening of play | 2 or 3 |
+| **2. The pattern** | `pattern.md`, with the town kit as tested in play | 15 minutes | 1 |
+| **3. Qetzal whole** | Its other quarters and threads, from sheets | A sheet and a frame per round | 2 or 3 |
+| **4. The frontier town and the road** | A sheet, a frame, a fill; the first vacancy the player can take | The same | 1 or 2 |
+| **5. The Woed wood and the dead court** | The same; the court's arrival as an event | The same | 1 or 2 |
+| **6. Seeds** | One line each, in one frame | 10 minutes | Part of 3 to 5 |
 
-The writing sessions and the adventure's code sessions (A2, A3) can run side by side. The slice is what A2 and A3 get built against.
-
-### What finished looks like, roughly
-
-Guesses, to size the work. The real numbers come from the slice and the pattern page.
-
-| | Places | People | Groups | Threads | Items and lore |
-| --- | --- | --- | --- | --- | --- |
-| The slice | 6 | 6 | 4 (2 kin, a faction, a family) | 1 | 6 |
-| Qetzal whole | 25 | 35 | 10 | 4 | 30 |
-| Version 1 (the Badlands) | 80 | 100 | 20 | 10 | 70 |
-| The full module | 200 | 250 | 35 | 25 | 150 |
-
-Most of those records are a Line and little else, which is the point of the tiers. Fewer than one person in five is a lead or someone a thread turns on.
-
-## What could go wrong, and how we'd catch it
-
-| Risk | Catch |
-| --- | --- |
-| A place reads as a copy of its source | Blend rule; the owner's read of every sheet; no name points back |
-| A drama that would play the same anywhere | The re-root test on every sheet's dramas |
-| Sources from memory that are wrong | They only need to be right in shape. The owner confirms each lead source. |
-| Too many sources, and the place turns to mush | One lead, two seasoning at most |
-| Sheets add review time instead of saving it | Measured (below). If a sheet doesn't shorten the frame review, it shrinks. |
-| The Woods need a place with no fixed parent | It's a question for the map code, raised before stage 7, not a reason to bend the slice |
-| The kin's skin rules spread into every record | The kin's group records hold them; a member shows them in one trait (house rule) |
-| DLF's explicit material sits wrong in a module | The world's tone is decided at stage 0, with the site's 18+ setting in mind |
+Code that this calls for, for the code sessions and not the writers: A2 and A3 as planned (opponents, clocks and events, which the court's arrival and the storm bell need); a place whose parent can change, for the court's castle; then the claim's levels 2 and 3.
 
 ## Testing the method
 
-This build answers two of the standard's open assumptions (A7: does reviewing lines catch most problems? A8: does a fill from a pattern hold up?). It adds two of its own:
+As before: A7 and A8 from the standard, plus **S1** (does a sheet make the frame review faster? Count the owner's cuts on Qetzal's frame against HOG Wild's) and **S2** (does a sheet's bar catch what the checker can't?). One more:
 
-- **S1: a sheet makes the frame review faster and better.** Count the owner's cuts and redirects on Qetzal's frame, made from a sheet, against HOG Wild's frame, made without one.
-- **S2: a source bar catches what the checker can't.** At each fill, read ten records against the sheet's bar, and count what it flagged that the checker didn't.
+- **S3: does the town kit carry the loop?** In the slice's play-test, walk in as a nobody with no thread. Count how many turns pass before the player has something to do that they chose.
 
 ## Questions for the owner
 
-Short answers are enough. The first four block the atlas; the rest can wait for the slice.
+Settled on Nov 19: goblins become the First Children and the Golkin; the start is open, a nobody in Qetzal; Dark Lord Funk is lore in a drawer; the Wandering Woods are the Woed's edge, with the dead court; intrigue isn't this world's centre; there are seeds; the player can claim.
 
-1. **One Witch Queen or three?** Proposal: one, with the Badlands as the fallen tyrant's realm and the Bastards as its unacknowledged heirs.
-2. **The map:** the three regions from Initial ideas, with DLF's places mined for parts?
-3. **Goblins:** beastkin, small Succori, or cut?
-4. **The player:** an open start in Qetzal, with the conqueror kept as a later scenario?
-5. **Is the Wandering Woods where the Woed touches the world?**
-6. **The taboo and Echydna:** keep the taboo? Is the resort's Echydna the same Mother of Monsters?
-7. **Sources:** is anything off-limits, or anything you especially want used? Games, books, film and real history are all on the table.
-8. **The Witch Queen's lead source:** Cersei or Daenerys at her hardest, or another?
-9. **The slice:** Qetzal's gate and market quarter (`sources/qetzal.md` has the case), or another quarter?
+Still open:
+
+1. **The third power:** A (the Lawgivers), B (Damhaven's march) or C (a free league)?
+2. **Woed or Woad?** Your notes have both. *Woad* is the blue dye ancient Britons painted themselves with, and a model will pull that in. *Woed* reads as wood and woe. Recommendation: Woed.
+3. **How many Witch Queens?** Your note says "witch queens". Is there one in the kingdom with others elsewhere or fallen, or several ruling now?
+4. **"First Children":** keep it? It sits close to Tolkien's Firstborn (the elves) and the Children of the Forest from *A Song of Ice and Fire*, and both pull toward ancient forest mystics. Plainer options: the Small Folk, the Elder Kin, the Littlekin.
+5. **The dead court's sovereign:** Escrutia, from Dark Lord Funk?
+6. **The claim:** level 1 in version 1, levels 2 and 3 to the adventure's roadmap after A3?
+7. **The seeds:** strike or add any from the table.
+8. **The slice:** still Qetzal's gate quarter?
 
 ## The next session
 
-> Read `CLAUDE.md`, `docs/content/volungraiv/plan.md` with the owner's answers, `docs/content/sources/README.md`, `docs/content/volungraiv/sources/qetzal.md`, `docs/content/modules/process.md`, `docs/content/standard.md`, the `inkwyrm-records` skill, and the Volungraiv sources in `docs/bids/content/` (Initial content ideas, the Dark Lord Funk workbook and card). Don't read or draw on `docs/abernys/` or Bogwater. This is the adventure's next module and test bed; read `docs/reviews/adventure/decision.md` for what its first slice must give the rules. Write `docs/content/volungraiv/atlas.md` from the answers, finish Qetzal's sheet, and run the module process's part 1 from checkpoint 1. Hand each checkpoint back as one markdown file and stop. Never use the owner's real name; sign docs `@AmbiProp`.
+> Read `CLAUDE.md`, `docs/content/volungraiv/plan.md` with the owner's answers, `docs/content/sources/README.md`, `docs/content/volungraiv/sources/qetzal.md`, `docs/content/modules/process.md`, `docs/content/standard.md`, the `inkwyrm-records` skill, and the Volungraiv section of `docs/bids/content/Initial content ideas.md`. Dark Lord Funk (`docs/bids/content/darklordfunk_workbook.md`) is lore to mine, not a plan to follow. Don't read or draw on `docs/abernys/` or Bogwater. This is the adventure's next module and test bed; read `docs/reviews/adventure/decision.md` for what its first slice must give the rules. Write `docs/content/volungraiv/atlas.md` from the answers, finish Qetzal's sheet against the town kit, and run the module process's part 1 from checkpoint 1. Hand each checkpoint back as one markdown file and stop. Never use the owner's real name; sign docs `@AmbiProp`.
