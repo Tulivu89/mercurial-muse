@@ -2,6 +2,8 @@
 
 Nov 18, 2026 · @AmbiProp · A worked first draft of a settlement sheet (`docs/content/sources/README.md`), written before the owner's answers to the plan's questions. Everything here is a proposal. It shows what the method gives, and it doubles as the module process's checkpoint 1: where the slice should be.
 
+**Changed Nov 19, from the owner's notes:** intrigue isn't this world's centre, so the Compact and the underguilds fight over who collects the Peace, with muscle and money, not over votes. Every town is now built to the town kit (`../plan.md`), and the next session checks this sheet against it.
+
 ## The sources
 
 | | Source | We take | We leave |
@@ -40,7 +42,7 @@ Each drama checked against the test: *could this happen only here?*
 | The water | A dead titan's bones | Yes |
 | The Succori shut out | Damhaven's reputation | Yes |
 | The beastkin outside the gate | The Woed, and their history as a blight | Yes |
-| Compact against underguilds | Nothing yet | **No.** It plays the same in any guild city. It needs a kin or a plane in it: the underguilds are mostly beastkin and humans, the Compact mostly Lunarkin and Solarkin? |
+| Compact against underguilds | Nothing yet | **No.** It plays the same in any guild city. It needs a kin or a plane in it, and it's fought with muscle and money: the underguilds' collectors are beastkin and humans, the Compact pays in Lunarkin contracts, and each side wants to be the one holding the knife? |
 | The envoy | The Witch Queen is Blooded; the envoy is her cult | Partly. What she wants should be something only Volungraiv has: the titan's bones? |
 
 ## The bar
