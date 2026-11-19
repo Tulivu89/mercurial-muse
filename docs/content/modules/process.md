@@ -34,7 +34,7 @@ The narrator asks a different question of each field. A fact lives in the field 
 | Entry | Here | What is here, and who runs it? | What stands in it and what is done in it. Things that stay true through play |
 | Atmosphere | Here | What is it like right now? | Sound, smell, light and weather, by time of day where it changes |
 | History | Named | What comes up when someone asks? | Only what a scene could bring up |
-| Rules | Never | How hard is it, and what does crossing ask? | Its kind, difficulty, what a traveller needs, and where its Alert starts, each with a reason |
+| Rules | Never | How hard is it, and what does crossing ask? | Its kind; a difficulty, crossing or Alert only when the story needs one (the owner, Nov 19) |
 
 **Person**
 
@@ -47,7 +47,7 @@ The narrator asks a different question of each field. A fact lives in the field 
 | Background, Wants, hooks | Named | What comes up when asked? | Each stands alone, and is long enough to be worth a key |
 | When sections | When | What changes at this standing, or after this milestone? | Only what changes |
 | Schedule | By the clock | Where are they now, doing what? | Stops in times of day, each at a real place |
-| Rules | Never | How hard are they, and what do they have? | Tier, rank, gang, difficulty, purse, price, what they sell and carry, each with a reason from who they are |
+| Rules | Never | How big a threat are they, and what do they have? | Tier by threat and importance: most people are the baseline, a real threat a rival, a power a nemesis. A gang's size, and a purse, price, goods or difficulty only when the story needs one (the owner, Nov 19) |
 
 **The rest**
 
@@ -97,7 +97,7 @@ It is built in six checkpoints. Each is something the owner reads in a few minut
 | **1. Where** | Two or three candidate first places, a line or two each, with what an evening there would be | The pick, and what is at stake there |
 | **2. The premise and the pressure** | The premise in three sentences. What a person can die over, lose their freedom over or start a fight over in this place. The one ordinary thing that keeps it lived in | What is wrong, and what the place is really for |
 | **3. The frame of the slice** | Every record as one line, in tables: places, people (use, job, want, pattern, Aside, home and work, two or three ties), groups, the thread and its milestones, items | Cuts, renames, and the human complication for each person the thread turns on |
-| **4. The gold pair** | One place and one person, written in full, with their rules and the reason for each number | Voice. This is the cheapest point to say *not like that* |
+| **4. The gold pair** | One place and one person, written in full, shown in the reply itself with why each is gold | Voice. This is the cheapest point to say *not like that* |
 | **5. The slice, filled** | Every record in the slice, as a world file, checker clean, with a coverage table (below) | A read of the people the thread turns on, and anything the checker flagged |
 | **6. Play** | The slice opened in the adventure, with a short list of what to try | What played and what didn't, as test packs or one line each |
 

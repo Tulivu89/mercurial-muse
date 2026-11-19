@@ -15,7 +15,7 @@ One folder per topic:
 | `<model>.md` | A bid, one file per model: `chatgpt.md`, `grok.md` and so on. | The owner uploads them |
 | `decision.md` | Claude's informed proposal: what to build, taken from everything above, with credit and the calls made where the bids differ. | Claude |
 
-Topics now: `maps/` (decided and approved, with a prototype; phases M1 to M4 built), `ui/` (decided and built), `worldbuilding/` (decided and approved; W1 and W2 built) and `volungraiv-gold/` (decided; waiting on the owner).
+Topics now: `maps/` (decided and approved, with a prototype; phases M1 to M4 built), `ui/` (decided and built), `worldbuilding/` (decided and approved; W1 and W2 built) and `volungraiv-gold/` (decided and approved) and `volungraiv-ceiling/` (out for bids).
 
 ## The steps
 
@@ -38,4 +38,5 @@ Topics now: `maps/` (decided and approved, with a prototype; phases M1 to M4 bui
 | Maps | `maps/brief.md`, Nov 11 | None: the bids were in first | ChatGPT, DeepSeek, Gemini 3.8 Flash, Grok | `maps/decision.md`, Nov 11; revised three times on Nov 12 with the owner's answers (circles drawn from hex ground, travel from levels and the map from the start, roads on cells in place of routes, refining tools, lean icons, no fog yet), and `maps/prototype.html` to try it; approved Nov 12, M1 to M4 built the same day (Studio 0.9.0 to 0.12.0, adventure 0.27.0 and 0.27.1) |
 | The look and layout of the site | `ui/brief.md`, Nov 11 | `ui/claude.md`, Nov 11 | ChatGPT, Gemini 3.8 Flash, Grok (with `mockups.html` and `frames/`) | `ui/decision.md`, Nov 12; built the same day at the owner's word (Studio 0.8.0, adventure 0.26.0, Chat 0.3.1) |
 | Worldbuilding tools | `worldbuilding/brief.md`, Nov 11 | `worldbuilding/claude.md`, Nov 11 | ChatGPT, Gemini 3.8 | `worldbuilding/decision.md`, Nov 12; revised the same day after Story Engine 0.15 and `docs/Prompt Engineering Principles.md`; approved Nov 12 with the owner's answers (talks get their own export); W1 and W2 built the same day (Studio 0.13.0, 0.14.0) |
-| Volungraiv's gold pair (the Lee and Tamsin) | `volungraiv-gold/brief.md`, Nov 19 | `volungraiv-gold/claude.md`, Nov 19 (the gold pair from `docs/content/volungraiv/slice/4-gold.md`) | ChatGPT, Gemini Hydrogen, Gemini Neon, Grok | `volungraiv-gold/decision.md`, Nov 19: a composite, led by Grok; in `content/volungraiv/world.json` |
+| Volungraiv's gold pair (the Lee and Tamsin) | `volungraiv-gold/brief.md`, Nov 19 | `volungraiv-gold/claude.md`, Nov 19 (the gold pair from `docs/content/volungraiv/slice/4-gold.md`) | ChatGPT, Gemini Hydrogen, Gemini Neon, Grok | `volungraiv-gold/decision.md`, Nov 19: a composite, led by Grok; in `content/volungraiv/world.json`; approved Nov 19, with rules by tier (owner's answers at its end) |
+| Volungraiv's ceiling pair (Gildra, Koriar's Temple), with reference records | `volungraiv-ceiling/brief.md`, Nov 19 | None: mostly taste | Out | |

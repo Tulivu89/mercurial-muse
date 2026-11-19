@@ -104,3 +104,11 @@ Partly. This pair is the bar for most of the module, because most of the module 
    - **The test:** written in our fields, is the character recognisable from behaviour alone?
    - **Lower priority** than the ceiling bid.
 4. **No review of the existing cast is needed yet.** The frame's people were approved. The fill session reads each of them against this pair, and that's the review.
+
+## The owner's answers (Nov 19)
+
+1. **The pair is approved.** The fill runs from it, in a session of its own (`docs/content/volungraiv/slice/fill-brief.md`).
+2. **The ceiling bid: yes.** Its brief is `docs/bids/volungraiv-ceiling/brief.md`: Gildra and Koriar's Temple.
+3. **Reference records of known characters:** use whichever characters suit the setting and the quality. They live in this project only, as quality references, and are never in a module. New characters can start the same way: write their sources in our format first, and use those as the reference. The ceiling brief asks for this.
+4. **Rules by tier, not by number.** Briefs are about character, worldbuilding and prose, not mechanics. Tier says how big a threat or how important someone is: Gildra is hard because she's the Witch Queen, and almost anyone you run into is the baseline. Per-number reasons are dropped. The gold pair's rules are cut to match: Tamsin is a rival with an empty purse, and the Lee's porters keep its Alert at 2.
+

@@ -111,9 +111,6 @@
    ],
    "rules": {
     "placeKind": "building",
-    "difficulty": {
-     "force": 3
-    },
     "states": {
      "alert": 2
     }
@@ -272,18 +269,6 @@
    },
    "rules": {
     "tier": "rival",
-    "rank": 1,
-    "difficulty": {
-     "force": 3,
-     "finesse": 3,
-     "flair": 3
-    },
-    "states": {
-     "finesse": 3,
-     "force": 3,
-     "focus": 2,
-     "flair": 1
-    },
     "purse": 1,
     "forSale": true,
     "carries": [
