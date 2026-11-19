@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { act, loadModule, read, sceneActionsFor, startSave, stateDefFor, threadsOf, type PraxisModule, type Save } from '../src/engine';
+import { act, contextPlan, loadModule, read, say, sceneActionsFor, startSave, stateDefFor, threadsOf, type PraxisModule, type Save } from '../src/engine';
 import { worldToModule } from '../../core/convert';
 import { parseWorld } from '../../core/records';
 import file from '../../content/volungraiv/world.json';
@@ -40,6 +40,19 @@ describe('Lowgate in the adventure', () => {
     expect(where('the-change-book')?.locationId).toBe('koriars-floor');
     expect(where('gilded-crown')?.heldBy).toBe('sela');
     expect(module.characters.find((person) => person.id === 'marrow-golkin')?.carries).toContain('golkins-string');
+  });
+
+  it('tells the narrator what the Peace cost, so it never names a price of its own', () => {
+    const turn = must(act(module, startSave(module), 'pay', { type: 'scene', actionId: 'pay-for-the-peace' })).turn;
+    expect(turn.directive).toContain('You pay 1 coin.');
+  });
+
+  it('says what a place is the first time it comes up: the Lee is the caravanserai inside the Gate', () => {
+    expect(module.world.places.find((place) => place.id === 'the-lee')?.summary).toMatch(/^The caravanserai inside the Gate/);
+    const save = must(say(module, startSave(module), 't1', 'Any place good for a drink and a bed? Is the Lee any good?')).save;
+    const lore = contextPlan(module, save).messages[1]!.content;
+    expect(lore).toContain('The Lee, a building in Lowgate: The caravanserai inside the Gate');
+    expect(lore).toContain('The Peace: Pay at the gate, and harm done to you inside the walls is answered');
   });
 
   it('sells the Peace at the toll house: the coin, the token, and the Peace held', () => {

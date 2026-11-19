@@ -36,6 +36,13 @@ function open(module: PraxisModule, before: Save, after: Save, turn: Omit<Turn, 
   return { ok: true, save: { ...after, turns: [...after.turns, full] }, turn: full, entries, terminals };
 }
 
+// Whether words name a sum, in figures or in words up to twenty.
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+function statesSum(words: string, amount: number): boolean {
+  const said = words.toLowerCase();
+  return new RegExp(`(?<![\\d])${amount}(?![\\d])`).test(said) || (amount <= 20 && new RegExp(`\\b${NUMBER_WORDS[amount]}\\b`).test(said));
+}
+
 // A name as it reads inside a sentence: "The harbour" becomes "the harbour".
 export function inSentence(name: string): string {
   return name.startsWith('The ') ? `the ${name.slice(4)}` : name;
@@ -228,8 +235,16 @@ export function act(module: PraxisModule, save: Save, id: string, action: Action
     const playerId = playerOf(world);
     const changed = result.entries.flatMap((entry) => {
       if (entry.kind !== 'state') return [];
-      // Your purse and armour are counted, not told.
-      if (entry.defId === world.ruleset.trade?.coin || entry.defId === world.ruleset.trade?.armour) return [];
+      // Armour is counted, not told. What your purse paid or took is told, so the narrator
+      // never names a price of its own (the first Volungraiv run: one coin became four).
+      if (entry.defId === world.ruleset.trade?.armour) return [];
+      if (entry.defId === world.ruleset.trade?.coin) {
+        if (entry.owner !== playerId || entry.to === entry.from) return [];
+        const amount = Math.abs(entry.to - entry.from);
+        // Unless the action's own words already give the sum.
+        if (statesSum(chosen.outcome, amount)) return [];
+        return [`${entry.to < entry.from ? 'You pay' : 'You get'} ${amount} coin.`];
+      }
       const def = stateDefFor(world, entry.defId, entry.owner);
       const person = world.characters.find((character) => character.id === entry.owner);
       if (!def || !person) return [];

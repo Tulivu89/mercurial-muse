@@ -67,7 +67,7 @@ export function narratorRules(playerName: string): string {
     '- Write only the next beat. Show how the world answers what the player just did, then stop where they can act again.',
     `- Leave what ${player} says, does, thinks and feels to the player.`,
     '- Notes in [square brackets] are outside the story, from the game or the player, and they are true. Use what they say in your own words, and keep the notes themselves out of the story.',
-    '- What the rules decided is final. When your reply opens by saying what to show, show exactly that, and let it carry into what everyone does next. When nothing was decided, show the attempt and leave the result open.',
+    '- What the rules decided is final. When your reply opens by saying what to show, show exactly that, keeping its prices, things and details as given, and let it carry into what everyone does next. When nothing was decided, show the attempt and leave the result open.',
     '- Only the people listed as present are here. Anyone else stays offstage until they arrive.',
     '- Write in second person, present tense, in concrete detail that can be seen, heard, smelled and touched. One to three short paragraphs.',
     '- Narration and action go in *asterisks*. Speech is plain text, with no quotation marks. Thoughts go in (parentheses), and no one else hears them.',
@@ -88,6 +88,8 @@ export const FORMAT_EXAMPLE = [
 const ids = (value: unknown): string[] => (Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : []);
 const inSentence = (name: string) => (name.startsWith('The ') ? `the ${name.slice(4)}` : name);
 const firstOf = (text: string | undefined, chars = 200) => (text?.trim() ? sentence(sentencesUpTo(text, chars)) : '');
+// What a place or a piece of lore is, in one sentence: its line, or the start of its description.
+const gistOf = (entry: { summary?: string; description?: string }, chars = 200) => (entry.summary?.trim() ? sentence(entry.summary) : firstOf(entry.description, chars));
 
 function depthOf(places: Map<string, Place>, place: Place): number {
   let depth = 0;
@@ -106,7 +108,8 @@ function theLand(world: PraxisModule, tokensPerChar: number): string {
   let used = 0;
   for (const place of world.world.places.filter((entry) => depthOf(places, entry) <= 1).sort((a, b) => depthOf(places, a) - depthOf(places, b))) {
     const parent = place.parentLocationId ? places.get(place.parentLocationId)?.name : undefined;
-    const line = `- ${place.name}${parent ? `, in ${parent}` : ''}${place.description ? `: ${firstOf(place.description)}` : ''}`;
+    const gist = gistOf(place);
+    const line = `- ${place.name}${parent ? `, in ${parent}` : ''}${gist ? `: ${gist}` : ''}`;
     const cost = estimateTokens(line, tokensPerChar) + 1;
     if (used + cost > LAND_TOKENS) break;
     lines.push(line);
@@ -172,7 +175,7 @@ function profile(world: PraxisModule, character: Character): string {
 // territory or settlements include the place, the societies those groups belong to, and
 // memories tied to the place or its people. Orbis field names throughout. The play screen
 // marks these groups; the narrator hears of a group when it is named.
-export function bearingOn(world: PraxisModule, place: Place, people: readonly Character[]): { groups: WorldEntry[]; memories: { id: string; title: string; description: string }[] } {
+export function bearingOn(world: PraxisModule, place: Place, people: readonly Character[]): { groups: WorldEntry[]; memories: { id: string; title: string; summary?: string; description: string }[] } {
   const where = new Set(ancestry(world, place));
   const who = new Set(people.map((person) => person.id));
   const member = new Set(people.flatMap((person) => person.factionIds));
@@ -186,7 +189,7 @@ export function bearingOn(world: PraxisModule, place: Place, people: readonly Ch
   const memories = world.world.memories
     .filter((memory) => memory.origin !== 'local')
     .filter((memory) => ids(memory.locationIds).some((placeId) => where.has(placeId)) || ids(memory.affectedCharacterIds).some((personId) => who.has(personId)))
-    .map((memory) => ({ id: memory.id, title: memory.title, description: memory.description }));
+    .map((memory) => ({ id: memory.id, title: memory.title, summary: memory.summary, description: memory.description }));
   return { groups: all.filter((group) => chosen.has(group.id)), memories };
 }
 
@@ -297,14 +300,14 @@ export function loreFor(module: PraxisModule, save: Save, turn: Turn): string {
   // top levels, its history, what is lying here, and the ways on.
   const places = new Map(world.world.places.map((entry) => [entry.id, entry]));
   const chain = ancestry(world, place).slice(1).map((placeId) => places.get(placeId)).filter((entry): entry is Place => Boolean(entry));
-  const within = chain.filter((entry) => depthOf(places, entry) > 1 && entry.description).map((entry) => `${entry.name}: ${firstOf(entry.description)}`);
-  const history = bearingOn(world, place, []).memories.map((memory) => `${memory.title}: ${firstOf(memory.description, 300)}`);
+  const within = chain.filter((entry) => depthOf(places, entry) > 1 && (entry.summary || entry.description)).map((entry) => `${entry.name}: ${gistOf(entry)}`);
+  const history = bearingOn(world, place, []).memories.map((memory) => `${memory.title}: ${gistOf(memory, 300)}`);
   const things = thingsAt(world, save, place.id);
   const exits = exitsFrom(world, save.values, playerId, place.id);
   const open = exits.filter((exit) => !exit.blocked).map((exit) => midSentence(exit.place.name));
   const closed = exits.filter((exit) => exit.blocked).map((exit) => `The way to ${midSentence(exit.place.name)} is closed to you. ${sentence(exit.blocked ?? '')}`);
   out.push(note([
-    `${[place.name, ...chain.map((entry) => entry.name)].join(', ')}: ${sentence(place.description)}`,
+    `${[place.name, ...chain.map((entry) => entry.name)].join(', ')}: ${[place.summary ? sentence(place.summary) : '', sentence(place.description)].filter(Boolean).join(' ')}`,
     ...within,
     ...history,
     things.length ? `Also here: ${list(things.map((thing) => midSentence(thing.name)))}.` : '',

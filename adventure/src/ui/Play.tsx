@@ -273,7 +273,8 @@ export function Play({ module, initial, name, connection, setConnection, prefs, 
     try {
       const model = helperModelOf(connection, prefs.helperModel);
       const playerName = world.characters.find((entry) => entry.id === playerOf(world))?.name ?? 'The player';
-      const result = await narrate(evaluatorRequest(menu, input, playerName, mode), { ...connection, model, format: model === connection.model ? connection.format : 'auto' }, { maxTokens: mode === 'one' ? 120 : 300, temperature: 0.2 });
+      // A choice from a closed list: thinking only slows it (the first run spent 5.7 seconds on it).
+      const result = await narrate(evaluatorRequest(menu, input, playerName, mode), { ...connection, model, format: model === connection.model ? connection.format : 'auto' }, { maxTokens: mode === 'one' ? 120 : 300, temperature: 0.2, thinking: 'off' });
       const read = readProposals(result.text, menu);
       logCall({ at: new Date().toLocaleTimeString(), purpose: 'evaluator', ok: true, ms: Math.round(performance.now() - started), message: `${read.proposals.length} proposed${read.refused.length ? `; refused: ${read.refused.join(' ')}` : ''}`, diagnostics: result.diagnostics ?? null });
       setProposals(read.proposals.length ? { list: read.proposals, mode } : null);

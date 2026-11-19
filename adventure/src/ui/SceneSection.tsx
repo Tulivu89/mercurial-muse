@@ -1,7 +1,7 @@
 // Scene: where you are, the time, who and what is here, and what you can do.
 import { useState } from 'react';
 import {
-  band, bondBetween, calendarOf, canLoot, carried, coinOf, datePhrase, bringAlong, definite, doingNow, dueElsewhere, durationWords, fact, followRuleFor, followingAs, leaveBehind, labelFor, line, offerFor, shortLabel, pairName, playerOf, read, sceneActionsFor, sceneOf, stallsHere, stateDefFor,
+  band, bondBetween, calendarOf, canLoot, carried, coinOf, datePhrase, bringAlong, definite, doingNow, dueElsewhere, durationWords, fact, followRuleFor, followingAs, leaveBehind, labelFor, line, midSentence, offerFor, shortLabel, pairName, playerOf, read, sceneActionsFor, sceneOf, stallsHere, stateDefFor,
   stateTestFor, timeOfDay, weekdayOf, whereabouts, type Character, type Item, type StateDef,
 } from '../engine';
 import { BondWithYou } from './Bonds';
@@ -132,10 +132,11 @@ export function SceneSection({ api }: { api: PlayApi }) {
           <div key={exit.place.id} className="lr" style={exit.blocked ? { alignItems: 'flex-start' } : undefined}>
             {exit.blocked && <span style={{ color: 'var(--bad)', marginTop: 2 }}><LockIcon size={18} /></span>}
             <span className="grow">
-              <span className="name" style={{ display: 'block' }}>{exit.place.name}</span>
+              <span className="name" style={{ display: 'block' }}>Go to {midSentence(exit.place.name)}</span>
+              {exit.place.summary && <span className="meta" style={{ display: 'block', marginTop: 2 }}>{exit.place.summary}</span>}
               {exit.blocked && <span style={{ display: 'block', marginTop: 3, fontSize: 14, lineHeight: 1.4, color: 'var(--text-2)' }}>{exit.blocked}</span>}
             </span>
-            <span className="mono meta">{durationWords(exit.edge.minutes)}</span>
+            <span className="mono meta" title="How long the way takes">{durationWords(exit.edge.minutes)} away</span>
             {!exit.blocked && <button type="button" className="btn quiet square" aria-label={`Go quietly to ${exit.place.name}`} title="Go quietly: you move, nothing is written" disabled={busy} onClick={() => api.performQuietly({ type: 'travel', to: exit.place.id })}><SkipIcon /></button>}
             {!exit.blocked && <button type="button" className="btn" disabled={busy} onClick={() => api.perform({ type: 'travel', to: exit.place.id })}>Go</button>}
           </div>

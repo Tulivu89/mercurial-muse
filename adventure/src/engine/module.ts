@@ -45,6 +45,8 @@ const recordBase = {
 export const placeSchema = z.object({
   id,
   name: z.string().min(1).max(120),
+  // One sentence for someone who has never been: what it is, in plain words. The Studio's line.
+  summary: text(2000).optional(),
   description: text(8000).default(''),
   kind: z.enum(PLACE_KINDS).default('other'),
   parentLocationId: id.nullable().default(null),
@@ -60,6 +62,7 @@ export const placeSchema = z.object({
 export const worldEntrySchema = z.object({
   id,
   name: z.string().min(1).max(120),
+  summary: text(2000).optional(),
   description: text(8000).default(''),
 }).passthrough();
 
@@ -67,6 +70,7 @@ export const worldEntrySchema = z.object({
 export const memorySchema = z.object({
   id,
   title: z.string().min(1).max(200),
+  summary: text(2000).optional(),
   description: text(8000).default(''),
 }).passthrough();
 
