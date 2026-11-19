@@ -317,7 +317,13 @@ New in this frame, for the owner to strike. The sheet lists what came before it.
 ## Questions for the owner
 
 1. **Cuts and renames.** The names are Lowgate, the Lee, the Awnings, the Climb, the Counting-House, the Pit, the Marrow, Room Six, Hollis Crane, Wenna, Teague, Quill, Tamsin, Ansel, Sela and Ivo. Change any, and cut any line.
+Answer - approved 
 2. **The human complications:** keep or replace the five proposed above (Tamsin, Wenna, Hollis, Ansel, Nefera).
+Answer - approved
 3. **The endings:** are three right (refused, turned on the buyer, sold to the Queen), or is one missing?
+answer - that should work. there should always be an option to manually resolve a thread for emergent situations.
 4. **The gold pair for checkpoint 4:** recommended **the Lee** (the place everyone crosses) and **Tamsin** (the one the thread turns on). Or name another.
+answer - approved
 5. **Still standing as proposed** from checkpoint 2, unless struck: the underguilds' muscle from the Camps, and the Marrow.
+answer - approved.
+User note: avoid counting things and having a number be mentioned like, "eleven buyouts this season" - these are bad examples. They make the model get hung up on numbers and an opportunity to get things wrong that never needed to be specific.
