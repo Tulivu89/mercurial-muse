@@ -8,31 +8,195 @@
  "conditions": [
   {
    "id": "gate-shut",
-   "label": "The Gate is shut (a storm or a behemoth)"
+   "label": "The Gate is shut (world state Gate shut at 1)"
+  },
+  {
+   "id": "bo-standdown",
+   "label": "Bought Out: the stand-down is known (milestone 1 reached)"
   },
   {
    "id": "bo-counted",
-   "label": "Bought Out: the count is known"
+   "label": "Bought Out: the count is known (milestone 2 reached)"
   },
   {
    "id": "bo-coin",
-   "label": "Bought Out: the coin is known"
+   "label": "Bought Out: the coin is known (milestone 3 reached)"
+  },
+  {
+   "id": "bo-refused-guilds",
+   "label": "Bought Out ended: the underguilds refused her buy-outs (Bought Out ended at 1)"
+  },
+  {
+   "id": "bo-refused-bearer",
+   "label": "Bought Out ended: the bearer refused to ink them (Bought Out ended at 2)"
   },
   {
    "id": "bo-buyer",
-   "label": "Bought Out: Ansel's Peace is bought out"
+   "label": "Bought Out ended: Ansel's Peace is bought out (Bought Out ended at 3)"
+  },
+  {
+   "id": "bo-sold",
+   "label": "Bought Out ended: sold to the Witch Queen (Bought Out ended at 4)"
+  },
+  {
+   "id": "underguilds-0",
+   "label": "The underguilds want you gone (standing 0)"
+  },
+  {
+   "id": "underguilds-1",
+   "label": "The underguilds don't trust you (standing 1)"
+  },
+  {
+   "id": "underguilds-2",
+   "label": "The underguilds don't know you (standing 2)"
+  },
+  {
+   "id": "underguilds-3",
+   "label": "The underguilds count you a friend (standing 3)"
+  },
+  {
+   "id": "underguilds-4",
+   "label": "The underguilds count you one of their own (standing 4)"
   }
  ],
  "records": [
+  {
+   "id": "the-badlands",
+   "kind": "place",
+   "name": "The Badlands",
+   "line": "Nearly lawless country of frontier towns, glass storms and behemoths, held by the Bastards and crossed by the Old Road.",
+   "parentId": null,
+   "sections": [
+    {
+     "id": "the-badlands-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Red hardpan and dune, with titans' bones standing out of it for hills. Frontier towns sit wherever there's water, each under a Bastard who sells it. Behemoths walk it, too big to fight; caravan masters read their dust on the horizon and steer wide."
+    }
+   ],
+   "rules": {
+    "placeKind": "region"
+   }
+  },
   {
    "id": "qetzal",
    "kind": "place",
    "name": "Qetzal",
    "line": "The one city in the Badlands, walled between a dead titan's ribs on the Old Road; every caravan crossing stops here.",
-   "parentId": null,
-   "sections": [],
+   "parentId": "the-badlands",
+   "sections": [
+    {
+     "id": "qetzal-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A city walled between the ribs of a dead titan, climbing from Lowgate at the Gate to the Compact's houses at the Heights and the tallest bone, where Koriar's temple stands. Rain on the bone runs down every level and reaches Lowgate last."
+    },
+    {
+     "id": "qetzal-atmosphere",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Morning: glaziers sweeping storm glass off the roofs. Afternoon: heat off the bone. Evening: the dusk band, faint from the top. Night: lamps up the Climb, the ribs black against the stars."
+    }
+   ],
    "rules": {
     "placeKind": "settlement"
+   },
+   "keys": [
+    "the city",
+    "the ribs"
+   ]
+  },
+  {
+   "id": "the-old-road",
+   "kind": "place",
+   "name": "The Old Road",
+   "line": "The empire's road across the Badlands, paved in places and sand in the rest, coming down to Qetzal's gate.",
+   "parentId": "the-badlands",
+   "sections": [
+    {
+     "id": "the-old-road-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Broad flagstones, buried under sand for long stretches and found again by the ruts. Mile-stones stand beside it, each with a mark worn too smooth to read. The last stretch drops off a ridge to Qetzal's Gate, the ribs in sight long before you reach them."
+    },
+    {
+     "id": "the-old-road-atmosphere",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Morning: cold ruts, another caravan's dust ahead. Afternoon: heat off the stones, beasts heads-down. Evening: the ribs' shadows across the road. Night: drivers' fires in the lee of the wagons."
+    },
+    {
+     "id": "the-old-road-history",
+     "title": "History",
+     "reach": "named",
+     "keys": [
+      "empire",
+      "mile-stone",
+      "mile-stones",
+      "road-house",
+      "who built",
+      "worn mark"
+     ],
+     "when": null,
+     "text": "An empire laid the road and is gone, and nobody on it now can tell you its name. Its mile-stones carry the same worn mark as the gateposts of the Lee, which was one of its road-houses. Caravan masters tip a cup of water on the first mile-stone out of any town, and drivers who skip it get blamed for whatever goes wrong after."
+    },
+    {
+     "id": "the-old-road-shut",
+     "title": "The Gate Shut",
+     "reach": "when",
+     "keys": [],
+     "when": "gate-shut",
+     "text": "Behind the bell, the storm or the behemoth is already on the road. Glass hail comes in on the wind and shreds canvas. Drivers turn their wagons broadside, cut the beasts loose and crawl under with them. Anyone still on the last stretch makes for the Camps."
+    }
+   ],
+   "rules": {
+    "placeKind": "road or trail"
+   }
+  },
+  {
+   "id": "the-camps",
+   "kind": "place",
+   "name": "The Camps",
+   "line": "Shacks in the lee of the outer ribs, outside the Gate and the Peace, where people who can't pay wait out the storms.",
+   "parentId": "qetzal",
+   "sections": [
+    {
+     "id": "the-camps-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Hide-and-plank shacks in the lee of the outer ribs, outside the wall, mostly beastkin who can't pay for the Peace. Teague collects here in the mornings, and his crew sleeps here. Anyone who wants carrying or digging done hires from the fires."
+    },
+    {
+     "id": "the-camps-atmosphere",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Morning: cookfires, a line at the Gate for day work. Afternoon: sleepers in the rib-shade. Evening: singing at the fires. Night: wind over the ribs, sleepers taking turns with a club across the knees."
+    },
+    {
+     "id": "the-camps-shut",
+     "title": "The Gate Shut",
+     "reach": "when",
+     "keys": [],
+     "when": "gate-shut",
+     "text": "The Gate shuts on the Camps. People drag their shacks tight against the rib, pull the beasts inside, wedge the doors and wrap their faces against the glass. Teague's crew rides it out with everyone else. Whatever is done to anyone here tonight, nobody answers for it."
+    }
+   ],
+   "rules": {
+    "placeKind": "other"
    }
   },
   {
@@ -41,20 +205,67 @@
    "name": "Lowgate",
    "line": "Qetzal's lowest quarter, where the Old Road comes in at the Gate and the caravans unload.",
    "parentId": "qetzal",
-   "sections": [],
+   "sections": [
+    {
+     "id": "lowgate-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Qetzal's lowest quarter, just inside the Gate: the Lee, the market under the Awnings, the Counting-House and the Pit. Every gutter above drains through it to the Marrow's Mouth. The underguilds collect here, and your token is checked at every door that matters."
+    },
+    {
+     "id": "lowgate-atmosphere",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Morning: wagons unloading, porters shouting weights. Afternoon: gutters running grey. Evening: the Pit's crowd roaring behind the Awnings. Night: collectors on their rounds."
+    }
+   ],
    "rules": {
     "placeKind": "district"
    }
   },
   {
-   "id": "the-pit",
+   "id": "the-gate",
    "kind": "place",
-   "name": "The Pit",
-   "line": "A fighting pit cut into the bedrock behind the Awnings, where bouts are chalked on a board and fighters' books are bought.",
+   "name": "The Gate",
+   "keys": [
+    "toll house",
+    "gate",
+    "bell rope"
+   ],
+   "line": "Iron doors hung between two pale ribs that rise past the wall, with the toll house beside them where the Peace is sold.",
    "parentId": "lowgate",
-   "sections": [],
+   "sections": [
+    {
+     "id": "the-gate-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Iron doors hung between two ribs, with a walk across the top. The toll house leans on the left-hand rib: a shutter, a box of glass tokens on cords, and Hollis behind it by day. Guards check every cord that comes in. The bell rope hangs by the toll house door."
+    },
+    {
+     "id": "the-gate-atmosphere",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Morning: caravans queued up the road. Afternoon: heat off the ribs, Hollis counting at the shutter. Evening: guards watching the horizon. Night: the doors barred, a brazier on the walk."
+    },
+    {
+     "id": "the-gate-shut",
+     "title": "The Gate Shut",
+     "reach": "when",
+     "keys": [],
+     "when": "gate-shut",
+     "text": "The bell rings until the doors meet. Guards drop the bar, and whoever is outside stays outside, whatever they shout or offer through the gap. Up on the walk, a guard calls down how close the storm or the behemoth is, and the toll house shutter stays down until the bell rings again."
+    }
+   ],
    "rules": {
-    "placeKind": "building"
+    "placeKind": "landmark"
    }
   },
   {
@@ -117,12 +328,1703 @@
    }
   },
   {
+   "id": "room-six",
+   "kind": "place",
+   "name": "Room Six",
+   "keys": [
+    "room 6",
+    "room six"
+   ],
+   "line": "A room on the Lee's upper gallery where a harper who fled Gildra's court was knifed, scrubbed and let again the same day.",
+   "parentId": "the-lee",
+   "sections": [
+    {
+     "id": "room-six-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A narrow room over the yard: a rope bed, a stool, a peg, and a shutter barred from inside. The boards under the sill are scrubbed pale. The door bar is the old one, with a fresh notch in it where a blade came through the gap and lifted it."
+    },
+    {
+     "id": "room-six-atmosphere",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Morning: the yard's racket through the shutter. Afternoon: heat under the roof, and the smell of lye. Evening: the common room loud under the floor. Night: the gallery boards creak whenever anyone passes the door."
+    },
+    {
+     "id": "room-six-history",
+     "title": "History",
+     "reach": "named",
+     "keys": [
+      "harp",
+      "ivo's harp",
+      "his things",
+      "the sill",
+      "door bar"
+     ],
+     "when": null,
+     "text": "Ivo lodged here from the day he came over the road. The porters say he kept the shutter barred and played at night with the door shut, quietly, for himself. His harp hangs behind the Lee's bar now. Hollis says it's against what Ivo owed for the room, and he hasn't sold it."
+    }
+   ],
+   "rules": {
+    "placeKind": "building"
+   }
+  },
+  {
+   "id": "the-awnings",
+   "kind": "place",
+   "name": "The Awnings",
+   "keys": [
+    "market",
+    "stall",
+    "stalls"
+   ],
+   "line": "Lowgate's market under stitched-hide storm awnings, where caravan goods change hands and Nefera keeps her stall.",
+   "parentId": "lowgate",
+   "sections": [
+    {
+     "id": "the-awnings-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Stalls under hide awnings stitched together and staked to the rock. Caravan goods change hands here before they go up the Climb: salt, dye, cloth, storm glass by the sack. Nefera's is the stall with a bench. Teague's crew walks the rows in the afternoons, collecting."
+    },
+    {
+     "id": "the-awnings-atmosphere",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Morning: stalls going up. Afternoon: haggling in every accent on the road, the hides snapping in the wind. Evening: packing up. Night: empty frames, and sleepers under them."
+    },
+    {
+     "id": "the-awnings-shut",
+     "title": "The Gate Shut",
+     "reach": "when",
+     "keys": [],
+     "when": "gate-shut",
+     "text": "Traders drop the awnings and lash them to iron rings in the rock, and the whole market crawls underneath with its goods. Glass hail drums on the hides. Pockets are easy in the press, and Quill works it."
+    }
+   ],
+   "rules": {
+    "placeKind": "landmark"
+   }
+  },
+  {
+   "id": "the-counting-house",
+   "kind": "place",
+   "name": "The Counting-House",
+   "keys": [
+    "counting house",
+    "counting-house"
+   ],
+   "line": "A narrow stone house where Lowgate's contracts are inked; the bearer of the Peace works at its back desk.",
+   "parentId": "lowgate",
+   "sections": [
+    {
+     "id": "the-counting-house-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A narrow stone house on the Awnings' edge. Front-room clerks ink caravan contracts onto hide and skin. Wenna works at the back desk, with the Peace book locked in an iron box under it. A token's number is checked against the book before anything is inked."
+    },
+    {
+     "id": "the-counting-house-atmosphere",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Morning: clerks grinding ink, masters waiting with sleeves rolled. Afternoon: pens scratching, an arm being inked. Evening: Wenna's lamp alone at the back. Night: shutters barred, a light upstairs."
+    }
+   ],
+   "rules": {
+    "placeKind": "building"
+   }
+  },
+  {
+   "id": "the-pit",
+   "kind": "place",
+   "name": "The Pit",
+   "line": "A fighting pit cut into the bedrock behind the Awnings, where bouts are chalked on a board and fighters' books are bought.",
+   "parentId": "lowgate",
+   "sections": [
+    {
+     "id": "the-pit-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A round hole cut into the bedrock, steps down to a sand floor. The board at the top has the night's bouts chalked on it, each fighter's name beside the mark of whoever owns their book. The fighters' bench is at the bottom. Vigga sleeps on the bookman's shed roof at the rim."
+    },
+    {
+     "id": "the-pit-atmosphere",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Morning: sand raked, a fighter training alone. Afternoon: sparring for drink money. Evening: the steps packed, coin going hand to hand, the crowd roaring. Night: torches out."
+    }
+   ],
+   "rules": {
+    "placeKind": "building"
+   },
+   "keys": [
+    "pit",
+    "fighting pit",
+    "the board"
+   ]
+  },
+  {
+   "id": "the-marrows-mouth",
+   "kind": "place",
+   "name": "The Marrow's Mouth",
+   "keys": [
+    "drain",
+    "grate",
+    "the mouth"
+   ],
+   "line": "A drain grate at Lowgate's lowest corner, where the runoff goes down into the titan's hollow bones and the Golkin come up.",
+   "parentId": "lowgate",
+   "sections": [
+    {
+     "id": "the-marrows-mouth-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "An iron grate over a split in the rock at Lowgate's lowest corner, where every gutter in the quarter ends. Under it the split drops into the titan's hollow bone, a slick climb into the dark. Scrape marks on the lip show where the porters tip things in."
+    },
+    {
+     "id": "the-marrows-mouth-atmosphere",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Morning: runoff gurgling, the stink of every level above. Afternoon: flies, the grate too hot to touch. Evening: nobody lingers near it. Night: the grate lifted from underneath, small eyes in the lamplight."
+    }
+   ],
+   "rules": {
+    "placeKind": "landmark"
+   }
+  },
+  {
+   "id": "the-climb",
+   "kind": "place",
+   "name": "The Climb",
+   "keys": [
+    "steps",
+    "workshops",
+    "glassworks"
+   ],
+   "line": "A stepped street that climbs from Lowgate through the workshops and past the Succori quarter to the tallest bone.",
+   "parentId": "qetzal",
+   "sections": [
+    {
+     "id": "the-climb-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Steps cut into the rock and worn hollow in the middle, with workshops either side: glassworks, tanners, smiths. Halfway up, the Succori Quarter opens to one side. When it rains, the rain runs down its gutters to Lowgate."
+    },
+    {
+     "id": "the-climb-atmosphere",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Morning: kilns lit, glass dust in the air. Afternoon: porters resting on the landings under their loads. Evening: the dusk band louder here. Night: lamps at the Succori Quarter's corner, dark steps either side."
+    }
+   ],
+   "rules": {
+    "placeKind": "road or trail"
+   }
+  },
+  {
+   "id": "the-temple-of-koriar",
+   "kind": "place",
+   "name": "The Temple of Koriar",
+   "keys": [
+    "tallest bone",
+    "temple"
+   ],
+   "line": "Koriar's temple, carved into the tallest bone at Qetzal's centre; its spire is where the rain starts.",
+   "parentId": "qetzal",
+   "sections": [],
+   "rules": {
+    "placeKind": "building"
+   }
+  },
+  {
+   "id": "koriars-floor",
+   "kind": "place",
+   "name": "Koriar's Floor",
+   "keys": [
+    "the floor",
+    "gaming hall",
+    "change-table"
+   ],
+   "line": "The temple's gaming hall: knucklebone tables, the change-table, a dusk band, and priests dealing for the goddess.",
+   "parentId": "the-temple-of-koriar",
+   "sections": [],
+   "rules": {
+    "placeKind": "building"
+   }
+  },
+  {
+   "id": "koriars-vaults",
+   "kind": "place",
+   "name": "Koriar's Vaults",
+   "keys": [
+    "vaults",
+    "the vaults"
+   ],
+   "line": "The vaults under Koriar's Floor, where the caravan houses keep their money under the goddess's eye.",
+   "parentId": "the-temple-of-koriar",
+   "sections": [],
+   "rules": {
+    "placeKind": "building"
+   }
+  },
+  {
+   "id": "the-spire",
+   "kind": "place",
+   "name": "The Spire",
+   "keys": [
+    "spire"
+   ],
+   "line": "The tip of the tallest bone, where the rain starts; only priests go up, and not many of them.",
+   "parentId": "the-temple-of-koriar",
+   "sections": [],
+   "rules": {
+    "placeKind": "landmark"
+   }
+  },
+  {
+   "id": "the-succori-quarter",
+   "kind": "place",
+   "name": "The Succori Quarter",
+   "keys": [
+    "succori quarter"
+   ],
+   "line": "Halfway up the Climb: the safest streets the Succori have anywhere, the most crime, and a brothel no Succori runs.",
+   "parentId": "qetzal",
+   "sections": [
+    {
+     "id": "the-succori-quarter-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Painted doors and roof gardens off a turning halfway up the Climb. Strangers get looked at hard and told nothing. Quill can walk you in, once she's decided you're worth it."
+    }
+   ],
+   "rules": {
+    "placeKind": "district"
+   }
+  },
+  {
+   "id": "the-heights",
+   "kind": "place",
+   "name": "The Heights",
+   "keys": [
+    "heights",
+    "upstairs"
+   ],
+   "line": "The Compact's houses at the top of the city, where the rain is clean and the gates are owned.",
+   "parentId": "qetzal",
+   "sections": [
+    {
+     "id": "the-heights-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Walled houses at the top of the city, each with its own gate and its own men on it. Nobody from Lowgate goes up without a house's token. Hollis has one, and keeps it in his purse."
+    }
+   ],
+   "rules": {
+    "placeKind": "district"
+   }
+  },
+  {
+   "id": "the-far-gate",
+   "kind": "place",
+   "name": "The Far Gate",
+   "keys": [
+    "far gate"
+   ],
+   "line": "Where the Old Road leaves Qetzal for the next hard ride.",
+   "parentId": "qetzal",
+   "sections": [
+    {
+     "id": "the-far-gate-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Doors in the ribs on the far side of the city, where the Old Road goes on. Caravans leaving Lowgate cross the whole city to reach them, and pay the Compact again at the toll."
+    }
+   ],
+   "rules": {
+    "placeKind": "landmark"
+   }
+  },
+  {
+   "id": "the-marrow",
+   "kind": "place",
+   "name": "The Marrow",
+   "keys": [
+    "marrow",
+    "hollow bones",
+    "the bones"
+   ],
+   "line": "The titan's hollow bones under the whole city, where the runoff ends and the Golkin live.",
+   "parentId": "qetzal",
+   "sections": [
+    {
+     "id": "the-marrow-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Hollow bone under the city, ribbed and slick, with runoff from every level running down it into the dark. The Golkin live in its side passages. The way down is the Marrow's Mouth; the way back is wherever the Golkin let you climb."
+    }
+   ],
+   "rules": {
+    "placeKind": "other"
+   }
+  },
+  {
+   "id": "cinderkin",
+   "kind": "group",
+   "groupKind": "species",
+   "name": "Cinderkin",
+   "keys": [
+    "cinderkin",
+    "ritual scars",
+    "scars",
+    "the rite"
+   ],
+   "line": "Titan-blooded people with ember eyes and ritual scars that leak light; the scars are a rite, and the rite can be refused.",
+   "sections": [
+    {
+     "id": "cinderkin-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "cinderkin",
+      "ritual scars",
+      "scars",
+      "the rite"
+     ],
+     "when": null,
+     "text": "Titan-blooded, with the fire of their sire in them. Skin from earthy brown to slate and charcoal, eyes the colour of embers, and ritual scars that leak light in the eyes' colour, with hair streaked to match. The old priesthoods cut the scars in a rite, a stage at a time, and the stages mark rank. A Cinderkin with no scars was refused the rite, or left it. At night their scars give them away."
+    }
+   ]
+  },
+  {
+   "id": "orekin",
+   "kind": "group",
+   "groupKind": "species",
+   "name": "Orekin",
+   "keys": [
+    "orekin",
+    "copper",
+    "metal in"
+   ],
+   "line": "Titan-blooded people with metal in their skin, in flakes or lines, and molten-coloured eyes; prized, and hunted for it.",
+   "sections": [
+    {
+     "id": "orekin-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "orekin",
+      "copper",
+      "metal in"
+     ],
+     "when": null,
+     "text": "Titan-blooded: dark skin with metal in it, gold, silver or copper, in flakes or in geometric lines, and eyes the colour of the molten metal. The metal is real and it's worth something, so Orekin are hired, married into houses, and hunted on the road by people who want it out of them. An Orekin on the road travels with a crew. In Qetzal, an Orekin family runs the biggest glassworks."
+    }
+   ]
+  },
+  {
+   "id": "humans",
+   "kind": "group",
+   "groupKind": "species",
+   "name": "Humans",
+   "keys": [
+    "human",
+    "humans"
+   ],
+   "line": "Volungraiv's natives and its majority wherever things are stable, still the ones who get used.",
+   "sections": [
+    {
+     "id": "humans-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "human",
+      "humans"
+     ],
+     "when": null,
+     "text": "Volungraiv's natives, in every colouring, and its majority wherever things are stable. They drive the caravans, carry in the porters' yards and fill the Lightbringers' ranks, and they're the first to be hired, taxed, conscripted or sold. Cinderkin, Orekin and humans share an ancestor. Most of the names in the Peace book are human."
+    }
+   ]
+  },
+  {
+   "id": "first-children",
+   "kind": "group",
+   "groupKind": "species",
+   "name": "First Children",
+   "keys": [
+    "first children",
+    "small folk"
+   ],
+   "line": "Small folk closest to the ancestor humans and the titan-blooded share; insular, hard to find, and cleverer than anyone guesses.",
+   "sections": [
+    {
+     "id": "first-children-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "first children",
+      "small folk"
+     ],
+     "when": null,
+     "text": "Small folk, closest of anyone to the ancestor that humans and the titan-blooded share. Now and then one comes to market, prices a deal faster than the trader across the table, buys, and leaves by no road anyone can follow. Nobody in Qetzal knows where they live, and the people who've tried to follow one lost them at the first bend."
+    }
+   ]
+  },
+  {
+   "id": "golkin",
+   "kind": "group",
+   "groupKind": "species",
+   "name": "Golkin",
+   "keys": [
+    "golkin"
+   ],
+   "line": "First Children warped by generations hiding at the edges of other planes, clever and cruel, living in holes near every town.",
+   "sections": [
+    {
+     "id": "golkin-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "golkin"
+     ],
+     "when": null,
+     "text": "First Children warped by generations hiding at the edges of other planes. They're pale from the dark, long in the finger, quick at night and slow in daylight. They live in holes near every town, a warren in a ravine or the bones under a city, with traps round where they sleep. They take whatever's left out. Anyone in the Badlands kills one on sight, and they know it."
+    }
+   ]
+  },
+  {
+   "id": "beastkin",
+   "kind": "group",
+   "groupKind": "species",
+   "name": "Beastkin",
+   "keys": [
+    "beastkin",
+    "wolven",
+    "pantheren"
+   ],
+   "line": "People the Woed twisted and sent back, from human with a beast's ears to fully feral, hired cheap and kept poor.",
+   "sections": [
+    {
+     "id": "beastkin-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "beastkin",
+      "wolven",
+      "pantheren"
+     ],
+     "when": null,
+     "text": "People the Woed twisted and sent back, from mostly human with a beast's ears or tail to fully feral, living in packs and herds after their animal. A beastkin's kind is named for it: wolven, pantheren and the rest. They're hired cheap and paid last, and being poor is what keeps them outside Qetzal's walls. Most of the Camps are beastkin."
+    }
+   ]
+  },
+  {
+   "id": "lunarkin",
+   "kind": "group",
+   "groupKind": "species",
+   "name": "Lunarkin",
+   "keys": [
+    "lunarkin",
+    "script",
+    "lunarkin script"
+   ],
+   "line": "Pale people from the planes of night whose contracts are inked on their skin: identity on the face, trade along the arms.",
+   "sections": [
+    {
+     "id": "lunarkin-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "lunarkin",
+      "script",
+      "lunarkin script"
+     ],
+     "when": null,
+     "text": "Pale people from the planes of night, their skin with a cast of light colour, and dark eyes. Fine script is inked over the body: identity on the face and neck, trade along the arms. Anyone who can read it knows whom a Lunarkin owes and who owes them, so they're trusted with contracts. An oath-breaker's broken contract is struck through, and it must never be covered."
+    }
+   ]
+  },
+  {
    "id": "solarkin",
    "kind": "group",
    "groupKind": "species",
    "name": "Solarkin",
    "line": "Gold-to-bronze people from the planes of light who ink glyphs by choice, and whose crimes and oaths are inked for them.",
+   "sections": [
+    {
+     "id": "solarkin-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "solarkin",
+      "glyphs"
+     ],
+     "when": null,
+     "text": "Gold, tan or bronze skin, and every shade of blonde and red hair. Solarkin ink glyphs on themselves by choice, but their crimes and oaths are inked for them, so a Solarkin's past can be read off their skin by anyone who knows the glyphs. The Lightbringers' priests are Solarkin."
+    }
+   ],
+   "keys": [
+    "solarkin",
+    "glyphs"
+   ]
+  },
+  {
+   "id": "succori",
+   "kind": "group",
+   "groupKind": "species",
+   "name": "Succori",
+   "keys": [
+    "succori",
+    "damhaven"
+   ],
+   "line": "Horned, tailed, vivid-skinned people from Damhaven, from imp-small to towering, distrusted everywhere; the small breed is kin to the First Children.",
+   "sections": [
+    {
+     "id": "succori-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "succori",
+      "damhaven"
+     ],
+     "when": null,
+     "text": "Vivid skin in reds, blues and violets, black or white hair, slit pupils, horns or antlers, a thin tail, sometimes hooves; from imp-small to taller than a door. They're distrusted everywhere as people out of Damhaven, a hell everyone has heard of. The small breed is kin to the First Children, and nobody can say how. In Qetzal they live in their own quarter, and the underguilds won't license their crime."
+    }
+   ]
+  },
+  {
+   "id": "the-compact",
+   "kind": "group",
+   "groupKind": "faction",
+   "name": "The Compact",
+   "keys": [
+    "compact",
+    "the houses",
+    "stand-down",
+    "baron"
+   ],
+   "line": "The houses at Qetzal's Heights that own its gates and its channels and sell the Peace.",
+   "sections": [
+    {
+     "id": "the-compact-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "compact",
+      "the houses",
+      "stand-down",
+      "baron"
+     ],
+     "when": null,
+     "text": "The houses at the Heights: caravan money, glass money and older money, each holding a share of the take. They own the city's gates and the channels the rain runs down, and they sell the Peace through their wardens, Hollis at the Gate among them. When a Peace is bought out, they send a stand-down down the Climb. A baron holds the city's title over them, one of the Bastards, paid to keep holding it."
+    }
+   ]
+  },
+  {
+   "id": "the-underguilds",
+   "kind": "group",
+   "groupKind": "faction",
+   "name": "The Underguilds",
+   "keys": [
+    "underguilds",
+    "underguild",
+    "leave",
+    "licence"
+   ],
+   "line": "The crews that answer broken Peaces for the Compact, for a fee, and license crime: pay them and you work.",
+   "sections": [
+    {
+     "id": "the-underguilds-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "underguilds",
+      "underguild",
+      "leave",
+      "licence"
+     ],
+     "when": null,
+     "text": "The underguilds answer broken Peaces for the Compact, for a fee: whoever harms a holder inside the walls is found and paid back in kind. They also sell leave. A thief or a fence who pays them works, and one who doesn't is theirs to punish. Their muscle comes from the Camps, people too poor for the Peace they enforce. In Lowgate the collector is Teague."
+    },
+    {
+     "id": "the-underguilds-band-0",
+     "title": "Wants You Gone",
+     "reach": "when",
+     "keys": [
+      "teague",
+      "underguilds",
+      "crew",
+      "work",
+      "job",
+      "collector"
+     ],
+     "when": "underguilds-0",
+     "text": "The underguilds give you no work, and anything you do in Lowgate without leave is theirs to answer. Teague's crew falls in behind you on their rounds and stays there. The first time you're alone at night, or out past the Gate, they come for you."
+    },
+    {
+     "id": "the-underguilds-band-1",
+     "title": "Doesn't Trust You",
+     "reach": "when",
+     "keys": [
+      "teague",
+      "underguilds",
+      "crew",
+      "work",
+      "job",
+      "collector"
+     ],
+     "when": "underguilds-1",
+     "text": "Teague's crew gives you odd jobs at the Camps and nothing inside the walls: carrying, digging, standing at a door all night. They pay at the end, short, and watch to see if you argue."
+    },
+    {
+     "id": "the-underguilds-band-2",
+     "title": "Doesn't Know You",
+     "reach": "when",
+     "keys": [
+      "teague",
+      "underguilds",
+      "crew",
+      "work",
+      "job",
+      "collector"
+     ],
+     "when": "underguilds-2",
+     "text": "Teague gives a stranger one job to see what they're for: collect a fee from someone who's late with it. His crew points out the debtor and stands back to watch how you do it."
+    },
+    {
+     "id": "the-underguilds-band-3",
+     "title": "Counts You a Friend",
+     "reach": "when",
+     "keys": [
+      "teague",
+      "underguilds",
+      "crew",
+      "work",
+      "job",
+      "collector"
+     ],
+     "when": "underguilds-3",
+     "text": "Teague gives you the job his crew can't do quietly: find the unlicensed thief working Lowgate's rooms and bring her in. His crew nods to you on the Awnings and lets you cross their rounds."
+    },
+    {
+     "id": "the-underguilds-band-4",
+     "title": "One of Its Own",
+     "reach": "when",
+     "keys": [
+      "teague",
+      "underguilds",
+      "crew",
+      "work",
+      "job",
+      "collector"
+     ],
+     "when": "underguilds-4",
+     "text": "Teague wants you beside him when he answers a broken Peace, and his crew makes room for you at their fire. Collectors on any level tell you what they know, and you hear about a stand-down before it's signed."
+    }
+   ]
+  },
+  {
+   "id": "koriars-priests",
+   "kind": "group",
+   "groupKind": "faction",
+   "name": "Koriar's Priests",
+   "keys": [
+    "priests",
+    "priest",
+    "priesthood"
+   ],
+   "line": "Koriar's priests, who run the gaming floor in the tallest bone, change the road's coin, and say the rain is hers.",
    "sections": []
+  },
+  {
+   "id": "the-court-of-tribute",
+   "kind": "group",
+   "groupKind": "faction",
+   "name": "The Court of Tribute",
+   "keys": [
+    "court of tribute",
+    "the court",
+    "factor",
+    "tribute"
+   ],
+   "line": "Gildra's court of factors and tribute-priests, which buys what it can't conquer.",
+   "sections": [
+    {
+     "id": "the-court-of-tribute-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "court of tribute",
+      "the court",
+      "factor",
+      "tribute"
+     ],
+     "when": null,
+     "text": "The Witch Queen's Court of Tribute: factors, financiers and tribute-priests who buy what her host can't take. Its method is the same everywhere: buy it, lend against it, and own the terms when it can't pay. In Qetzal its factor is Ansel, who pays in her gilded crowns through other people's hands. Whoever owes the court pays in coin, in work, or in what they know."
+    }
+   ]
+  },
+  {
+   "id": "hollis",
+   "kind": "character",
+   "name": "Hollis Crane",
+   "pronouns": "he/him",
+   "keys": [
+    "warden",
+    "gate-warden"
+   ],
+   "tags": [
+    "lead"
+   ],
+   "groupIds": [
+    "humans",
+    "the-compact"
+   ],
+   "line": "The Compact's gate-warden, who sells the Peace by day, keeps the Lee by night, and has outlasted every baron since he took the Gate.",
+   "sections": [
+    {
+     "id": "hollis-appearance",
+     "title": "Appearance",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Human, heavy through the belly and the neck, brown skin, grey hair cropped close for the heat. He stands with his weight on his heels and his hands folded on his belly, and walks slowly enough that people come to him. Big soft hands that pass coin along without his looking at it. When the wind stirs the bell rope by the toll house door, his eyes go to the horizon over the Gate."
+    },
+    {
+     "id": "hollis-personality",
+     "title": "Personality",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Asked for the Peace, he names the price and takes the coin before he hands over a token. Asked about Room Six, he says it's let and pours you a drink. Bribed, he takes it, thanks you, and does what he'd have done anyway. Threatened, he calls a porter by name and keeps talking. Asked who sent a stand-down, he points up the Climb. Once the bell has rung, he puts nobody out, paid or not."
+    },
+    {
+     "id": "hollis-speech",
+     "title": "Speech",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A warm voice pitched to carry across a yard. Long sentences that wander round a subject and come back to the price. He uses a name as soon as he hears it, and keeps it. The Compact is \"upstairs\", a stand-down is \"the paper\", and the dead \"left us\". He laughs at his own jokes first. When the talk turns hard, he talks about the weather. With the Compact's people he says less and agrees."
+    },
+    {
+     "id": "hollis-background",
+     "title": "Background",
+     "reach": "named",
+     "keys": [
+      "past",
+      "cook",
+      "porter",
+      "barons",
+      "grew up",
+      "came here"
+     ],
+     "when": null,
+     "text": "He came up the Old Road as a caravan cook and stayed on as a porter at the Lee. He bought it from its keeper with money nobody asked about, and built the gallery over the yard. The Compact gave him the Gate when the last warden couldn't keep the Camps quiet. Barons have come and gone since, and he poured for each of them the night they arrived."
+    },
+    {
+     "id": "hollis-wants",
+     "title": "Wants",
+     "reach": "named",
+     "keys": [
+      "keep the lee",
+      "stand-downs",
+      "the paper",
+      "witch queen",
+      "whose side",
+      "the count"
+     ],
+     "when": null,
+     "text": "He wants to keep the Lee, whoever ends up holding the Gate. He's done the count already: every stand-down he signs ties the Lee to the side paying for them, and that side pays in the Witch Queen's gold. He's decided that if she wins, he'll keep the Lee under her. He hasn't told anyone, because nobody has asked him."
+    },
+    {
+     "id": "hollis-people",
+     "title": "His People",
+     "reach": "named",
+     "keys": [
+      "wenna",
+      "teague",
+      "ansel"
+     ],
+     "when": null,
+     "text": "He carries every stand-down to Wenna himself and talks about the weather while she inks it. He feeds Teague enough work to keep him hungry and not enough to make him strong. Ansel is his best guest: something for the staff every day, and questions about everyone."
+    },
+    {
+     "id": "hollis-knucklebones",
+     "title": "Knucklebones",
+     "reach": "named",
+     "keys": [
+      "knucklebones",
+      "rest-day",
+      "gamble",
+      "gambling",
+      "dice"
+     ],
+     "when": null,
+     "text": "Every rest-day evening he walks up the Climb to Koriar's Floor and plays knucklebones at the same table. He throws left-handed and talks through every throw. He loses steadily, pays the table before he leaves, and tips the dealer either way."
+    },
+    {
+     "id": "hollis-coin",
+     "title": "Once the Coin Is Known",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-coin",
+     "text": "With anyone who already knows whose gold it is, he stops talking about the weather. He takes them into the toll house, pulls the shutter down, pours two cups, and goes through the stand-downs he signed this season, room by room. Then he asks what the Compact will do, and whether he keeps the Lee."
+    },
+    {
+     "id": "hollis-guilds",
+     "title": "Once Teague Holds the Gate",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-refused-guilds",
+     "text": "Teague comes to the toll house at first light now and takes the underguilds' share out of Hollis's box before the Compact sees it. Hollis counts it out for him without arguing. At the Lee he pours heavier, drinks more of it himself, and calls Teague \"the collector\" to his face."
+    },
+    {
+     "id": "hollis-bearer",
+     "title": "Once the Bearer Refuses",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-refused-bearer",
+     "text": "Stand-downs paid in the Witch Queen's gold come back to him from Wenna's desk uninked. He hands each one back to the Compact's runner at the Gate himself. He keeps the Gate, and at the shutter he weighs every coin now and turns back the gilded ones."
+    },
+    {
+     "id": "hollis-sold",
+     "title": "Once It Is Sold to the Queen",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-sold",
+     "text": "Ansel's gift is on his hand, a gold ring too tight for the finger. He sells the Peace to the Witch Queen's riders first, sits with Ansel in the evenings, and has stopped asking anyone what the Compact will do."
+    }
+   ],
+   "schedule": {
+    "Daily": [
+     {
+      "id": "hollis-day-1",
+      "startTime": 360,
+      "endTime": 720,
+      "text": "At the toll house shutter, selling the Peace to the morning's caravans.",
+      "place": "the-gate"
+     },
+     {
+      "id": "hollis-day-2",
+      "startTime": 720,
+      "endTime": 1080,
+      "text": "At the toll house shutter, counting the takings between caravans.",
+      "place": "the-gate"
+     },
+     {
+      "id": "hollis-day-3",
+      "startTime": 1080,
+      "endTime": 1320,
+      "text": "Behind the bar in the Lee's common room, pouring, and checking cords before he hands over keys.",
+      "place": "the-lee"
+     },
+     {
+      "id": "hollis-day-4",
+      "startTime": 1320,
+      "endTime": 360,
+      "text": "Asleep on a cot in the toll house, with the token box under it.",
+      "place": "the-gate"
+     },
+     {
+      "id": "hollis-rest-1",
+      "startTime": 360,
+      "endTime": 720,
+      "text": "At the toll house shutter, selling the Peace to the morning's caravans.",
+      "place": "the-gate",
+      "when": {
+       "weekday": 6
+      }
+     },
+     {
+      "id": "hollis-rest-2",
+      "startTime": 720,
+      "endTime": 1080,
+      "text": "At the toll house shutter, counting the takings between caravans.",
+      "place": "the-gate",
+      "when": {
+       "weekday": 6
+      }
+     },
+     {
+      "id": "hollis-rest-3",
+      "startTime": 1080,
+      "endTime": 1320,
+      "text": "On Koriar's Floor for his rest-day, losing at knucklebones.",
+      "place": "koriars-floor",
+      "when": {
+       "weekday": 6
+      }
+     },
+     {
+      "id": "hollis-rest-4",
+      "startTime": 1320,
+      "endTime": 360,
+      "text": "Asleep on a cot in the toll house, with the token box under it.",
+      "place": "the-gate",
+      "when": {
+       "weekday": 6
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "wenna",
+   "kind": "character",
+   "name": "Wenna",
+   "pronouns": "she/her",
+   "keys": [
+    "bearer",
+    "the bearer",
+    "inker"
+   ],
+   "tags": [
+    "lead"
+   ],
+   "groupIds": [
+    "lunarkin"
+   ],
+   "line": "The inker at Lowgate's counting-house, who carries the Peace's founding terms in script across her back, where she can't read them.",
+   "sections": [
+    {
+     "id": "wenna-appearance",
+     "title": "Appearance",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Pale skin with a blue cast, dark eyes, black hair pinned high off her neck. Script runs from her jaw down her throat and along both arms to the knuckles: her own name, and every contract she's party to. Narrow and long-backed, she sits upright at the desk with her elbows in and her face close to the skin she's inking. When anyone stands behind her, her shoulder blades draw together."
+    },
+    {
+     "id": "wenna-personality",
+     "title": "Personality",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Asked to ink a contract, she reads both parties' arms first, then inks it once it's paid. Asked to refuse a paid buy-out, she opens the Peace book at its first page, points to the clause, and goes back to work. Bribed, she inks the bribe as a contract and hands you a copy. Threatened, she keeps inking and calls a clerk to witness. Asked about Ivo, she asks if you read Lunarkin script."
+    },
+    {
+     "id": "wenna-speech",
+     "title": "Speech",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Quiet, level and short; she finishes a sentence and waits to see if it landed. Contract words for everything: a promise is \"a line\", a death is \"a closing\", a debt is \"open\". She says \"the book\" where others would say \"I\". She hums under her breath while she inks, and stops when anyone speaks. If you can read her script, she says less."
+    },
+    {
+     "id": "wenna-background",
+     "title": "Background",
+     "reach": "named",
+     "keys": [
+      "past",
+      "family",
+      "heir",
+      "her back",
+      "the terms",
+      "founding terms",
+      "grew up",
+      "showing"
+     ],
+     "when": null,
+     "text": "She was born into the Lunarkin family that has inked Qetzal's contracts since the Compact first sold the Peace. When the last bearer was dying, the family chose her, and the terms were copied from the old woman's back onto hers a line a night. She has only seen them in a mirror, backwards. Once a season she's shown bare-backed under a lamp in the Lee's yard, so Lowgate sees the Peace renewed."
+    },
+    {
+     "id": "wenna-wants",
+     "title": "Wants",
+     "reach": "named",
+     "keys": [
+      "ivo",
+      "who paid",
+      "his buy-out",
+      "answer for"
+     ],
+     "when": null,
+     "text": "She wants whoever paid for Ivo to answer for it. The Peace on her back says a paid buy-out is answered by the money, and she inked his herself, at this desk, from a proxy's hand. Ivo couldn't read Lunarkin script. He was the one person in Qetzal who looked at her without reading her, and his line is in the book, struck through in her own red."
+    },
+    {
+     "id": "wenna-glass",
+     "title": "Storm Glass",
+     "reach": "named",
+     "keys": [
+      "storm glass",
+      "sill",
+      "her window",
+      "odd shapes"
+     ],
+     "when": null,
+     "text": "She collects storm glass that fell in odd shapes: a hook, a ring, a shard with a bubble in it. She sorts them by colour along the sill upstairs, smoke to rust, and moves them about when she can't sleep. Sweepers bring her the odd ones, and she pays them in ink: a name done properly on the arm."
+    },
+    {
+     "id": "wenna-coin",
+     "title": "Once the Coin Is Known",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-coin",
+     "text": "With anyone who already knows whose gold it is, she unlocks the iron box, lays the Peace book open on the desk, and reads out the struck lines with the proxy's name beside each. When Hollis brings the next stand-down, she makes him read it aloud to her in the front room, with the clerks listening."
+    },
+    {
+     "id": "wenna-refuses",
+     "title": "Once She Refuses",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-refused-bearer",
+     "text": "She won't ink a buy-out paid in the Witch Queen's gold, and sends each one back up the Climb uninked. Compact men come down to talk her round, and she keeps inking while they talk. She sleeps downstairs at the desk now, with a clerk awake by the door."
+    }
+   ],
+   "schedule": {
+    "Daily": [
+     {
+      "id": "wenna-day-1",
+      "startTime": 360,
+      "endTime": 720,
+      "text": "At the back desk, inking caravan contracts onto arms.",
+      "place": "the-counting-house"
+     },
+     {
+      "id": "wenna-day-2",
+      "startTime": 720,
+      "endTime": 1080,
+      "text": "At the back desk, entering the day's Peace numbers in the book.",
+      "place": "the-counting-house"
+     },
+     {
+      "id": "wenna-day-3",
+      "startTime": 1080,
+      "endTime": 1320,
+      "text": "Alone at the back desk under the lamp, finishing the day's lines.",
+      "place": "the-counting-house"
+     },
+     {
+      "id": "wenna-day-4",
+      "startTime": 1320,
+      "endTime": 360,
+      "text": "Asleep in the rooms upstairs, her glass along the sill.",
+      "place": "the-counting-house"
+     }
+    ]
+   }
+  },
+  {
+   "id": "teague",
+   "kind": "character",
+   "name": "Teague",
+   "pronouns": "he/him",
+   "keys": [
+    "collector",
+    "the collector"
+   ],
+   "tags": [
+    "lead"
+   ],
+   "groupIds": [
+    "orekin",
+    "the-underguilds"
+   ],
+   "line": "Lowgate's underguild collector, copper lines down his arms, who answers broken Peaces with a crew from the Camps unless he's told to stand down.",
+   "sections": [
+    {
+     "id": "teague-appearance",
+     "title": "Appearance",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Dark skin with copper in it, in lines that run from his knuckles up both arms to the collarbones, and eyes the colour of molten copper. Short, wide and long in the arm. He walks Lowgate's rows at the front of his crew and stops dead when he wants someone to come to him. When a stand-down is mentioned, heat brings the copper up bright along his neck."
+    },
+    {
+     "id": "teague-personality",
+     "title": "Personality",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Asked for leave to work Lowgate, he names the fee and takes it in front of his crew. Crossed, he answers it the same day, with the crew watching. Bribed to leave a holder alone, he refuses loudly; bribed to overlook a thief, he takes it. Asked about Room Six, he spits. Told to stand down, he does, every time, and his crew sees it. He touches no holder without the Compact's word."
+    },
+    {
+     "id": "teague-speech",
+     "title": "Speech",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Loud and quick, pitched for his crew as much as for you. Short sentences, and he says the important word twice. A fee is \"the cut\", a thief is \"a hand\", a holder is \"glass\". He swears by the copper in his skin. With Hollis he goes quiet and polite, and the crew hears that too."
+    },
+    {
+     "id": "teague-background",
+     "title": "Background",
+     "reach": "named",
+     "keys": [
+      "past",
+      "grew up",
+      "camps",
+      "last collector",
+      "his own peace"
+     ],
+     "when": null,
+     "text": "He grew up in the Camps, Orekin and poor, which on the road is a short life: people want the copper out of his skin. The underguilds took him young, as muscle. He's collected Lowgate since the last collector's Peace was bought out and nobody came. He still sleeps in the Camps with his crew, and he has never bought the Peace for himself."
+    },
+    {
+     "id": "teague-wants",
+     "title": "Wants",
+     "reach": "named",
+     "keys": [
+      "the gate",
+      "toll house",
+      "stand-down",
+      "stand-downs",
+      "keeping score"
+     ],
+     "when": null,
+     "text": "He wants the Gate: the toll house, the box, and the say over who comes in. Hollis feeds him enough work to keep him hungry. Every stand-down this season he's obeyed in front of his crew, and they're keeping score. He knows Tamsin knifed Ivo, and the stand-down means he can't touch her. Whoever shows him the buy-outs are one buyer's has him and his crew both."
+    },
+    {
+     "id": "teague-hands",
+     "title": "Vigga and Quill",
+     "reach": "named",
+     "keys": [
+      "vigga",
+      "quill",
+      "a hand",
+      "her book"
+     ],
+     "when": null,
+     "text": "He tried to buy Vigga's book for his crew, and she laughed at him in front of them; he's bet against her since. He has caught Quill working rooms without leave twice and let her go both times. The third time, she works for him, and he's told her so."
+    },
+    {
+     "id": "teague-dog",
+     "title": "The Dog",
+     "reach": "named",
+     "keys": [
+      "dog",
+      "dogs",
+      "race",
+      "races",
+      "brindle"
+     ],
+     "when": null,
+     "text": "He keeps a racing dog in the Camps, a lean brindle bitch he feeds before he feeds himself. On rest-day mornings the Pit runs dogs on the sand before the fighters train. He bets on her with his own money, loudly, and covers his crew's bets when she wins."
+    },
+    {
+     "id": "teague-standdown",
+     "title": "After the Stand-Down",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-standdown",
+     "text": "He comes looking for whoever has been asking about Room Six, and tells them, loud, in front of the stalls, every room he's been told to leave alone this season. He wants the name above the proxies, and someone standing beside him when he says it."
+    },
+    {
+     "id": "teague-gate",
+     "title": "Once He Holds the Gate",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-refused-guilds",
+     "text": "His crew answered a buy-out paid in the Witch Queen's gold, and the Compact didn't stop them. At first light he takes the underguilds' share out of Hollis's box and walks the doors before he goes out to the Camps. He has bought himself the Peace, and wears the token where the crew can see it."
+    }
+   ],
+   "schedule": {
+    "Daily": [
+     {
+      "id": "teague-day-1",
+      "startTime": 360,
+      "endTime": 720,
+      "text": "At the Camps' fires with his crew, collecting the night's fees.",
+      "place": "the-camps"
+     },
+     {
+      "id": "teague-day-2",
+      "startTime": 720,
+      "endTime": 1080,
+      "text": "Walking the Awnings' rows with his crew, taking the underguilds' cut from the stalls.",
+      "place": "the-awnings"
+     },
+     {
+      "id": "teague-day-3",
+      "startTime": 1080,
+      "endTime": 1320,
+      "text": "On the Pit's lower steps with his crew, taking bets and selling leave.",
+      "place": "the-pit"
+     },
+     {
+      "id": "teague-day-4",
+      "startTime": 1320,
+      "endTime": 360,
+      "text": "Asleep at the Camps, by his crew's fire.",
+      "place": "the-camps"
+     }
+    ]
+   },
+   "rules": {
+    "tier": "rival",
+    "carries": [
+     "club",
+     "jerkin"
+    ]
+   }
+  },
+  {
+   "id": "teagues-crew",
+   "kind": "character",
+   "name": "Teague's Crew",
+   "pronouns": "they/them",
+   "keys": [
+    "crew",
+    "collectors"
+   ],
+   "tags": [],
+   "groupIds": [
+    "beastkin",
+    "the-underguilds"
+   ],
+   "line": "Beastkin from the Camps who collect for Teague, too poor for the Peace they enforce.",
+   "sections": [
+    {
+     "id": "teagues-crew-appearance",
+     "title": "Appearance",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A mixed pack from the Camps: hound ears, a boar's tusks, a cat's tail, whatever the Woed left them. They walk behind Teague in a loose fan with clubs on their shoulders, thin from the Camps and quick to spread out. The Camps' dust is on them to the knee."
+    },
+    {
+     "id": "teagues-crew-personality",
+     "title": "Personality",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Paid off, they look at Teague first. Threatened, they spread round you and wait for his word. Told to stand down, they do it slowly, and talk about it at the fires. A stranger's kindness they take for a trick. Asked why they don't buy the Peace, they laugh."
+    },
+    {
+     "id": "teagues-crew-speech",
+     "title": "Speech",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Quick and low among themselves, a grunt for anyone else. A holder is \"glass\" and the Compact is \"the hill\". Every order starts \"Teague says\"."
+    }
+   ],
+   "schedule": {
+    "Daily": [
+     {
+      "id": "teagues-crew-day-1",
+      "startTime": 360,
+      "endTime": 720,
+      "text": "At the Camps' fires behind Teague, collecting.",
+      "place": "the-camps"
+     },
+     {
+      "id": "teagues-crew-day-2",
+      "startTime": 720,
+      "endTime": 1080,
+      "text": "Fanned out behind Teague along the Awnings' rows.",
+      "place": "the-awnings"
+     },
+     {
+      "id": "teagues-crew-day-3",
+      "startTime": 1080,
+      "endTime": 1320,
+      "text": "On the Pit's lower steps behind Teague.",
+      "place": "the-pit"
+     },
+     {
+      "id": "teagues-crew-day-4",
+      "startTime": 1320,
+      "endTime": 360,
+      "text": "Asleep round a fire at the Camps.",
+      "place": "the-camps"
+     }
+    ]
+   },
+   "rules": {
+    "tier": "minion",
+    "gang": 5,
+    "carries": [
+     "club"
+    ]
+   }
+  },
+  {
+   "id": "vigga",
+   "kind": "character",
+   "name": "Vigga",
+   "pronouns": "she/her",
+   "keys": [
+    "wolven",
+    "pit fighter"
+   ],
+   "tags": [],
+   "groupIds": [
+    "beastkin"
+   ],
+   "line": "A wolven fighter on the Pit's book, scarred brow to cheek, whose ears give away what her mouth won't.",
+   "sections": [
+    {
+     "id": "vigga-appearance",
+     "title": "Appearance",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Tall and rangy, grey-brown fur down the back of her neck, a scar from brow to cheek that pulls one eye half shut. Loud on her feet. A wolf's ears that go flat when a bout is fixed and stand up when someone sits down beside her."
+    },
+    {
+     "id": "vigga-personality",
+     "title": "Personality",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Offered company, she says she doesn't want it and makes room on the bench. Asked to throw a bout, she laughs and asks how much. Challenged, she fights there and then. Paid, she hands the coin to Nefera. When anyone starts to count on her, she leaves first."
+    },
+    {
+     "id": "vigga-speech",
+     "title": "Speech",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Loud, and meant to carry. Short boasts, and she laughs in the middle of her own sentences. Everyone is \"pup\". Asked anything that matters, she talks about food."
+    },
+    {
+     "id": "vigga-wants",
+     "title": "Wants",
+     "reach": "named",
+     "keys": [
+      "her book",
+      "out of the pit",
+      "fixed",
+      "leave qetzal",
+      "owe nobody"
+     ],
+     "when": null,
+     "text": "She wants out of the Pit and out of Qetzal, owing nobody. The Pit owns her book and sets her bouts, and it's made more on her losing than on her winning. Teague tried to buy her book for his crew and she laughed at him in front of them. Nefera keeps her purse, because whatever Vigga holds she spends the same night."
+    },
+    {
+     "id": "vigga-pot",
+     "title": "The Pot",
+     "reach": "named",
+     "keys": [
+      "pot",
+      "cook",
+      "stew",
+      "rest-day",
+      "pepper"
+     ],
+     "when": null,
+     "text": "Every rest-day she cooks one pot for the fighters' bench on a brazier at the bottom of the steps: goat, beans and enough pepper to make the new fighters weep. She serves everyone, eats most of it herself, and lets nobody help wash the pot."
+    }
+   ],
+   "schedule": {
+    "Daily": [
+     {
+      "id": "vigga-day-1",
+      "startTime": 360,
+      "endTime": 720,
+      "text": "Training alone on the Pit's sand.",
+      "place": "the-pit"
+     },
+     {
+      "id": "vigga-day-2",
+      "startTime": 720,
+      "endTime": 1080,
+      "text": "Training the Pit's newer fighters for drink money.",
+      "place": "the-pit"
+     },
+     {
+      "id": "vigga-day-3",
+      "startTime": 1080,
+      "endTime": 1320,
+      "text": "Fighting on the Pit's book, or waiting her bout on the bench.",
+      "place": "the-pit"
+     },
+     {
+      "id": "vigga-day-4",
+      "startTime": 1320,
+      "endTime": 360,
+      "text": "Asleep on the roof of the bookman's shed at the Pit's rim.",
+      "place": "the-pit"
+     }
+    ]
+   },
+   "rules": {
+    "forSale": true,
+    "price": 100
+   }
+  },
+  {
+   "id": "nefera",
+   "kind": "character",
+   "name": "Nefera",
+   "pronouns": "she/her",
+   "keys": [
+    "pantheren",
+    "broker"
+   ],
+   "tags": [
+    "lead"
+   ],
+   "groupIds": [
+    "beastkin"
+   ],
+   "line": "A pantheren trader under the Awnings, black-eared and gold-skinned, known up and down the Old Road as the one who doesn't lie.",
+   "sections": [
+    {
+     "id": "nefera-appearance",
+     "title": "Appearance",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Gold skin with darker rosettes down the arms, black-tufted cat's ears, a long black-tipped tail. Long-boned and light on her feet; on her stall's bench she sits with her knees up and her chin on them, watching everyone who passes. When the Witch Queen's court is named, her tail wraps round her ankle and stays there."
+    },
+    {
+     "id": "nefera-personality",
+     "title": "Personality",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Asked anything, she answers exactly the question and leaves you to find what she left out. Asked a question with no room in it, she answers that too, then asks for something back. Offered a deal, she prices it at once and asks what else you want from her. Threatened, she names who'd miss her. Helped, she pays it back with a name or a route. She won't lie, to anyone, at any price."
+    },
+    {
+     "id": "nefera-speech",
+     "title": "Speech",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A low voice that drops lower when she names a price. Long, exact sentences with every word where she wants it, then she stops and lets you fill the gap. Her most misleading truths start with \"It's true that\". Traders' words from every kin on the road, and prices in whatever coin you carry. Frightened, she goes formal."
+    },
+    {
+     "id": "nefera-background",
+     "title": "Background",
+     "reach": "named",
+     "keys": [
+      "past",
+      "gildra",
+      "the court",
+      "owes",
+      "her debt",
+      "before qetzal"
+     ],
+     "when": null,
+     "text": "She traded for the Witch Queen's court before she traded for herself, and left it with her debt still on the court's books. Outside Qetzal's walls the court would collect her. Inside, the Peace keeps her, and the court collects what she knows instead, a little at a time, through Ansel."
+    },
+    {
+     "id": "nefera-wants",
+     "title": "Wants",
+     "reach": "named",
+     "keys": [
+      "which room",
+      "room six",
+      "ansel",
+      "too useful",
+      "handed over",
+      "hers is next"
+     ],
+     "when": null,
+     "text": "She wants to be too useful to the people above her ever to be handed over again. She pays Ansel in what she knows, and one thing she told him was which room at the Lee was Ivo's. She doesn't lie, so asked that question, she'll say so. She's afraid her own Peace is next, and a newcomer is the one person in the yard nobody has bought yet."
+    },
+    {
+     "id": "nefera-cases",
+     "title": "The Cases",
+     "reach": "named",
+     "keys": [
+      "pack",
+      "packs",
+      "packing",
+      "cases",
+      "her things"
+     ],
+     "when": null,
+     "text": "Every night before she sleeps she packs everything she owns into her leather cases, buckles them, and sleeps with a hand on the top one. At dawn she unpacks it all onto the stall again. The Lee's porters carry the cases for her and know not to ask."
+    },
+    {
+     "id": "nefera-purse",
+     "title": "Vigga's Purse",
+     "reach": "named",
+     "keys": [
+      "vigga",
+      "purse",
+      "tin"
+     ],
+     "when": null,
+     "text": "She keeps Vigga's purse in a tin under the stall, because Vigga can't keep one, and pays it out a cup at a time."
+    },
+    {
+     "id": "nefera-coin",
+     "title": "Once the Coin Is Known",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-coin",
+     "text": "With anyone who already knows whose gold it is, she says what she told Ansel, and when, and asks what it will cost her. She moves her stall to the Gate end of the Awnings, where the guards can see it, and sleeps in the Lee's common room with her cases under the bench."
+    }
+   ],
+   "schedule": {
+    "Daily": [
+     {
+      "id": "nefera-day-1",
+      "startTime": 360,
+      "endTime": 720,
+      "text": "Unpacking her cases onto the stall and pricing the morning's goods.",
+      "place": "the-awnings"
+     },
+     {
+      "id": "nefera-day-2",
+      "startTime": 720,
+      "endTime": 1080,
+      "text": "At her stall, brokering caravan goods for the houses up the Climb.",
+      "place": "the-awnings"
+     },
+     {
+      "id": "nefera-day-3",
+      "startTime": 1080,
+      "endTime": 1320,
+      "text": "At the end table in the common room's doorway, where the yard can see her, trading news for news.",
+      "place": "the-lee"
+     },
+     {
+      "id": "nefera-day-4",
+      "startTime": 1320,
+      "endTime": 360,
+      "text": "Asleep in her room off the gallery, her cases packed and buckled.",
+      "place": "the-lee"
+     }
+    ]
+   },
+   "rules": {
+    "sells": [
+     "fine-clothes",
+     "storm-glass"
+    ]
+   }
+  },
+  {
+   "id": "quill",
+   "kind": "character",
+   "name": "Quill",
+   "pronouns": "she/her",
+   "keys": [
+    "succori thief",
+    "unlicensed thief"
+   ],
+   "tags": [],
+   "groupIds": [
+    "succori"
+   ],
+   "line": "A small Succori thief from up the Climb, red-skinned and goat-horned, who works Lowgate's rooms without the underguilds' leave, because they won't give it.",
+   "sections": [
+    {
+     "id": "quill-appearance",
+     "title": "Appearance",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Imp-small and red-skinned, black-haired and slit-pupilled, with a thin quick tail and goat's horns that curl back over her ears. She stands close to people and looks at the cord on their neck before their face. The tip of her left horn is chipped off where an underguild club caught it."
+    },
+    {
+     "id": "quill-personality",
+     "title": "Personality",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Near a locked door, she tries it before she says hello. Caught, she hands back what she took and something extra. Offered work, she asks whether the underguilds will know. Teased about her size, she robs you later. She steals from rooms and never from bodies."
+    },
+    {
+     "id": "quill-speech",
+     "title": "Speech",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Fast and bright, all questions, and she answers a question with one. Succori words for every part of a lock, and a Compact house's name for anything rich. She whispers when she's pleased."
+    },
+    {
+     "id": "quill-wants",
+     "title": "Wants",
+     "reach": "named",
+     "keys": [
+      "vaults",
+      "koriar's vaults",
+      "sponsor",
+      "heist",
+      "rob the vaults"
+     ],
+     "when": null,
+     "text": "She wants into Koriar's vaults, the one door in Qetzal she hasn't been through. A job that size needs the underguilds' leave or a sponsor they'll respect, and they don't license Succori. Teague has caught her twice and let her go; the third time, she works for him. Sela has seen her casing the Floor and hasn't said anything yet."
+    },
+    {
+     "id": "quill-pigeons",
+     "title": "Pigeons",
+     "reach": "named",
+     "keys": [
+      "pigeon",
+      "pigeons",
+      "roofs",
+      "birds"
+     ],
+     "when": null,
+     "text": "She races pigeons off the Succori Quarter's roofs at dawn and names each one after a Compact house; the fastest is named for the richest. She keeps them in a crate by her chimney, feeds them stolen grain, and bets on them against the boys on the next roof."
+    }
+   ],
+   "schedule": {
+    "Daily": [
+     {
+      "id": "quill-day-1",
+      "startTime": 360,
+      "endTime": 720,
+      "text": "On the Succori Quarter's roofs with her pigeons, then asleep.",
+      "place": "the-succori-quarter"
+     },
+     {
+      "id": "quill-day-2",
+      "startTime": 720,
+      "endTime": 1080,
+      "text": "Working the crowd under the Awnings for purses.",
+      "place": "the-awnings"
+     },
+     {
+      "id": "quill-day-3",
+      "startTime": 1080,
+      "endTime": 1320,
+      "text": "Up the Climb, fencing the day's take to the workshops.",
+      "place": "the-climb"
+     },
+     {
+      "id": "quill-day-4",
+      "startTime": 1320,
+      "endTime": 360,
+      "text": "On the Lee's gallery after the lamps are out, trying doors.",
+      "place": "the-lee"
+     }
+    ]
+   },
+   "rules": {
+    "carries": [
+     "lockpicks",
+     "knife"
+    ]
+   }
   },
   {
    "id": "tamsin",
@@ -277,6 +2179,1235 @@
      "lockpicks"
     ]
    }
+  },
+  {
+   "id": "ansel",
+   "kind": "character",
+   "name": "Ansel",
+   "pronouns": "he/him",
+   "keys": [
+    "factor",
+    "the factor"
+   ],
+   "tags": [
+    "lead"
+   ],
+   "groupIds": [
+    "humans",
+    "the-court-of-tribute"
+   ],
+   "line": "A soft-spoken factor of Gildra's Court of Tribute, rings on every finger, who has the Lee's best rooms and a gift for everyone he meets.",
+   "sections": [
+    {
+     "id": "ansel-appearance",
+     "title": "Appearance",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Human, olive-skinned, soft at the jaw and round in the shoulders, with a close black beard oiled to a point. He sits low and leans in, so he's never taller than whoever he's talking to, and moves only as fast as the slowest person in the room. A gold ring on every finger. When anyone says the Witch Queen's name, his thumb turns the rings on his fingers, one by one."
+    },
+    {
+     "id": "ansel-personality",
+     "title": "Personality",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Meeting anyone, he gives them something first: a cup, a coin for the porter, a compliment with a fact in it. Asked a favour, he grants it, and remembers. Asked about the buy-outs, he says he's heard and asks what you've heard. Threatened, he thanks you for your frankness and calls for Hollis. Refused, he raises his offer once, then drops it. He never places a buy-out in his own hand."
+    },
+    {
+     "id": "ansel-speech",
+     "title": "Speech",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Soft, so people lean in to hear him. Long courteous sentences with a thank-you in each. The Witch Queen is \"my principal\", and money is \"a kindness\". He asks a question for every one he answers, and thanks people for things they haven't done yet. When the talk stops, he hums a tavern tune, flat."
+    },
+    {
+     "id": "ansel-background",
+     "title": "Background",
+     "reach": "named",
+     "keys": [
+      "past",
+      "palace",
+      "gifts",
+      "rings",
+      "principal",
+      "came here"
+     ],
+     "when": null,
+     "text": "He came from the Witch Queen's palace with credit at Koriar's table and a ring for every finger, each one her gift. Everything he has is hers, and her gifts can be taken back: the rooms, the rings, the name he goes by. If the play in Qetzal fails, he's what she takes back first. He took the Lee's best rooms the day he arrived and has paid ahead ever since."
+    },
+    {
+     "id": "ansel-wants",
+     "title": "Wants",
+     "reach": "named",
+     "keys": [
+      "buy-outs",
+      "proxy",
+      "proxies",
+      "envoy",
+      "worth nothing"
+     ],
+     "when": null,
+     "text": "He wants Qetzal's Peace worth nothing by the time the envoy rides in. He buys Peaces out through proxies, each paid in her gold changed at Koriar's table by a different hand, so the book shows strangers. Anyone who laid the buy-outs beside the change-book would end it. Tamsin's money is his, through a proxy, and they have never said so to each other."
+    },
+    {
+     "id": "ansel-songs",
+     "title": "Tavern Songs",
+     "reach": "named",
+     "keys": [
+      "song",
+      "songs",
+      "sing",
+      "singing",
+      "singer",
+      "tune"
+     ],
+     "when": null,
+     "text": "He collects Qetzal's tavern songs. He pays singers in the Lee's common room to teach him, a verse at a time, writes the words in a little book, and sings them back to the singer, flat, until they stop correcting him."
+    },
+    {
+     "id": "ansel-people",
+     "title": "Lowgate's People",
+     "reach": "named",
+     "keys": [
+      "hollis",
+      "nefera",
+      "porters",
+      "staff"
+     ],
+     "when": null,
+     "text": "He gives the Lee's staff something every day, a coin, a sweet, a good word to Hollis about them, and asks after everyone. Nefera owes his court and pays in what she knows. He takes it over supper in his rooms and thanks her for each thing."
+    },
+    {
+     "id": "ansel-coin",
+     "title": "Once the Coin Is Known",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-coin",
+     "text": "The gifts stop. He asks whoever knows up to his rooms, pours them the Lee's best, and makes an offer: their price for their silence, paid in gold, or a place with the court after the envoy rides in. Refused, he thanks them, and that night a proxy goes to the Counting-House with their number."
+    },
+    {
+     "id": "ansel-bought",
+     "title": "Once His Peace Is Bought Out",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-buyer",
+     "text": "His line is struck through in the book with the buyer's name beside it, and he has read it. He walks Lowgate with porters from the Lee paid to walk beside him, and bars his door at night. The next morning he sends a gift to whoever bought it, with his thanks."
+    }
+   ],
+   "schedule": {
+    "Daily": [
+     {
+      "id": "ansel-day-1",
+      "startTime": 360,
+      "endTime": 720,
+      "text": "Buying for the court under the Awnings, paying over the asking price.",
+      "place": "the-awnings"
+     },
+     {
+      "id": "ansel-day-2",
+      "startTime": 720,
+      "endTime": 1080,
+      "text": "On Koriar's Floor, playing small and watching the change-table.",
+      "place": "koriars-floor"
+     },
+     {
+      "id": "ansel-day-3",
+      "startTime": 1080,
+      "endTime": 1320,
+      "text": "In the common room, buying rounds and asking after everyone.",
+      "place": "the-lee"
+     },
+     {
+      "id": "ansel-day-4",
+      "startTime": 1320,
+      "endTime": 360,
+      "text": "In his rooms off the gallery, singing tavern songs flat to himself.",
+      "place": "the-lee"
+     }
+    ]
+   },
+   "rules": {
+    "purse": 100,
+    "states": {
+     "peace": 1
+    }
+   }
+  },
+  {
+   "id": "sela",
+   "kind": "character",
+   "name": "Sela",
+   "pronouns": "she/her",
+   "keys": [
+    "changer",
+    "change-table"
+   ],
+   "tags": [],
+   "groupIds": [
+    "cinderkin",
+    "koriars-priests"
+   ],
+   "line": "A priest of Koriar at the temple's change-table, her ritual scars cut halfway and glowing red where the old rite stopped.",
+   "sections": [
+    {
+     "id": "sela-appearance",
+     "title": "Appearance",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Charcoal skin, ember-red eyes, short hair streaked red. Ritual scars run from her temples down her throat and stop at her collarbones, cut halfway and glowing dull red. When anyone speaks of the titan or the bone, the light in her scars brightens."
+    },
+    {
+     "id": "sela-personality",
+     "title": "Personality",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Handed foreign coin, she weighs it, names the rate and writes the changing down. Asked for a better rate, she throws knucklebones for it. Asked about her scars, she asks what you'd do. Asked about the gold she changes, she says the book is the temple's."
+    },
+    {
+     "id": "sela-speech",
+     "title": "Speech",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Low and warm, a singer's voice. She says \"the goddess\" and keeps Koriar's name for prayer. She counts coin under her breath in the old priesthood's tongue."
+    },
+    {
+     "id": "sela-wants",
+     "title": "Wants",
+     "reach": "named",
+     "keys": [
+      "scars",
+      "the rite",
+      "finished",
+      "old priesthood",
+      "old faith"
+     ],
+     "when": null,
+     "text": "She wants her scars finished in Koriar's name. The old priesthood started the rite on her as a girl and won't finish what it started on someone who left. The goddess has no rite for it. She asks a different priest every season, and each one tells her to wait."
+    },
+    {
+     "id": "sela-band",
+     "title": "The Dusk Band",
+     "reach": "named",
+     "keys": [
+      "dusk band",
+      "band",
+      "ivo",
+      "harp",
+      "harper"
+     ],
+     "when": null,
+     "text": "She sings with the dusk band on the Floor as the light goes. Ivo played harp in it, and his place on the bench is still empty. She has seen a small Succori casing the Floor on and off all season, and hasn't said anything yet."
+    },
+    {
+     "id": "sela-crickets",
+     "title": "Crickets",
+     "reach": "named",
+     "keys": [
+      "cricket",
+      "crickets",
+      "cages"
+     ],
+     "when": null,
+     "text": "She keeps crickets in reed cages along the edge of the change-table. They sing when the Floor goes quiet, and gamblers bring her crumbs for them."
+    },
+    {
+     "id": "sela-coin",
+     "title": "Once the Coin Is Known",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-coin",
+     "text": "With anyone who already knows whose gold it is, she opens the change-book at the season's first gilded crown and runs a finger down the column: the same mint, line after line, a different hand each time. She takes the crown from her dish and puts it in theirs to carry down to the Counting-House."
+    }
+   ],
+   "schedule": {
+    "Daily": [
+     {
+      "id": "sela-day-1",
+      "startTime": 360,
+      "endTime": 720,
+      "text": "At prayers in the temple, then feeding her crickets.",
+      "place": "the-temple-of-koriar"
+     },
+     {
+      "id": "sela-day-2",
+      "startTime": 720,
+      "endTime": 1080,
+      "text": "At the change-table, changing the road's coin for Qetzal's.",
+      "place": "koriars-floor"
+     },
+     {
+      "id": "sela-day-3",
+      "startTime": 1080,
+      "endTime": 1320,
+      "text": "Singing with the dusk band, then dealing knucklebones.",
+      "place": "koriars-floor"
+     },
+     {
+      "id": "sela-day-4",
+      "startTime": 1320,
+      "endTime": 360,
+      "text": "Dealing knucklebones at a night table.",
+      "place": "koriars-floor"
+     }
+    ]
+   },
+   "rules": {
+    "sells": [
+     "knucklebones"
+    ]
+   }
+  },
+  {
+   "id": "marrow-golkin",
+   "kind": "character",
+   "name": "Marrow Golkin",
+   "pronouns": "they/them",
+   "keys": [
+    "golkin band"
+   ],
+   "tags": [],
+   "groupIds": [
+    "golkin"
+   ],
+   "line": "A band of Golkin in the bones under Lowgate who come up the drain at night for whatever's left out.",
+   "sections": [
+    {
+     "id": "marrow-golkin-appearance",
+     "title": "Appearance",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Small, grey and damp from the bones, long-fingered, quick in the dark. They squint and hiss at lamplight. The biggest wears a belt strung with Peace tokens, and they chew the glass when they're idle; their teeth are worn flat with it."
+    },
+    {
+     "id": "marrow-golkin-personality",
+     "title": "Personality",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Seen, they scatter and come back from behind. Cornered, they rush together and bite. Offered food, they take it and follow you for more. Offered a trade, they want shiny things, and cheat. Whatever comes down the drain is theirs, and whatever comes down alive and alone they kill."
+    },
+    {
+     "id": "marrow-golkin-speech",
+     "title": "Speech",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Clicks and hisses among themselves. To anyone else, scraps of trade talk and the porters' own words, picked up through the grate and said back in the porters' voices."
+    }
+   ],
+   "schedule": {
+    "Daily": [
+     {
+      "id": "marrow-golkin-day-1",
+      "startTime": 360,
+      "endTime": 720,
+      "text": "Asleep in the side passages of the bone.",
+      "place": "the-marrow"
+     },
+     {
+      "id": "marrow-golkin-day-2",
+      "startTime": 720,
+      "endTime": 1080,
+      "text": "Picking over whatever came down the drain.",
+      "place": "the-marrow"
+     },
+     {
+      "id": "marrow-golkin-day-3",
+      "startTime": 1080,
+      "endTime": 1320,
+      "text": "Climbing toward the Mouth as the light goes.",
+      "place": "the-marrow"
+     },
+     {
+      "id": "marrow-golkin-day-4",
+      "startTime": 1320,
+      "endTime": 360,
+      "text": "Up through the grate, taking whatever's left out in Lowgate's low streets.",
+      "place": "the-marrows-mouth"
+     }
+    ]
+   },
+   "rules": {
+    "tier": "minion",
+    "gang": 6,
+    "carries": [
+     "knife",
+     "golkins-string"
+    ]
+   }
+  },
+  {
+   "id": "ivo",
+   "kind": "character",
+   "name": "Ivo",
+   "pronouns": "he/him",
+   "keys": [
+    "harper",
+    "the harper"
+   ],
+   "tags": [],
+   "groupIds": [
+    "humans"
+   ],
+   "line": "A harper who fled Gildra's palace, lodged at the Lee, played in Koriar's dusk band, and was knifed in Room Six.",
+   "sections": [
+    {
+     "id": "ivo-who",
+     "title": "Who He Was",
+     "reach": "named",
+     "keys": [],
+     "when": null,
+     "text": "He played harp at the Witch Queen's palace until he ran, and came over the Old Road with nothing but the harp. He lodged in Room Six, played with Koriar's dusk band, and couldn't read a word of Lunarkin script. He bought the Peace the day he arrived. Someone paid more for it."
+    }
+   ]
+  },
+  {
+   "id": "gildras-envoy",
+   "kind": "character",
+   "name": "Envoy of the Witch Queen",
+   "pronouns": "",
+   "keys": [
+    "envoy",
+    "gildra's envoy"
+   ],
+   "tags": [],
+   "groupIds": [
+    "the-court-of-tribute"
+   ],
+   "line": "Gildra's envoy, on the Old Road with a retinue and an offer.",
+   "sections": []
+  },
+  {
+   "id": "peace-token",
+   "kind": "item",
+   "name": "A Peace Token",
+   "keys": [
+    "token",
+    "tokens",
+    "cord",
+    "glass token"
+   ],
+   "line": "A disc of storm glass on a cord, scratched at the counting-house with its holder's number.",
+   "sections": [
+    {
+     "id": "peace-token-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A thumb-wide disc of storm glass, holed and strung on a waxed cord, with a number scratched into one face. Holders wear it at the throat, where a guard or a keeper can see it without asking. When a Peace is bought out, the porters leave the token on the body."
+    }
+   ],
+   "rules": {
+    "good": {
+     "kind": "goods"
+    }
+   }
+  },
+  {
+   "id": "the-peace-book",
+   "kind": "item",
+   "name": "The Peace Book",
+   "keys": [
+    "peace book",
+    "ledger",
+    "the book"
+   ],
+   "line": "The counting-house's ledger of every Peace sold and every one bought out, kept under lock at Wenna's desk.",
+   "sections": [
+    {
+     "id": "the-peace-book-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A hide-bound ledger thick enough to stop a door, kept in an iron box under Wenna's desk. Each line is a token's number, a name and a date. A bought-out line is struck through in red, with the buyer's name beside it. Down this season's pages, the red runs thick."
+    }
+   ],
+   "carried": {
+    "locationId": "the-counting-house"
+   }
+  },
+  {
+   "id": "golkins-string",
+   "kind": "item",
+   "name": "The Golkin's String",
+   "keys": [
+    "string",
+    "belt of tokens",
+    "golkin's string"
+   ],
+   "line": "A cord of Peace tokens the Golkin took off bodies that came down the drain, Ivo's among them.",
+   "sections": [
+    {
+     "id": "golkins-string-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A greasy cord strung with Peace tokens, worn as a belt by the biggest of the Marrow's Golkin. Every token on it came off a body tipped down the drain, and each number on it is struck through in red in the Peace book. The newest, still bright, is Ivo's."
+    }
+   ]
+  },
+  {
+   "id": "the-change-book",
+   "kind": "item",
+   "name": "The Change-Book",
+   "keys": [
+    "change-book",
+    "change book"
+   ],
+   "line": "The temple's record of foreign coin changed at Sela's table: the day, the amount, and the mint.",
+   "sections": [
+    {
+     "id": "the-change-book-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A long, narrow book chained to the change-table, one line for every changing: the day, the coin taken, the coin given, the mint, and the hand that brought it. Sela writes it in a small square hand, and the priests read it at each season's end."
+    }
+   ],
+   "carried": {
+    "locationId": "koriars-floor"
+   }
+  },
+  {
+   "id": "gilded-crown",
+   "kind": "item",
+   "name": "A Gilded Crown",
+   "keys": [
+    "gilded crown",
+    "crown",
+    "crowns",
+    "gildra's gold",
+    "gold coin"
+   ],
+   "line": "A heavy gold coin from Gildra's mint, stamped with her face; Sela keeps one of each mint she changes.",
+   "sections": [
+    {
+     "id": "gilded-crown-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A heavy gold coin with a milled rim. One face is the Witch Queen in profile, her braid down her neck; the other is a crown. Qetzal's changers weigh each one on a brass scale before they'll touch it."
+    }
+   ],
+   "carried": {
+    "heldBy": "sela"
+   }
+  },
+  {
+   "id": "knucklebones",
+   "kind": "item",
+   "name": "Knucklebones",
+   "keys": [
+    "knucklebones",
+    "dice",
+    "bones"
+   ],
+   "line": "Koriar's dice: four small bones, sold at the temple and thrown on every table in Qetzal.",
+   "sections": [
+    {
+     "id": "knucklebones-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Ankle-bones scrubbed white, each face worn to a different shape, and read by which faces land up. The temple sells them in sets with Koriar's sign burned into each bone. Gamblers carry their own in a pouch, and won't throw anyone else's."
+    }
+   ]
+  },
+  {
+   "id": "storm-glass",
+   "kind": "item",
+   "name": "Storm Glass",
+   "keys": [
+    "storm glass",
+    "shards",
+    "glass"
+   ],
+   "line": "Shards the storms drop, swept off the roofs at dawn and sold by weight to the glassworks.",
+   "sections": [
+    {
+     "id": "storm-glass-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Glass shards in every colour the sand was, smoke and green and rust, some a finger long. Sweepers clear the roofs at dawn with stiff brooms and sell it by the sack to the glassworks up the Climb. Odd shapes go for more."
+    }
+   ]
+  },
+  {
+   "id": "the-peace",
+   "kind": "lore",
+   "name": "The Peace",
+   "keys": [
+    "the peace",
+    "holder",
+    "buy-out",
+    "bought out",
+    "stand-down",
+    "answered"
+   ],
+   "line": "Pay at the gate, and harm done to you inside the walls is answered; anyone can buy it, or buy it out for more.",
+   "sections": [
+    {
+     "id": "the-peace-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "the peace",
+      "holder",
+      "buy-out",
+      "bought out",
+      "stand-down",
+      "answered"
+     ],
+     "when": null,
+     "text": "Pay at the toll house and you're given a glass token on a cord, and your number goes into the Peace book at the Counting-House. While it holds, harm done to you inside the walls is answered: the underguilds find whoever did it and pay them back in kind, for the Compact's fee. Anyone can buy it out by paying the Counting-House more than you paid. Then your line is struck through in red, the underguilds get a stand-down, and nobody comes."
+    }
+   ]
+  },
+  {
+   "id": "the-bearer",
+   "kind": "lore",
+   "name": "The Bearer",
+   "keys": [
+    "bearer",
+    "founding terms",
+    "the terms",
+    "the clause"
+   ],
+   "line": "The Peace's founding terms are inked across a living Lunarkin's back; everyone knows that nobody who can pay is refused.",
+   "sections": [
+    {
+     "id": "the-bearer-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "bearer",
+      "founding terms",
+      "the terms",
+      "the clause"
+     ],
+     "when": null,
+     "text": "The terms the Compact set when it first sold the Peace are inked across the back of a living Lunarkin, the bearer, and copied onto an heir before she dies. Everyone knows one clause: nobody who can pay is refused. Nobody has read the rest in a generation, and the bearer can't read her own back. The bearer now is Wenna, at the Counting-House."
+    }
+   ]
+  },
+  {
+   "id": "the-gate-bell",
+   "kind": "lore",
+   "name": "The Gate Bell",
+   "keys": [
+    "bell",
+    "gate bell",
+    "behemoth",
+    "glass storm"
+   ],
+   "line": "When a storm or a behemoth is sighted the bell rings and the Gate shuts, and whoever is outside stays outside.",
+   "sections": [
+    {
+     "id": "the-gate-bell-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "bell",
+      "gate bell",
+      "behemoth",
+      "glass storm"
+     ],
+     "when": null,
+     "text": "When a storm or a behemoth is sighted from the walk over the Gate, the guards ring the bell by the toll house until the doors meet. Whoever is inside stays in; whoever is outside stays out, at the Camps or on the road. Lowgate packs into the Lee and under the Awnings until the bell rings again to open the doors."
+    }
+   ]
+  },
+  {
+   "id": "the-rain",
+   "kind": "lore",
+   "name": "The Rain",
+   "keys": [
+    "rain",
+    "old faith",
+    "cisterns"
+   ],
+   "line": "Rain falls on Qetzal's tallest bone when it falls nowhere else in the Badlands; Koriar's priests say it's her, the old faith the bone.",
+   "sections": [
+    {
+     "id": "the-rain-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "rain",
+      "old faith",
+      "cisterns"
+     ],
+     "when": null,
+     "text": "When rain comes to the Badlands it falls first on Qetzal's tallest bone, and sometimes it falls there and nowhere else. Koriar's priests say it's hers. The old faith, which was here first, says it's the bone's. Either way it runs down from the top, through the Heights' cisterns and the Climb's gutters, and reaches Lowgate last."
+    }
+   ]
+  },
+  {
+   "id": "koriar",
+   "kind": "lore",
+   "name": "Koriar",
+   "keys": [
+    "koriar",
+    "the goddess"
+   ],
+   "line": "A new goddess of music and luck whose sign is knucklebones; the people love her, and the titan-blooded take her as an insult.",
+   "sections": []
+  },
+  {
+   "id": "the-late-caravan",
+   "kind": "lore",
+   "name": "The Caravan That Didn't Come In",
+   "keys": [
+    "salt caravan",
+    "caravan that didn",
+    "late caravan",
+    "riders"
+   ],
+   "line": "A salt caravan due at the Gate days ago never arrived, and its house is offering money to anyone who finds out why.",
+   "sections": [
+    {
+     "id": "the-late-caravan-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "salt caravan",
+      "caravan that didn",
+      "late caravan",
+      "riders"
+     ],
+     "when": null,
+     "text": "A salt caravan out of a frontier town down the road was due at the Gate before the last storm and hasn't come in. Its house keeps a man in the Lee's yard every evening, buying drinks for drivers who came the same way and asking what they saw. Most say the road was empty. One says he saw riders on a ridge, and won't say whose."
+    }
+   ],
+   "tags": [
+    "rumour"
+   ]
+  },
+  {
+   "id": "what-the-golkin-keep",
+   "kind": "lore",
+   "name": "What the Golkin Keep",
+   "keys": [
+    "golkin keep",
+    "down the drain",
+    "belt of tokens",
+    "bodies"
+   ],
+   "line": "Whatever goes down the Marrow drain, the Golkin keep, and lately what's gone down is bodies with the Peace still round their necks.",
+   "sections": [
+    {
+     "id": "what-the-golkin-keep-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "golkin keep",
+      "down the drain",
+      "belt of tokens",
+      "bodies"
+     ],
+     "when": null,
+     "text": "Porters say whatever goes down the Marrow drain, the Golkin keep: boots, buckles, teeth. Lately what's gone down is bodies with the Peace still round their necks. A porter who climbed down after a dropped knife came back saying he'd seen a Golkin wearing a belt of tokens, and he hasn't been near the grate since."
+    }
+   ],
+   "tags": [
+    "rumour"
+   ]
+  },
+  {
+   "id": "robbing-the-vaults",
+   "kind": "lore",
+   "name": "Robbing the Vaults",
+   "keys": [
+    "rob the vaults",
+    "robbing",
+    "heist",
+    "vaults"
+   ],
+   "line": "The priests say the vaults under the Floor can't be robbed, and so far nobody's proved them wrong.",
+   "sections": [
+    {
+     "id": "robbing-the-vaults-entry",
+     "title": "Entry",
+     "reach": "named",
+     "keys": [
+      "rob the vaults",
+      "robbing",
+      "heist",
+      "vaults"
+     ],
+     "when": null,
+     "text": "Caravan houses keep their money in the vaults under Koriar's Floor, and the priests say they can't be robbed. In Lowgate, robbing them is a drinking game: people plan it over cups, and the plans get wilder as the night goes. The one who listens hardest is a small Succori thief who never buys a round."
+    }
+   ],
+   "tags": [
+    "rumour"
+   ]
+  },
+  {
+   "id": "bought-out",
+   "kind": "thread",
+   "name": "Bought Out",
+   "keys": [
+    "buy-outs",
+    "the buy-outs",
+    "stand-downs"
+   ],
+   "line": "Lowgate's Peace is being bought out faster than ever, and Gildra's envoy is on the Old Road, coming.",
+   "sections": [
+    {
+     "id": "bought-out-next",
+     "title": "Next beat",
+     "reach": "always",
+     "keys": [],
+     "when": null,
+     "text": "Ivo was knifed in Room Six at the Lee with the Peace on him, and the underguilds stood down. A buy-out, and in Lowgate an ordinary one."
+    },
+    {
+     "id": "bought-out-pressure",
+     "title": "Pressure",
+     "reach": "never",
+     "keys": [],
+     "when": null,
+     "text": "Lowgate's Peace is being bought out faster than ever, and Gildra's envoy is on the Old Road, coming."
+    },
+    {
+     "id": "bought-out-objective",
+     "title": "Objective",
+     "reach": "never",
+     "keys": [],
+     "when": null,
+     "text": "Find who's buying, and decide what Qetzal's Peace is worth."
+    },
+    {
+     "id": "bought-out-opposition",
+     "title": "Opposition",
+     "reach": "never",
+     "keys": [],
+     "when": null,
+     "text": "Ansel, and everyone whose purse each buy-out fills."
+    },
+    {
+     "id": "bought-out-cost",
+     "title": "Cost",
+     "reach": "never",
+     "keys": [],
+     "when": null,
+     "text": "Refusing Gildra's coin breaks the one rule Qetzal's trade stands on; taking it sells the city."
+    },
+    {
+     "id": "bought-out-consequence",
+     "title": "Consequence",
+     "reach": "never",
+     "keys": [],
+     "when": null,
+     "text": "If the Peace is still selling to her when the envoy arrives, Gildra offers to keep it for Qetzal, with her own people inside the walls."
+    }
+   ],
+   "rules": {
+    "thread": {
+     "kind": "siege",
+     "milestones": [
+      {
+       "id": "stand-down",
+       "text": "Find out why the underguilds won't answer Ivo's death in Room Six.",
+       "targetId": "teague"
+      },
+      {
+       "id": "count",
+       "text": "Count Lowgate's buy-outs this season, from the Peace book at the Counting-House or from the tokens the Golkin keep.",
+       "targetId": "the-peace-book"
+      },
+      {
+       "id": "coin",
+       "text": "Match the buy-outs to the gold changed at Koriar's table: every one was paid in Gildra's coin, through different hands.",
+       "targetId": "sela"
+      },
+      {
+       "id": "ending",
+       "text": "Decide what the Peace is worth: have the underguilds or the bearer refuse Gildra's buy-outs, buy out Ansel's own Peace, or sell what you know to Ansel.",
+       "targetId": "ansel",
+       "when": [
+        {
+         "stateId": "bought-out",
+         "characterId": "world",
+         "atLeast": 1
+        }
+       ]
+      },
+      {
+       "id": "envoy",
+       "text": "Gildra's envoy is on the Old Road, coming to the Gate, and will find the Peace worth whatever it's worth by then.",
+       "targetId": "gildras-envoy",
+       "fromDay": 3
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "the-envoy",
+   "kind": "thread",
+   "name": "The Envoy",
+   "keys": [],
+   "line": "Gildra's envoy is on the Old Road with an offer to keep Qetzal's Peace for it.",
+   "sections": [
+    {
+     "id": "the-envoy-next",
+     "title": "Next beat",
+     "reach": "always",
+     "keys": [],
+     "when": null,
+     "text": "Gildra's envoy is on the Old Road, coming to the Gate."
+    }
+   ],
+   "rules": {
+    "thread": {
+     "kind": "ruin",
+     "milestones": [
+      {
+       "id": "arrives",
+       "text": "Gildra's envoy is on the Old Road, coming to the Gate.",
+       "targetId": "gildras-envoy",
+       "fromDay": 3
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "before-the-bell",
+   "kind": "scenario",
+   "name": "Lowgate, Before the Bell",
+   "keys": [],
+   "line": "Late afternoon at Qetzal's Gate, a glass storm behind the caravan, the bell about to ring, and one room free at the Lee.",
+   "sections": [
+    {
+     "id": "before-the-bell-situation",
+     "title": "Situation",
+     "reach": "always",
+     "keys": [],
+     "when": null,
+     "text": "Late afternoon. Your caravan comes down the last stretch of the Old Road to Qetzal's Gate with a glass storm standing up on the horizon behind it. The doors are still open, and Hollis Crane is selling the Peace through the toll house shutter: a glass token on a cord, and harm done to you inside the walls is answered. The gate bell rings within the hour, and whoever is outside then stays outside. Inside, the Lee has one room free: Room Six, where a harper was knifed the night before you came, with the Peace on him, and the underguilds never came."
+    }
+   ],
+   "carried": {
+    "startPlaceId": "the-gate",
+    "startAt": 1020,
+    "playerCharacterId": "the-newcomer",
+    "presentCharacterIds": []
+   }
+  },
+  {
+   "id": "the-newcomer",
+   "kind": "persona",
+   "name": "The Newcomer",
+   "keys": [],
+   "line": "A nobody off a caravan on the Old Road, new to Qetzal, with a little coin and no Peace yet.",
+   "sections": [
+    {
+     "id": "the-newcomer-who",
+     "title": "Who you are",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "You came down the Old Road with a caravan, and Qetzal is the first roof since the Badlands. Nobody here knows you. You have a little coin, no Peace yet, and nobody in the city who'd miss you."
+    }
+   ],
+   "rules": {
+    "states": {
+     "force": 2,
+     "finesse": 2,
+     "focus": 2,
+     "flair": 2,
+     "coin": 14
+    },
+    "charges": {
+     "flair": "trained",
+     "force": "practiced",
+     "finesse": "practiced",
+     "focus": "raw"
+    }
+   }
   }
- ]
+ ],
+ "rules": {
+  "states": [
+   {
+    "id": "peace",
+    "name": "The Peace",
+    "scope": "char",
+    "min": 0,
+    "max": 2,
+    "start": 0,
+    "category": "Qetzal",
+    "display": "band",
+    "restBand": 0,
+    "bands": [
+     {
+      "at": 0,
+      "label": "has no Peace"
+     },
+     {
+      "at": 1,
+      "label": "has the Peace, and harm done to you inside the walls is answered"
+     },
+     {
+      "at": 2,
+      "label": "has had the Peace bought out, and nobody will answer for harm done to you"
+     }
+    ],
+    "npcLabels": [
+     "has no Peace",
+     "has the Peace, and harm done to |them| inside the walls is answered",
+     "has had |their| Peace bought out, and nobody will answer for harm done to |them|"
+    ]
+   },
+   {
+    "id": "gate-shut",
+    "name": "Gate shut",
+    "scope": "world",
+    "min": 0,
+    "max": 1,
+    "start": 0,
+    "category": "Qetzal",
+    "display": "band",
+    "restBand": 0,
+    "line": "[|bandLabel|.]",
+    "bands": [
+     {
+      "at": 0,
+      "label": "The Gate is open"
+     },
+     {
+      "at": 1,
+      "label": "The Gate is shut: the bell has rung, and nobody comes in or goes out by the road until it rings again"
+     }
+    ]
+   },
+   {
+    "id": "bought-out",
+    "name": "Bought Out ended",
+    "scope": "world",
+    "min": 0,
+    "max": 4,
+    "start": 0,
+    "category": "Qetzal",
+    "display": "band",
+    "restBand": 0,
+    "line": "[|bandLabel|.]",
+    "bands": [
+     {
+      "at": 0,
+      "label": "The Peace still sells to the Witch Queen"
+     },
+     {
+      "at": 1,
+      "label": "The underguilds have answered a buy-out paid in the Witch Queen's gold, and Teague holds the Gate"
+     },
+     {
+      "at": 2,
+      "label": "Wenna won't ink a buy-out paid in the Witch Queen's gold, and the Peace no longer sells to her"
+     },
+     {
+      "at": 3,
+      "label": "Ansel's own Peace is bought out and inked with the buyer's name"
+     },
+     {
+      "at": 4,
+      "label": "Ansel has bought what you knew, and the Peace keeps selling to the Witch Queen"
+     }
+    ]
+   },
+   {
+    "id": "vigga-book",
+    "name": "Vigga's book",
+    "scope": "world",
+    "min": 0,
+    "max": 1,
+    "start": 0,
+    "category": "Qetzal",
+    "display": "band",
+    "restBand": 0,
+    "line": "[|bandLabel|.]",
+    "bands": [
+     {
+      "at": 0,
+      "label": "Vigga is on the Pit's book"
+     },
+     {
+      "at": 1,
+      "label": "You own Vigga's book: the Pit sets none of her bouts, and she fights or leaves when you say"
+     }
+    ]
+   },
+   {
+    "id": "standing",
+    "name": "Standing",
+    "scope": "faction",
+    "min": 0,
+    "max": 4,
+    "start": 2,
+    "category": "Factions",
+    "display": "band",
+    "restBand": 2,
+    "line": "[|name| |bandLabel|.]",
+    "bands": [
+     {
+      "at": 0,
+      "label": "wants you gone, and will act on it"
+     },
+     {
+      "at": 1,
+      "label": "doesn't trust you"
+     },
+     {
+      "at": 2,
+      "label": "doesn't know you"
+     },
+     {
+      "at": 3,
+      "label": "counts you a friend"
+     },
+     {
+      "at": 4,
+      "label": "counts you one of its own"
+     }
+    ]
+   }
+  ],
+  "actions": [
+   {
+    "id": "pay-for-the-peace",
+    "name": "Pay for the Peace",
+    "summary": "Buy the Peace at the toll house: a glass token on a cord, and harm done to you inside the walls is answered.",
+    "placeIds": [
+     "the-gate"
+    ],
+    "present": [
+     "hollis"
+    ],
+    "when": [
+     {
+      "stateId": "coin",
+      "atLeast": 1
+     },
+     {
+      "stateId": "peace",
+      "atMost": 0
+     }
+    ],
+    "open": {
+     "weekdays": [],
+     "fromHour": 6,
+     "toHour": 18
+    },
+    "effects": [
+     {
+      "stateId": "coin",
+      "add": -1
+     },
+     {
+      "stateId": "peace",
+      "set": 1
+     },
+     {
+      "goodId": "peace-token",
+      "add": 1
+     }
+    ],
+    "input": "I pay for the Peace at the toll house.",
+    "outcome": "Hollis takes the coin before anything else. Then he lifts a disc of storm glass on a cord out of the box at his elbow, a number scratched into it, and watches you put it round your neck."
+   },
+   {
+    "id": "buy-out-ansel",
+    "name": "Buy out Ansel's Peace",
+    "summary": "Pay the Counting-House more than Ansel paid, and have Wenna ink his Peace as bought out.",
+    "placeIds": [
+     "the-counting-house"
+    ],
+    "present": [
+     "wenna"
+    ],
+    "when": [
+     {
+      "stateId": "coin",
+      "atLeast": 10
+     },
+     {
+      "stateId": "peace",
+      "characterId": "ansel",
+      "atLeast": 1,
+      "atMost": 1
+     }
+    ],
+    "effects": [
+     {
+      "stateId": "coin",
+      "add": -10
+     },
+     {
+      "stateId": "peace",
+      "characterId": "ansel",
+      "set": 2
+     },
+     {
+      "stateId": "bought-out",
+      "characterId": "world",
+      "set": 3
+     }
+    ],
+    "input": "I buy out Ansel's Peace at the Counting-House.",
+    "outcome": "Wenna counts the coin, unlocks the iron box and opens the Peace book at Ansel's number. She strikes his line through in red and inks your name beside it, because a buy-out is inked with its buyer. By dusk the Compact will send the underguilds their stand-down."
+   },
+   {
+    "id": "buy-viggas-book",
+    "name": "Buy Vigga's book",
+    "summary": "Buy Vigga's fighting book from the Pit: her bouts, and her leaving, are yours to say.",
+    "placeIds": [
+     "the-pit"
+    ],
+    "present": [
+     "vigga"
+    ],
+    "when": [
+     {
+      "stateId": "coin",
+      "atLeast": 100
+     },
+     {
+      "stateId": "vigga-book",
+      "characterId": "world",
+      "atMost": 0
+     }
+    ],
+    "effects": [
+     {
+      "stateId": "coin",
+      "add": -100
+     },
+     {
+      "stateId": "vigga-book",
+      "characterId": "world",
+      "set": 1
+     }
+    ],
+    "input": "I buy Vigga's book from the Pit.",
+    "outcome": "The Pit's bookman wipes the Pit's mark off Vigga's name on the board and chalks yours under it. Down on the fighters' bench, Vigga's ears go flat, and she laughs loud enough for the steps to hear."
+   }
+  ]
+ }
 }

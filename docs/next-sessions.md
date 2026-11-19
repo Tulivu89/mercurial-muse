@@ -24,7 +24,7 @@ Not yet built: A2 to A4, group chat, first messages and images.
 
 | # | Session | Kind | Why now |
 | --- | --- | --- | --- |
-| 1 | **The adventure module:** seed and first slice | Writing | The owner's priority. The adventure's new features need a world to test on. Volungraiv's slice (Qetzal's Lowgate) is framed, and its gold pair is written (Nov 19); the fill is next. Prompt: `docs/content/volungraiv/plan.md`, *The next session* |
+| 1 | **The adventure module:** seed and first slice | Writing | The owner's priority. The adventure's new features need a world to test on. Volungraiv's slice (Qetzal's Lowgate) is filled (Nov 19, `docs/content/volungraiv/slice/5-fill.md`); play is next, and the ceiling gold (`docs/bids/volungraiv-ceiling/`) fills the temple. Prompt: `docs/content/volungraiv/plan.md`, *The next session* |
 | 2 | **Adventure A2 and A3:** opponents' moves, progress clocks, story events | Code | Built against the module's first slice, which is written to exercise them |
 | 3 | **Group chat G1 to G3** | Code | Designed (`docs/model-jobs.md`) with the review's additions; Home's households are made for it |
 | 4 | **First messages (F3), then images (F4)** | Code | Joins Chat, Home and the clock; images are what every other app has |
@@ -43,6 +43,7 @@ Sessions 1 and 3 can run side by side: one writes, the other codes, and they tou
 > - milestones that are alternatives, where reaching one closes the rest, and a way for the player to close a whole thread by hand, because there should always be a way to resolve a thread for emergent situations;
 > - When sections carried from a Studio world into the adventure, keyed to milestones reached and world states (`core/convert` drops them today);
 > - if it fits, Named sections kept on their keys instead of folded into the description sent every turn; otherwise note it for roadmap step 6.
+> - from the fill (`5-fill.md`, *For the code session*): a place's starting states (the Lee's Alert) carried to the adventure, and `ownTerms` not taking "The" as a character's first name.
 > Stop after a short plan of the data shapes for the owner's review; then build, with tests, `npm test`, `npm run lint` and `npm run build` green, and a pull request with plain steps to merge.
 
 **Session 3, group chat.**

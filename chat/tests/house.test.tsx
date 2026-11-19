@@ -5,7 +5,7 @@ import { POST_FORMAT, lifeKey, type Life, type Post } from '../../core/chat/inde
 import { importCardJson, newWorld, type World } from '../../core/records/index.js';
 import { House, type HouseAt } from '../src/House';
 import type { PostApi } from '../src/posting';
-import { INCLUDED_WORLDS } from '../../kit/src/included';
+import { INCLUDED_HOUSEHOLDS } from '../../kit/src/included';
 
 const contact = {
   cardType: 'contact', id: 'card-mira', name: 'Mira', persona: 'Wry.', greeting: 'Hey.', relationship: 'acquaintance',
@@ -74,7 +74,7 @@ describe('Home', () => {
 
   it('offers each world that comes with the site and isn\'t here yet', () => {
     const onBring = vi.fn();
-    render(<House worlds={[]} chats={[]} portraits={{}} lives={{}} userName="" onLife={() => {}} onWorld={() => {}} onPicture={() => {}} onChat={() => {}} bringable={INCLUDED_WORLDS} onBring={onBring} />);
+    render(<House worlds={[]} chats={[]} portraits={{}} lives={{}} userName="" onLife={() => {}} onWorld={() => {}} onPicture={() => {}} onChat={() => {}} bringable={INCLUDED_HOUSEHOLDS} onBring={onBring} />);
     fireEvent.click(screen.getByRole('button', { name: 'Bring in HOG Wild' }));
     expect(onBring).toHaveBeenCalledWith('hog-wild');
     expect(screen.getByRole('button', { name: 'Bring in The dragon\'s resort' })).toBeInTheDocument();

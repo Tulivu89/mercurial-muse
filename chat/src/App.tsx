@@ -10,7 +10,7 @@ import { useTheme } from '../../kit/src/theme';
 import { useLook } from '../../kit/src/look';
 import { downloadJson, newId, readFileBytes, readJsonFile } from '../../kit/src/util';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
-import { HOUSE_VERSION, HOUSE_WORLD_ID, INCLUDED_WORLDS, RETIRED_HOUSE_ID, loadIncluded, loadResort } from '../../kit/src/included';
+import { HOUSE_VERSION, HOUSE_WORLD_ID, INCLUDED_HOUSEHOLDS, RETIRED_HOUSE_ID, loadIncluded, loadResort } from '../../kit/src/included';
 import { ChatView } from './ChatView';
 import { Home, type Status } from './Home';
 import { House, type HouseAt } from './House';
@@ -132,7 +132,7 @@ export function App() {
         try { localStorage.setItem(SEEDED_KEY, String(HOUSE_VERSION)); } catch { /* storage blocked */ }
         // The site's own households, and Chat's shelf of imported cards, were made before a world
         // said what it is for. Each is marked in place, so nothing arranged in it is lost.
-        const chatOnly = new Set<string>([IMPORTS_WORLD_ID, ...INCLUDED_WORLDS.map((entry) => entry.id)]);
+        const chatOnly = new Set<string>([IMPORTS_WORLD_ID, ...INCLUDED_HOUSEHOLDS.map((entry) => entry.id)]);
         for (const world of list.filter((entry) => chatOnly.has(entry.id) && entry.use === undefined)) {
           const marked = { ...world, use: 'household' as const };
           await putWorld(marked);
@@ -275,7 +275,7 @@ export function App() {
       saveCollection(collection);
     } catch (error) { fail(error); }
   };
-  const missingIncluded = worldsReady ? INCLUDED_WORLDS.filter((entry) => !worlds?.some((world) => world.id === entry.id)) : [];
+  const missingIncluded = worldsReady ? INCLUDED_HOUSEHOLDS.filter((entry) => !worlds?.some((world) => world.id === entry.id)) : [];
 
   const createCharacter = async (name: string) => {
     if (!worldsReady) throw new Error('Retry the library before creating a character.');

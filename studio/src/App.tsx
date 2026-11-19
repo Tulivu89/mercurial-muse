@@ -203,7 +203,7 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
       if (taken && again) { onOpen(brought.id); return; }
       const world = taken ? { ...brought, id: newId(), name: `${brought.name} (copy)` } : brought;
       onCreate(world);
-      onStatus({ text: `Opened ${world.name}. Its people can be met in Chat, and its Home is in Chat's Home.` });
+      onStatus({ text: includedWorld(id)?.household ? `Opened ${world.name}. Its people can be met in Chat, and its Home is in Chat's Home.` : `Opened ${world.name}. Play it from its world page: Play in the adventure.` });
     } catch (error) {
       onStatus({ text: (error as Error).message, bad: true });
     }
