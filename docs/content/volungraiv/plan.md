@@ -57,7 +57,7 @@ The kit is the frame's checklist for every town after the slice, and the town's 
 
 - **The Witch Queen's kingdom.** In version 1 she's felt through an envoy in Qetzal, refugees and her coin. Her seat and her arena are seeds.
 - **Places at odds with her rule.** One is a seed in version 1, and the first to be built after it.
-- **The third power** (below).
+- **The Lightbringers** (below): their occupied coast is a seed.
 
 ### Rough sizes
 
