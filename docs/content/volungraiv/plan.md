@@ -1,6 +1,6 @@
 # Volungraiv: the plan
 
-Nov 19, 2026 · @AmbiProp · The adventure's first module and its test bed. This version comes from the owner's notes of Nov 19, which changed the scope, the kin, the Woed and the claim, and from the owner's answers the same day, which settled the third power, the dead court and four names. It covers the scope, the loop, how the world gets built from sources and seeds, what version 1 holds, and what still needs a decision. Read with `docs/content/sources/README.md` (the source method), `docs/content/modules/process.md` (slice, pattern, frames and fills) and `docs/content/standard.md`.
+Nov 19, 2026 · @AmbiProp · The adventure's first module and its test bed. This version comes from the owner's notes of Nov 19, which changed the scope, the kin, the Woed and the claim, and from the owner's answers the same day, which settled the third power, the dead court, four names, the claim, the seeds and the slice. The world itself is now on one page: `atlas.md`. It covers the scope, the loop, how the world gets built from sources and seeds, what version 1 holds, and what still needs a decision. Read with `docs/content/sources/README.md` (the source method), `docs/content/modules/process.md` (slice, pattern, frames and fills) and `docs/content/standard.md`.
 
 ## In short
 
@@ -176,6 +176,8 @@ The owner wants the player to be able to lay a claim: take an existing place or 
 | **2. Hold it** | People live at your hold and keep a day there; a treasury; the household you gathered | **Code.** Followers exist (`adventure/src/engine/follow.ts`: companions and captives, by bond), but they keep no schedule. A hold needs residents who stay home, with schedules, and an income. | After A2 and A3 |
 | **3. Found your own** | A new hold, named by the player, added to the map and to what people in the next town have heard | **Code.** Records the save creates, laid over the module the way the map keeps only an author's changes. Rumours of the player's deeds written into local lore. | Later |
 
+**The owner's answer (Nov 19):** the levels stand. A claim is Studio records, edits of canon or additions, that stay with the player's profile. The player can save them and apply them to another session, so their story carries from one game to the next. That's the shape for the code sessions: a claim is an overlay of records kept with the player, not with the save, laid over the module the way a map keeps only an author's changes.
+
 Two notes on it:
 
 - **A household is a set of people with wants.** The people a player gathers at a hold are leads, each with a want of their own and a line they won't cross. That's what keeps a harem a story: who resents whom, who wants the keys. They're written to the standard like anyone else.
@@ -185,8 +187,8 @@ Two notes on it:
 
 | Stage | What's made | The owner | Sessions |
 | --- | --- | --- | --- |
-| **0. The last calls** | Answers to questions 6 to 9 below; `atlas.md`: the kin, the powers, the Woed, the seeds, each with sources; the world's premise and narrator lines | About half an hour | 1 |
-| **1. The slice** | The module process's part 1, checkpoints 1 to 6: Qetzal's gate quarter, built to the town kit, played | Six short checkpoints and an evening of play | 2 or 3 |
+| **0. The last calls** | Answers to questions 6 to 9 below; `atlas.md`: the kin, the powers, the Woed, the seeds, each with sources; the world's premise and narrator lines. **Done Nov 19.** | About half an hour | 1 |
+| **1. The slice** | The module process's part 1, checkpoints 1 to 6: Qetzal's gate quarter, built to the town kit, played. Checkpoint 1 settled; checkpoint 2 handed back Nov 19 (`slice/2-premise.md`) | Six short checkpoints and an evening of play | 2 or 3 |
 | **2. The pattern** | `pattern.md`, with the town kit as tested in play | 15 minutes | 1 |
 | **3. Qetzal whole** | Its other quarters and threads, from sheets | A sheet and a frame per round | 2 or 3 |
 | **4. The frontier town and the road** | A sheet, a frame, a fill; the first vacancy the player can take | The same | 1 or 2 |
@@ -213,13 +215,13 @@ Answered on Nov 19:
 4. **First Children** stays: recognisable, and its own thing.
 5. **Escrutia** is the dead court's sovereign, over a mess of interests.
 
-Still open:
-
-6. **The claim:** level 1 in version 1, levels 2 and 3 to the adventure's roadmap after A3?
-7. **The seeds:** strike or add any from the table.
-8. **The slice:** still Qetzal's gate quarter?
-9. **The dead court's courtiers:** keep, cut or redirect the four first ideas above.
+6. **The claim** stands as planned: level 1 in version 1, levels 2 and 3 after A3. A claim is Studio records (edits of canon or additions) kept with the player's profile, which the player can apply to another session so their story carries (see *The claim*).
+7. **The seeds** stand, all ten.
+8. **The slice** is Qetzal's gate quarter.
+9. **The dead court's courtiers** still need work, and the owner is working on them. The slice doesn't touch the court, so the work goes on without them.
 
 ## The next session
 
-> Read `CLAUDE.md`, `docs/content/volungraiv/plan.md` with the owner's answers, `docs/content/sources/README.md`, `docs/content/volungraiv/sources/qetzal.md`, `docs/content/modules/process.md`, `docs/content/standard.md`, the `inkwyrm-records` skill, and the Volungraiv section of `docs/bids/content/Initial content ideas.md`. Dark Lord Funk (`docs/bids/content/darklordfunk_workbook.md`) is lore to mine, not a plan to follow. Don't read or draw on `docs/abernys/` or Bogwater. This is the adventure's next module and test bed; read `docs/reviews/adventure/decision.md` for what its first slice must give the rules. Write `docs/content/volungraiv/atlas.md` from the answers, finish Qetzal's sheet against the town kit, and run the module process's part 1 from checkpoint 1. Hand each checkpoint back as one markdown file and stop. Never use the owner's real name; sign docs `@AmbiProp`.
+Once the owner has answered checkpoint 2 (`slice/2-premise.md`):
+
+> Read `CLAUDE.md`, `docs/content/volungraiv/atlas.md`, `docs/content/volungraiv/plan.md`, `docs/content/volungraiv/sources/qetzal.md`, `docs/content/volungraiv/slice/2-premise.md` with the owner's answers, `docs/content/sources/README.md`, `docs/content/modules/process.md`, `docs/content/standard.md` and the `inkwyrm-records` skill. Dark Lord Funk (`docs/bids/content/darklordfunk_workbook.md`) is lore to mine, not a plan to follow. Don't read or draw on `docs/abernys/` or Bogwater. This is the adventure's next module and test bed; `docs/reviews/adventure/decision.md` says what its first slice must give the rules. Write checkpoint 3, the frame of Qetzal's gate quarter, as `docs/content/volungraiv/slice/3-frame.md`: every record as one line, in tables, with the town kit filled and the questions checkpoint 3 lists. Hand it back and stop. Never use the owner's real name; sign docs `@AmbiProp`.
