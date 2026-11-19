@@ -67,7 +67,7 @@
     "common room",
     "gallery"
    ],
-   "line": "The caravanserai inside the Gate: a walled yard for beasts and wagons, a common room, and rooms by the night.",
+   "line": "The caravanserai inside the Gate: a wagon yard against a titan's rib, a common room, and gallery rooms Lowgate packs into when the bell rings.",
    "parentId": "lowgate",
    "sections": [
     {
@@ -76,7 +76,7 @@
      "reach": "here",
      "keys": [],
      "when": null,
-     "text": "A walled yard with stalls for beasts down one side, wagon bays down the other and a trough in the middle. Off it is the common room: long tables, a hearth, and a bar Hollis pours at from evening on. Rooms run round an upper gallery. Porters in leather aprons carry, muck out and keep the door."
+     "text": "One side of the yard is the titan's rib, polished where wagon hubs scrape it, and a drip off it fills the beasts' trough. Hollis pours from evening and checks the glass on a guest's cord before he hands over a key. Porters carry, muck out, and keep the key to Room Six."
     },
     {
      "id": "lee-atmosphere",
@@ -84,20 +84,21 @@
      "reach": "here",
      "keys": [],
      "when": null,
-     "text": "Morning: porters forking dung, beasts complaining. Afternoon: heat, flies, drivers asleep under the wagons. Evening: dung-fire smoke, a loud room, Koriar's dusk band faint from the top of the city. Night: lamps on the gallery, dice, somebody singing flat."
+     "text": "Morning: the yard in the rib's shadow, porters forking dung. Afternoon: heat off the bone, glass grit popping under boots. Evening: Peace tokens tapping against cups, Koriar's band carrying down from the spire. Night: one lamp at the stair, dice, Ansel singing flat in his room."
     },
     {
      "id": "lee-history",
      "title": "History",
      "reach": "named",
      "keys": [
-      "empire",
-      "wall",
-      "gatepost",
-      "old road"
+      "room six",
+      "ivo",
+      "marrow",
+      "bodies",
+      "buy-out"
      ],
      "when": null,
-     "text": "The yard wall is the oldest thing in Lowgate. It was a road-house of the empire that laid the Old Road, and its gateposts carry a mark worn too smooth to read. Hollis built the gallery and the rooms on top of it."
+     "text": "At dawn the porters tip unclaimed bodies into the Marrow's Mouth. Ivo went that way after he was knifed in Room Six with his Peace bought out, and no underguild came. The porters scrubbed the sill, and Hollis let the room again the same day."
     },
     {
      "id": "lee-shut",
@@ -105,15 +106,16 @@
      "reach": "when",
      "keys": [],
      "when": "gate-shut",
-     "text": "With the Gate shut, everyone who made it in is in the common room or up on the gallery, and nobody leaves Lowgate by the road. The beasts come in from the bays, the yard shutters go up, and glass grit hisses against them until the bell rings again."
+     "text": "The bell rings down the rib. Porters bar the yard door and haul wagons across it; beasts crowd the trough and people stand in the gaps between them. Hollis leaves the bar to check cords at the door, and whoever's outside stays outside. Porters with clubs walk the gallery, and nobody opens Room Six."
     }
    ],
    "rules": {
     "placeKind": "building",
     "difficulty": {
-     "finesse": 1,
-     "flair": 1,
      "force": 3
+    },
+    "states": {
+     "alert": 2
     }
    }
   },
@@ -140,7 +142,7 @@
    "groupIds": [
     "solarkin"
    ],
-   "line": "A Solarkin hired knife at the Lee, bare of glyphs, who does buy-out work and drinks in the yard where everyone sees her.",
+   "line": "A Solarkin hired knife at the Lee, bare of glyphs, who takes the work once a Peace is bought out, and drinks in plain view.",
    "sections": [
     {
      "id": "tamsin-appearance",
@@ -148,7 +150,7 @@
      "reach": "here",
      "keys": [],
      "when": null,
-     "text": "Tall and narrow, long in the arm, bronze skin weathered darker across the hands and the back of the neck. Copper hair cropped to a finger's length. Solarkin, with no glyphs at all: bare forearms, bare throat, bare brow. She sits sideways on a bench with one boot up, so she can stand in one move. Thinking, she rubs the inside of her left wrist with her thumb, where a first crime is inked."
+     "text": "Bronze skin, copper hair cut at the ear, no glyphs on face, throat or arms. Wide at the shoulder, thick in the forearm, heel-first on her feet. She sits sideways on a bench with one boot up, hands palm-up on her thighs. When someone says a name aloud, her thumb drives into the inside of her left wrist, where a first crime is inked."
     },
     {
      "id": "tamsin-personality",
@@ -156,7 +158,7 @@
      "reach": "here",
      "keys": [],
      "when": null,
-     "text": "Asked what she does, she tells you, says it's legal, and asks if you're buying. Asked who paid, she says she never asks, and talks about the Pit. Threatened, she laughs once and moves a hand out of sight. She asks every newcomer who they've talked to since the Gate. She takes any name the counting-house has inked, and won't touch anyone whose Peace still holds, for any money."
+     "text": "Asked for a killing, she asks if the Counting-House inked the name; if so, she names the fee and waits for coin in her hand. Paid to skip the ink, she puts the coin back. Threatened, she calls the yard to witness. Lied to, she asks again and stops if the answer changes. Helped, she pays the next cup before it's a debt. Asked who sent the money, she talks about the Pit."
     },
     {
      "id": "tamsin-speech",
@@ -164,7 +166,7 @@
      "reach": "here",
      "keys": [],
      "when": null,
-     "text": "A low, dry voice with the coast in it, the ends of words clipped flat. Short sentences, and a long one only when she's naming stars or fighters. She calls a killing \"the work\" and the one killed \"the name\", and doesn't say \"kill\". A question she doesn't like gets a question back. Drunk, she gets quieter and more exact, and finishes other people's sentences for them."
+     "text": "Low in the chest, the coast's vowels drawn long. Short sentences, and she lets them end. She says \"holding\" for a live Peace, \"inked\" for a bought one, \"the work\" for a killing; \"murder\" is a killing outside the law. She won't say \"queen\" or \"glyph\". Drunk, her sentences run long with star names in them. When steel comes out, one word at a time."
     },
     {
      "id": "tamsin-background",
@@ -173,13 +175,13 @@
      "keys": [
       "coast",
       "lightbringers",
+      "judge",
       "glyph",
       "glyphs",
-      "grew up",
-      "past"
+      "grew up"
      ],
      "when": null,
-     "text": "She grew up on the coast the Lightbringers hold, where a Solarkin's crimes are inked on the spot and a judge decides what counts. She came up the Old Road young, guarding a caravan, before anything she'd done could be written on her. In Qetzal a buy-out that's paid and inked is no crime, so her skin stays bare."
+     "text": "She grew up under a Lightbringer sun-court on the coast, where a judge inks a Solarkin's crime the day it's ruled: theft on the forearm, oath-breaking under the jaw, flight on the shoulder. She can put a finger on each. She left young on a salt caravan, skin bare, and in Qetzal her work is no crime."
     },
     {
      "id": "tamsin-wants",
@@ -194,7 +196,7 @@
       "gold"
      ],
      "when": null,
-     "text": "She's owed for Ivo. The man who hired her, a proxy who drinks at the Lee, hasn't paid. The first time he hired her he paid in gold that wasn't Qetzal's; she changed it at Koriar's table and saw Gildra's face on it. Collecting means going over his head to Ansel and saying aloud that she knows whose gold it is, and she's worked out that the people who know are the next names in the book."
+     "text": "She's owed for Ivo. The proxy who hired her hasn't paid. The first time, he paid in foreign gold; she changed it at Koriar's table and saw the Witch Queen's face on it. Collecting means going over his head to Ansel and saying that aloud, and she's worked out that the people who know are the next names inked."
     },
     {
      "id": "tamsin-stars",
@@ -204,10 +206,12 @@
       "star",
       "stars",
       "sky",
-      "steer"
+      "steer",
+      "salt-cart",
+      "glass-eye"
      ],
      "when": null,
-     "text": "She knows the stars the caravans steer by on the Old Road and what each kin calls them, and she'll name them for anyone sitting near her in the yard. It's the one subject she'll go on about."
+     "text": "On a clear night she names the steer-stars for whoever's on the next bench, the Salt-Cart and the Glass-Eye among them, and which ones the titan's ribs hide from the yard. When dust covers the sky, she draws their paths in spilled drink."
     },
     {
      "id": "tamsin-counted",
@@ -215,7 +219,7 @@
      "reach": "when",
      "keys": [],
      "when": "bo-counted",
-     "text": "She still sits in the yard every evening, but sober now, facing the gallery stair. She sleeps in her boots with a chair under the latch, and asks Hollis each time she sees him whether anyone's been to the counting-house about her."
+     "text": "She stops betting at the Pit. Between bouts she finds Teague and asks which names his crew was told to leave alone; at dusk she asks Wenna for the inked names and waits while Wenna decides. In the yard she sits under the gallery stair now, with Ansel's door in view."
     },
     {
      "id": "tamsin-coin",
@@ -223,7 +227,7 @@
      "reach": "when",
      "keys": [],
      "when": "bo-coin",
-     "text": "With anyone who knows whose gold it is, she stops saying she never asks. She'll name Gildra, ask what they mean to do about it, and trade what she's seen for her fee and a safe way out of Lowgate."
+     "text": "With anyone who knows whose gold it is, she says the Witch Queen's name, in the yard and only after checking their token. She'll trade what she saw at Koriar's table for her fee and a safe way out of the Gate."
     },
     {
      "id": "tamsin-buyer",
@@ -231,7 +235,7 @@
      "reach": "when",
      "keys": [],
      "when": "bo-buyer",
-     "text": "Ansel's name is inked now, so he's work. She'll take him for her usual fee from whoever paid for the ink, and she wants the job."
+     "text": "She reads Ansel's ink at the Counting-House herself. Then he's work: she'll take him for a fee set on the table before she stands, and Ivo's money out of his purse besides."
     }
    ],
    "schedule": {
@@ -276,7 +280,7 @@
     },
     "states": {
      "finesse": 3,
-     "force": 2,
+     "force": 3,
      "focus": 2,
      "flair": 1
     },
@@ -284,7 +288,8 @@
     "forSale": true,
     "carries": [
      "knife",
-     "jerkin"
+     "jerkin",
+     "lockpicks"
     ]
    }
   }
