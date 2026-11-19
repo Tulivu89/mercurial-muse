@@ -1,6 +1,6 @@
 # Volungraiv, first run: what it found
 
-Nov 19, 2026 · @AmbiProp · The owner's first play of Lowgate, Before the Bell, on Gemini 3.8 Flash in chat mode, adventure v0.28.0. It covers three turns: reading Hollis, buying the Peace, and asking for a drink and a bed. The evidence is the save, the context of the third turn, the request log and a generation test. This page lists what went wrong, traces each problem to its cause, and sets out the order of work. The character and world review it calls for is planned at the end.
+Nov 19, 2026 · @AmbiProp · The owner's first play of Lowgate, Before the Bell, on Gemini 3.8 Flash in chat mode, adventure v0.28.0. It covers three turns: reading Hollis, buying the Peace, and asking for a drink and a bed. The evidence is the save, the context of the third turn, the request log and a generation test. This page lists what went wrong, traces each problem to its cause, and sets out the order of work. The character and world review it calls for is planned at the end, and done in `review-1.md`.
 
 ## The short version
 
@@ -64,7 +64,7 @@ He has no pleasure, no fear, no pride and no pet hate. Nothing he does when nobo
 
 ### 5. Lists need a hierarchy
 
-**The screenshot didn't come through.** Only the four text files arrived, so please attach it again. From the code: the adventure's World list is flat. It's sorted by how near things are, then by kind, then by name. The places from the Badlands down to Room Six sit side by side with "Building · Lowgate" as a note.
+**From the screenshot (Places, 21):** the list is flat. It's headed *Nearest you first*, but only the places you stand inside sort by nearness: the Gate, Lowgate, Qetzal, the Badlands. Everything else is alphabetical, so Koriar's Floor and Koriar's Vaults, at the top of the city, come before Room Six and the Awnings next door. Room Six is labelled *Building*. Nothing in a row says what the place is. (0.28.1 puts the line under each name.)
 
 **What to do.** Show places as a tree, built from their parents, open down to where you stand. Let any list be grouped by another field: people by where they are now, by faction or by people (species), and lore by place. The record model already holds every link this needs. The Studio's list (one level at a time, `docs/bids/ui/decision.md`) gets the same group-by.
 
@@ -93,8 +93,8 @@ He has no pleasure, no fear, no pride and no pet hate. Nothing he does when nobo
 - **Hollis's record contradicts the scenario.** His Personality says *asked about Room Six, he says it's let*. The opening says it's the one room free, and he offered it unasked. Pick one: a dodge, or a sale.
 
 **The diagnostics**
-- **Thinking eats the reply's budget.** Narration is capped at 1,000 tokens. Gemini spent 126, 452 and 537 of them thinking, which leaves about 460 for a long reply. Nothing was cut off this time, but it will be.
-- **The evaluator is thinking too.** It spent 419 tokens and 5.7 seconds thinking for a three-line answer. The evaluator should always ask for minimal thinking (`core/narration/gemini.ts` already supports it for Gemini 3 Flash). Narration should either do the same or raise its cap by the thinking it uses.
+- **Thinking and the reply's budget.** Gemini spent 126, 452 and 537 tokens thinking on narration. The log shows the requested 1,000, but the relay already adds 4,096 tokens of room for thinking on Google (`thinkingRoom`), so replies aren't at risk.
+- **The evaluator was thinking too.** It spent 419 tokens and 5.7 seconds thinking for a three-line answer. It now asks for minimal thinking (0.28.1).
 - **Prompt size doesn't matter for speed on this model.** In the generation test, a 16k prompt cost about a second more than a 4k one, and caching made no difference you could time. Context budgets on Gemini Flash are a question of quality, not latency.
 - **The scene sent about 3,000 tokens out of 28,000.** There's room to send lines, a place's people and a fuller person without trimming anything.
 
@@ -102,11 +102,11 @@ He has no pleasure, no fear, no pride and no pet hate. Nothing he does when nobo
 
 | # | What | Kind | Size |
 | --- | --- | --- | --- |
-| 1 | Carry lines into the module and show them in exits, the World list and the context header | Code | Small |
-| 2 | Travel rows read *Go to …*, with the line under the name | Code | Small |
-| 3 | Evaluator asks for minimal thinking. Narration cap allows for thinking | Code | Small |
-| 4 | Directives name prices. Narration rule: a directive's details are canon | Code | Small |
-| 5 | **The character and world review below**, then the revised records | Content | The main job |
+| 1 | ~~Carry lines into the module and show them in exits, the World list and the context header~~ | Code | Done, 0.28.1 |
+| 2 | ~~Travel rows read *Go to …*, with the line under the name~~ | Code | Done, 0.28.1 |
+| 3 | ~~Evaluator asks for minimal thinking~~ (narration already had room) | Code | Done, 0.28.1 |
+| 4 | ~~Directives name prices. Narration rule: a directive's details stand~~ | Code | Done, 0.28.1 |
+| 5 | **The character and world review:** `review-1.md`. Then new instructions, and a reseed of the people | Content | The main job |
 | 6 | Opening rewritten in the format, explain then name. Thread milestone 0 at the start. The Envoy folded in | Content | Small, after 5 |
 | 7 | Map and scene mark the next milestone's target | Code | Medium |
 | 8 | Places as a tree, group-by on lists (adventure, then Studio) | Code | Medium |
@@ -145,7 +145,4 @@ The owner adds the missing human complication here, as with the pilot. Only lead
 
 **Step 5: the opening and the thread start,** written last, against the revised people and places (item 6 above).
 
-**Questions for the owner before step 1:**
-1. Should the review cover the whole Lowgate slice at once, or Hollis plus the three people a first evening meets (Teague, Nefera, Wenna) first?
-2. Do the module rewrites wait for code fixes 1 to 4, so the replay compares like with like? (Recommended: yes. They're a short session.)
-3. The screenshot, again, for the list hierarchy.
+**Answered (Nov 19):** the whole slice, and the code fixes first. The rewrite waits: it goes out with new instructions, possibly as a bid, after the review (`review-1.md`).
