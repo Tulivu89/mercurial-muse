@@ -103,7 +103,7 @@ The owner's list from Mythic Overdrive (`docs/bids/content/mo-03-style.md`), whi
 | 7 | Narrated story function | read |
 | 8 | Trait word without an act | read |
 | 9 | Hedging | flags *perhaps, maybe, seems to* |
-| 10 | Invented counts | read |
+| 10 | Invented counts. A number the story doesn't need is one the model fixes on and gets wrong (the owner, Nov 19): say it in words, and leave the numbers to the rules | read |
 | 11 | Interchangeable with three others in the cast | read, side by side |
 | 12 | Prompt echo | read |
 | 13 | Litotes | flags *not un-* |

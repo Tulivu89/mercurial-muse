@@ -54,6 +54,7 @@ Run the failure list from the standard on every line before handing anything ove
 4. Significance by announcement (*never once*, *nobody has ever*), a verdict closer, an aphorism.
 5. Stock composure (*unhurried*, *goes still*), stock senses (*woodsmoke*, *ozone*), stock names.
 6. A line that could be written for three others in the cast.
+7. A count the story doesn't need (*eleven buy-outs this season*, *four barons*). The model fixes on numbers and gets them wrong; say it in words, and leave the numbers the rules need to the rules.
 
 Then run the checker on the file: `npm run content:check -- <file>`. It flags what a pattern can find. It isn't a verdict, and a clean report isn't approval.
 

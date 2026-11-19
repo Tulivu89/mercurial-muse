@@ -43,11 +43,11 @@ Notes for the owner's drawing. The map's sheets are laid out from the place tree
 | --- | --- | --- |
 | **What starts it, and who brings it** | Last night a harper who fled Gildra's court was knifed in Room Six at the Lee, with the Peace on him, and the underguilds stood down. A buy-out: ordinary. Nefera brings it to the player, because she's counted, and she's afraid hers is next | The opening beat; Nefera as the door |
 | **The beats** | The stand-down; the count; the coin; the choice | Milestones 1 to 4 |
-| **The turn** | It isn't business. Lowgate has had eleven buy-outs this season against two or three in a usual one, and the names on them have nothing in common. Every one was paid in Gildra's gold, changed for Qetzal's coin at Koriar's table through a different hand. Her court is buying the Peace down to nothing before her envoy rides in | Milestone 3, which flips When sections |
+| **The turn** | It isn't business. Lowgate has had more buy-outs this season than anyone can remember, and the names on them have nothing in common. Every one was paid in Gildra's gold, changed for Qetzal's coin at Koriar's table through a different hand. Her court is buying the Peace down to nothing before her envoy rides in | Milestone 3, which flips When sections |
 | **The owner's question: will the people making money notice?** | Hollis has noticed and decided not to look, because each stand-down pays him. Wenna has noticed, because she inked every one. Sela has noticed, because the gold is all one mint. None of them has said it aloud. | Personality and When sections |
 | **Would they give up the profit?** | Not on their own. Refusing Gildra's coin breaks the rule Qetzal's trade stands on: nobody who can pay is refused. Someone has to make them, by force or by money | The endings |
 | **How it can end** | **The Peace refused:** the underguilds stop standing down for her buy-outs, or the bearer stops inking them. Qetzal keeps its Peace by breaking its first rule, and whoever did it holds the Gate. **The buyer bought out:** the player buys out Ansel's own Peace, and the city's law turns on the one using it. **Sold to the Queen:** the player sells what they know to Ansel, and the envoy rides into a city that's already hers | Three ending milestones; standing; the vacancy |
-| **On a clock** | Gildra's envoy reaches the gate on day 3. If the Peace is still selling to her, she offers to keep it for Qetzal, with her own people inside the walls | Milestone 5 by day; A2's clock |
+| **On a clock** | Gildra's envoy is on the road. If the Peace is still selling to her when she arrives, she offers to keep it for Qetzal, with her own people inside the walls | Milestone 5, on a day the rules hold (day 3) and the text never names; A2's clock |
 | **What it leaves** | A vacancy at the Gate, the underguilds' standing changed, and word up the Old Road about whether Qetzal's Peace still holds | The vacancy; lore |
 
 **Re-rooted:** the ribs keep out armies as well as behemoths, so Qetzal can only be taken through its own law. And that law is inked on a living woman's back, so it can only be changed on her.
@@ -76,7 +76,7 @@ Notes for the owner's drawing. The map's sheets are laid out from the place tree
 | **Beastkin** | People the Woed twisted and sent back, from human with a beast's ears to fully feral, hired cheap and kept poor. | Vigga, Nefera, Teague's crew, the Camps |
 | **Lunarkin** | Pale people from the planes of night whose contracts are inked on their skin: identity on the face, trade along the arms. | Wenna |
 | **Solarkin** | Gold-to-bronze people from the planes of light who ink glyphs by choice, and whose crimes and oaths are inked for them. | Tamsin |
-| **Succori** | Horned, tailed, vivid-skinned people from Damhaven, four feet to eight, distrusted everywhere; the small breed is kin to the First Children. | Quill |
+| **Succori** | Horned, tailed, vivid-skinned people from Damhaven, from imp-small to towering, distrusted everywhere; the small breed is kin to the First Children. | Quill |
 
 **The factions.**
 
@@ -107,7 +107,7 @@ Notes for the owner's drawing. The map's sheets are laid out from the place tree
 | **The gate bell** | Custom | When a storm or a behemoth is sighted the bell rings and the Gate shuts, and whoever is outside stays outside. | The Camps; the scenario |
 | **The rain** | Custom | Rain falls on Qetzal's tallest bone when it falls nowhere else in the Badlands; Koriar's priests say it's her, and the old faith says it's the bone. | The Spire; Sela |
 | **Koriar** | Custom | A new goddess of music and luck whose sign is knucklebones; the people love her, and the titan-blooded take her as an insult. | The temple; Gildra |
-| **The caravan that didn't come in** | Rumour | A salt caravan due at the Gate four days ago never arrived, and its house is offering money to anyone who finds out why. | The frontier town |
+| **The caravan that didn't come in** | Rumour | A salt caravan due at the Gate days ago never arrived, and its house is offering money to anyone who finds out why. | The frontier town |
 | **What the Golkin keep** | Rumour | Whatever goes down the Marrow drain, the Golkin keep, and lately what's gone down is bodies with the Peace still round their necks. | The Marrow; milestone 2 |
 | **Koriar's vaults** | Rumour | The priests say the vaults under the Floor can't be robbed, and so far nobody's proved them wrong. | Quill; the vaults |
 
@@ -117,7 +117,7 @@ Notes for the owner's drawing. The map's sheets are laid out from the place tree
 
 | Question | Line |
 | --- | --- |
-| Pressure | Lowgate's Peace is being bought out faster than ever, and Gildra's envoy is three days up the road. |
+| Pressure | Lowgate's Peace is being bought out faster than ever, and Gildra's envoy is on the Old Road, coming. |
 | Objective | Find who's buying, and decide what Qetzal's Peace is worth. |
 | Opposition | Ansel, and everyone whose purse each buy-out fills. |
 | Cost | Refusing Gildra's coin breaks the one rule Qetzal's trade stands on; taking it sells the city. |
@@ -131,15 +131,15 @@ Notes for the owner's drawing. The map's sheets are laid out from the place tree
 | 4a | The Peace refused | Stop the Peace selling to Gildra: the underguilds won't stand down for her, or the bearer won't ink her buy-outs. | Teague; Wenna |
 | 4b | The buyer bought out | Buy out Ansel's own Peace at the counting-house. | Ansel; Wenna |
 | 4c | Sold to the Queen | Sell what you know to Ansel. | Ansel |
-| 5 | The envoy | Gildra's envoy rides in at the Gate (day 3). | The envoy |
+| 5 | The envoy | Gildra's envoy rides in at the Gate. | The envoy (the rules hold the day) |
 
-**The Envoy** (kind: ruin; built in full with Qetzal whole). Next beat: "Gildra's envoy is on the Old Road, three days from the Gate." Its one milestone is the arrival, shared with *Bought Out*'s milestone 5.
+**The Envoy** (kind: ruin; built in full with Qetzal whole). Next beat: "Gildra's envoy is on the Old Road, coming to the Gate." Its one milestone is the arrival, shared with *Bought Out*'s milestone 5.
 
 ### Scenario
 
 | Name | Line |
 | --- | --- |
-| **Lowgate, before the bell** | Late afternoon, day 0. Your caravan comes down the Old Road to Qetzal's gate with a glass storm on the horizon behind it. The Peace is sold at the toll house, the gate bell is about to ring, and the Lee has one room free: Room Six, where a man was knifed last night. |
+| **Lowgate, before the bell** | Late afternoon. Your caravan comes down the Old Road to Qetzal's gate with a glass storm on the horizon behind it. The Peace is sold at the toll house, the gate bell is about to ring, and the Lee has one room free: Room Six, where a man was knifed last night. |
 
 The opening and the schedules agree: at 17:00 Hollis is at the Gate (afternoon), and he walks to the Lee as the bell rings at 18:00.
 
@@ -180,19 +180,19 @@ The opening and the schedules agree: at 17:00 Hollis is at the Gate (afternoon),
 
 | Name | Kin | Use | Line |
 | --- | --- | --- | --- |
-| **Hollis Crane** | Human | Door | The Compact's gate-warden, who sells the Peace by day, keeps the Lee by night, and has kept both through four barons. |
+| **Hollis Crane** | Human | Door | The Compact's gate-warden, who sells the Peace by day, keeps the Lee by night, and has outlasted every baron since he took the Gate. |
 | **Wenna** | Lunarkin | Lever | The inker at Lowgate's counting-house, who carries the Peace's founding terms in script across her back, where she can't read them. |
 | **Teague** | Orekin | Threat | Lowgate's underguild collector, copper lines down his arms, who answers broken Peaces with a crew from the Camps unless he's told to stand down. |
-| **Teague's crew** | Beastkin | Threat (a gang of four) | Four beastkin from the Camps who collect for Teague, too poor for the Peace they enforce. |
+| **Teague's crew** | Beastkin | Threat (a gang) | Beastkin from the Camps who collect for Teague, too poor for the Peace they enforce. |
 | **Vigga** | Beastkin (wolven) | Prize | A wolven fighter on the Pit's book, scarred brow to cheek, whose ears give away what her mouth won't. |
 | **Nefera** | Beastkin (pantheren) | Door, to the thread | A pantheren trader under the Awnings, black-eared and gold-skinned, known up and down the Old Road as the one who doesn't lie. |
 | **Quill** | Succori (the small breed) | Mark | A small Succori thief from up the Climb, red-skinned and goat-horned, who works Lowgate's rooms without the underguilds' leave, because they won't give it. |
 | **Tamsin** | Solarkin | The one the thread turns on | A hired knife lodging at the Lee, bronze-skinned and bare of glyphs, who does buy-out work and drinks in the yard where everyone can see her. |
 | **Ansel** | Human | Threat, the opposition | A soft-spoken factor of Gildra's Court of Tribute, rings on every finger, who has the Lee's best rooms and a gift for everyone he meets. |
 | **Sela** | Cinderkin | Lever, to the temple | A priest of Koriar at the temple's change-table, her ritual scars cut halfway and glowing red where the old rite stopped. |
-| **The Marrow's Golkin** | Golkin | Threat (a gang of five) | A band of Golkin in the bones under Lowgate who come up the drain at night for whatever's left out. |
-| **Ivo** | Human | Dead | A harper who fled Gildra's palace, lodged a year at the Lee, played in Koriar's dusk band, and was knifed in Room Six last night. |
-| **The envoy** (seed) | | | Gildra's envoy, three days out on the Old Road with a retinue and an offer. |
+| **The Marrow's Golkin** | Golkin | Threat (a gang) | A band of Golkin in the bones under Lowgate who come up the drain at night for whatever's left out. |
+| **Ivo** | Human | Dead | A harper who fled Gildra's palace, lodged at the Lee since he came over the road, played in Koriar's dusk band, and was knifed in Room Six last night. |
+| **The envoy** (seed) | | | Gildra's envoy, on the Old Road with a retinue and an offer. |
 
 **What they're after.** No want is paperwork (the owner, Nov 19). Patterns: no more than two on any one.
 
@@ -200,7 +200,7 @@ The opening and the schedules agree: at 17:00 Hollis is at the Gate (afternoon),
 | --- | --- | --- | --- | --- |
 | **Hollis** | Sells the Peace at the toll house by day; runs the Lee from evening; signs every stand-down the Compact sends down. | To keep the Lee, which is his, whoever ends up holding the Gate. Every stand-down he signs ties the Lee to the side paying for them. | Collateral: he keeps his place by signing other people's deaths, and pours them a drink after | He plays knucklebones at Koriar's every rest-day, loses steadily, and pays before he leaves. |
 | **Wenna** | Inks Lowgate's contracts, the Peace book and every buy-out at the counting-house's back desk; once a season she's shown in the Lee's yard so the Peace is seen renewed. | To make whoever paid for Ivo answer for it. The Peace on her back says a paid buy-out is answered by the money, and she inked his herself. | Ruleset: she inks what's paid, and she has never refused one | She collects storm glass that fell in odd shapes and sorts it by colour on her sill. |
-| **Teague** | Collects the underguilds' fees through Lowgate, sells leave to thieves, and answers harm done under the Peace. | To take the Gate from Hollis. His crew has watched him stand down three times this month, and they're counting. | Wantneed: he wants the Gate, and what he needs is his crew still behind him when he gets it | He keeps a racing dog in the Camps and bets on it at the Pit on rest-days. |
+| **Teague** | Collects the underguilds' fees through Lowgate, sells leave to thieves, and answers harm done under the Peace. | To take the Gate from Hollis. His crew has watched him stand down again and again this season, and they're keeping score. | Wantneed: he wants the Gate, and what he needs is his crew still behind him when he gets it | He keeps a racing dog in the Camps and bets on it at the Pit on rest-days. |
 | **Vigga** | Fights on the Pit's book in the evenings, and trains its newer fighters in the afternoons for drink money. | To walk out of the Pit and out of Qetzal and answer to nobody. The Pit sets her bouts, and it's made more on her losing than her winning. | Defense: she wants a pack, says loudly she doesn't, and leaves first | She cooks one pot for the fighters' bench every rest-day, very hot, and eats most of it. |
 | **Nefera** | Brokers goods between the caravans and the houses up the Climb from her stall under the Awnings; holds court in the Lee's yard at evening. | To make herself too useful to the people above her ever to be handed over again. She owes Gildra's court; outside the walls it would collect her, and inside it collects what she knows. | Contradiction: she prices every deal and hopes, every time, that this one wants her and not the use of her | She packs everything she owns before she sleeps, and unpacks it at dawn. |
 | **Quill** | Picks pockets on the Awnings and rooms at the Lee, and fences up the Climb. | To get into Koriar's vaults, the one door in Qetzal she hasn't been through. A job that size needs the underguilds' leave or a sponsor they'll respect. | Appetite | She races pigeons off the Succori quarter's roofs and names them after Compact houses. |
@@ -307,7 +307,7 @@ New in this frame, for the owner to strike. The sheet lists what came before it.
 - Wenna as the Peace's bearer, working in Lowgate
 - Ansel, the Court of Tribute's factor at the Lee
 - Sela, and Cinderkin scars a new god has no rite to finish
-- The count: eleven buy-outs this season, against two or three in a usual one
+- The count, as more buy-outs than anyone can remember (never a number: the owner, Nov 19)
 - The two halves of the evidence: the Peace book's dates, and the temple's change-book
 - Bodies going down the Marrow drain with their tokens on, and the Golkin keeping the tokens
 - The three endings
@@ -327,3 +327,14 @@ answer - approved
 5. **Still standing as proposed** from checkpoint 2, unless struck: the underguilds' muscle from the Camps, and the Marrow.
 answer - approved.
 User note: avoid counting things and having a number be mentioned like, "eleven buyouts this season" - these are bad examples. They make the model get hung up on numbers and an opportunity to get things wrong that never needed to be specific.
+
+## The owner's answers (Nov 19)
+
+1. **Names:** approved.
+2. **Human complications:** approved, all five.
+3. **Endings:** the three work. **There should always be a way to resolve a thread by hand, for emergent situations.** The adventure already lets the player mark any open milestone reached from the Journal. It can't yet hold alternative endings: milestones run in order, so three endings in a row would make the second the next beat after the first. Until the engine has them, the fill writes milestone 4 as one beat with three ways, and a world state records which way it went. Alternative endings and closing a whole thread by hand go to the code session (`docs/next-sessions.md`, session 2).
+4. **The gold pair:** the Lee and Tamsin. Checkpoint 4 is `4-gold.md`.
+5. **The Camps' muscle and the Marrow:** approved.
+
+**The owner's note on counts:** don't count things in the records, as in "eleven buy-outs this season". A number the story doesn't need is one the model gets hung up on, and one more chance to get something wrong. The frame's counts are taken out above; the rules keep the numbers they need (a gang's size, the envoy's day), and the text never names them. The rule is now in the atlas, the standard's failure list (catch 10) and the `inkwyrm-records` skill.
+

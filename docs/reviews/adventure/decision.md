@@ -61,6 +61,7 @@ These run alongside roadmap step 6 (the adventure on the new records) and the se
 1. **A proposed check waits for the player:** tap to approve, edit or dismiss. Ignoring it dismisses it after the player's next message. Another way in is a cheap **choices card**: a short Side call that offers a few options, each a check from the closed lists, for the player to pick.
 2. **Other rule systems are not a focus** until our own dice system is tested and fully built. A4 waits.
 3. **The world that replaces Bogwater is the test bed,** written after HOG Wild.
+4. **A thread can always be resolved by hand** (Nov 19, from Volungraiv's frame), for emergent situations. Marking one milestone by hand already works; alternative endings and closing a whole thread are for A3 (`docs/next-sessions.md`, session 2).
 
 ## Questions for the owner
 

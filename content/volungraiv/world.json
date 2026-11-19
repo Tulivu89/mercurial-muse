@@ -1,0 +1,292 @@
+{
+ "format": "studio-world/1",
+ "id": "volungraiv",
+ "name": "Volungraiv",
+ "premise": "Volungraiv is where the primal planes touch the mortal world. Titans ruled it once, took their priestesses as consorts, and left Blooded children who rule now as tyrants. Across the Badlands runs the Old Road, an empire's road that outlived it, through glass storms and roaming behemoths to Qetzal, the one city built inside a titan's ribs. You start there as nobody. Above you are Gildra the Witch Queen, half a god by birth; a sun creed that writes its law on bodies; a dead court whose castle rises in any wood dark enough; and the Bastards, who hold the Badlands by force.",
+ "genre": "dark fantasy, heavy metal, frontier",
+ "tone": "blunt and physical on the ground; huge, rare and played straight above it",
+ "conditions": [
+  {
+   "id": "gate-shut",
+   "label": "The Gate is shut (a storm or a behemoth)"
+  },
+  {
+   "id": "bo-counted",
+   "label": "Bought Out: the count is known"
+  },
+  {
+   "id": "bo-coin",
+   "label": "Bought Out: the coin is known"
+  },
+  {
+   "id": "bo-buyer",
+   "label": "Bought Out: Ansel's Peace is bought out"
+  }
+ ],
+ "records": [
+  {
+   "id": "qetzal",
+   "kind": "place",
+   "name": "Qetzal",
+   "line": "The one city in the Badlands, walled between a dead titan's ribs on the Old Road; every caravan crossing stops here.",
+   "parentId": null,
+   "sections": [],
+   "rules": {
+    "placeKind": "settlement"
+   }
+  },
+  {
+   "id": "lowgate",
+   "kind": "place",
+   "name": "Lowgate",
+   "line": "Qetzal's lowest quarter, where the Old Road comes in at the Gate and the caravans unload.",
+   "parentId": "qetzal",
+   "sections": [],
+   "rules": {
+    "placeKind": "district"
+   }
+  },
+  {
+   "id": "the-pit",
+   "kind": "place",
+   "name": "The Pit",
+   "line": "A fighting pit cut into the bedrock behind the Awnings, where bouts are chalked on a board and fighters' books are bought.",
+   "parentId": "lowgate",
+   "sections": [],
+   "rules": {
+    "placeKind": "building"
+   }
+  },
+  {
+   "id": "the-lee",
+   "kind": "place",
+   "name": "The Lee",
+   "keys": [
+    "caravanserai",
+    "yard",
+    "common room",
+    "gallery"
+   ],
+   "line": "The caravanserai inside the Gate: a walled yard for beasts and wagons, a common room, and rooms by the night.",
+   "parentId": "lowgate",
+   "sections": [
+    {
+     "id": "lee-entry",
+     "title": "Entry",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A walled yard with stalls for beasts down one side, wagon bays down the other and a trough in the middle. Off it is the common room: long tables, a hearth, and a bar Hollis pours at from evening on. Rooms run round an upper gallery. Porters in leather aprons carry, muck out and keep the door."
+    },
+    {
+     "id": "lee-atmosphere",
+     "title": "Atmosphere",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Morning: porters forking dung, beasts complaining. Afternoon: heat, flies, drivers asleep under the wagons. Evening: dung-fire smoke, a loud room, Koriar's dusk band faint from the top of the city. Night: lamps on the gallery, dice, somebody singing flat."
+    },
+    {
+     "id": "lee-history",
+     "title": "History",
+     "reach": "named",
+     "keys": [
+      "empire",
+      "wall",
+      "gatepost",
+      "old road"
+     ],
+     "when": null,
+     "text": "The yard wall is the oldest thing in Lowgate. It was a road-house of the empire that laid the Old Road, and its gateposts carry a mark worn too smooth to read. Hollis built the gallery and the rooms on top of it."
+    },
+    {
+     "id": "lee-shut",
+     "title": "The Gate Shut",
+     "reach": "when",
+     "keys": [],
+     "when": "gate-shut",
+     "text": "With the Gate shut, everyone who made it in is in the common room or up on the gallery, and nobody leaves Lowgate by the road. The beasts come in from the bays, the yard shutters go up, and glass grit hisses against them until the bell rings again."
+    }
+   ],
+   "rules": {
+    "placeKind": "building",
+    "difficulty": {
+     "finesse": 1,
+     "flair": 1,
+     "force": 3
+    }
+   }
+  },
+  {
+   "id": "solarkin",
+   "kind": "group",
+   "groupKind": "species",
+   "name": "Solarkin",
+   "line": "Gold-to-bronze people from the planes of light who ink glyphs by choice, and whose crimes and oaths are inked for them.",
+   "sections": []
+  },
+  {
+   "id": "tamsin",
+   "kind": "character",
+   "name": "Tamsin",
+   "pronouns": "she/her",
+   "keys": [
+    "hired knife",
+    "knife"
+   ],
+   "tags": [
+    "lead"
+   ],
+   "groupIds": [
+    "solarkin"
+   ],
+   "line": "A Solarkin hired knife at the Lee, bare of glyphs, who does buy-out work and drinks in the yard where everyone sees her.",
+   "sections": [
+    {
+     "id": "tamsin-appearance",
+     "title": "Appearance",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Tall and narrow, long in the arm, bronze skin weathered darker across the hands and the back of the neck. Copper hair cropped to a finger's length. Solarkin, with no glyphs at all: bare forearms, bare throat, bare brow. She sits sideways on a bench with one boot up, so she can stand in one move. Thinking, she rubs the inside of her left wrist with her thumb, where a first crime is inked."
+    },
+    {
+     "id": "tamsin-personality",
+     "title": "Personality",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "Asked what she does, she tells you, says it's legal, and asks if you're buying. Asked who paid, she says she never asks, and talks about the Pit. Threatened, she laughs once and moves a hand out of sight. She asks every newcomer who they've talked to since the Gate. She takes any name the counting-house has inked, and won't touch anyone whose Peace still holds, for any money."
+    },
+    {
+     "id": "tamsin-speech",
+     "title": "Speech",
+     "reach": "here",
+     "keys": [],
+     "when": null,
+     "text": "A low, dry voice with the coast in it, the ends of words clipped flat. Short sentences, and a long one only when she's naming stars or fighters. She calls a killing \"the work\" and the one killed \"the name\", and doesn't say \"kill\". A question she doesn't like gets a question back. Drunk, she gets quieter and more exact, and finishes other people's sentences for them."
+    },
+    {
+     "id": "tamsin-background",
+     "title": "Background",
+     "reach": "named",
+     "keys": [
+      "coast",
+      "lightbringers",
+      "glyph",
+      "glyphs",
+      "grew up",
+      "past"
+     ],
+     "when": null,
+     "text": "She grew up on the coast the Lightbringers hold, where a Solarkin's crimes are inked on the spot and a judge decides what counts. She came up the Old Road young, guarding a caravan, before anything she'd done could be written on her. In Qetzal a buy-out that's paid and inked is no crime, so her skin stays bare."
+    },
+    {
+     "id": "tamsin-wants",
+     "title": "Wants",
+     "reach": "named",
+     "keys": [
+      "paid",
+      "fee",
+      "owed",
+      "ivo",
+      "proxy",
+      "gold"
+     ],
+     "when": null,
+     "text": "She's owed for Ivo. The man who hired her, a proxy who drinks at the Lee, hasn't paid. The first time he hired her he paid in gold that wasn't Qetzal's; she changed it at Koriar's table and saw Gildra's face on it. Collecting means going over his head to Ansel and saying aloud that she knows whose gold it is, and she's worked out that the people who know are the next names in the book."
+    },
+    {
+     "id": "tamsin-stars",
+     "title": "The Stars",
+     "reach": "named",
+     "keys": [
+      "star",
+      "stars",
+      "sky",
+      "steer"
+     ],
+     "when": null,
+     "text": "She knows the stars the caravans steer by on the Old Road and what each kin calls them, and she'll name them for anyone sitting near her in the yard. It's the one subject she'll go on about."
+    },
+    {
+     "id": "tamsin-counted",
+     "title": "After the Count",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-counted",
+     "text": "She still sits in the yard every evening, but sober now, facing the gallery stair. She sleeps in her boots with a chair under the latch, and asks Hollis each time she sees him whether anyone's been to the counting-house about her."
+    },
+    {
+     "id": "tamsin-coin",
+     "title": "Once the Coin Is Known",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-coin",
+     "text": "With anyone who knows whose gold it is, she stops saying she never asks. She'll name Gildra, ask what they mean to do about it, and trade what she's seen for her fee and a safe way out of Lowgate."
+    },
+    {
+     "id": "tamsin-buyer",
+     "title": "Once Ansel Is Bought Out",
+     "reach": "when",
+     "keys": [],
+     "when": "bo-buyer",
+     "text": "Ansel's name is inked now, so he's work. She'll take him for her usual fee from whoever paid for the ink, and she wants the job."
+    }
+   ],
+   "schedule": {
+    "Daily": [
+     {
+      "id": "tamsin-day-1",
+      "startTime": 360,
+      "endTime": 720,
+      "text": "Asleep in her room off the gallery, late, with the door barred.",
+      "place": "the-lee"
+     },
+     {
+      "id": "tamsin-day-2",
+      "startTime": 720,
+      "endTime": 1080,
+      "text": "On the Pit's top step with a cup, watching the fighters train and betting small.",
+      "place": "the-pit"
+     },
+     {
+      "id": "tamsin-day-3",
+      "startTime": 1080,
+      "endTime": 1320,
+      "text": "On the bench by the trough in the Lee's yard, drinking where everyone can see her.",
+      "place": "the-lee"
+     },
+     {
+      "id": "tamsin-day-4",
+      "startTime": 1320,
+      "endTime": 360,
+      "text": "In the common room until late, then up the gallery stair to bed.",
+      "place": "the-lee"
+     }
+    ]
+   },
+   "rules": {
+    "tier": "rival",
+    "rank": 1,
+    "difficulty": {
+     "force": 3,
+     "finesse": 3,
+     "flair": 3
+    },
+    "states": {
+     "finesse": 3,
+     "force": 2,
+     "focus": 2,
+     "flair": 1
+    },
+    "purse": 1,
+    "forSale": true,
+    "carries": [
+     "knife",
+     "jerkin"
+    ]
+   }
+  }
+ ]
+}

@@ -6,16 +6,18 @@ Nov 19, 2026 · @AmbiProp · The world on one page, as `docs/content/sources/REA
 
 ## The world file's top lines
 
-Drafts for `content/volungraiv/world.json`. The premise is sent every turn, so it's held to the world budget (150 tokens; this is about 130).
+Drafts for `content/volungraiv/world.json`. The premise is sent every turn, so it's held to the world budget (150 tokens; this is about 145).
 
 - **Name:** Volungraiv.
 - **Genre:** dark fantasy, heavy metal, frontier.
 - **Tone:** blunt and physical on the ground; huge, rare and played straight above it.
-- **Premise:** Volungraiv is where the primal planes touch the mortal world. Titans ruled it once, took their priestesses as consorts, and left Blooded children who rule now as tyrants. Their bones are hills, and towns stand on them. Across the Badlands runs the Old Road, an empire's road that outlived it, through glass storms and roaming behemoths to Qetzal, the one city built inside a titan's ribs. You start there as nobody. Above you are Gildra the Witch Queen, half a god by birth; a sun creed that writes its law on bodies; a dead court whose castle rises in any wood dark enough; and the Bastards, who hold the Badlands by force.
+- **Premise:** Volungraiv is where the primal planes touch the mortal world. Titans ruled it once, took their priestesses as consorts, and left Blooded children who rule now as tyrants. Across the Badlands runs the Old Road, an empire's road that outlived it, through glass storms and roaming behemoths to Qetzal, the one city built inside a titan's ribs. You start there as nobody. Above you are Gildra the Witch Queen, half a god by birth; a sun creed that writes its law on bodies; a dead court whose castle rises in any wood dark enough; and the Bastards, who hold the Badlands by force.
 
 **The narrator's instruction** (Dark Lord Funk's style lines, re-aimed at a nobody's floor and checked against pulp-voice):
 
 > Written with Richard K. Morgan's hard physical surface and Tanith Lee's decadent, mythic sensuality. Second person, present tense. Wounds, distances and weather are exact and never bend. Violence is terse: short bursts, weight and impact, no commentary. Courts and bedchambers are slow and specific: the body, the jewellery, the heat of the room. Sex and sacrifice are written without euphemism. Dialogue is blunt; the powerful are the exception, and their evasions are the point. Big things are rare, seen at a distance first, and played straight. Concrete nouns over adjectives. Show what the body does and never name the feeling. All characters are adults.
+
+**In the records, no counts the story doesn't need** (the owner, Nov 19). "More buy-outs than anyone can remember", never "eleven". A number the model doesn't need is one it fixes on and gets wrong. The rules keep the numbers they need, and the text never names them.
 
 ## Economy: the world's, not the rules'
 
