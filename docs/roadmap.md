@@ -128,6 +128,8 @@ Each step is one or more pull requests. The adventure keeps its own list (charte
 8. **Accounts,** when syncing and sharing are wanted.
 9. **Partner models,** when a partner provides them.
 
+**Writer, an idea (Nov 18).** A fourth way into the same records: writing stories, mature ones included, with models split by job and the records as the story bible. Research only, in `docs/writer/`; not in the order above until the owner places it.
+
 ## Questions for the owner
 
 1. The record model's open questions, at the end of `docs/records.md`.
