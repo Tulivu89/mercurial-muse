@@ -1,7 +1,7 @@
 {
  "format": "studio-world/1",
  "id": "source-test-varre",
- "name": "Source test: the Prefect",
+ "name": "Source test: the Prefect (Claude's shape)",
  "premise": "Port Asmar is a harbour town under a foreign occupation in a world war, the last stop for refugees trying to reach the neutral coast. Exit passes are the only currency that counts, and the police sign them.",
  "genre": "wartime intrigue, 1940s",
  "tone": "witty on the surface, desperate underneath",
@@ -104,12 +104,8 @@
     {
      "id": "varre-4",
      "title": "Today",
-     "reach": "named",
-     "keys": [
-      "tonight",
-      "this evening",
-      "the wheel"
-     ],
+     "reach": "here",
+     "keys": [],
      "when": null,
      "text": "Tonight he wants a winning night at the wheel, and to find out whether the young woman at the bar will need his help with a pass."
     },

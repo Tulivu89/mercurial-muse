@@ -1,116 +1,106 @@
-# Brief: what a character record is in the adventure
+# Brief: the character record in the adventure, its shape and its process
 
-Nov 19, 2026 · @AmbiProp · A brief for several models. It proposes what a character record is when an AI narrator plays it in a text adventure. It tests that proposal by asking for one record, written from a well-known film character. Read it without the repository, or, if you can read the repository, with the files listed at the end.
+Nov 20, 2026 · @AmbiProp · A design question put to several models. Read it without the repository. If you can read the repository (Google AI Studio can), follow `ai-studio.md` in this folder, which lists the files to read and the order to read them in.
+
+## The question
+
+Design the **character record** that an AI narrator plays from in Inkwyrm's text adventure, and the **process** that makes one:
+
+- **The shape:** its fields, the question each field answers for the narrator, what goes in and what stays out, when each field reaches the narrator, what order the narrator receives them in, and how long each one is.
+- **The process:** from a well-known source character, to a record of that character in their own world, to a person adapted into ours.
+
+Then show that your shape works by writing one source character in it.
+
+Each shape that's bid will be tested the same way: its source character is played blind on the narrator model (see *How the bids are tested*). The owner decides from play, not from the documents.
 
 ## The situation
 
-Inkwyrm is a roleplay site. One side of it is a text adventure: an AI narrator plays the world and everyone in it, and a rules engine decides the outcome of checks. The world is written as **records**: places, people, groups, lore and threads. The engine picks which records the narrator sees each turn.
+Inkwyrm is a roleplay site. One side of it is a text adventure: an AI narrator plays the world and everyone in it, and a rules engine settles checks. The world is written as **records**: places, people, groups, lore and threads. The engine picks which records the narrator sees each turn.
 
-The first world written for the adventure failed its first play-test on its people. The places and lore held up. The people didn't. The lead, a gate-warden and innkeeper, read like a job description:
+The first world written for the adventure, Volungraiv, failed its first play-test on its people. The places and lore held up.
 
-- Every line of his personality was a reaction to something the player might do to him (*asked about the room, he says it's let and pours you a drink; bribed, he takes it and does what he'd have done anyway*). Most of those reactions were about the plot.
-- When the player just looked at him and tried to read what made him tick, the narrator had nothing present to show. It recited his backstory instead.
+The lead, Hollis Crane, a gate-warden and innkeeper, read like a job description:
+- **His personality was a list of reactions to the player.** 55 of the 59 Personality sentences across the world's eleven people react to something the player does: *asked about the room, he says it's let and pours you a drink; bribed, he takes it and does what he'd have done anyway; threatened, he calls a porter by name*. Most of those reactions are about the plot.
+- **His warmth was offstage.** His one human detail, a dice game, happens on rest-day evenings.
+- **His secret was the plot.** The complication meant to make him human became a plot secret.
+- **The narrator had nothing to show.** When the player only looked at him and tried to read what made him tick, the narrator recited his backstory.
 
-His source had been Captain Renault in *Casablanca*. The record kept the role (charming, corrupt, survives every change of masters) and lost the man: the wit, the appetite, the soft spot, the line he won't cross until he does.
+His source had been Captain Renault in *Casablanca*. Each stage of the process took more of the man out:
+1. The source line kept the role: charming, corrupt, survives every change of masters.
+2. The frame kept the role's job.
+3. The fill turned the job into a table of reactions.
 
-So this round starts over, from what the narrator needs. We test the record on a **source character first, untouched by our world**. A source character is a known quantity. If a record of Renault, played by the narrator, doesn't come out as Renault, the record's shape is wrong, and no adaptation could fix it. Adapting him into our world comes in round 2.
+The same world's best people, a pit fighter and a trader, came from full character cards written for chat, with their personalities first.
 
-## Who reads the record
+The site's chat side builds characters a different way, and those characters hold up over long chats. One record model is meant to serve both chat and the adventure, so that pipeline matters here. *What exists*, below, has both.
 
-A narrator model, often a small fast one (the first test ran on Gemini 3.8 Flash), with these limits:
+## Who reads the record, today
 
-- It plays everyone present, up to four people in one scene, in second person, one to three short paragraphs a turn.
-- It never sees example chats or greetings. **Whatever the record says is all it has.** It copies the shape and voice of what it reads.
-- It gets a present person as one block: the head (name, line, kind), then **Looks**, **Manner** and **Speech** (each cut at 420 characters today, and we'll raise that for leads), then their history and other sections.
-- Sections marked *Named* are meant to arrive only when the talk turns to them. Sections marked *When* arrive only once a condition holds, such as a milestone reached or a standing earned.
-- The rules engine settles checks and hands the narrator the result as plain sentences. One check is *reading* a person (Focus against them). A success gives the player Leverage on that person, and the record has to say what the leverage *is*.
+These are the facts of the engine as it is. Your shape may ask for them to change; say what and why.
 
-## The record, proposed
+- **The narrator is often a small, fast model.** The first test ran on Gemini 3.8 Flash, with a context of about 28,000 tokens. A scene in the test used about 3,000.
+- **It plays everyone present,** up to four named people in one scene. It writes in second person and present tense, one to three short paragraphs a turn.
+- **It never sees greetings or example chats.** Those are chat-only. In the adventure, whatever the record's text says is all it has, and it copies the shape and voice of what it reads.
+- **A present person is sent as one block:** name, line and kind, then **Looks**, **Manner** and **Speech** (from the record's Appearance, Personality and Speech sections; up to 500, 1,200 and 600 characters), then everything else flattened together.
+- **Reach exists in the record model but the adventure only partly honours it.**
+  - *Named* sections are meant to arrive when the talk turns to them; the adventure sends all of them with the person.
+  - *When* sections are meant to arrive once a condition holds; the adventure drops them.
+  - Both are fixable, and your shape can rely on them working.
+- **A person not present** reaches the narrator as one line when they're mentioned by name or key.
+- **The rules engine settles checks** and hands the narrator the result as plain sentences. One check is *reading* a person: Focus against them. Success gives the player Leverage on that person, and nothing in the record says what the leverage *is*.
+- **People have schedules** (where they are, doing what, in times of day), a tier (how big a threat), states, goods and prices. These are rules, not text.
 
-One record for every person the narrator can meet. Each field answers one question the narrator asks while playing them. A fact lives in exactly one field.
+## What exists
 
-| Field | Reach | The narrator's question | Write |
-| --- | --- | --- | --- |
-| **Line** | Always, and in lists | Who is this, in one sentence, to someone who has never met them? | Job, place, and the one thing a stranger would look at twice |
-| **Appearance** | Here | What would I see and feel, standing in front of them? | Build, face, colouring; how the body moves and rests; **their presence** (what the room feels like with them in it); **one tell that shows their mood in any scene**. No clothes, no voice |
-| **Manner** | Here | How do they behave in a scene? | In this order: **(1) what they're doing and after when nobody acts on them**, their default in any room; **(2) how they treat a stranger, a friend, someone above them and someone weaker**; **(3) what amuses them, what irritates them, and a pleasure they take in plain view**; **(4) what they won't do**; **(5) a few *when this, they do that*, no more than two about their job or the plot** |
-| **Speech** | Here | How do the words come out? | Sound, rhythm, sentence length, register, habits, how it shifts with mood or with whom. **One special word at most.** No sample lines |
-| **Today** | Here | What do they want out of this evening? | A small want, met or missed in one scene, that isn't the plot |
-| **The read** | Named (a successful read) | What does a careful look at them show? | The truth under the tell: what they hide, what moves them, where they'd give. This is what Leverage means |
-| **Wants** | Named | What are they after, over months? | The long want, and what's in the way. The plot's hooks go here, written as what *this* person does about the plot |
-| **Ties** | Named, by the other's name | Who matters to them, and how? | One line each for two to four people: what they do when that person is near or named |
-| **Background** | Named | What comes up when someone asks about their past? | Only what a scene could bring up. Never a past that explains the Manner |
-| **When sections** | When | What changes after this? | Only what changes, and someone moves somewhere or seeks someone out |
+1. **The record model.** A character is a name, keys, pronouns, a **line** (who they are to a stranger in one sentence), and **sections**: titled blocks of text, each with a **reach**.
+   - The reaches: *Always*, *Here* (while they're present), *Named* (when the talk turns to it, by keys), *When* (once a condition holds) and *Never* (the author's notes, mechanics).
+   - The default sections: Appearance, Personality, Speech, Background, Wants and Relationships.
+   - Authors add, rename and reorder sections freely. The engine reads only titles, text and reach.
+   - One record serves chat and the adventure. Greetings and example chats are chat-only parts of it.
+2. **The chat standard,** which works. Each field answers one question.
+   - *Personality*: how does this character respond? What they do when someone asks, refuses, flirts, lies, helps or hurts one of theirs; what they go after in an exchange; what they won't do.
+   - *Speech*: how do the words come out? Sound, rhythm, register, words used and avoided, habits, how it shifts with mood or with whom.
+   - *Appearance*: what would someone see, and what does the body do? Including involuntary tells.
+   - *Background*, *Wants*, and keyed sections for the rest.
+   - Its writers run a grounding step before the personality: tastes off the clock, what makes them laugh and snap, one real flaw. They also run stress tests: the rude user, the boring user, the user courting from the first message, cover the name.
+3. **The module table,** which failed. The same fields, with Personality cut down to *what do they do when the player acts on them: asked, bribed, threatened, lied to, helped*. Its frame decided each person's **use** first (a door, a lever, a threat, a prize or a mark), then job, want, pattern and an "Aside" (one hobby).
+4. **Profile Plus,** the owner's older template from an earlier tool: Presence, Drive, Pattern, Resistance, Conduct, Facets. Today it's a way of thinking a character through, not a shape.
+5. **The source method.** A lead starts from a **source line** of behaviour: a known character, renamed and re-rooted. Personality, relationships and role are carried; looks, powers and names are re-skinned. *Known stories model dynamics, never names or details.*
 
-**Sizes for a lead:** Appearance about 400 characters, Manner about 800, Speech about 400, Today one or two sentences, each Named section 40 to 90 words.
+## What's settled (not for bid)
 
-**How it maps to Profile Plus** (the owner's older character template, a way of thinking a character through):
-- Presence → Appearance's presence.
-- Drive → Manner (1) and Today.
-- Pattern → Manner (1) and (5).
-- Resistance → Manner (4) and The read.
-- Conduct → Manner (2).
+- **The house writing rules.** Concrete and plain, with no aphorisms, no narrator evaluation and no comparisons. Names a reader can say on first sight. No glossary words (*dock*, not *staithe*). A person's species shows in one or two traits and a colouring.
+- **People only if they're used.** A person exists only if a scene or a rule uses them. At most four named people in a place at once.
+- **Schedules** run in times of day: morning from 6, afternoon from 12, evening from 18, night from 22.
+- **One record model** for chat and the adventure. The adventure's shape has to live in titled sections with reaches, and a chat character must still work.
 
-**The tests a record must pass** (from the site's chat-character pipeline, which works):
-- **Cover the setting.** Take away the world and the plot. If nothing is left, it's a job description.
-- **The boring player.** The player sits near them and only watches. The narrator must have something to show.
-- **The rude, the courting and the off-topic player.** They react as only they would.
-- **Cover the name.** In a scene with three others, can you tell which lines are theirs?
-- **Take their measure.** A successful read shows something true that was not in Looks.
+## Questions
 
-## The process, from a source
+Answer each, numbered as here.
 
-1. **The source line.** The character, the work they're from, and one sentence on why they fit the part.
-2. **The source record (this round).** The character in the fields above, *in their own world*, written from the source alone. Everything in it can be checked against the work. Nothing comes from our world.
-3. **The play-test.** The source record goes into a small test world with the name and city changed, so the narrator plays from the record and not from its memory of the film. It's played through the five tests above on the narrator model. Pass: someone who knows the film recognises the man.
-4. **The adaptation (round 2).** The source record, plus the person's line in our world, gives the adapted record, with a table of what was kept, translated, added and dropped.
-5. **The same play-test, in our world.** Compared with step 3.
+1. **The shape.** For each field: its title, the narrator's question, what goes in, what stays out, its reach, its size for a lead, and where it sits in the order the narrator receives.
+2. **The block.** Lay out exactly what the narrator receives for one present lead, in order, as it would read.
+3. **The scales.** A lead, a supporting regular, a crowd or gang, an offstage power (a ruler such as a witch queen, mostly felt through her agents and her coin), and a member of a family. One shape at different sizes, or different shapes? Different processes?
+4. **The process,** from a source line to a source record to an adapted record. Where does the owner check in, what does each checkpoint show them, and what is tested when?
+5. **The adaptation.** What carries from the source unchanged, what is translated, what has to be added for our world, and what is dropped?
+6. **The tests** a record must pass before play, and how it's play-tested.
+7. **The demonstration.** Captain Louis Renault (*Casablanca*, 1942), written in your shape, **in his own world, untouched by ours.** Give each field as its own block, marked with its reach. Then add a table tying each field to a moment in the film. Paraphrase; quote a few words of a famous line at most.
+8. **The engine.** What the adventure must change to deliver your shape, in plain terms.
+9. **Your doubts.** Where your shape could fail, at most five.
 
-## What an adaptation adds (round 2, for the critique)
+## How the bids are tested
 
-What carries over unchanged is the person: Manner, the shape of Speech, Today's kind of want, The read. What the adaptation adds:
+Each shape's Renault is put into a one-room test world: a café in a port town under occupation, with the person and the city renamed so the narrator plays from the record and not from its memory of the film. It's played on Gemini 3.8 Flash through the same scenes:
+- the player only watches him;
+- the player is rude, then charming;
+- the player changes the subject;
+- the player asks for something he controls;
+- the player tries to read what makes him tick.
 
-1. **A name** the reader can say on first sight. Source names, famous lines and signature details never carry over: known stories model dynamics, never names or details.
-2. **A kind:** their species in one or two traits and a colouring, and how being that kind changes how others treat them.
-3. **A job and a place:** our world's equivalent of their role; home, work and a daily schedule.
-4. **A background** in our world's history that would produce the same person. The source's turning point is re-rooted, not copied.
-5. **Groups:** faction, family and species, and their standing in each.
-6. **Ties:** the source's key relationships mapped onto people in our world. The shape of a relationship carries; the people are ours.
-7. **Words:** their idiom translated into our world's terms, with one special word at most.
-8. **Things:** their props re-skinned. A roulette wheel becomes a knucklebones table.
-9. **The plot hook, last:** Wants and When sections, as what this person does about our thread.
-10. **The rules:** a tier, approaches, difficulties, a price and goods.
-11. **What they explain:** what this person tells a newcomer, in their own interest. A man who sells something explains what it is.
+The question is whether someone who knows the film recognises the man.
 
-## Do different people need different processes?
+Write your Renault so it can be dropped in as it stands: every field a block of text, each with its reach.
 
-The proposal is one record shape, at different scales:
+## Hand back
 
-| Scale | Who | What changes |
-| --- | --- | --- |
-| **Lead** | A person a thread turns on | Everything above, from a named source |
-| **Support** | A regular, a worker, a face in the place | Line, Appearance, Manner (1), (2) and two reactions, and Speech. The source can be a type (*the barman who has heard everything*) rather than a named character |
-| **Crowd** | A gang, a crew, a band of Golkin | A look, its moves and its talk. A function by design |
-| **Power** | A ruler or force mostly offstage, such as the Witch Queen | Two records. **(a) Lore:** how her reach looks in each place (her coin, her agents, what people say), keyed to where the player is. **(b) The person:** written as a lead, but met rarely, as an event. Her source is chosen for how she rules |
-| **Family member** | One of a family | **The family is sourced first, as a unit:** who rules it, who rebels, what they fight about, and what the city thinks of them. It becomes a family group record, which holds what members share so no member repeats it. Then each member, from the family's source, with a family role (heir, the one who left, the fixer) in their Ties |
-
-## What to hand back
-
-1. **Captain Louis Renault's source record** (*Casablanca*, 1942), in the fields above, in his own world. Use about the sizes above. Paraphrase rather than quote; a few words of a famous line at most.
-2. **A table:** for each field, the moment in the film it rests on.
-3. **The five tests,** run in your head: one or two lines each on what the narrator would show.
-4. **Your critique of the record** in at most ten bullets: a missing field, one that should go, a reach that's wrong, a size, and anything about the scales or the adaptation list.
-
-Hand back one markdown file.
-
-## If you can read the repository
-
-`Tulivu89/mercurial-muse`. Read in this order:
-1. `CLAUDE.md`, for the writing rules.
-2. `docs/content/volungraiv/run-1.md` and `review-1.md`, for what failed and why.
-3. `docs/content/standard.md`, *A character's fields*.
-4. `docs/content/modules/process.md`, *Every field has one job*. This is the version that failed.
-5. `adventure/src/engine/context.ts`, `profile()`, for what the narrator is sent.
-6. `content/volungraiv/world.json`, record `hollis`, for the record that failed.
-
-Don't read this folder's `claude.md` before your answer is written.
+One markdown file, with the questions as its headings. Sign it with the model you are.

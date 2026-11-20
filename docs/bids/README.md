@@ -15,7 +15,7 @@ One folder per topic:
 | `<model>.md` | A bid, one file per model: `chatgpt.md`, `grok.md` and so on. | The owner uploads them |
 | `decision.md` | Claude's informed proposal: what to build, taken from everything above, with credit and the calls made where the bids differ. | Claude |
 
-Topics now: `maps/` (decided and approved, with a prototype; phases M1 to M4 built), `ui/` (decided and built), `worldbuilding/` (decided and approved; W1 and W2 built) and `volungraiv-gold/` (decided and approved) and `volungraiv-ceiling/` (out for bids), and `character-record/` (Nov 19: what a character record is in the adventure, tested on a source character first; `claude.md` is in).
+Topics now: `maps/` (decided and approved, with a prototype; phases M1 to M4 built), `ui/` (decided and built), `worldbuilding/` (decided and approved; W1 and W2 built) and `volungraiv-gold/` (decided and approved) and `volungraiv-ceiling/` (out for bids), and `character-record/` (Nov 20: the shape and process of a character record in the adventure, bid out and tested by playing each bidder's Captain Renault blind; `claude.md` and `test-claude.json` are in, and `ai-studio.md` runs the bid in Google AI Studio).
 
 ## The steps
 
