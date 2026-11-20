@@ -157,6 +157,8 @@ export interface NarrateOptions {
   signal?: AbortSignal;
   // The start of the reply; what comes back continues it.
   prefill?: string;
+  // How much a thinking model should think, where the provider lets it be set.
+  thinking?: 'default' | 'low' | 'off';
 }
 
 export async function narrate(messages: ChatMessage[], target: Target, options: NarrateOptions = {}): Promise<Narration> {
@@ -169,6 +171,7 @@ export async function narrate(messages: ChatMessage[], target: Target, options: 
     max_tokens: options.maxTokens ?? 1000,
     temperature: options.temperature ?? 0.8,
     ...(options.prefill ? { prefill: options.prefill } : {}),
+    ...(options.thinking && options.thinking !== 'default' ? { thinking: options.thinking } : {}),
   };
   if (target.provider !== CUSTOM_PROVIDER) {
     return relay<Narration>('/api/narration/chat', target.provider, { method: 'POST', body: JSON.stringify(request), signal: options.signal });

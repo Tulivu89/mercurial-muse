@@ -54,6 +54,9 @@ function rulesFrom(source: Raw, fields: readonly string[]): RecordRules | undefi
   return Object.keys(rules).length ? (rules as RecordRules) : undefined;
 }
 
+// A module's one-line summary is a record's line, when it fits one.
+const lineOf = (source: Raw): string => { const value = text(source.summary); return value.length <= 400 ? value : ''; };
+
 export type ImportResult = { ok: true; world: World; notes: string[] } | { ok: false; errors: string[] };
 
 export function isModule(raw: unknown): boolean {
@@ -76,26 +79,28 @@ export function moduleToWorld(raw: unknown, now: number): ImportResult {
   for (const place of list(world.places)) {
     const kind = text(place.kind);
     records.push(record('place', text(place.id), text(place.name), {
+      line: lineOf(place),
       parentId: text(place.parentLocationId) || null,
       sections: [section('entry', 'Entry', 'here', place.description), section('atmosphere', 'Atmosphere', 'here', '')],
       rules: rulesFrom({ placeKind: kind && kind !== 'other' ? kind : undefined, difficulty: place.difficulty, crossing: Array.isArray(place.crossing) && place.crossing.length ? place.crossing : undefined, icon: text(place.icon) || undefined }, ['placeKind', 'difficulty', 'crossing', 'icon']),
-      carried: split(place, ['id', 'name', 'description', 'kind', 'parentLocationId', 'difficulty', 'crossing', 'icon']).rest,
+      carried: split(place, ['id', 'name', 'summary', 'description', 'kind', 'parentLocationId', 'difficulty', 'crossing', 'icon']).rest,
     }));
   }
   const groups: [string, GroupKind][] = [['species', 'species'], ['factions', 'faction'], ['societies', 'other'], ['families', 'family']];
   for (const [collection, groupKind] of groups) {
     for (const group of list(world[collection])) {
       records.push(record('group', text(group.id), text(group.name), {
-        groupKind,
+        groupKind, line: lineOf(group),
         sections: [section('entry', 'Entry', 'named', group.description)],
-        carried: split(group, ['id', 'name', 'description']).rest,
+        carried: split(group, ['id', 'name', 'summary', 'description']).rest,
       }));
     }
   }
   for (const memory of list(world.memories)) {
     records.push(record('lore', text(memory.id), text(memory.title), {
+      line: lineOf(memory),
       sections: [section('entry', 'Entry', 'named', memory.description)],
-      carried: split(memory, ['id', 'title', 'description']).rest,
+      carried: split(memory, ['id', 'title', 'summary', 'description']).rest,
     }));
   }
   for (const person of list(module.characters)) {
@@ -119,9 +124,10 @@ export function moduleToWorld(raw: unknown, now: number): ImportResult {
   }
   for (const item of list(module.items)) {
     records.push(record('item', text(item.id), text(item.name), {
+      line: lineOf(item),
       sections: [section('entry', 'Entry', 'here', item.description)],
       rules: rulesFrom(item, ['difficulty']),
-      carried: split(item, ['id', 'name', 'description', 'difficulty']).rest,
+      carried: split(item, ['id', 'name', 'summary', 'description', 'difficulty']).rest,
     }));
   }
   // A thread's five questions are its sections, for the author only; its kind and milestones are
@@ -197,12 +203,12 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
   const optional = (fields: Raw) => Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== undefined && value !== '' && !emptyMap(value)));
 
   const places = of('place').map((place) => ({
-    ...extra(place), id: place.id, name: place.name, description: body(place, 'entry', ['entry'], true),
+    ...extra(place), id: place.id, name: place.name, ...optional({ summary: place.line }), description: body(place, 'entry', ['entry'], true),
     kind: place.rules?.placeKind ?? 'other', parentLocationId: place.parentId && byId.get(place.parentId)?.kind === 'place' ? place.parentId : null,
     ...optional({ difficulty: place.rules?.difficulty, crossing: place.rules?.crossing?.length ? place.rules.crossing : undefined, icon: place.rules?.icon }),
   }));
 
-  const groupEntry = (group: StoryRecord) => ({ ...extra(group), id: group.id, name: group.name, description: body(group, 'entry', ['entry'], true) });
+  const groupEntry = (group: StoryRecord) => ({ ...extra(group), id: group.id, name: group.name, ...optional({ summary: group.line }), description: body(group, 'entry', ['entry'], true) });
   const groupsOf = (...kinds: GroupKind[]) => of('group').filter((group) => kinds.includes(group.groupKind)).map(groupEntry);
 
   // A group's defaults are written out on each member, since a module knows nothing of them.
@@ -262,7 +268,7 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
     const good = rulesFor(world, item)!.good!.value;
     return { ...good, name: lower(item.name), description: body(item, 'entry', ['entry']).slice(0, 1000) };
   });
-  const items = of('item').map((item) => ({ ...extra(item), id: item.id, name: item.name, description: body(item, 'entry', ['entry'], true), ...optional({ difficulty: item.rules?.difficulty }) }));
+  const items = of('item').map((item) => ({ ...extra(item), id: item.id, name: item.name, ...optional({ summary: item.line }), description: body(item, 'entry', ['entry'], true), ...optional({ difficulty: item.rules?.difficulty }) }));
 
   const own = world.rules;
   const outRuleset: Raw = {
@@ -317,7 +323,7 @@ export function worldToModule(world: World): { module: Raw; notes: string[] } {
       id: world.id, name: world.name, ...carriedWorld, identity,
       places,
       species: groupsOf('species'), factions: groupsOf('faction'), societies: groupsOf('other', 'crew', 'profession'), families: groupsOf('family'),
-      memories: of('lore').map((lore) => ({ ...extra(lore), id: lore.id, title: lore.name, description: body(lore, 'entry', ['entry'], true) })),
+      memories: of('lore').map((lore) => ({ ...extra(lore), id: lore.id, title: lore.name, ...optional({ summary: lore.line }), description: body(lore, 'entry', ['entry'], true) })),
     },
     characters,
     relationships: Array.isArray(carried.relationships) ? carried.relationships : [],

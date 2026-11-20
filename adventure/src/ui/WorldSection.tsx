@@ -14,6 +14,8 @@ interface Entry {
   kind: Kind;
   name: string;
   meta: string;
+  // What it is, in one sentence: the record's line.
+  line?: string;
   description: string;
   details: [string, string][];
   local: boolean;
@@ -65,6 +67,7 @@ function entriesOf(world: PraxisModule, save: Save): Entry[] {
     out.push({
       key: `place:${place.id}`, kind: 'place', name: place.name,
       meta: [place.kind !== 'other' ? capitalise(place.kind) : 'Place', placeName(place.parentLocationId)].filter(Boolean).join(' · '),
+      line: place.summary,
       description: place.description,
       details: [['Inside', placeName(place.parentLocationId)], ['Places in it', inside.join(', ')], ['People there now', people.join(', ')]].filter(([, value]) => value) as [string, string][],
       local: place.origin === 'local', draft: isDraft(place),
@@ -78,6 +81,7 @@ function entriesOf(world: PraxisModule, save: Save): Entry[] {
     out.push({
       key: `group:${group.id}`, kind: 'group', name: group.name,
       meta: [kind, list(group.settlementLocationIds).concat(list(group.territoryLocationIds)).map(placeName).filter(Boolean)[0] ?? ''].filter(Boolean).join(' · '),
+      line: group.summary,
       description: group.description,
       details: [
         ['Members', members.join(', ')],
@@ -92,7 +96,7 @@ function entriesOf(world: PraxisModule, save: Save): Entry[] {
   }
 
   for (const species of world.world.species) {
-    out.push({ key: `people:${species.id}`, kind: 'people', name: species.name, meta: 'People', description: species.description, details: [], local: false, draft: isDraft(species), near: 6 });
+    out.push({ key: `people:${species.id}`, kind: 'people', name: species.name, meta: 'People', line: species.summary, description: species.description, details: [], local: false, draft: isDraft(species), near: 6 });
   }
 
   const facts = Array.isArray(world.world.lore.importantFacts) ? world.world.lore.importantFacts.filter((fact): fact is string => typeof fact === 'string') : [];
@@ -104,7 +108,7 @@ function entriesOf(world: PraxisModule, save: Save): Entry[] {
     out.push({
       key: `memory:${memory.id}`, kind: 'lore', name: memory.title,
       meta: memory.origin === 'local' ? 'Note' : [capitalise(typeof memory.kind === 'string' ? memory.kind : 'memory'), list(memory.locationIds).map(placeName).filter(Boolean)[0] ?? ''].filter(Boolean).join(' · '),
-      description: memory.description, details: [], local: memory.origin === 'local', draft: isDraft(memory),
+      line: memory.summary, description: memory.description, details: [], local: memory.origin === 'local', draft: isDraft(memory),
       near: list(memory.locationIds).some((id) => here.has(id)) ? 2 : memory.origin === 'local' ? 3 : 5,
       recordId: memory.origin === 'local' ? memory.id : undefined,
     });
@@ -112,7 +116,7 @@ function entriesOf(world: PraxisModule, save: Save): Entry[] {
   for (const thing of world.items) {
     out.push({
       key: `thing:${thing.id}`, kind: 'thing', name: thing.name, meta: ['Thing', placeName(thing.locationId) || (thing.heldBy === playerId ? 'carried by you' : '')].filter(Boolean).join(' · '),
-      description: thing.description, details: [], local: thing.origin === 'local', draft: isDraft(thing),
+      line: thing.summary, description: thing.description, details: [], local: thing.origin === 'local', draft: isDraft(thing),
       near: thing.locationId === scene.place.id || thing.heldBy === playerId ? 1 : 3, recordId: thing.origin === 'local' ? thing.id : undefined,
     });
   }
@@ -136,7 +140,7 @@ export function WorldSection({ api, query, setQuery }: { api: PlayApi; query: st
   const needle = query.trim().toLowerCase();
   const shown = entries
     .filter((entry) => filter === 'all' || (filter === 'yours' ? entry.local : entry.kind === filter))
-    .filter((entry) => !needle || `${entry.name} ${entry.meta} ${entry.description}`.toLowerCase().includes(needle))
+    .filter((entry) => !needle || `${entry.name} ${entry.meta} ${entry.line ?? ''} ${entry.description}`.toLowerCase().includes(needle))
     .sort((a, b) => a.near - b.near || KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.name.localeCompare(b.name));
   const visible = showAll || needle ? shown : shown.slice(0, 12);
 
@@ -188,6 +192,7 @@ export function WorldSection({ api, query, setQuery }: { api: PlayApi; query: st
               <span className="row-text">
                 <span className="name">{entry.name}</span>
                 {entry.meta && <span className="meta">{entry.meta}</span>}
+                {entry.line && <span className="meta" style={{ color: 'var(--text-2)' }}>{entry.line}</span>}
               </span>
               {entry.local && <span className="tag yours">Yours</span>}
               {prefs.showDrafts && entry.draft && <span className="tag draft">Draft</span>}

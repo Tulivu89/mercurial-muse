@@ -72,6 +72,14 @@ function matcher(keys: readonly string[], flags = ''): RegExp | null {
 }
 
 const first = (value: unknown) => sentencesUpTo(text(value), NOTE_CHARS);
+const stop = (value: string) => (/[.!?]$/.test(value) ? value : `${value}.`);
+// A record's note: its line, the one sentence for someone who has never met it, then the start
+// of its description.
+const opening = (record: { summary?: unknown; description?: unknown }): string => {
+  const line = text(record.summary);
+  const rest = first(record.description);
+  return [line ? stop(line) : '', rest].filter(Boolean).join(' ');
+};
 
 // Every record that can be mentioned, with how its note reads.
 export function mentionables(world: PraxisModule, save: Save): Mentionable[] {
@@ -102,7 +110,8 @@ export function mentionables(world: PraxisModule, save: Save): Mentionable[] {
         const parent = place.parentLocationId ? places.get(place.parentLocationId)?.name : undefined;
         const kind = place.kind !== 'other' ? `${/^[aeiou]/i.test(place.kind) ? 'an' : 'a'} ${place.kind}` : '';
         const where = [kind, parent ? `in ${parent.replace(/^The /, 'the ')}` : ''].filter(Boolean).join(' ');
-        return `${place.name}${where ? `, ${where}` : ''}${place.description ? `: ${first(place.description)}` : '.'}`;
+        const said = opening(place);
+        return `${place.name}${where ? `, ${where}` : ''}${said ? `: ${said}` : '.'}`;
       },
     });
   }
@@ -113,17 +122,18 @@ export function mentionables(world: PraxisModule, save: Save): Mentionable[] {
       keys: keysFor(group.name, group.keys),
       note: () => {
         const more = ['leadershipStructure', 'doctrine', 'customs', 'beliefs'].map((field) => sentencesUpTo(text(group[field]), 200)).filter(Boolean);
-        return [`${group.name}${group.description ? `: ${first(group.description)}` : ''}`, ...more].join(' ');
+        const said = opening(group);
+        return [`${group.name}${said ? `: ${said}` : ''}`, ...more].join(' ');
       },
     });
   }
   for (const species of world.world.species) {
-    if (!species.description) continue;
-    out.push({ kind: 'species', id: species.id, keys: keysFor(species.name, species.keys, { plural: true }), note: () => `${species.name}: ${first(species.description)}` });
+    if (!species.description && !species.summary) continue;
+    out.push({ kind: 'species', id: species.id, keys: keysFor(species.name, species.keys, { plural: true }), note: () => `${species.name}: ${opening(species)}` });
   }
   for (const family of world.world.families) {
-    if (!family.description) continue;
-    out.push({ kind: 'family', id: family.id, keys: keysFor(family.name, family.keys), note: () => `${family.name}: ${first(family.description)}` });
+    if (!family.description && !family.summary) continue;
+    out.push({ kind: 'family', id: family.id, keys: keysFor(family.name, family.keys), note: () => `${family.name}: ${opening(family)}` });
   }
   for (const memory of world.world.memories) {
     if (memory.origin === 'local') continue; // The player's notes are always sent.
@@ -133,7 +143,8 @@ export function mentionables(world: PraxisModule, save: Save): Mentionable[] {
       keys: keysFor(memory.title, memory.keys),
       note: () => {
         const lasting = sentencesUpTo(text(memory.persistentEffects), 200);
-        return `${memory.title}${memory.description ? `: ${first(memory.description)}` : ''}${lasting ? ` Lasting: ${lasting}` : ''}`;
+        const said = opening(memory);
+        return `${memory.title}${said ? `: ${said}` : ''}${lasting ? ` Lasting: ${lasting}` : ''}`;
       },
     });
   }
@@ -146,7 +157,8 @@ export function mentionables(world: PraxisModule, save: Save): Mentionable[] {
         const holder = text(thing.heldBy) ? personName.get(text(thing.heldBy)) : undefined;
         const at = text(thing.locationId) ? places.get(text(thing.locationId))?.name : undefined;
         const where = holder ? `, carried by ${holder === world.characters.find((character) => character.id === playerId)?.name ? 'you' : holder}` : at ? `, at ${at.replace(/^The /, 'the ')}` : '';
-        return `${thing.name}${where}${thing.description ? `: ${first(thing.description)}` : ''}`;
+        const said = opening(thing);
+        return `${thing.name}${where}${said ? `: ${said}` : ''}`;
       },
     });
   }
