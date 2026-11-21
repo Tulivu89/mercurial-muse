@@ -8,6 +8,13 @@ Praxis is pre-alpha. Versions below `0.1.0` do not exist; the project starts at
 Use `X.Y.Z` semantic versioning, where `Z` is required. A new milestone gets a
 short human-readable name after the version.
 
+## 0.29.0 - A new address, and one Settings page - 2026-11-21
+
+- **The adventure lives at `/adventure/`.** The front page (the Overview) took the site's root (phase F4). Old links still work: `/?save=…` and `/?launch=…` are forwarded to the same game or world here, and saves, keys and settings are where they were, because the site's address is the same.
+- **One Settings page for the whole site.** The gear opens it on the start screen, on its Adventure tab, and the same page is in Chat, the Studio and on the front page. Its tabs are General (paper or night, the style, where the site opens), Model (the one connection), Chat, Adventure and Studio. In play, the Settings section under the prompt is the same page: the Adventure tab starts with this game's own settings, then this save and the testing tools.
+- **The start screen opens like the other sides:** the adventure's mark once, its name, the title and a line. The site's header shows the Inkwyrm name at every width, the four parts, and the gear.
+- The adventure's connection is the site's own (`kit/src/connection.ts`): one key in memory for every side, and the same `praxis.*` keys in storage.
+
 ## 0.28.1 - What things are - 2026-11-19
 
 Fixes from Volungraiv's first run (`docs/content/volungraiv/run-1.md`).

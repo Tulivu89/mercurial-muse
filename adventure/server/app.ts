@@ -63,6 +63,15 @@ export function createApp(options: AppOptions = {}) {
     response.end();
   });
 
+  // The adventure's old addresses, from before the Overview took the root (phase F4): a game or a
+  // Studio launch named at the root, and the Overview's own old address. Bookmarks keep working.
+  app.get('/', (request, response, next) => {
+    const query = new URL(request.originalUrl, 'http://site').searchParams;
+    if (query.has('save') || query.has('launch')) { response.redirect(302, `/adventure/?${query.toString()}`); return; }
+    next();
+  });
+  app.get(['/overview', '/overview/*splat'], (_request, response) => response.redirect(301, '/'));
+
   if (options.production) {
     const directory = path.dirname(fileURLToPath(import.meta.url));
     const webRoot = path.resolve(directory, '../../../dist');
@@ -78,14 +87,18 @@ export function createApp(options: AppOptions = {}) {
       app.use('/chat', express.static(chatRoot, { index: false, maxAge: '1h' }));
       app.get(['/chat', '/chat/*splat'], (_request, response) => response.sendFile(path.join(chatRoot, 'index.html')));
     }
-    // The Overview, the site's front page (docs/front-page/), under /overview/ until it takes the root.
+    // The adventure, under /adventure/ since the Overview took the root.
+    app.use('/adventure', express.static(webRoot, { index: false, maxAge: '1h' }));
+    app.get(['/adventure', '/adventure/*splat'], (_request, response) => response.sendFile(path.join(webRoot, 'index.html')));
+    // The Overview, the site's front page (docs/front-page/), at the root: everything else, the
+    // shared settings page (/settings) included, is its page.
     const overviewRoot = path.resolve(directory, '../../../../overview/dist');
     if (existsSync(overviewRoot)) {
-      app.use('/overview', express.static(overviewRoot, { index: false, maxAge: '1h' }));
-      app.get(['/overview', '/overview/*splat'], (_request, response) => response.sendFile(path.join(overviewRoot, 'index.html')));
+      app.use(express.static(overviewRoot, { index: false, maxAge: '1h' }));
+      app.get('*splat', (_request, response) => response.sendFile(path.join(overviewRoot, 'index.html')));
+    } else {
+      app.get('/', (_request, response) => response.redirect(302, '/adventure/'));
     }
-    app.use(express.static(webRoot, { index: false, maxAge: '1h' }));
-    app.get('*splat', (_request, response) => response.sendFile(path.join(webRoot, 'index.html')));
   }
 
   // Never echoes request details, so a token cannot leak through an error.

@@ -72,6 +72,11 @@
 /* A page instead of bubbles: prose at the full width, the player's words set off by a rule. */
 .chat[data-layout='page'] .turn { max-width: 100%; align-self: stretch; align-items: stretch; }
 .chat[data-layout='page'] .speaker { display: block; }
+/* A group: every reply says who wrote it, with their face. */
+.chat.grouped .turn.character .speaker, .chat.grouped .turn.streaming .speaker { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+.composer .answerer { flex: none; max-width: 9.5em; min-height: 44px; padding: 0 8px; border: 1px solid var(--rule); border-radius: var(--r-ctrl); background: var(--raised); color: var(--text); font-size: 14px; }
+.group-panel .group-member { padding: 4px 0; border-bottom: 1px dashed var(--rule); }
+.group-panel .group-member select { min-height: 36px; border: 1px solid var(--rule); border-radius: var(--r-ctrl); background: var(--raised); }
 .chat[data-layout='page'] .bubble { background: none; border: 0; border-radius: 0; padding: 0; }
 .chat[data-layout='page'] .bubble.user { color: var(--text); border-left: 3px solid var(--blue); padding-left: 12px; }
 .chat[data-layout='page'] .bubble.typing { padding: 8px 0; }

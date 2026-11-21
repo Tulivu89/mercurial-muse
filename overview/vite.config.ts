@@ -2,10 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { picturesDefine } from '../kit/pictures.config';
 
-// Served by the site's server at /overview/ (docs/front-page/); the root stays the Adventure's
-// until the front door moves (phase F4).
+// The site's front page, served at the root (phase F4, docs/front-page/). /overview/ forwards here.
 export default defineConfig(({ command }) => ({
-  base: '/overview/',
+  base: '/',
   plugins: [react()],
   define: picturesDefine(command),
   server: {

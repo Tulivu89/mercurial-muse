@@ -2,7 +2,7 @@
 // setups, so a weak reply can be pinned on the model or on the setup, and on which part of it.
 // Whoever runs it (a person, or a coding agent in another app) plays the model for each variant,
 // writes the replies down, and the lab scores them. Pure: the script does the files.
-import { XIALONG, addUserMessage, makeTestPack, messageText, newChat, pickedAlt, profileFor, rebuild, requestText, samplersFor, type PackRequest, type TestPack } from '../../../core/chat/index.js';
+import { XIALONG, addUserMessage, cleanGroupReply, isGroup, makeTestPack, membersOf, messageText, newChat, pickedAlt, newGroupChat, profileFor, rebuild, requestText, samplersFor, type GroupHow, type PackRequest, type TestPack } from '../../../core/chat/index.js';
 import type { World } from '../../../core/records/index.js';
 import { livesIn } from '../../../core/chat/index.js';
 import { catchesIn } from '../content/lint';
@@ -25,11 +25,12 @@ export function originalReplies(pack: TestPack, upTo: number): string[] {
 
 export async function labVariants(pack: TestPack, upTo: number, only?: readonly string[]): Promise<Variant[]> {
   const out: Variant[] = [];
-  const add = async (id: string, title: string, what: string, changed: Pick<TestPack, 'settings' | 'needs' | 'chat' | 'world'>, model = pack.settings.model) => {
+  const add = async (id: string, title: string, what: string, changed: Pick<TestPack, 'settings' | 'needs' | 'chat' | 'world'>, model = pack.settings.model, how?: GroupHow) => {
     if (only && !only.includes(id)) return;
-    const request = await rebuild(changed, upTo, model);
+    const request = await rebuild(changed, upTo, model, how);
     if (request) out.push({ id, title, what, request });
   };
+  if (isGroup(pack.chat)) { await groupVariants(pack, add); return out; }
   const character = pack.world.records.find((record) => record.id === pack.chat.characterId);
   await add('as-sent', 'As the chat sends it', `Exactly what ${pack.settings.model} is sent for this turn, with today's code.`, pack);
   if (profileFor(pack.settings.model) === 'aetherroom') {
@@ -54,12 +55,28 @@ export async function labVariants(pack: TestPack, upTo: number, only?: readonly 
   return out;
 }
 
+// A group chat's turn under the layouts the lab compares (docs/model-jobs.md, The lab test). Xialong
+// takes only B.
+type Add = (id: string, title: string, what: string, changed: Pick<TestPack, 'settings' | 'needs' | 'chat' | 'world'>, model?: string, how?: GroupHow) => Promise<void>;
+async function groupVariants(pack: TestPack, add: Add): Promise<void> {
+  await add('as-sent', 'As the chat sends it', `Exactly what ${pack.settings.model} is sent for this turn, with the chat's own group settings and today's code.`, pack);
+  await add('group-b', 'Layout B', 'A call per speaker: their rules, sheet and examples first, the others here by their line, the transcript with every reply named, their replies as the model\'s turns.', pack, pack.settings.model, { layout: 'b', others: 'assistant' });
+  if (profileFor(pack.settings.model) !== 'aetherroom') {
+    await add('group-b-user', 'Layout B, the others as the player\'s turns', 'As B, with every other character\'s reply in the player\'s turn, under their name.', pack, pack.settings.model, { layout: 'b', others: 'user' });
+    await add('group-c', 'Layout C', 'One shared prefix for everyone (rules, persona, scenario, who is here, the transcript), then the speaker\'s block at the very end.', pack, pack.settings.model, { layout: 'c', others: 'assistant' });
+    await add('group-c-anchor', 'Layout C with an anchor', 'As C, with one line straight after the transcript naming who to write as, before their block.', pack, pack.settings.model, { layout: 'c', others: 'assistant', anchor: true });
+    await add('group-c-user', 'Layout C, everyone as the player\'s turns', 'As C, with every character\'s reply in the player\'s turn, under their name.', pack, pack.settings.model, { layout: 'c', others: 'user' });
+  }
+}
+
 export function variantText(variant: Variant, charName: string): string {
   return requestText(variant.request, `${variant.title}: what ${charName} is sent`);
 }
 
 export function labReadme(pack: TestPack, upTo: number, variants: Variant[], replies: number): string {
-  const name = pack.chat.characterName || 'the character';
+  const members = isGroup(pack.chat) ? membersOf(pack.chat, pack.world) : [];
+  const speakerId = variants[0]?.request.speaker;
+  const name = members.find((member) => member.id === speakerId)?.name ?? pack.chat.characterName ?? 'the character';
   const last = pack.chat.messages[upTo - 1];
   const original = originalReplies(pack, upTo);
   return [
@@ -93,6 +110,9 @@ export function labReadme(pack: TestPack, upTo: number, variants: Variant[], rep
     '- **`with-scenario` beats `as-sent`:** she didn\'t know where she was. Start the chat with a scenario.',
     '- **`no-examples` sounds as much like her as `as-sent`:** her examples aren\'t steering; her sections are.',
     '- **`general` beats `as-sent`:** the AetherRoom layout is costing her, and that\'s worth testing on Xialong itself.',
+    ...(members.length ? [
+      `- **A group (${members.map((member) => member.name).join(', ')}):** the turn is ${name}'s. *Wrote for* in \`scores.md\` is a hard fail. **C decides it:** if \`group-c\` matches \`group-b\` on bleed (lifted from others, other voices creeping in) and comes close on voice, C becomes the default for General models; if not, B stays. \`-user\` beside its plain variant says whether others' lines read better as the player's turns; \`group-c-anchor\` says whether naming the speaker before the block helps.`,
+    ] : []),
     '',
     'Another app\'s model isn\'t Xialong, so this separates the setup from the model. It doesn\'t say how Xialong would do with a better setup: for that, change the world and play it on Xialong again.',
     '',
@@ -109,7 +129,9 @@ export function originalText(pack: TestPack, upTo: number): string {
 
 // --- Scoring.
 
-export interface Score { file: string; words: number; catches: string[]; named: string[]; quotes: number; lifted: string[] }
+// In a group: `wrote` is whose lines the reply wrote besides the speaker's (a hard fail), and
+// `liftedOthers` the runs copied from another present character's sheet or examples.
+export interface Score { file: string; words: number; catches: string[]; named: string[]; quotes: number; lifted: string[]; wrote: string[]; liftedOthers: string[] }
 
 const wordsOf = (text: string) => text.toLowerCase().match(/[\p{L}\p{N}']+/gu) ?? [];
 
@@ -134,8 +156,14 @@ function liftedFrom(reply: string, source: string): string[] {
 }
 
 export function scoreReply(file: string, text: string, request: PackRequest, pack: TestPack): Score {
-  const others = pack.world.records.filter((record) => record.kind === 'character' && record.id !== pack.chat.characterId).map((record) => record.name);
+  const speakerId = request.speaker ?? pack.chat.characterId;
+  const others = pack.world.records.filter((record) => record.kind === 'character' && record.id !== speakerId).map((record) => record.name);
   const sheet = request.messages.filter((message) => message.role === 'system').map((message) => message.content).join('\n');
+  const group = isGroup(pack.chat) ? membersOf(pack.chat, pack.world) : [];
+  const speaker = group.find((member) => member.id === speakerId);
+  const present = group.filter((member) => member.id !== speakerId);
+  const cleaned = speaker ? cleanGroupReply(`${speaker.name}: ${text.replace(new RegExp(`^\\s*${speaker.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:\\s*`, 'i'), '')}`, speaker.name, present.map((member) => member.name), pack.chat.userName) : null;
+  const theirs = present.map((member) => [...member.record.sections.map((section) => section.text), ...member.record.examples.flatMap((example) => example.messages.map((message) => message.text))].join('\n')).join('\n');
   return {
     file,
     words: wordsOf(text).length,
@@ -143,16 +171,20 @@ export function scoreReply(file: string, text: string, request: PackRequest, pac
     named: others.filter((name) => new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(text)),
     quotes: (text.match(/["“”]/g) ?? []).length,
     lifted: liftedFrom(text, sheet),
+    wrote: cleaned ? [...new Set([...cleaned.skipped, ...cleaned.cut])] : [],
+    liftedOthers: present.length ? liftedFrom(text, theirs) : [],
   };
 }
 
 export function scoresText(rows: { variant: string; scores: Score[] }[]): string {
-  const lines = ['# Scores', '', '| Variant | Reply | Words | Catches | Others named | Quote marks | Lifted runs |', '| --- | --- | ---: | ---: | --- | ---: | ---: |'];
-  for (const row of rows) for (const score of row.scores) lines.push(`| ${row.variant} | ${score.file} | ${score.words} | ${score.catches.length} | ${score.named.join(', ') || '-'} | ${score.quotes} | ${score.lifted.length} |`);
+  const group = rows.some((row) => row.scores.some((score) => score.wrote.length || score.liftedOthers.length)) || rows.some((row) => row.variant.startsWith('group-'));
+  const lines = ['# Scores', '', `| Variant | Reply | Words | Catches | Others named | Quote marks | Lifted runs |${group ? ' Wrote for | Lifted from others |' : ''}`, `| --- | --- | ---: | ---: | --- | ---: | ---: |${group ? ' --- | ---: |' : ''}`];
+  for (const row of rows) for (const score of row.scores) lines.push(`| ${row.variant} | ${score.file} | ${score.words} | ${score.catches.length} | ${score.named.join(', ') || '-'} | ${score.quotes} | ${score.lifted.length} |${group ? ` ${score.wrote.join(', ') || '-'} | ${score.liftedOthers.length} |` : ''}`);
   lines.push('', 'The house format has no quotation marks: speech is plain, actions in asterisks. Catches are the content standard\'s failure list. Lifted runs are six words or more copied from the sheet or the examples.', '');
+  if (group) lines.push('In a group, *Wrote for* is a hard fail: the reply wrote a line for someone else present. *Lifted from others* is runs of six words or more from another present character\'s sheet or examples: bleed.', '');
   for (const row of rows) {
-    for (const score of row.scores.filter((entry) => entry.catches.length || entry.lifted.length)) {
-      lines.push(`## ${row.variant}/${score.file}`, '', ...score.catches.map((entry) => `- ${entry}`), ...score.lifted.map((entry) => `- lifted: "${entry}"`), '');
+    for (const score of row.scores.filter((entry) => entry.catches.length || entry.lifted.length || entry.wrote.length || entry.liftedOthers.length)) {
+      lines.push(`## ${row.variant}/${score.file}`, '', ...score.wrote.map((entry) => `- wrote for ${entry}`), ...score.catches.map((entry) => `- ${entry}`), ...score.lifted.map((entry) => `- lifted: "${entry}"`), ...score.liftedOthers.map((entry) => `- lifted from another: "${entry}"`), '');
     }
   }
   return lines.join('\n');
@@ -165,6 +197,11 @@ export const SUITE_FORMAT = 'inkwyrm-lab-suite/1';
 export interface SuiteCase {
   id: string;
   character: string;
+  // A group case: everyone present (the character first), and a short scripted exchange before the
+  // turn, since bleed shows after a few lines of back and forth. `who` is a character's id, or
+  // "user". The turn under test is whoever answers what the person says next.
+  cast?: string[];
+  before?: { who: string; says: string }[];
   scenario: string | null;
   relationship: TestPack['chat']['relationship'];
   // The time of day the chat happens, "HH:MM", on the suite's date.
@@ -196,6 +233,21 @@ export function suitePack(suite: Suite, world: World, entry: SuiteCase): TestPac
   const at = new Date(year, month - 1, day, hour, minute).getTime();
   let n = 0;
   const ids = () => `${entry.id}-${++n}`;
+  if (entry.cast && entry.cast.length > 1) {
+    const greetings = Object.fromEntries(entry.cast.map((id) => [id, world.records.find((candidate) => candidate.id === id)?.greetings[0] ?? null]));
+    let chat = newGroupChat({
+      id: entry.id, worldId: world.id, characterId: record.id, characterName: record.name, personaId: null, scenarioId: entry.scenario,
+      userName: entry.userName, relationship: entry.relationship, style: 'roleplay', responseLength: 'medium', greeting: null, cast: entry.cast, greetings,
+    }, ids, at);
+    for (const line of entry.before ?? []) {
+      chat = line.who === 'user' ? addUserMessage(chat, line.says, ids(), at) : { ...chat, messages: [...chat.messages, { id: ids(), from: 'character' as const, at, alts: [{ parts: [{ text: line.says, emotion: 'neutral' as const }], at, model: '' }], pick: 0, speaker: line.who }] };
+    }
+    chat = { ...addUserMessage({ ...chat, group: { ...chat.group, picker: 'quietest' } }, entry.says, ids(), at), updatedAt: at };
+    return makeTestPack({
+      chat, world, now: at, next: null, last: null,
+      settings: { provider: 'suite', model: suite.model, mode: 'chat', format: 'auto', profile: profileFor(suite.model), contextTokens: XIALONG.contextTokens, replyTokens: 1000, samplers: samplersFor(suite.model, 0.8) },
+    });
+  }
   const start = newChat({
     id: entry.id, worldId: world.id, characterId: record.id, characterName: record.name, personaId: null, scenarioId: entry.scenario,
     userName: entry.userName, relationship: entry.relationship, style: 'roleplay', responseLength: (record.chatDefaults?.responseLength ?? 'medium') as TestPack['chat']['responseLength'], greeting: record.greetings[0] ?? null,

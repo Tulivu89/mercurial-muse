@@ -1,33 +1,44 @@
-// The one header of the site (docs/bids/ui/decision.md): the side's own mark, the wordmark when
-// there is room, the three sides with the current one underlined in seal, and a gear for
-// Settings. The adventure draws it on its start screen and never while a story is being played.
+// The one header of the site (docs/bids/ui/decision.md, tidied Nov 21): the site's own mark and
+// its name on every page and at every width, the four parts of the site with the current one
+// underlined in seal, and a gear for Settings on every side. A side's own mark appears once, on its
+// own first page (PageHead.tsx), never beside the site's. The adventure draws this on its start
+// screen and never while a story is being played.
 import type { MouseEvent } from 'react';
-import { InkMark, type MarkName } from './Mark';
+import { InkMark } from './Mark';
+import { ADDRESS } from './addresses';
 import './site-header.css';
 
-// The Overview is the site's front page: its mark is the main drop, and none of the three is
-// current there.
 export type Side = 'adventure' | 'chat' | 'studio' | 'overview';
 
-const SIDES: { id: Side; name: string; href: string; mark: MarkName }[] = [
-  { id: 'adventure', name: 'Adventure', href: '/', mark: 'dragon' },
-  { id: 'chat', name: 'Chat', href: '/chat/', mark: 'bubble' },
-  { id: 'studio', name: 'Studio', href: '/studio/', mark: 'nib' },
+export const SIDES: { id: Side; name: string; href: string }[] = [
+  { id: 'overview', name: 'Overview', href: ADDRESS.front },
+  { id: 'chat', name: 'Chat', href: ADDRESS.chat },
+  { id: 'adventure', name: 'Adventure', href: ADDRESS.adventure },
+  { id: 'studio', name: 'Studio', href: ADDRESS.studio },
 ];
 
-export function SiteHeader({ side, homeLabel, onHome, onSettings, settingsHref, onOverview }: {
+const plainClick = (event: MouseEvent) => !(event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0);
+
+export function SiteHeader({ side, homeLabel, onHome, onSettings, settingsHref, onOverview, settingsOpen = false }: {
   side: Side;
-  // Description of the current side's library shortcut. The brand always opens Overview.
+  // Description of the current side's first page, for its link's title.
   homeLabel?: string;
   // The side's own first page, when it can go there without loading the site again.
   onHome?: () => void;
-  // Settings: a sheet the side opens, or a place on its page.
+  // Settings: the side opens the settings page in place, or links to it.
   onSettings?: () => void;
   settingsHref?: string;
+  // Work to finish (a save in flight) before leaving for the front page.
   onOverview?: () => void | Promise<void>;
+  // The settings page is what's showing, so the gear reads as pressed.
+  settingsOpen?: boolean;
 }) {
-  const here = SIDES.find((entry) => entry.id === side) ?? { id: 'overview' as const, name: 'Overview', href: '/overview/', mark: 'main' as MarkName };
-  const home = (event: MouseEvent) => { if (!onHome) return; event.preventDefault(); onHome(); };
+  const home = (event: MouseEvent) => { if (!onHome || !plainClick(event)) return; event.preventDefault(); onHome(); };
+  const front = onOverview ? async (event: MouseEvent) => {
+    if (!plainClick(event)) return;
+    event.preventDefault();
+    try { await onOverview(); window.location.assign(ADDRESS.front); } catch { /* the owning editor reports the save failure */ }
+  } : undefined;
   const gear = (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
       <circle cx="12" cy="12" r="6.4" />
@@ -37,18 +48,22 @@ export function SiteHeader({ side, homeLabel, onHome, onSettings, settingsHref, 
   );
   return (
     <header className="site-bar">
-      <a className="site-brand" href="/overview/" aria-label="Inkwyrm, the front page" onClick={onOverview ? async (event) => { if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return; event.preventDefault(); try { await onOverview(); window.location.assign('/overview/'); } catch { /* the owning editor reports the save failure */ } } : undefined}>
-        <InkMark name={here.mark} size={32} land />
+      <a className="site-brand" href={ADDRESS.front} aria-label="Inkwyrm, the front page" onClick={side === 'overview' ? undefined : front}>
+        <InkMark name="main" size={30} />
         <span className="site-wordmark" aria-hidden="true">ink<em>wyrm</em></span>
       </a>
-      <nav className="site-switch" aria-label="The sides of Inkwyrm">
-        {SIDES.map((entry) => (
-          <a key={entry.id} href={entry.href} title={entry.id === side ? homeLabel : undefined} aria-current={entry.id === side ? 'page' : undefined} onClick={entry.id === side ? home : undefined}>{entry.name}</a>
-        ))}
+      <nav className="site-switch" aria-label="Inkwyrm">
+        {SIDES.map((entry) => {
+          const current = entry.id === side && !settingsOpen;
+          return (
+            <a key={entry.id} href={entry.href} title={entry.id === side ? homeLabel : undefined} aria-current={current ? 'page' : undefined}
+              onClick={entry.id === side ? home : entry.id === 'overview' ? front : undefined}>{entry.name}</a>
+          );
+        })}
       </nav>
-      {settingsHref
-        ? <a className="site-gear" href={settingsHref} aria-label="Settings">{gear}</a>
-        : onSettings && <button type="button" className="site-gear" aria-label="Settings" aria-haspopup="dialog" onClick={onSettings}>{gear}</button>}
+      {onSettings
+        ? <button type="button" className="site-gear" aria-label="Settings" aria-pressed={settingsOpen} title="Settings" onClick={onSettings}>{gear}</button>
+        : <a className="site-gear" href={settingsHref ?? ADDRESS.settings} aria-label="Settings" aria-current={settingsOpen ? 'page' : undefined} title="Settings">{gear}</a>}
     </header>
   );
 }

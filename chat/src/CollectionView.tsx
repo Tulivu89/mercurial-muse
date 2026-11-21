@@ -1,3 +1,4 @@
+import { PageHead } from '../../kit/src/PageHead';
 import { useLayoutEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import type { IncludedWorld } from '../../kit/src/included';
 import { EMOTIONS, homeOf, lastLine, type Chat } from '../../core/chat/index.js';
@@ -511,17 +512,12 @@ export function CollectionView({
         )
       ) : (
         <>
-          <div className="collection-heading">
-            <div>
-              <p className="sub">Inkwyrm Chat</p>
-              <h1>{mode === 'conversations' ? 'Your conversations' : collection.title}</h1>
-              <p className="collection-lede">
-                {mode === 'conversations'
-                  ? 'Every conversation, including people outside your collection.'
-                  : 'Your people. Your stories.'}
-              </p>
-            </div>
-            <div className="row">
+          <PageHead
+            mark={mode === 'collection' ? 'bubble' : undefined}
+            eyebrow="Chat"
+            title={mode === 'conversations' ? 'Your conversations' : collection.title}
+            lede={mode === 'conversations' ? 'Every conversation, including people outside your collection.' : 'Your people. Your stories.'}
+            actions={<>
               {mode === 'collection' && (
                 <>
                   <button
@@ -552,8 +548,8 @@ export function CollectionView({
                   Back up collection
                 </button>
               )}
-            </div>
-          </div>
+            </>}
+          />
           {mode === 'collection' && continueChat && (
             <section className="collection-continue" aria-label="Continue">
               <span>

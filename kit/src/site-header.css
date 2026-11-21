@@ -1,20 +1,22 @@
 /* The site's header (SiteHeader.tsx). Its names start with site- so it can sit in the adventure,
-   whose own stylesheet has a .bar and a .brand of its own. On the tokens of ink.css. */
-.site-bar { display: flex; align-items: center; gap: 4px 12px; padding: 4px clamp(10px, 3vw, 28px) 0; background: var(--surface); border-bottom: 1px solid var(--rule); font-family: var(--ui); }
-.site-brand { flex: none; display: inline-flex; align-items: center; gap: 10px; min-width: 44px; min-height: 48px; color: var(--text); text-decoration: none; }
-.site-wordmark { display: none; font-family: var(--display); font-weight: 600; font-size: 24px; letter-spacing: -0.02em; line-height: 1; }
+   whose own stylesheet has a .bar and a .brand of its own. On the tokens of ink.css.
+   A phone: the name and the gear on one line, the four parts under them. Wider: one line. */
+.site-bar { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: 'brand . gear' 'nav nav nav'; align-items: center; column-gap: 12px; padding: 0 clamp(10px, 3vw, 28px); background: var(--surface); border-bottom: 1px solid var(--rule); font-family: var(--ui); }
+.site-brand { grid-area: brand; display: inline-flex; align-items: center; gap: 8px; min-height: 48px; color: var(--text); text-decoration: none; }
+.site-wordmark { font-family: var(--display); font-weight: 600; font-size: 21px; letter-spacing: -0.02em; line-height: 1; }
 .site-wordmark em { font-weight: 500; }
-.site-switch { flex: 1; min-width: 0; display: flex; gap: 2px; align-self: stretch; }
-.site-switch a { display: inline-flex; align-items: center; min-height: 48px; padding: 0 10px; border-bottom: 2px solid transparent; color: var(--text-2); font-size: 15px; font-weight: 700; text-decoration: none; }
+.site-switch { grid-area: nav; min-width: 0; display: flex; gap: 2px; margin: 0 -10px; overflow-x: auto; scrollbar-width: none; }
+.site-switch::-webkit-scrollbar { display: none; }
+.site-switch a { flex: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; border-bottom: 2px solid transparent; color: var(--text-2); font-size: 15px; font-weight: 700; text-decoration: none; white-space: nowrap; }
 .site-switch a:hover { color: var(--text); }
 .site-switch a[aria-current='page'] { color: var(--text); border-bottom-color: var(--seal); }
-.site-gear { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--r-ctrl); background: none; color: var(--text-2); cursor: pointer; }
-.site-gear:hover { color: var(--text); }
+.site-gear { grid-area: gear; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--r-ctrl); background: none; color: var(--text-2); cursor: pointer; }
+.site-gear:hover, .site-gear[aria-pressed='true'], .site-gear[aria-current='page'] { color: var(--text); }
+.site-gear[aria-pressed='true'], .site-gear[aria-current='page'] { box-shadow: inset 0 -2px 0 var(--seal); }
 .site-bar :focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
-@media (min-width: 620px) {
-  .site-wordmark { display: inline; }
-  .site-brand { margin-right: 8px; }
+@media (min-width: 640px) {
+  .site-bar { grid-template-columns: auto 1fr auto; grid-template-areas: 'brand nav gear'; column-gap: 20px; }
+  .site-wordmark { font-size: 24px; }
+  .site-switch { margin: 0; align-self: stretch; }
+  .site-switch a { min-height: 52px; }
 }
-/* Keep the section links distinct at narrow widths and enlarged text. */
-.site-bar, .site-switch { flex-wrap: wrap; }
-.site-switch a { max-width: 100%; overflow-wrap: anywhere; }

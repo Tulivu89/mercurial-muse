@@ -33,7 +33,7 @@ npm install
 npm run dev:all
 ```
 
-Open `http://localhost:5176`.
+Open `http://localhost:5176/adventure/`.
 
 Before committing:
 

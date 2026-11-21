@@ -8,6 +8,7 @@ import { go } from './go';
 import { LAUNCH_KEY, readLaunches, withLaunch, worldToModule } from '../../core/convert/index.js';
 import { homesOf } from '../../core/chat/home.js';
 import { homeHref } from '../../kit/src/activity';
+import { adventureHref } from '../../kit/src/addresses';
 
 export function WorldSettings({ world, onChange, onDelete }: { world: World; onChange: (world: World) => void; onDelete: () => void }) {
   const [label, setLabel] = useState('');
@@ -29,7 +30,7 @@ export function WorldSettings({ world, onChange, onDelete }: { world: World; onC
       setNote(['This browser would not keep the world for the adventure. Export it as a module and open that file there instead.']);
       return;
     }
-    go(`/?launch=${encodeURIComponent(world.id)}`);
+    go(adventureHref({ launch: world.id }));
   };
   const exportModule = () => {
     const { module, notes } = worldToModule(world);

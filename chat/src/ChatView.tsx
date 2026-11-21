@@ -11,6 +11,7 @@ import {
   CHAPTER_TOKENS, FOLD_TOKENS, STORY_SHARE, chaptersFolded, foldDue, foldRequest, bringMemory, chatsToCarry, endingRequest, chapterRequest, chapterWritten, chaptersToWrite, queueChapters, readChapter,
   EMOTION_PICK_TOKENS, emotionPick, mergeParts, readEmotionPick, replyTokensFor, setReplyEmotion, trimToSentence, wantsEmotions } from '../../core/chat/index.js';
 import type { World } from '../../core/records/index.js';
+import { PICKER, answeredSince, buildGroupRequest, cleanGroupReply, handoffIn, isGroup, membersOf, nextSpeaker, pickerRequest, readPick, speakerOf, type Member } from '../../core/chat/group.js';
 import { canPrefill, generate, requestFor, type Connection, type GenerateOptions, type NarrationError } from '../../kit/src/connection';
 import { clock as clockText, downloadJson, fileSafe, newId } from '../../kit/src/util';
 import { CharacterSheet, type SheetTab } from './CharacterSheet';
@@ -25,7 +26,7 @@ import { InkMark } from '../../kit/src/Mark';
 import { RichText } from './RichText';
 import { AUTO_CONTINUES, contextTokensFor, type Settings } from './settings';
 import type { PostApi } from './posting';
-import type { PortraitSet, Sent } from './store';
+import { portraitOwner, type PortraitSet, type Sent } from './store';
 import type { PersonaRef } from './You';
 
 type Kind = 'reply' | 'regenerate' | 'continue';
@@ -39,7 +40,8 @@ type Panel = 'sent' | 'context' | 'memory' | 'time' | 'details';
 const PANELS: Record<Panel, string> = { sent: 'What was sent', context: 'In context now', memory: 'Memory', time: 'Time', details: 'This chat' };
 // Short enough for all five to fit across a phone.
 const PANEL_TABS: Record<Panel, string> = { sent: 'Sent', context: 'Context', memory: 'Memory', time: 'Time', details: 'Chat' };
-interface Busy { kind: Kind; messageId: string | null; text: string; lead: string }
+// `speaker`: in a group, who the reply is being written as.
+interface Busy { kind: Kind; messageId: string | null; text: string; lead: string; speaker?: string }
 
 const compact = (tokens: number) => (tokens >= 1000 ? `${(tokens / 1000).toFixed(tokens >= 10_000 ? 0 : 1)}k` : String(tokens));
 const rng = (min: number, max: number) => min + Math.floor(Math.random() * (max - min + 1));
@@ -86,6 +88,13 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
   const charName = scene?.charName ?? (chat.characterName || 'Character');
   const userName = scene?.userName ?? chat.userName;
   const profile = profileFor(connection.model);
+  // Group chat (core/chat/group.ts): everyone in it, each reply under its own writer's name and face.
+  const members = useMemo(() => (world && isGroup(chat) ? membersOf(chat, world) : []), [world, chat]);
+  const grouped = members.length > 1;
+  const nameOf = (message: Pick<ChatMessage, 'speaker'>) => (grouped ? members.find((member) => member.id === speakerOf(chat, message))?.name ?? charName : charName);
+  const facesOf = (characterId: string) => (characterId === chat.characterId ? portraits : allPortraits[portraitOwner(chat.worldId, characterId)]);
+  // Who answers the next message, when the player picks: a member's id, or the usual way.
+  const [answerer, setAnswerer] = useState<string>('auto');
 
   const [busy, setBusy] = useState<Busy | null>(null);
   const [error, setError] = useState('');
@@ -166,7 +175,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     chat: () => downloadJson(`${fileSafe(charName)}.chat.json`, exportChat(chat, Date.now())),
     settings: () => downloadJson('chat-settings.json', { format: SETTINGS_EXPORT_FORMAT, exportedAt: Date.now(), request: packSettings(), chat: settings }),
     pack: async () => {
-      const next = world ? await buildRequest(chat, world, { ...buildOptions(chat.messages.length, false, true, chat.draft), firstBuild: false }) : null;
+      const next = await buildNext(chat);
       const said = lastSent?.diagnostics as { finishReason?: unknown; usage?: unknown } | null | undefined;
       const last = lastSent ? {
         at: lastSent.at, profile: lastSent.profile, request: lastSent.request, reply: lastSent.reply, tokens: lastSent.tokens,
@@ -178,40 +187,81 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     },
   };
 
+  // What the next reply would be built as, without sending anything: in a group, for whoever is due
+  // (the quietest standing in for the model's pick).
+  const buildNext = async (base: Chat) => {
+    if (!world) return null;
+    const opts = { ...buildOptions(base.messages.length, false, true, base.draft), firstBuild: false };
+    if (!isGroup(base)) return buildRequest(base, world, opts);
+    const group = membersOf(base, world);
+    const next = nextSpeaker(base, group);
+    const speaker = next ? ('member' in next ? next.member : next.fallback) : group[0];
+    return speaker ? buildGroupRequest(base, world, speaker.id, opts) : null;
+  };
+
   // What the next reply would be sent, for the In context now panel.
   useEffect(() => {
     if (panel !== 'context' || !world) { setPreview(null); return; }
     let live = true;
-    void buildRequest(chat, world, { ...buildOptions(chat.messages.length, false, true, chat.draft), firstBuild: false }).then((built) => { if (live) setPreview(built); });
+    void buildNext(chat).then((built) => { if (live) setPreview(built); });
     return () => { live = false; };
   }, [panel, chat, world, connection.model, settings]);
 
-  function run(kind: Kind, targetId?: string, base: Chat = chatRef.current): Promise<void> {
+  function run(kind: Kind, targetId?: string, base: Chat = chatRef.current, speakerId?: string): Promise<void> {
     if (inFlight.current) return inFlight.current;
-    const task = runTurn(kind, targetId, base).catch((error: unknown) => { setBusy(null); setError(error instanceof Error ? error.message : 'The reply failed.'); });
+    const task = runTurn(kind, targetId, base, 0, speakerId).catch((error: unknown) => { setBusy(null); setError(error instanceof Error ? error.message : 'The reply failed.'); });
     inFlight.current = task;
     void task.finally(() => { if (inFlight.current === task) inFlight.current = null; });
     return task;
   }
 
-  // `auto` counts the times this reply has been carried on without asking.
-  async function runTurn(kind: Kind, targetId?: string, base: Chat = chatRef.current, auto = 0): Promise<void> {
+  // In a group, who answers a new message: the one picked, or whoever is due, with the model's
+  // pick where the group asks for it (a short request; the quietest if it can't be read). Null
+  // when nobody else is due.
+  async function chooseSpeaker(base: Chat, group: readonly Member[], picked?: string): Promise<Member | null> {
+    if (picked) return group.find((member) => member.id === picked) ?? null;
+    const next = nextSpeaker(base, group);
+    if (!next) return null;
+    if ('member' in next) return next.member;
+    try {
+      const result = await generateImpl(pickerRequest(base, group, next.ask), target, { maxTokens: PICKER.maxTokens, temperature: PICKER.temperature, thinking: 'off' });
+      const pick = readPick(result.text, next.ask);
+      if (pick === 'nobody') return answeredSince(base).length ? null : next.fallback;
+      return pick ?? next.fallback;
+    } catch {
+      return next.fallback;
+    }
+  }
+
+  // `auto` counts the times this reply has been carried on without asking. `speakerId`, in a group:
+  // who writes this reply, when it was picked or handed to them.
+  async function runTurn(kind: Kind, targetId?: string, base: Chat = chatRef.current, auto = 0, speakerId?: string): Promise<void> {
     if (busy) return;
     const blocked = ready();
     if (blocked) { setError(blocked); return; }
     const index = targetId ? base.messages.findIndex((message) => message.id === targetId) : -1;
     if (kind !== 'reply' && index < 0) return;
     const upTo = kind === 'reply' ? base.messages.length : kind === 'regenerate' ? index : index + 1;
-    const built = await buildRequest(base, world!, buildOptions(upTo, kind === 'continue', false));
+    const group = isGroup(base) ? membersOf(base, world!) : [];
+    let speaker: Member | null = null;
+    if (group.length > 1) {
+      speaker = kind === 'reply' ? await chooseSpeaker(base, group, speakerId) : group.find((member) => member.id === speakerOf(base, base.messages[index]!)) ?? null;
+      if (!speaker || leaving.current) return;
+    }
+    const built = speaker
+      ? await buildGroupRequest(base, world!, speaker.id, buildOptions(upTo, kind === 'continue', false))
+      : await buildRequest(base, world!, buildOptions(upTo, kind === 'continue', false));
     if (!built || leaving.current) return;
+    const who = speaker?.name ?? charName;
 
-    const options: GenerateOptions = { ...samplers(replyTokens), ...(built.profile === 'general' ? { thinking: settings.prompt.thinking } : {}), ...(built.profile === 'general' ? { stop: [`\n${userName}:`] } : {}), ...(built.prefill ? { prefill: built.prefill } : {}) };
+    const stop = built.stop ?? (built.profile === 'general' ? [`\n${userName}:`] : undefined);
+    const options: GenerateOptions = { ...samplers(replyTokens), ...(built.profile === 'general' ? { thinking: settings.prompt.thinking } : {}), ...(stop ? { stop } : {}), ...(built.prefill ? { prefill: built.prefill } : {}) };
     const controller = new AbortController();
     abort.current = controller;
     setError('');
     setOpenId(null);
     scroll.current.stick = true;
-    setBusy({ kind, messageId: targetId ?? null, text: '', lead: built.lead });
+    setBusy({ kind, messageId: targetId ?? null, text: '', lead: built.lead, ...(speaker ? { speaker: speaker.id } : {}) });
 
     let text = '';
     let diagnostics: unknown = null;
@@ -233,13 +283,18 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     }
     firstBuild.current = false;
 
-    const parts = text.trim() ? readReply(text, built.lead, charName, userName, built.profile === 'general') : [];
+    // In a group, the reply is kept to its speaker: cut where someone else's line starts, or
+    // dropped when it is only someone else's.
+    const cleaned = speaker && text.trim() ? cleanGroupReply(text, speaker.name, group.filter((member) => member.id !== speaker!.id).map((member) => member.name), userName) : null;
+    if (cleaned?.dropped && !failure) failure = `The model wrote ${cleaned.skipped.join(' and ')}'s line, not ${who}'s, so nothing was kept. Try again, or name who should answer.`;
+    const kept = cleaned ? cleaned.text : text;
+    const parts = kept.trim() && !cleaned?.dropped ? readReply(kept, built.lead, who, userName, built.profile === 'general') : [];
     let after: Chat | null = null;
     let endedAt: ReturnType<typeof endedFrom>;
     const replyId = kind === 'reply' ? newId() : targetId!;
     if (parts.length && !failure) {
       const now = Date.now();
-      const added = kind === 'reply' ? addReply(base, parts, replyId, now, connection.model)
+      const added = kind === 'reply' ? addReply(base, parts, replyId, now, connection.model, speaker?.id)
         : kind === 'regenerate' ? addAlternative(base, targetId!, parts, now, connection.model)
           : replacePicked(base, targetId!, parts, now);
       // A stopped reply says why, unless the player stopped it.
@@ -260,6 +315,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     } else if (!failure && !controller.signal.aborted) {
       failure = 'The model wrote nothing that reads as a reply. What was sent shows what came back.';
     }
+    if (cleaned?.cut.length && !failure) setError(`Cut where the model went on to write for ${cleaned.cut.join(' and ')}.`);
     const record: Sent = {
       chatId: base.id, at: Date.now(), profile: built.profile, request: requestFor(built.messages, target, options),
       parts: built.parts, tokens: built.tokens, notes: built.notes, reply: text, diagnostics, ...(failure ? { error: failure } : {}),
@@ -267,9 +323,9 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     setLastSent(record);
     onSent?.(record);
     setBusy(null);
-    setError(failure);
+    if (failure || !cleaned?.cut.length) setError(failure);
     if (!after || failure || leaving.current) return;
-    if (settings.readAloud && !(endedAt === 'limit' && settings.autoContinue && auto < AUTO_CONTINUES)) readAloudChat(after, replyId);
+    if (settings.readAloud && !(endedAt === 'limit' && settings.autoContinue && auto < AUTO_CONTINUES)) readAloudChat(after, replyId, speaker?.id);
     if (settings.chapters && chaptersToWrite(after).length) void writeChapters(after);
     // Cut at the limit: carry it on without asking, up to twice.
     if (endedAt === 'limit' && settings.autoContinue && auto < AUTO_CONTINUES && built.profile === 'general') {
@@ -282,10 +338,20 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
       const whole = reply ? mergeParts(pickedAlt(reply).parts)[0]?.text ?? '' : '';
       if (!whole.trim()) return;
       try {
-        const picked = await generateImpl(emotionPick(whole, charName, recentEmotions(after, 4, after.messages.length - 1)), target, { maxTokens: EMOTION_PICK_TOKENS, temperature: 0.2 });
+        const picked = await generateImpl(emotionPick(whole, who, recentEmotions(after, 4, after.messages.length - 1)), target, { maxTokens: EMOTION_PICK_TOKENS, temperature: 0.2 });
         const emotion = readEmotionPick(picked.text);
         if (emotion && !leaving.current) onChange(setReplyEmotion(chatRef.current, replyId, emotion));
       } catch { /* the reply stands with no emotion; nothing to show */ }
+    }
+    // A group goes on: someone the reply hands to by name, or whoever else is due (named in the
+    // player's message, or everyone with something to say). Each answers once per message.
+    if (speaker && kind === 'reply' && !leaving.current) {
+      // The chat as it stands now, if it has caught up with this reply; the reply's own otherwise.
+      const now = chatRef.current.messages.some((message) => message.id === replyId) ? chatRef.current : after;
+      const reply = now.messages.find((message) => message.id === replyId);
+      const handed = handoffIn(reply ? messageText(reply) : '', speaker.id, group, answeredSince(now));
+      const next = handed ?? await chooseSpeaker(now, group);
+      if (next && !leaving.current) await runTurn('reply', undefined, now, 0, next.id);
     }
   }
 
@@ -297,7 +363,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     writingChapters.current = true;
     try {
       for (const chapter of chaptersToWrite(base).slice(0, 2)) {
-        const messages = chapterRequest(base, chapter, settings.chapterLength);
+        const messages = chapterRequest(base, chapter, settings.chapterLength, world && isGroup(base) ? Object.fromEntries(membersOf(base, world).map((member) => [member.id, member.name])) : undefined);
         let written: ReturnType<typeof readChapter> = null;
         if (messages) {
           try {
@@ -327,12 +393,13 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
   const [speaking, setSpeaking] = useState<string | null>(null);
   const readAloud = (messageId: string, theirs: boolean) => {
     if (speaking === messageId) { stopSpeaking(); setSpeaking(null); return; }
-    const voice = theirs ? voiceFor(`${chat.worldId}:${chat.characterId}`) : '';
+    const message = chat.messages.find((entry) => entry.id === messageId);
+    const voice = theirs ? voiceFor(`${chat.worldId}:${message ? speakerOf(chat, message) : chat.characterId}`) : '';
     if (speak(speakableText(chat, messageId), voice, () => setSpeaking((now) => (now === messageId ? null : now)))) setSpeaking(messageId);
   };
   useEffect(() => () => stopSpeaking(), []);
-  const readAloudChat = (from: Chat, messageId: string) => {
-    if (speak(speakableText(from, messageId), voiceFor(`${from.worldId}:${from.characterId}`), () => setSpeaking((now) => (now === messageId ? null : now)))) setSpeaking(messageId);
+  const readAloudChat = (from: Chat, messageId: string, speakerId = from.characterId) => {
+    if (speak(speakableText(from, messageId), voiceFor(`${from.worldId}:${speakerId}`), () => setSpeaking((now) => (now === messageId ? null : now)))) setSpeaking(messageId);
   };
 
   // Branch from here: a new chat up to this message.
@@ -416,7 +483,9 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
     let base: Chat = { ...chatRef.current, draft: '' };
     if (text) base = { ...addUserMessage(base, text, newId(), Date.now()), draft: '' };
     onChange(base);
-    void run('reply', undefined, base);
+    const picked = grouped && answerer !== 'auto' ? answerer : undefined;
+    setAnswerer('auto');
+    void run('reply', undefined, base, picked);
   }
 
   // A diary entry, a feeling or a plan: shown before it is sent, and sent only when asked.
@@ -463,8 +532,9 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
   const bubbles = (parts: readonly ReplyPart[], from: ChatMessage['from']) => parts.map((part, at) => (
     <div key={at} className={`bubble ${from}`}><RichText text={part.text} /></div>
   ));
-  const streaming = busy ? readReply(busy.text, busy.lead, charName, userName) : [];
-  const typing = <div className="bubble character typing" aria-label={`${charName} is writing`}><span /><span /><span /></div>;
+  const busyName = busy?.speaker ? members.find((member) => member.id === busy.speaker)?.name ?? charName : charName;
+  const streaming = busy ? readReply(busy.text, busy.lead, busyName, userName) : [];
+  const typing = <div className="bubble character typing" aria-label={`${busyName} is writing`}><span /><span /><span /></div>;
   const emotion = busy && streaming.length ? streaming.at(-1)!.emotion : lastEmotion(chat);
   const windowStart = profile === 'aetherroom' ? 0 : chat.windowStart;
   const scheduled = hasSchedule(scene?.character.schedule);
@@ -504,16 +574,16 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
   );
 
   return (
-    <div className={`chat${panel || sheet || memory ? ' paneled' : ''}${settings.rail ? ' railed' : ''}`} data-size={settings.textSize} data-layout={settings.layout}>
+    <div className={`chat${panel || sheet || memory ? ' paneled' : ''}${settings.rail ? ' railed' : ''}${grouped ? ' grouped' : ''}`} data-size={settings.textSize} data-layout={settings.layout}>
       {settings.rail && <aside className="rail" aria-label={`About ${charName}`}>{about(true)}</aside>}
 
       <div className="column">
         <header className={`chat-head${tucked && !panel ? ' tucked' : ''}`}>
           <button type="button" className="icon-btn plain" onClick={onBack} aria-label="Back to your chats"><BackIcon /></button>
-          <a className="icon-btn plain" href="/overview/" aria-label="Inkwyrm, the front page" onClick={async (event) => {
+          <a className="icon-btn plain" href="/" aria-label="Inkwyrm, the front page" onClick={async (event) => {
             if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             event.preventDefault(); leaving.current = true; abort.current?.abort();
-            try { await inFlight.current; await onOverview?.(); window.location.assign('/overview/'); }
+            try { await inFlight.current; await onOverview?.(); window.location.assign('/'); }
             catch { leaving.current = false; /* the app reports the save failure */ }
           }}><InkMark size={28} /></a>
           <button type="button" className="who" onClick={() => { setPanel(null); setSheet(sheet ? null : 'now'); }} aria-expanded={sheet !== null} aria-label={`About ${charName}`}>
@@ -544,10 +614,10 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
                 <div key={message.id} className={`turn ${message.from} editing`}>
                   <label className="sr" htmlFor={`edit-${message.id}`}>Edit this message</label>
                   <textarea id={`edit-${message.id}`} className="input edit" rows={Math.min(14, editing.text.split('\n').length + 2)} value={editing.text} onChange={(event) => setEditing({ id: message.id, text: event.target.value })} autoFocus />
-                  {theirs && <p className="hint">The last line is the emotion {charName} shows: one of the 24, or neutral.</p>}
+                  {theirs && <p className="hint">The last line is the emotion {nameOf(message)} shows: one of the 24, or neutral.</p>}
                   {aside && <p className="hint">A note sits outside the story, in square brackets. {charName} takes it as true from here on.</p>}
                   <div className="row">
-                    <button type="button" className="btn small primary" onClick={() => { onChange(editMessage(chat, message.id, editing.text, charName, Date.now())); setEditing(null); }}>Save</button>
+                    <button type="button" className="btn small primary" onClick={() => { onChange(editMessage(chat, message.id, editing.text, nameOf(message), Date.now())); setEditing(null); }}>Save</button>
                     <button type="button" className="btn small quiet" onClick={() => setEditing(null)}>Cancel</button>
                   </div>
                 </div>
@@ -562,8 +632,8 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
             );
             return (
               <div key={message.id} className={`turn ${message.from}${index < windowStart ? ' out' : ''}${open ? ' open' : ''}`} onTouchStart={(event) => { const point = event.touches[0]; touch.current = point ? { x: point.clientX, y: point.clientY } : null; }} onTouchEnd={onTouchEnd(message)}>
-                <span className="speaker">{aside ? 'Note' : mine ? userName : charName}</span>
-                <div className="bubbles" role="group" aria-label={`${aside ? 'A note' : mine ? userName : charName}, ${clockText(message.at, Date.now())}`} onClick={() => setOpenId(open ? null : message.id)}>
+                <span className="speaker">{grouped && theirs && <Portrait name={nameOf(message)} emotion={alt.parts.at(-1)?.emotion ?? 'neutral'} set={facesOf(speakerOf(chat, message))} size={24} />}{aside ? 'Note' : mine ? userName : nameOf(message)}</span>
+                <div className="bubbles" role="group" aria-label={`${aside ? 'A note' : mine ? userName : nameOf(message)}, ${clockText(message.at, Date.now())}`} onClick={() => setOpenId(open ? null : message.id)}>
                   {replaced && busy.kind === 'regenerate' ? (streaming.length ? bubbles(streaming, 'character') : typing)
                     : replaced ? bubbles(streaming.length ? streaming : alt.parts, 'character')
                       : bubbles(alt.parts, message.from)}
@@ -581,7 +651,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
                     {open && (
                       <>
                         {theirs && isLast && <button type="button" className="chip-btn" onClick={() => void run('continue', message.id)} aria-label="Continue" title="Continue this reply"><ContinueIcon size={16} /></button>}
-                        <button type="button" className="chip-btn" onClick={() => setEditing({ id: message.id, text: editableText(message, charName) })} aria-label="Edit" title="Edit"><EditIcon size={16} /></button>
+                        <button type="button" className="chip-btn" onClick={() => setEditing({ id: message.id, text: editableText(message, nameOf(message)) })} aria-label="Edit" title="Edit"><EditIcon size={16} /></button>
                         <button type="button" className="chip-btn" onClick={() => void copy(message)} aria-label="Copy" title="Copy">{copied === message.id ? <span className="done">Copied</span> : <CopyIcon size={16} />}</button>
                         {canSpeak() && !aside && <button type="button" className="chip-btn" onClick={() => readAloud(message.id, theirs)} aria-label={speaking === message.id ? 'Stop reading' : 'Read aloud'} title={speaking === message.id ? 'Stop reading' : 'Read aloud'}>{speaking === message.id ? <StopIcon size={16} /> : <SpeakIcon size={16} />}</button>}
                         {onBranch && <button type="button" className="chip-btn" onClick={() => branch(message.id)} aria-label="Branch from here" title="Branch from here: a new chat up to this message, to try it another way"><BranchIcon size={16} /></button>}
@@ -594,7 +664,7 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
               </div>
             );
           })}
-          {busy?.kind === 'reply' && <div className="turn character streaming"><span className="speaker">{charName}</span><div className="bubbles">{streaming.length ? bubbles(streaming, 'character') : typing}</div></div>}
+          {busy?.kind === 'reply' && <div className="turn character streaming"><span className="speaker">{busyName}</span><div className="bubbles">{streaming.length ? bubbles(streaming, 'character') : typing}</div></div>}
           {error && <p className="status bad" role="alert">{error} {!connection.connected && <button type="button" className="link" onClick={onSettings}>Open Settings</button>}</p>}
         </main>
 
@@ -612,9 +682,18 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
           <button type="button" className="bar-btn" onClick={() => { setPanel(null); setSheet(null); setMemory(memory ? null : 'chat'); }} aria-expanded={memory !== null} aria-label="Memory" title={`Memory: have ${charName} reflect, feel or plan, or add a journal entry`}><BrainIcon /></button>
           {profile === 'general' && <button type="button" className="bar-btn" onClick={() => void writeMyTurn()} disabled={!!busy || drafting} aria-label={drafting ? 'Writing your turn' : 'Write my turn'} title={`Write my turn: ${connection.model || 'the model'} drafts what you say next, into the box, for you to change before sending`}><QuillIcon /></button>}
           <button type="button" className="bar-btn" onClick={noteButton} disabled={!!busy} aria-label={chat.draft.trim() ? 'Add as a note, without a reply' : 'Write a note'} title="A note in [square brackets]: sets the scene or gives a direction, and doesn't ask for a reply"><NoteIcon /></button>
+          {grouped && (
+            <>
+              <label className="sr" htmlFor="answerer">Who answers</label>
+              <select id="answerer" className="answerer" value={answerer} onChange={(event) => setAnswerer(event.target.value)} disabled={!!busy} title="Who answers your next message">
+                <option value="auto">{chat.group.picker === 'agent' ? 'Whoever fits' : 'The quietest'}</option>
+                {members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}
+              </select>
+            </>
+          )}
           <label className="sr" htmlFor="draft">Your message</label>
           <textarea
-            id="draft" ref={box} rows={1} value={chat.draft} placeholder={lastFrom === 'note' || lastFrom === 'user' ? `Message ${charName}, or send empty for a reply` : `Message ${charName}`}
+            id="draft" ref={box} rows={1} value={chat.draft} placeholder={grouped ? (lastFrom === 'note' || lastFrom === 'user' ? 'Message everyone, or send empty for a reply' : 'Message everyone, or name who you mean') : lastFrom === 'note' || lastFrom === 'user' ? `Message ${charName}, or send empty for a reply` : `Message ${charName}`}
             onChange={(event) => onChange({ ...chat, draft: event.target.value })}
             onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); send(); } }}
           />

@@ -62,7 +62,7 @@ Everything is kept in this browser (IndexedDB `inkwyrm-chat`; worlds in the Stud
 
 The kernel is in `core/chat/`. It takes the same chat either way and builds a different layout for the model.
 
-- **AetherRoom,** for `xialong-v1`: CharacterRoom's kernel, ported in `core/chat/aetherroom.ts`. `core/tests/aetherroom-parity.test.ts` holds it byte for byte to outputs recorded from CharacterRoom's own kernel (engine 1.0.20) on its 21 parity fixtures, 52 steps. Records are read as CharacterRoom cards by `core/chat/sheet.ts`:
+- **AetherRoom,** for `xialong-v1`: CharacterRoom's kernel, ported in `core/chat/aetherroom.ts`. It was held byte for byte to CharacterRoom's kernel until Nov 21, when the owner retired parity: it is the site's own Xialong profile now. Records are read as CharacterRoom cards by `core/chat/sheet.ts`:
   - a Personality and an Appearance section fill the sheet's own fields;
   - other Here sections and the outfit in use become always-on brains;
   - Named sections become keyed brains;
@@ -149,6 +149,21 @@ npm run dev:chat
 Open `http://localhost:5178/chat/`. The first command installs, the second starts the adventure's API (the relay), the third starts Chat.
 
 ## Changelog
+
+### 0.11.0 - Group chat - 2026-11-21
+
+- **Several characters in one chat** (`core/chat/group.ts`, G1; `docs/model-jobs.md`). Under the hood › details › *People in this chat*: bring in up to three more from the chat's world, set each Quiet, Usual or Chatty, or *Only when named*.
+- **Who answers:** whoever you name; otherwise the model picks with a short request (or the quietest answers, if you'd rather); one answer per message, or *whoever has something to say*, up to three. The *Who answers* menu beside Send picks for the next message. A reply that asks someone by name hands them the turn, once.
+- **Each reply under its writer's name and face.** A reply that runs on into someone else's line is cut there, and the chat says so; one that is only someone else's is not kept.
+- **Private things stay private:** a diary entry, a feeling, a plan and the example chats go only with the one they belong to. Chapters are written up under each writer.
+- **How each reply is sent:** layout B, each speaker's own sheet first, is the usual; C, one shared start with the speaker last, is there to try until the lab decides.
+
+### 0.10.0 - One Settings page - 2026-11-21
+
+- **Settings is the site's one page** (`kit/src/settings/SettingsPage.tsx`), opened by the gear at `#/settings`, on the Chat tab. The other tabs are there too: General, Model, Adventure and Studio. Portraits and Chat's files sit at the foot of the Chat tab. `#/settings/model` opens the Model tab, which *Connect one under Settings* now does.
+- Chat's settings are stored where they were (`inkwyrm.chat.settings`); the code that reads them moved to the kit so any side can show them.
+- The site's header shows the Inkwyrm name at every width, and Collection, Conversations, Homes and You open with the same page head as the other sides.
+- AetherRoom parity is retired: the Xialong profile is the site's own code now.
 
 ### 0.9.1 - Facts from chapters, and chapters for Xialong - 2026-11-18
 

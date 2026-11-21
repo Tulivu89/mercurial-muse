@@ -2,6 +2,7 @@
 // rooms as pictures, and each character who lives there standing where their schedule puts them.
 // Tap one to see how they are, do something for them, or drop into a chat. Arrange is where a
 // room gets its picture and layers and a figure its spot; that part edits the records.
+import { PageHead } from '../../kit/src/PageHead';
 import { IMAGE_TYPES, MediaImage, animationSlot, posterSlot } from '../../kit/src/media';
 import { useEffect, useRef, useState, type ChangeEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import {
@@ -64,11 +65,7 @@ function Homes({ homes, missing, portraits, lives, bringable = [], onBring, onGo
   useEffect(() => { const timer = setInterval(() => setTick(Date.now()), 30_000); return () => clearInterval(timer); }, []);
   return (
     <main className="home homes">
-      <div>
-        <p className="sub">Inkwyrm Chat</p>
-        <h1>Homes</h1>
-        <p className="lede">A home is a place your characters live in. Each of them keeps their own day there, by their own clock: look in to see where they are and what they are doing, do something for them, read what they have posted, or sit down and talk.</p>
-      </div>
+      <PageHead eyebrow="Chat" title="Homes" lede="A home is a place your characters live in. Each of them keeps their own day there, by their own clock: look in to see where they are and what they are doing, do something for them, read what they have posted, or sit down and talk." />
       {missing && <p className="status bad" role="status">That home is not in this browser.</p>}
       <div className="home-cards">
         {homes.map((home) => {

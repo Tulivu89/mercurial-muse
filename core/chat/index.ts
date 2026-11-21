@@ -14,5 +14,6 @@ export * from './sillytavern.js';
 export * from './chapters.js';
 export * from './turns.js';
 export * from './posts.js';
+export * from './group.js';
 export * as aetherroom from './aetherroom.js';
 export * from './testpack.js';

@@ -147,13 +147,27 @@ A code test needs no model at all: in C, the requests for two different speakers
 
 **What decides it:** C needs to match B on bleed and come close on voice. If it does, C is the default for General models, and B stays for Xialong and as a setting. If C bleeds or reads flatter, B is the default everywhere, and the shared prefix waits for a better idea.
 
+## Built (Nov 21)
+
+**G1 is built** (`core/chat/group.ts`, tests in `core/tests/group.test.ts`), with everything the review added:
+- a chat's `cast` (two to four, the chat's character first), each reply's `speaker`, a message's `replyTo`, and an `owner` on diary entries, feelings and plans;
+- who answers: named, then the author of the message answered, then the agent's pick (`pickerRequest`, JSON, low temperature) or the quietest weighed by talkativeness; mute; handoffs by `@Name` or a question by name, once each; one answer, or up to three in *whoever has something to say*;
+- layouts B and C, others' lines as the model's turns or the player's, C's anchor; Xialong on B through the kernel, with the others' lines as named player turns;
+- stops on every other label, and `cleanGroupReply`: cut, skip to the speaker's own label, or drop;
+- the lab: `group-b`, `group-b-user`, `group-c`, `group-c-anchor`, `group-c-user`, group suite cases (`cast`, `before`), and the *wrote for* and *lifted from others* scores.
+- A one-to-one chat builds byte for byte as before (tested). The AetherRoom parity rule is retired.
+
+**G2's first pass is built in Chat** (0.11.0) so the owner can play groups now: people are brought in under a chat's details (Under the hood › details › People in this chat), each with Quiet, Usual or Chatty and *Only when named*; a *Who answers* menu beside Send; every reply under its writer's name and face; cut replies said so; chapters written up under each writer. **The layout default stays B** until the lab's scores are in; C and the *as yours* variants are there under the same details to try.
+
+**Still to do:** the lab runs on the models below and the scores in `docs/testing/` (they need models only the owner can connect); then the default layout per profile; a Voice per character (the cast keeps a `model` field for it, unused until the jobs, J1); replying to a message from the chat screen (the core reads `replyTo`; the screen has no button for it yet); starting a group from a household's Home.
+
 ## Phases
 
 | Phase | What it builds | Done when |
 | --- | --- | --- |
 | **J1** | `targetFor` and the stored jobs in `kit/src/connection.ts`; `send`; the Models settings with Test; the Studio helper on Build, with `inkwyrm.helper.model` read in and removed | Tests: an unset job gives Voice's target; a job on another provider sends that provider's key and no other; the old helper model comes across. The Studio drafts on Build while Voice is a different provider. |
 | **J2** | Reflect, Process and Plan on Side, with the job's window and profile; the General builder's "task goes last", which the side task uses; the job named in Under the hood; **Try it on Voice** on a failed job | Tests: Voice on Xialong with Side on GLM builds the General side request inside Side's window; on the same model, a side request shares the chat's prefix up to the end of the transcript. A live check with Voice on a local server: a Reflect leaves the next chat turn's prompt cached. |
-| **G1** | Group chat in the core and the lab only: `speaker` on messages, the cast list, the B and C builders, stops and the cut-off parser, the lab's group variants and scoring | Tests: the prefix test above; a one-to-one chat builds byte for byte as before; the AetherRoom parity test still passes. Lab runs on the models above, with the scores in `docs/testing/`. |
+| **G1** | Group chat in the core and the lab only: `speaker` on messages, the cast list, the B and C builders, stops and the cut-off parser, the lab's group variants and scoring | Tests: the prefix test above; a one-to-one chat builds byte for byte as before. (The AetherRoom parity test was retired on Nov 21.) Lab runs on the models above, with the scores in `docs/testing/`. |
 | **G2** | After the owner reads G1's scores: the default layout for each profile, Chat's group screen, who speaks next, and a Voice per character | Set by G1's results. |
 | **J3** | Each later feature takes its job when it is built: posts, openers, the evaluator, the helper with search | Each feature's own phase says its job. |
 

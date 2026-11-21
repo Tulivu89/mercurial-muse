@@ -1,22 +1,38 @@
 // The title screen (saved games, a new game, importing) and the game itself.
-import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ChangeEvent } from 'react';
 import bogwaterRaw from '../../modules/abernys-bogwater.json';
 import { loadModule, readSaveFile, sceneOf, startSave, type PraxisModule, type Save } from '../engine';
 import { LAUNCH_KEY, readLaunches, withoutLaunch, type Launched } from '../../../core/convert/launch';
-import { ConnectForm, initialConnection, reconnect, type Connection } from './Connect';
+import { initialConnection, reconnect, type Connection } from './Connect';
 import { Play } from './Play';
 import { readJsonFile } from './files';
 import { usePrefs } from './prefs';
-import { InkMark } from '../../../kit/src/Mark';
+import { PageHead } from '../../../kit/src/PageHead';
 import { SiteHeader } from '../../../kit/src/SiteHeader';
-import { THEME_NAMES, useTheme, type Theme } from '../../../kit/src/theme';
-import { LOOK_NAMES, useLook, type LookChoice } from '../../../kit/src/look';
+import { SettingsPage, isSettingsTab, type SettingsTab } from '../../../kit/src/settings/SettingsPage';
+import { useTheme } from '../../../kit/src/theme';
+import { useLook } from '../../../kit/src/look';
 import { deleteSave, listSaves, moduleKey, openSave, putModule, putSave, type SaveRecord } from './storage';
 import { recordActivity } from '../../../kit/src/activity';
 
 type Screen =
   | { kind: 'home' }
   | { kind: 'play'; id: string; name: string; module: PraxisModule; save: Save };
+
+// The site's Settings page, open on the start screen at `#settings` or `#settings/<tab>`.
+const onHash = (changed: () => void) => { window.addEventListener('hashchange', changed); return () => window.removeEventListener('hashchange', changed); };
+function useSettingsAddress(): SettingsTab | null {
+  const hash = useSyncExternalStore(onHash, () => window.location.hash, () => '');
+  const found = /^#\/?settings(?:\/([a-z]+))?$/.exec(hash);
+  if (!found) return null;
+  return isSettingsTab(found[1]) ? found[1] : 'adventure';
+}
+const settingsHash = (tab: SettingsTab) => (tab === 'adventure' ? '#settings' : `#settings/${tab}`);
+// Done: back to the start screen, without leaving an address behind.
+const closeSettings = () => {
+  window.history.replaceState(null, '', window.location.pathname);
+  window.dispatchEvent(new HashChangeEvent('hashchange'));
+};
 
 function newId(): string {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `s${Date.now()}${Math.random().toString(16).slice(2)}`;
@@ -31,6 +47,7 @@ export function App() {
   const [prefs, setPrefs] = usePrefs();
   const [theme, setTheme] = useTheme();
   const [look, setLook] = useLook();
+  const settingsTab = useSettingsAddress();
 
   const refresh = useCallback(async () => {
     try { setSaves(await listSaves()); } catch (error) { setStorageNote(error instanceof Error ? error.message : 'Saved games are unavailable.'); }
@@ -164,20 +181,30 @@ export function App() {
   // One seal a screen: the game played last, or the first thing on offer when there is none.
   const lead = saves.length ? 'save' : launches.length ? 'launch' : 'new';
 
+  const header = <SiteHeader side="adventure" homeLabel="Inkwyrm Adventure" settingsOpen={settingsTab !== null} onSettings={() => (settingsTab ? closeSettings() : (window.location.hash = settingsHash('adventure')))} />;
+  if (settingsTab) {
+    return (
+      <>
+        {header}
+        <main>
+          <SettingsPage
+            side="adventure" tab={settingsTab} onTab={(tab) => { window.location.hash = settingsHash(tab); }} onDone={closeSettings}
+            theme={theme} onTheme={setTheme} look={look} onLook={setLook} connection={connection} onConnection={setConnection}
+            adventure={{ prefs, onPrefs: setPrefs }}
+          />
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
-      <SiteHeader side="adventure" homeLabel="Inkwyrm Adventure" settingsHref="#settings" />
+      {header}
       <main className="home">
-        <header className="home-head">
-          <InkMark name="dragon" size={64} title="Inkwyrm Adventure" land />
-          <div>
-            <h1 className="wordmark ink-write">Your adventures</h1>
-            <p className="tagline">A roleplay where the story is yours and the facts are kept.</p>
-          </div>
-        </header>
+        <PageHead mark="dragon" eyebrow="Adventure" title="Your adventures" lede="A roleplay where the story is yours and the facts are kept." />
 
         {storageNote && <p className="notice warn">{storageNote}</p>}
-        {!connection.connected && <p className="notice">No narrator connected yet. <a href="#settings">Connect one under Settings</a>, below, with your own key.</p>}
+        {!connection.connected && <p className="notice">No narrator connected yet. <a href="#settings/model">Connect one under Settings</a> with your own key.</p>}
 
         {errors.length > 0 && (
           <section aria-live="polite" className="card pad">
@@ -243,26 +270,6 @@ export function App() {
               <input type="file" accept="application/json,.json" onChange={(event) => void onSaveFile(event)} />
             </label>
           </div>
-        </section>
-
-        {/* Settings is down the page here, as it is under the prompt in play. */}
-        <section id="settings">
-          <h2>Settings</h2>
-          <div className="card" style={{ marginBottom: 12 }}>
-            <div className="lr stack">
-              <span className="name">Look</span>
-              <div className="seg" role="group" aria-label="Look">
-                {(['paper', 'night', 'auto'] as Theme[]).map((option) => <button key={option} type="button" aria-pressed={theme === option} onClick={() => setTheme(option)}>{THEME_NAMES[option]}</button>)}
-              </div>
-              <span className="meta" style={{ lineHeight: 1.45 }}>Paper by day, ink by night. The same choice holds in Chat and the Studio.</span>
-            </div>
-            <label className="lr stack">
-              <span className="name">Style</span>
-              <select className="select" value={look} onChange={(event) => setLook(event.target.value as LookChoice)}>{(Object.keys(LOOK_NAMES) as LookChoice[]).map((option) => <option key={option} value={option}>{LOOK_NAMES[option]}</option>)}</select>
-              <span className="meta" style={{ lineHeight: 1.45 }}>A skin over paper and ink. Worlds can choose one in Chat and the Studio.</span>
-            </label>
-          </div>
-          <div className="card clip"><ConnectForm connection={connection} onChange={setConnection} /></div>
         </section>
 
         <p className="version">{__PRAXIS_VERSION__}</p>

@@ -213,7 +213,7 @@ describe('the launchpad', () => {
     expect(sent).toHaveLength(1);
     expect(sent[0]).toMatchObject({ id: 'w', name: 'Low Tide', module: { format: 'adventure-module/1', scenario: { startPlaceId: 'booth' } } });
     expect(sent[0]!.module.characters.map((person) => person.id)).toEqual(['ada', 'the-player']);
-    expect(go).toHaveBeenCalledWith('/?launch=w');
+    expect(go).toHaveBeenCalledWith('/adventure/?launch=w');
   });
 
   it('links a character to Chat', () => {

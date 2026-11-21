@@ -5,6 +5,7 @@
 // An entry is written only after its destination really opened. Background saves, reconnects
 // and the Overview's own reads never write here. It holds identifiers only: never keys,
 // transcripts or model requests.
+import { adventureHref } from './addresses';
 
 export type Target =
   | { kind: 'chat'; chatId: string }
@@ -85,7 +86,7 @@ export function recordActivity(target: Target, openedAt = Date.now()): void {
 // The addresses each side reads. The Studio's follow `studio/src/route.ts`.
 export const hrefFor = (target: Target): string => {
   if (target.kind === 'chat') return `/chat/#/chat/${encodeURIComponent(target.chatId)}`;
-  if (target.kind === 'adventure') return `/?save=${encodeURIComponent(target.saveId)}`;
+  if (target.kind === 'adventure') return adventureHref({ save: target.saveId });
   if (target.kind === 'home') return homeHref(target.worldId, target.scenarioId);
   const asked = new URLSearchParams();
   if (target.recordId) asked.set('rec', target.recordId);

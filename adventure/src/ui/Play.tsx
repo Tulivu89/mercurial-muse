@@ -189,7 +189,7 @@ export function Play({ module, initial, name, connection, setConnection, prefs, 
     } catch (error) {
       if (controller.signal.aborted) return;
       const message = error instanceof Error ? error.message : 'Narration failed.';
-      setNotice(`${message} Settings › Testing › Diagnostics has the details.`);
+      setNotice(`${message} Settings › Adventure › Diagnostics has the details.`);
       logCall({ at: new Date().toLocaleTimeString(), purpose: 'narration', ok: false, ms: 0, message, diagnostics: error instanceof NarrationError ? error.diagnostics : null });
     } finally {
       if (pending.current === controller) { pending.current = null; setBusy(false); }
@@ -213,7 +213,7 @@ export function Play({ module, initial, name, connection, setConnection, prefs, 
         const reply = replyFrom(plan, cleanReply(result.text, turn.input));
         setTries((seen) => ({ turnId: turn.id, texts: seen.turnId === turn.id ? [...seen.texts, reply] : [reply] }));
       }
-      setNotice(`Tried ${times} more times. Settings › What the narrator was sent has them all.`);
+      setNotice(`Tried ${times} more times. Settings › Adventure › What the narrator was sent has them all.`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : 'Narration failed.');
     } finally {

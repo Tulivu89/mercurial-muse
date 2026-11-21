@@ -1,13 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ChangeEvent, type FormEvent } from 'react';
 import { KIND_NAMES, RECORD_KINDS, newRecord, newWorld, parseWorld, putRecord, type World } from '../../core/records/index.js';
 import { homesOf } from '../../core/chat/home.js';
-import { InkMark } from '../../kit/src/Mark';
-import { Sheet } from '../../kit/src/Sheet';
+import { PageHead } from '../../kit/src/PageHead';
+import { SettingsPage, isSettingsTab, type SettingsTab } from '../../kit/src/settings/SettingsPage';
 import { SiteHeader } from '../../kit/src/SiteHeader';
-import { ConnectForm } from '../../kit/src/Connect';
 import { initialConnection, reconnect, type Connection } from '../../kit/src/connection';
-import { THEME_NAMES, useTheme, type Theme } from '../../kit/src/theme';
-import { LOOK_NAMES, useLook, type LookChoice } from '../../kit/src/look';
+import { useTheme } from '../../kit/src/theme';
+import { useLook } from '../../kit/src/look';
 import { WorldView } from './WorldView';
 import { NOWHERE, navigate, useRoute, type Route } from './route';
 import { deleteWorld, listWorlds, putWorld } from '../../kit/src/worlds';
@@ -17,6 +16,15 @@ import { isModule, moduleToWorld } from '../../core/convert/index.js';
 import { AuthorProvider, authorFor, readHelperPrefs, saveHelperPrefs, type HelperPrefs } from './author/context';
 import type { Generate } from './author/run';
 
+// The site's Settings page, open in the Studio at `#/settings` or `#/settings/<tab>`.
+const onHash = (changed: () => void) => { window.addEventListener('hashchange', changed); return () => window.removeEventListener('hashchange', changed); };
+function useSettingsAddress(): SettingsTab | null {
+  const hash = useSyncExternalStore(onHash, () => window.location.hash, () => '');
+  const found = /^#\/settings(?:\/([a-z]+))?$/.exec(hash);
+  if (!found) return null;
+  return isSettingsTab(found[1]) ? found[1] : 'studio';
+}
+
 // `generate` stands in for the model in tests.
 export function App({ generate }: { generate?: Generate } = {}) {
   const [worlds, setWorlds] = useState<World[] | null>(null);
@@ -24,13 +32,20 @@ export function App({ generate }: { generate?: Generate } = {}) {
   const route = useRoute();
   const [status, setStatus] = useState<{ text: string; bad?: boolean } | null>(null);
   const [theme, setTheme] = useTheme();
-  const [settings, setSettings] = useState(false);
+  const settingsTab = useSettingsAddress();
+  // Settings' Done goes back to the page the gear was pressed on.
+  const beforeSettings = useRef('#/');
+  const openSettings = useCallback((tab: SettingsTab = 'studio') => {
+    if (!/^#\/settings/.test(window.location.hash)) beforeSettings.current = window.location.hash || '#/';
+    window.location.hash = tab === 'studio' ? '#/settings' : `#/settings/${tab}`;
+  }, []);
+  const closeSettings = () => { window.location.hash = beforeSettings.current; };
   // One connection for the Studio: Settings changes it, and every Draft button calls through it.
   const [connection, setConnection] = useState<Connection>(initialConnection);
   useEffect(() => { void reconnect(connection).then(setConnection).catch(() => undefined); }, []);
   const [helper, setHelper] = useState<HelperPrefs>(readHelperPrefs);
   const changeHelper = (next: HelperPrefs) => { saveHelperPrefs(next); setHelper(next); };
-  const author = useMemo(() => authorFor(connection, () => setSettings(true), generate, helper), [connection, generate, helper]);
+  const author = useMemo(() => authorFor(connection, () => openSettings('model'), generate, helper), [connection, generate, helper]);
   const writes = useRef(new Set<Promise<unknown>>());
   const pending = useRef(new Map<string, World>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -82,54 +97,19 @@ export function App({ generate }: { generate?: Generate } = {}) {
 
   return (
     <AuthorProvider value={author}>
-      <SiteHeader onOverview={async () => { flush(); await Promise.all([...writes.current]); }} side="studio" homeLabel="Inkwyrm Studio, your worlds" onHome={() => { flush(); navigate(NOWHERE); }} onSettings={() => setSettings(true)} />
-      {open
+      <SiteHeader onOverview={async () => { flush(); await Promise.all([...writes.current]); }} side="studio" homeLabel="Inkwyrm Studio, your worlds" onHome={() => { flush(); navigate(NOWHERE); }} settingsOpen={settingsTab !== null} onSettings={() => (settingsTab ? closeSettings() : openSettings())} />
+      {settingsTab ? (
+        <main>
+          <SettingsPage
+            side="studio" tab={settingsTab} onTab={openSettings} onDone={closeSettings}
+            theme={theme} onTheme={setTheme} look={look} onLook={setLook} connection={connection} onConnection={setConnection}
+            studio={{ helper, onHelper: changeHelper }}
+          />
+        </main>
+      ) : open
         ? <WorldView key={open.id} world={open} onChange={save} onDelete={() => void remove(open)} onStatus={setStatus} status={status} />
         : <Home worlds={worlds} status={status} onOpen={(id) => { setStatus(null); navigate({ ...NOWHERE, worldId: id }); }} onCreate={(world, at) => { save(world); navigate({ ...NOWHERE, worldId: world.id, page: world.records.length ? null : 'about', ...at }); }} onStatus={setStatus} />}
-      {settings && <Settings theme={theme} onTheme={setTheme} look={look} onLook={setLook} connection={connection} onConnection={setConnection} helper={helper} onHelper={changeHelper} onClose={() => setSettings(false)} />}
     </AuthorProvider>
-  );
-}
-
-// One Settings for the site: the look, and the model key that Chat and the adventure already
-// share (kit/src/connection.ts).
-function Settings({ theme, onTheme, look, onLook, connection, onConnection, helper, onHelper, onClose }: { theme: Theme; onTheme: (theme: Theme) => void; look: LookChoice; onLook: (look: LookChoice) => void; connection: Connection; onConnection: (connection: Connection) => void; helper: HelperPrefs; onHelper: (helper: HelperPrefs) => void; onClose: () => void }) {
-  return (
-    <Sheet title="Settings" onClose={onClose}>
-      <label className="field">
-        <span>Paper or night</span>
-        <select value={theme} onChange={(event) => onTheme(event.target.value as Theme)}>
-          {(Object.keys(THEME_NAMES) as Theme[]).map((option) => <option key={option} value={option}>{THEME_NAMES[option]}</option>)}
-        </select>
-      </label>
-      <label className="field">
-        <span>Look</span>
-        <select value={look} onChange={(event) => onLook(event.target.value as LookChoice)}>
-          {(Object.keys(LOOK_NAMES) as LookChoice[]).map((option) => <option key={option} value={option}>{LOOK_NAMES[option]}</option>)}
-        </select>
-        <span className="hint">A world can choose a look of its own, such as Live Feed for HOG Wild. Follow the world to wear it there, or pick one look for everywhere.</span>
-      </label>
-      <h3 className="sub">Your model</h3>
-      <p className="hint">One key for the adventure, Chat and the Studio. It is kept on this device if you ask, and goes with each request; the site&rsquo;s server never stores it. In the Studio it writes drafts: nothing it writes changes a record until you keep it.</p>
-      <ConnectForm connection={connection} onChange={onConnection} />
-      <h3 className="sub">The Studio&rsquo;s helper</h3>
-      <label className="field">
-        <span>Model for drafts and Errata</span>
-        {connection.models.length > 1 ? (
-          <select value={helper.model} onChange={(event) => onHelper({ ...helper, model: event.target.value })}>
-            <option value="">The same as play{connection.model ? ` (${connection.model})` : ''}</option>
-            {connection.models.filter((model) => model !== connection.model).map((model) => <option key={model} value={model}>{model}</option>)}
-          </select>
-        ) : (
-          <input value={helper.model} placeholder={connection.model ? `The same as play (${connection.model})` : 'The same as play'} onChange={(event) => onHelper({ ...helper, model: event.target.value.trim() })} />
-        )}
-      </label>
-      <p className="hint">A strong instruction model can help you build while a favourite story model plays. It uses the same provider and key.</p>
-      <label className="check">
-        <input type="checkbox" checked={helper.plain} onChange={(event) => onHelper({ ...helper, plain: event.target.checked })} />
-        <span>Plain voice: the helper without Errata&rsquo;s manner</span>
-      </label>
-    </Sheet>
   );
 }
 
@@ -219,13 +199,7 @@ function Home({ worlds, status, onOpen, onCreate, onStatus }: {
 
   return (
     <main className="home">
-      <div className="row" style={{ alignItems: 'flex-start', gap: 20 }}>
-        <InkMark name="nib" size={72} title="Inkwyrm Studio" land />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: '1 1 300px' }}>
-          <h1 className="ink-write">Your worlds</h1>
-          <p className="lede">Make a world once: its places, its people, what they want and what they won&rsquo;t say. Every part says when it reaches the model.</p>
-        </div>
-      </div>
+      <PageHead mark="nib" eyebrow="Studio" title="Your worlds" lede={<>Make a world once: its places, its people, what they want and what they won&rsquo;t say. Every part says when it reaches the model.</>} />
       {status && <p className={`status${status.bad ? ' bad' : ''}`} role="status">{status.text}</p>}
       <form className="row" onSubmit={create}>
         <label className="field grow">

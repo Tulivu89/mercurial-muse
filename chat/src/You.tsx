@@ -2,6 +2,7 @@
 // can be edited in the Studio too; here are the parts a chat reads: the name they call you, your
 // pronouns, who you are and how you look. One is the default a new chat starts with, and any
 // chat can change who you are in it.
+import { PageHead } from '../../kit/src/PageHead';
 import { useState, type ChangeEvent } from 'react';
 import { newSection, type StoryRecord, type World } from '../../core/records/index.js';
 import { NameField } from '../../kit/src/Fields';
@@ -60,11 +61,7 @@ export function You({ worlds, portraits, settings, status, onSettings, onCreate,
 
   return (
     <main className="home you">
-      <div>
-        <p className="sub">Inkwyrm Chat</p>
-        <h1>You</h1>
-        <p className="lede">Who you are to the people you talk to. A persona is the name they call you, and what they can see and know about you. Keep one, or one for every story.</p>
-      </div>
+      <PageHead eyebrow="Chat" title="You" lede="Who you are to the people you talk to. A persona is the name they call you, and what they can see and know about you. Keep one, or one for every story." />
       {status && <p className={`status${status.bad ? ' bad' : ''}`} role="status">{status.text}</p>}
       {note && <p className="status bad" role="status">{note}</p>}
       {worlds === null && <p className="status" role="status">Opening your library…</p>}

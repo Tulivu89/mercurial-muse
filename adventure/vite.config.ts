@@ -12,7 +12,9 @@ try {
   // Git metadata may be absent in a packaged deployment.
 }
 
+// Served at /adventure/ since the Overview took the root (phase F4, docs/front-page/).
 export default defineConfig({
+  base: '/adventure/',
   plugins: [react()],
   define: {
     __PRAXIS_VERSION__: JSON.stringify(`v${packageVersion}+${buildCommit}`),
