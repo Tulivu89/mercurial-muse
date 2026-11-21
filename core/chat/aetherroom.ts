@@ -54,6 +54,8 @@ export interface KernelFloaty { id?: string; active?: boolean; entry: KernelBrai
 export interface KernelMemory { name: string; content: string; keys: string[] }
 
 export interface KernelContext {
+  // Group chat (core/chat/group.ts): the other characters, whose lines come in as named user turns.
+  groupNames?: string[];
   char?: KernelCard;
   user?: KernelCard;
   scenario?: KernelCard;
@@ -347,7 +349,9 @@ export async function contextBuilt(messages: KernelMessage[], model: string, dry
       if (newMsg.role === 'user') {
         if (newMsg.content!.endsWith('Write.') || newMsg.content!.endsWith('Continue.')) continue;
         if (newMsg.content !== '') {
-          if (!newMsg.content!.startsWith(`${user.name}:`)) newMsg.content = `${user.name}: ${newMsg.content}`;
+          // In a group, another character's line is already under their own name.
+          const named = [user.name, ...(ctx.groupNames ?? [])].some((name) => newMsg.content!.startsWith(`${name}:`));
+          if (!named) newMsg.content = `${user.name}: ${newMsg.content}`;
           newMsg.content = newMsg.content!.replaceAll('\n', '\n    ');
           userMsgCount++;
         }

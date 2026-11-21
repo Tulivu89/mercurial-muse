@@ -68,6 +68,11 @@ export interface GeneralOptions {
   prompt?: PromptSetup;
   // What the story so far may take (core/chat/chapters.ts); left out, no limit.
   storyTokens?: number;
+  // Group chat, layout B (core/chat/group.ts): the speaker is the scene's character. Each reply
+  // carries its own writer's name, other characters' replies are the model's turns or the
+  // player's, and the others present are listed by their line. Left out, a one-to-one chat,
+  // built exactly as before.
+  group?: { nameOf: (message: ChatMessage) => string; speakerId: string; othersAs: 'assistant' | 'user'; cast: string; rules: string };
 }
 
 export interface GeneralPart { label: string; text: string; tokens: number }
@@ -153,7 +158,7 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
   const parts: GeneralPart[] = [];
   const add = (label: string, text: string) => { if (text.trim()) parts.push({ label, text, tokens: estimateTokens(text) }); };
   const setup = options.prompt ?? DEFAULT_PROMPT;
-  add('Rules', options.task?.rules ?? rulesFor(charName, userName, setup));
+  add('Rules', options.task?.rules ?? options.group?.rules ?? rulesFor(charName, userName, setup));
   // A card's own system prompt and post-history line, where the player sends them.
   const cardSection = (title: string) => (setup.cardPrompt && !options.task ? character.sections.find((section) => section.title === title && section.text.trim())?.text.trim() ?? '' : '');
   const cardPrompt = cardSection(CARD_PROMPT_TITLE);
@@ -161,6 +166,7 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
   add(charName, macros(`## ${charName}\n${charLines.join('\n')}`));
   if (userLines.length) add(`${userName} (you)`, macros(`## ${userName}, who ${charName} is talking to\n${userLines.join('\n')}`));
   if (scenarioLines.length) add('Scenario', macros(`## The scenario\n${scenarioLines.join('\n')}`));
+  if (options.group?.cast) add('Also here', macros(options.group.cast));
   if (standing.length) add('Also true', macros(`## Also true\n${standing.map((lines) => lines.join('\n')).join('\n\n')}`));
   if (examples.length) add('Example chats', macros(`## How ${charName} writes\nExample chats, not part of this chat:\n${examples.join('\n')}`));
   const system = parts.map((part) => part.text).join('\n\n');
@@ -176,7 +182,9 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
 
   // 6. The transcript, from the window's start.
   const history = chat.messages.slice(0, options.upTo);
-  const costs = history.map((message) => estimateTokens(turnText(message, charName)) + 6);
+  const group = options.group;
+  const nameOf = (message: ChatMessage) => (group ? group.nameOf(message) : charName);
+  const costs = history.map((message) => estimateTokens(turnText(message, nameOf(message))) + 6);
   const start = Math.min(options.windowStart, history.length);
   const carried = options.continuing && history.at(-1)?.from === 'character' ? history.at(-1)! : null;
   const openText = carried ? openReplyText(mergeParts(pickedAlt(carried).parts), charName, false) : '';
@@ -191,6 +199,8 @@ export function buildGeneral(chat: Chat, scene: Scene, options: GeneralOptions):
   if (!shown[0] || shown[0].from === 'character') push('user', start > 0 ? '[Earlier messages are out of view.]' : '[The chat begins.]');
   for (const message of shown) {
     if (message === carried) push('assistant', openText);
+    // Another character's reply, in a group: named, as the model's turn or the player's.
+    else if (group && message.from === 'character' && (message.speaker ?? chat.characterId) !== group.speakerId) push(group.othersAs, turnText(message, nameOf(message)));
     // A note rides in the player's turn, in its brackets: the rules say what brackets are, and a
     // system message this late would be moved to the top by some formats.
     else push(message.from === 'character' ? 'assistant' : 'user', turnText(message, charName));

@@ -7,6 +7,7 @@ import type { Message } from '../narration/formats.js';
 import { parseWorld, type World } from '../records/schema.js';
 import { buildRequest, profileFor, PROFILE_NAMES, XIALONG, type Built, type BuildOptions } from './build.js';
 import { parseChat, type Chat } from './chat.js';
+import { buildGroupRequest, isGroup, membersOf, nextSpeaker, speakerOf, type GroupHow } from './group.js';
 
 export const TEST_PACK_FORMAT = 'inkwyrm-chat-test/1';
 export const SETTINGS_EXPORT_FORMAT = 'inkwyrm-chat-settings/1';
@@ -33,6 +34,9 @@ export interface PackRequest {
   parts: { label: string; tokens: number }[];
   tokens: number;
   notes: string[];
+  // A group chat's turn: who it is written as, and where the reply stops.
+  speaker?: string;
+  stop?: string[];
 }
 
 export interface PackLast {
@@ -67,7 +71,7 @@ export function samplersFor(model: string, temperature: number): Record<string, 
 }
 
 export function packRequest(built: Built, model: string): PackRequest {
-  return { profile: built.profile, model, messages: built.messages, prefill: built.prefill, parts: built.parts, tokens: built.tokens, notes: built.notes };
+  return { profile: built.profile, model, messages: built.messages, prefill: built.prefill, parts: built.parts, tokens: built.tokens, notes: built.notes, ...(built.speaker ? { speaker: built.speaker, stop: built.stop ?? [] } : {}) };
 }
 
 export function makeTestPack(input: { chat: Chat; world: World; settings: PackSettings; needs?: string; next: Built | null; last: PackLast | null; now: number }): TestPack {
@@ -106,7 +110,21 @@ export function packOptions(pack: Pick<TestPack, 'settings' | 'needs' | 'chat'>,
   };
 }
 
-export async function rebuild(pack: Pick<TestPack, 'settings' | 'needs' | 'chat' | 'world'>, upTo = pack.chat.messages.length, model = pack.settings.model): Promise<PackRequest | null> {
+// Who a group chat's turn is written as: the writer of the reply at that turn, or whoever would
+// answer next (the agent's fallback, since the lab makes no calls).
+export function packSpeaker(pack: Pick<TestPack, 'chat' | 'world'>, upTo: number): string | null {
+  const at = pack.chat.messages[upTo];
+  if (at?.from === 'character') return speakerOf(pack.chat, at);
+  const next = nextSpeaker(pack.chat, membersOf(pack.chat, pack.world), upTo);
+  return next ? ('member' in next ? next.member.id : next.fallback.id) : membersOf(pack.chat, pack.world)[0]?.id ?? null;
+}
+
+export async function rebuild(pack: Pick<TestPack, 'settings' | 'needs' | 'chat' | 'world'>, upTo = pack.chat.messages.length, model = pack.settings.model, how?: GroupHow): Promise<PackRequest | null> {
+  if (isGroup(pack.chat)) {
+    const speaker = packSpeaker(pack, upTo);
+    const built = speaker ? await buildGroupRequest(pack.chat, pack.world, speaker, packOptions(pack, upTo, model), how) : null;
+    return built ? packRequest(built, model) : null;
+  }
   const built = await buildRequest(pack.chat, pack.world, packOptions(pack, upTo, model));
   return built ? packRequest(built, model) : null;
 }

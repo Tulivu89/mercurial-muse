@@ -46,6 +46,11 @@ export const messageSchema = z.object({
   pick: z.number().int().nonnegative().default(0),
   // Story time when this was written, so removing it puts the clock back.
   clock: z.number().nonnegative().optional(),
+  // Group chat (core/chat/group.ts): the character who wrote this reply. A one-to-one chat leaves
+  // it out, and its replies are the chat's character's.
+  speaker: id.optional(),
+  // The message this one answers, when the player picked one: its author speaks next.
+  replyTo: id.optional(),
 });
 export type ChatMessage = z.infer<typeof messageSchema>;
 export type Alt = z.infer<typeof altSchema>;
@@ -55,7 +60,8 @@ export type JournalEntry = z.infer<typeof journalEntrySchema>;
 
 // A memory the character keeps: a diary entry or a feeling about one moment (CharacterRoom's Diary
 // and Process). It comes back into context when one of its keys is said.
-export const memorySchema = z.object({ id, name: z.string().max(200).default(''), content: z.string().max(8000), keys: z.array(z.string().min(1).max(80)).max(40).default([]), at: z.number().nonnegative().default(0) });
+// In a group, `owner` is whose memory it is, sent only while they speak; left out, it is the chat's character's.
+export const memorySchema = z.object({ id, name: z.string().max(200).default(''), content: z.string().max(8000), keys: z.array(z.string().min(1).max(80)).max(40).default([]), at: z.number().nonnegative().default(0), owner: id.optional() });
 export type Memory = z.infer<typeof memorySchema>;
 
 // A chapter: the messages that left the General window, written up once by a side request
@@ -103,8 +109,39 @@ export const planSchema = z.object({
   remainingTurns: z.number().int().min(-1).max(999).default(PLAN_TURNS),
   running: z.boolean().default(false),
   startedAtCount: z.number().int().default(-1),
+  // In a group, whose plan it is; left out, the chat's character's.
+  owner: id.optional(),
 });
 export type Plan = z.infer<typeof planSchema>;
+
+// Group chat (docs/model-jobs.md, Group chat; docs/reviews/group-chat/decision.md). A member of a
+// group: how often they speak up when nobody is named, whether they wait to be named, and a model
+// of their own (a Voice per character), kept with the chat in this browser, never in a world file.
+export const TALK = ['quiet', 'usual', 'chatty'] as const;
+export type Talk = (typeof TALK)[number];
+export const castMemberSchema = z.object({
+  characterId: id,
+  talk: z.enum(TALK).catch('usual').default('usual'),
+  muted: z.boolean().default(false),
+  model: z.string().max(200).default(''),
+});
+export type CastMember = z.infer<typeof castMemberSchema>;
+// How a group is sent and who answers:
+// - layout: b, a call per speaker with their own prefix; c, one shared prefix with the speaker's
+//   block at the end (the lab decides the default; b until then);
+// - others: other characters' lines as the model's turns, or as the player's (named either way);
+// - answers: one speaker per message, or whoever has something to say (up to three);
+// - picker: when nobody is named, the agent picks (a small Side call), or the quietest answers.
+export const groupSchema = z.object({
+  layout: z.enum(['b', 'c']).catch('b').default('b'),
+  others: z.enum(['assistant', 'user']).catch('assistant').default('assistant'),
+  answers: z.enum(['one', 'several']).catch('one').default('one'),
+  picker: z.enum(['agent', 'quietest']).catch('agent').default('agent'),
+});
+export type GroupSettings = z.infer<typeof groupSchema>;
+export const DEFAULT_GROUP: GroupSettings = { layout: 'b', others: 'assistant', answers: 'one', picker: 'agent' };
+// At most four named characters present, as the writing rules say.
+export const MAX_CAST = 4;
 
 export const clockSchema = z.object({
   mode: z.enum(['real', 'story']).default('real'),
@@ -152,6 +189,9 @@ export const chatSchema = z.object({
   fold: z.object({ text: z.string().max(12_000).default(''), at: z.number().nonnegative().default(0) }).default({ text: '', at: 0 }),
   // Set members pinned for this chat, by "recordId:setId": an outfit, a location.
   pins: z.record(z.string().max(200), id).default({}),
+  // Group chat: everyone in it, the chat's character first. Empty (or one) is a one-to-one chat.
+  cast: z.array(castMemberSchema).max(MAX_CAST).default([]),
+  group: groupSchema.default(DEFAULT_GROUP),
   createdAt: z.number().nonnegative().default(0),
   updatedAt: z.number().nonnegative().default(0),
 });
@@ -176,7 +216,7 @@ export function newChat(input: NewChat, ids: () => string, now: number): Chat {
     personaId: input.personaId, scenarioId: input.scenarioId, userName: input.userName.trim() || 'User',
     relationship: input.relationship, style: input.style, responseLength: input.responseLength,
     messages: [], journal: [], loreOff: [], roll: { startIndex: 0, pathIdList: [], trimmed: false }, windowStart: 0, draft: '',
-    clock: { ...DEFAULT_CLOCK }, moods: false, diary: [], process: [], plans: [], chapters: [], earlier: [], earlierAsked: false, fold: { text: '', at: 0 }, pins: {}, createdAt: now, updatedAt: now,
+    clock: { ...DEFAULT_CLOCK }, moods: false, diary: [], process: [], plans: [], chapters: [], earlier: [], earlierAsked: false, fold: { text: '', at: 0 }, pins: {}, cast: [], group: { ...DEFAULT_GROUP }, createdAt: now, updatedAt: now,
   };
   const text = input.greeting?.text.trim();
   if (text) {
@@ -227,10 +267,11 @@ export function addNote(chat: Chat, text: string, messageId: string, now: number
   return touch(chat, now, [...chat.messages, { id: messageId, from: 'note', at: now, alts: [{ parts: [{ text: clean, emotion: FALLBACK_EMOTION }], at: now, model: '' }], pick: 0 }]);
 }
 
-export function addReply(chat: Chat, parts: ReplyPart[], messageId: string, now: number, model = ''): Chat {
+// `speaker`: in a group, the character who wrote it.
+export function addReply(chat: Chat, parts: ReplyPart[], messageId: string, now: number, model = '', speaker?: string): Chat {
   // In story time the reply is stamped with the clock, and the clock then takes its step.
   const story = storyActive(chat.clock);
-  const next = touch(chat, now, [...chat.messages, { id: messageId, from: 'character', at: now, alts: [{ parts, at: now, model }], pick: 0, ...(story ? { clock: chat.clock.storyMs } : {}) }]);
+  const next = touch(chat, now, [...chat.messages, { id: messageId, from: 'character', at: now, alts: [{ parts, at: now, model }], pick: 0, ...(story ? { clock: chat.clock.storyMs } : {}), ...(speaker ? { speaker } : {}) }]);
   return story && chat.clock.stepMin > 0 ? { ...next, clock: { ...chat.clock, storyMs: chat.clock.storyMs + chat.clock.stepMin * 60_000 } } : next;
 }
 

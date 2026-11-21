@@ -7,7 +7,7 @@ import type { World } from '../records/schema.js';
 import { AETHERROOM_MODEL, brainEntries, contextBuilt, type KernelContext, type KernelMessage, type KernelPlan, type Roll } from './aetherroom.js';
 import { aetherRoomStyle, lastContactMs, pickedAlt, recentEmotions, type Chat, type Plan } from './chat.js';
 import { joinText, mergeParts, openReplyText, parseReply, replyText, type ReplyPart } from './emotions.js';
-import { budgetFor, buildGeneral, estimateTokens, windowStartFor } from './general.js';
+import { budgetFor, buildGeneral, estimateTokens, windowStartFor, type GeneralOptions } from './general.js';
 import { currentEventsLine, hoursApart, moodFor, moodLine, pickPlans, timeApartLine } from './moment.js';
 import { recentText, sceneFor, type Scene } from './scene.js';
 import { sheetFor } from './sheet.js';
@@ -62,6 +62,10 @@ export interface Built {
   parts: BuiltPart[];
   tokens: number;
   notes: string[];
+  // Group chat: strings that end the reply where someone else's line would start.
+  stop?: string[];
+  // Group chat: the character this reply is written as.
+  speaker?: string;
 }
 
 // --- Things written beside the chat: a diary entry, a feeling, a plan (CharacterRoom's Reflect,
@@ -107,17 +111,28 @@ export function sideTask(kind: SideKind, emotions: readonly string[], rngInt: Bu
 }
 
 // The clock for this build: story time as it was when the turn being rewritten was first written.
-function chatNow(chat: Chat, options: BuildOptions): number {
+export function chatNow(chat: Chat, options: BuildOptions): number {
   const target = chat.messages[options.continuing ? options.upTo - 1 : options.upTo];
   if (storyActive(chat.clock) && target?.clock !== undefined) return target.clock;
   return clockNow(chat.clock, options.nowMs);
 }
 
+// Whose a memory or plan is: its owner, or the chat's character's. In a group only the speaker's
+// own reach the model, so a diary or a feeling is never shared.
+const ownedBy = (chat: Chat, characterId: string) => (entry: { owner?: string }) => (entry.owner ?? chat.characterId) === characterId;
+
 const answerFor = (scene: Scene, chat: Chat, options: BuildOptions) =>
   contextFor(scene.view, { hereIds: scene.hereIds, recentText: recentText(chat, options.upTo, options.draft), conditionIds: scene.conditionIds });
 
-async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, side?: SideTask): Promise<Built> {
+// `group`: a group chat, built for the scene's character (core/chat/group.ts, layout B). The others
+// present ride as an always-on brain, and their lines reach the kernel as the player's turns,
+// named, so Xialong reads them as people it answers, not as its own lines.
+export interface AetherRoomGroup { nameOf: (message: Chat['messages'][number]) => string; speakerId: string; cast: string; others: string[] }
+export async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, side?: SideTask, group?: AetherRoomGroup): Promise<Built> {
   const sheet = sheetFor(scene);
+  if (group?.cast) sheet.char.brains = [...(sheet.char.brains ?? []), { name: 'Also here', content: group.cast }];
+  const mine = ownedBy(chat, scene.character.id);
+  const ownPlans = chat.plans.filter(mine);
   if (options.needs) sheet.char.brains = [...(sheet.char.brains ?? []), { name: 'Needs', content: options.needs }];
   // Chapters (memory review, C4): the story so far rides as an always-on brain, so the AetherRoom
   // kernel itself is untouched. Out of view means before CharacterRoom's rollover.
@@ -134,14 +149,15 @@ async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, 
     includeGameStats: false, gameRecord: {},
     floaty: sheet.floaty,
     jots: chat.journal.filter((entry) => entry.active).map((entry) => ({ id: entry.id, text: entry.text })),
-    diary: chat.diary.map(memory),
-    process: chat.process.map(memory),
+    diary: chat.diary.filter(mine).map(memory),
+    process: chat.process.filter(mine).map(memory),
     // A side generation gets the sheet and the story: no plans, no clock, no mood (CR D-23).
-    plans: side ? undefined : chat.plans.map((plan) => ({ ...plan })) as KernelPlan[],
+    plans: side ? undefined : ownPlans.map((plan) => ({ ...plan })) as KernelPlan[],
     trackRealTime: !side && clockTracks(chat.clock),
     lastContactMs: lastContactMs(chat, options.upTo),
     useEmotionalModes: !side && chat.moods,
     nowMs: scene.nowMs,
+    ...(group ? { groupNames: group.others } : {}),
   };
   // Keys are matched on what was said, without the speakers' names in front of each line.
   const story = [...history.map((message) => pickedAlt(message).parts.map((part) => part.text).join('\n')), options.draft ?? ''].join('\n');
@@ -149,9 +165,12 @@ async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, 
 
   // A note is an in-chat system message: xialong reads square-bracketed system lines as
   // directions, the way it reads the style line.
-  const turns: KernelMessage[] = history.map((message) => (message.from === 'character'
-    ? { role: 'assistant', content: `${replyText(pickedAlt(message).parts, scene.charName, true)}\n` }
-    : { role: message.from === 'note' ? 'system' : 'user', content: pickedAlt(message).parts.map((part) => part.text).join('\n') }));
+  const othersLine = (message: Chat['messages'][number]) => group && message.from === 'character' && (message.speaker ?? chat.characterId) !== group.speakerId;
+  const turns: KernelMessage[] = history.map((message) => (othersLine(message)
+    ? { role: 'user', content: pickedAlt(message).parts.map((part) => `${group!.nameOf(message)}: ${part.text}`).join('\n') }
+    : message.from === 'character'
+      ? { role: 'assistant', content: `${replyText(pickedAlt(message).parts, scene.charName, true)}\n` }
+      : { role: message.from === 'note' ? 'system' : 'user', content: pickedAlt(message).parts.map((part) => part.text).join('\n') }));
   const input: KernelMessage[] = [...brains.map((entry): KernelMessage => ({ role: 'system', content: entry.content })), ...turns, { role: 'assistant', content: slot }];
 
   const rollover = Math.min(XIALONG.rolloverTokens, Math.floor(options.contextTokens * 0.28));
@@ -189,7 +208,7 @@ async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, 
     profile: 'aetherroom', messages: built, prefill: '', lead,
     roll: { startIndex: roll.startIndex, pathIdList: roll.pathIdList, trimmed: roll.trimmed },
     windowStart: chat.windowStart,
-    plans: side || !result.plans ? chat.plans : result.plans as Plan[],
+    plans: side || !result.plans ? chat.plans : ownPlans.length === chat.plans.length ? result.plans as Plan[] : (() => { const after = new Map((result.plans as Plan[]).map((plan) => [plan.id, plan])); return chat.plans.map((plan) => after.get(plan.id) ?? plan); })(),
     firstSent: Math.max(0, roll.startIndex - brains.length),
     answer: answerFor(scene, chat, options),
     parts, tokens: built.reduce((sum, message) => sum + estimateTokens(message.content), 0),
@@ -198,8 +217,9 @@ async function buildAetherRoom(chat: Chat, scene: Scene, options: BuildOptions, 
 }
 
 // The moment's extra lines for the General profile, and the plans as they stand afterwards.
-function generalMoment(chat: Chat, scene: Scene, options: BuildOptions, windowStart: number): { lines: string[]; plans: Plan[] } {
+export function generalMoment(chat: Chat, scene: Scene, options: BuildOptions, windowStart: number): { lines: string[]; plans: Plan[] } {
   const { charName, userName } = scene;
+  const mine = ownedBy(chat, scene.character.id);
   const lines: string[] = [];
   let away = false;
   if (clockTracks(chat.clock)) {
@@ -214,17 +234,21 @@ function generalMoment(chat: Chat, scene: Scene, options: BuildOptions, windowSt
   }
   if (options.needs) lines.push(options.needs);
   const said = recentText(chat, options.upTo, options.draft);
-  for (const entry of chat.diary) if (mentions(said, entry.keys)) lines.push(`From ${charName}'s diary, ${entry.name}: ${entry.content}`);
-  for (const entry of chat.process) if (mentions(said, entry.keys)) lines.push(`How ${charName} remembers feeling, ${entry.name}: ${entry.content}`);
+  for (const entry of chat.diary.filter(mine)) if (mentions(said, entry.keys)) lines.push(`From ${charName}'s diary, ${entry.name}: ${entry.content}`);
+  for (const entry of chat.process.filter(mine)) if (mentions(said, entry.keys)) lines.push(`How ${charName} remembers feeling, ${entry.name}: ${entry.content}`);
   const userTurns = chat.messages.slice(windowStart, options.upTo).filter((message) => message.from === 'user').length;
-  const picked = pickPlans(chat.plans, options.rngInt, userTurns, options.dryRun);
+  const own = chat.plans.filter(mine);
+  const picked = pickPlans(own, options.rngInt, userTurns, options.dryRun);
   // A note, never a thinking block: models other than xialong weren't taught to read one.
   for (const content of picked.contents) lines.push(`What ${charName} means to do next (act on it, don't announce it): ${content}`);
-  return { lines, plans: picked.plans };
+  // Everyone else's plans stand as they were.
+  const after = new Map(picked.plans.map((plan) => [plan.id, plan]));
+  return { lines, plans: own.length === chat.plans.length ? picked.plans : chat.plans.map((plan) => after.get(plan.id) ?? plan) };
 }
 
-function buildGeneralProfile(chat: Chat, scene: Scene, options: BuildOptions, side?: SideTask): Built {
-  const base = { upTo: options.upTo, canPrefill: options.canPrefill, continuing: !side && options.continuing, nowMs: scene.nowMs, draft: options.draft, prompt: options.prompt, storyTokens: Math.round(options.contextTokens * STORY_SHARE) };
+// `group`: layout B of a group chat, built for the scene's character (core/chat/group.ts).
+export function buildGeneralProfile(chat: Chat, scene: Scene, options: BuildOptions, side?: SideTask, group?: GeneralOptions['group']): Built {
+  const base = { upTo: options.upTo, canPrefill: options.canPrefill, continuing: !side && options.continuing, nowMs: scene.nowMs, draft: options.draft, prompt: options.prompt, storyTokens: Math.round(options.contextTokens * STORY_SHARE), group };
   const task = side ? {
     rules: `You are ${scene.charName}. Below is who you are, who ${scene.userName} is, and your chat with them so far. After it you will be asked to write something of your own, in your own voice. Write only that, in the form asked for, and nothing after it.`,
     ask: [side.shape, ...(side.frame ?? []), side.style, `Write it now as ${scene.charName}. ${side.layout ?? `Start with "Title:", then "Content:"${side.kind === 'plan' ? '' : ', then "Activation Keys:" with a few comma-separated words or names from the chat that should bring it back to mind'}.`}`].join('\n'),
