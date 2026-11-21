@@ -1,5 +1,6 @@
 // The panels under the hood of a chat: what was sent, what is in context, what the character
 // remembers, the clock, and this chat's own settings.
+import { GroupPanel } from './GroupPanel';
 import { useState } from 'react';
 import {
   CLOCK_STEPS, GENERAL_LENGTHS, PLAN_TURNS, PROFILE_NAMES, generalLengthName, generalLengthOf, type Profile, RESPONSE_LENGTHS, SIDE_NAMES, STYLES, STYLE_HINTS, STYLE_NAMES, addPlan, clockTracks, exportChat, formatDate,
@@ -330,6 +331,7 @@ export function DetailsPanel({ chat, onChange, scene, world, charName, onDelete,
       </div>
       <p className="hint">{STYLE_HINTS[chat.style]} The relationship decides which of {charName}'s sections and schedule lines behind a bond are in.</p>
       <label className="checks"><input type="checkbox" checked={chat.moods} onChange={(event) => onChange({ ...chat, moods: event.target.checked })} /> Moods: {charName}'s last few emotions, or time away, put them in a state of mind</label>
+      <GroupPanel chat={chat} world={world} onChange={onChange} />
 
       {scene && scene.picks.length > 0 && (
         <fieldset className="card" style={{ margin: 0 }}>

@@ -26,7 +26,7 @@ Not yet built: A2 to A4, group chat, first messages and images.
 | --- | --- | --- | --- |
 | 1 | **The adventure module:** seed and first slice | Writing | The owner's priority. The adventure's new features need a world to test on. Volungraiv's slice (Qetzal's Lowgate) is filled (Nov 19, `docs/content/volungraiv/slice/5-fill.md`); play is next, and the ceiling gold (`docs/bids/volungraiv-ceiling/`) fills the temple. Prompt: `docs/content/volungraiv/plan.md`, *The next session* |
 | 2 | **Adventure A2 and A3:** opponents' moves, progress clocks, story events | Code | Built against the module's first slice, which is written to exercise them |
-| 3 | **Group chat G1 to G3** | Code | Designed (`docs/model-jobs.md`) with the review's additions; Home's households are made for it |
+| 3 | ~~**Group chat G1 to G3**~~ | Code | **G1 built, and G2's first pass in Chat (Nov 21)**; what is left is in `docs/model-jobs.md`, *Built*: the lab runs that set the default layout, a Voice per character, reply-to on the screen, starting a group from Home |
 | 4 | **First messages (F3), then images (F4)** | Code | Joins Chat, Home and the clock; images are what every other app has |
 | — | Later | | A4, other rule systems (after our dice system is tested and fully built); characters talking on their own (after group chat); accounts, then hosted models (`docs/value.md`) |
 

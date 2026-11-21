@@ -1,7 +1,7 @@
 {
   "name": "@app/core",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "What every side of the site shares: narration, the record model, the rules and the chat kernel.",
   "dependencies": {

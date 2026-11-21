@@ -147,6 +147,20 @@ A code test needs no model at all: in C, the requests for two different speakers
 
 **What decides it:** C needs to match B on bleed and come close on voice. If it does, C is the default for General models, and B stays for Xialong and as a setting. If C bleeds or reads flatter, B is the default everywhere, and the shared prefix waits for a better idea.
 
+## Built (Nov 21)
+
+**G1 is built** (`core/chat/group.ts`, tests in `core/tests/group.test.ts`), with everything the review added:
+- a chat's `cast` (two to four, the chat's character first), each reply's `speaker`, a message's `replyTo`, and an `owner` on diary entries, feelings and plans;
+- who answers: named, then the author of the message answered, then the agent's pick (`pickerRequest`, JSON, low temperature) or the quietest weighed by talkativeness; mute; handoffs by `@Name` or a question by name, once each; one answer, or up to three in *whoever has something to say*;
+- layouts B and C, others' lines as the model's turns or the player's, C's anchor; Xialong on B through the kernel, with the others' lines as named player turns;
+- stops on every other label, and `cleanGroupReply`: cut, skip to the speaker's own label, or drop;
+- the lab: `group-b`, `group-b-user`, `group-c`, `group-c-anchor`, `group-c-user`, group suite cases (`cast`, `before`), and the *wrote for* and *lifted from others* scores.
+- A one-to-one chat builds byte for byte as before (tested). The AetherRoom parity rule is retired.
+
+**G2's first pass is built in Chat** (0.11.0) so the owner can play groups now: people are brought in under a chat's details (Under the hood › details › People in this chat), each with Quiet, Usual or Chatty and *Only when named*; a *Who answers* menu beside Send; every reply under its writer's name and face; cut replies said so; chapters written up under each writer. **The layout default stays B** until the lab's scores are in; C and the *as yours* variants are there under the same details to try.
+
+**Still to do:** the lab runs on the models below and the scores in `docs/testing/` (they need models only the owner can connect); then the default layout per profile; a Voice per character (the cast keeps a `model` field for it, unused until the jobs, J1); replying to a message from the chat screen (the core reads `replyTo`; the screen has no button for it yet); starting a group from a household's Home.
+
 ## Phases
 
 | Phase | What it builds | Done when |

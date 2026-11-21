@@ -18,7 +18,9 @@ export const CHAPTER_SPAN_CHARS = 24_000;
 export const CHAPTER_TRIES = 3;
 
 const messageText = (message: ChatMessage) => mergeParts(pickedAlt(message).parts)[0]?.text ?? '';
-const speaker = (chat: Chat, message: ChatMessage) => (message.from === 'character' ? chat.characterName : message.from === 'user' ? chat.userName : 'Note');
+// `names`: in a group, each member's name by id, so a reply is written up under its own writer.
+const speaker = (chat: Chat, message: ChatMessage, names?: Record<string, string>) => (message.from === 'character' ? names?.[message.speaker ?? chat.characterId] ?? chat.characterName : message.from === 'user' ? chat.userName : 'Note');
+const together = (names: readonly string[]) => (names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`);
 
 // What the covered messages said, as a short fingerprint.
 export function sealOf(messages: readonly ChatMessage[]): string {
@@ -76,13 +78,14 @@ export function queueChapters(chat: Chat, windowStart: number, ids: () => string
 export const chaptersToWrite = (chat: Chat) => chat.chapters.filter((chapter) => chapter.state === 'pending' || (chapter.state === 'failed' && chapter.tries < CHAPTER_TRIES));
 
 // The request for one chapter. The chapter before it goes along as context only.
-export function chapterRequest(chat: Chat, chapter: Chapter, length: ChapterLength): Message[] | null {
+export function chapterRequest(chat: Chat, chapter: Chapter, length: ChapterLength, names?: Record<string, string>): Message[] | null {
   const covered = chapterMessages(chat, chapter);
   if (!covered?.length) return null;
   const index = chat.chapters.findIndex((entry) => entry.id === chapter.id);
   const before = chat.chapters.slice(0, Math.max(0, index)).reverse().find((entry) => entry.state === 'written' && entry.text.trim());
-  const transcript = covered.map((message) => `${speaker(chat, message)}: ${messageText(message)}`).join('\n\n');
-  const char = chat.characterName;
+  const transcript = covered.map((message) => `${speaker(chat, message, names)}: ${messageText(message)}`).join('\n\n');
+  // A group's chapter is about everyone in it; what is kept about the player is shared.
+  const char = names && Object.keys(names).length > 1 ? together(Object.values(names)) : chat.characterName;
   const user = chat.userName;
   return [
     {

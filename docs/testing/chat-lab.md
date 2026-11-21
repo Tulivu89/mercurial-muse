@@ -63,6 +63,21 @@ npm run chat:lab -- score lab/suite-<date>
 
 To add a case, add an entry to the suite file: `id`, `character`, `scenario`, `relationship`, `at` (the hour, `HH:MM`), `userName`, `says` (the person's message) and `watch` (what a judge looks for). A new world gets its own suite file beside its world file; run it with `npm run chat:lab -- suite <file>`.
 
+## Group chats (Nov 21)
+
+A test pack from a group chat (`core/chat/group.ts`) builds the turn for whoever answers it: the writer of the reply at that turn, or whoever would answer next. Its variants are the layouts the lab has to decide between (`docs/model-jobs.md`, *The lab test*):
+
+| Folder | What changes |
+| --- | --- |
+| `as-sent/` | The chat's own group settings |
+| `group-b/` | A call per speaker, the others by their line, their replies as the model's turns |
+| `group-b-user/` | B, the others' replies as the player's turns |
+| `group-c/` | One shared prefix, the speaker's block last |
+| `group-c-anchor/` | C, naming the speaker straight after the transcript |
+| `group-c-user/` | C, every reply as the player's turn |
+
+Xialong gets `as-sent` and `group-b` only. `scores.md` adds two columns: **Wrote for** (the reply wrote a line for someone else present: a hard fail) and **Lifted from others** (six-word runs from another present character's sheet or examples: bleed). A suite case becomes a group case with `cast` (everyone present, the character first) and `before` (a short scripted exchange, each line `{ "who": "<id or user>", "says": "…" }`); the cases themselves are written in a content session.
+
 ## 3. Let another app's agent run it
 
 Each subscription comes with a coding agent that can open the repository and run commands: Claude Code, ChatGPT's Codex, Google's Jules or the Gemini CLI. `AGENTS.md` at the root tells them how to set up and run the lab (Codex and Jules read it on their own; `GEMINI.md` points Gemini's tools at it; Claude Code reads `CLAUDE.md`). Where an app asks for a setup script, it's `npm ci`.

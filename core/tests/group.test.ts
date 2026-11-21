@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseWorld, type World } from '../records/index.js';
 import {
-  addNote, addReply, addUserMessage, answeredSince, buildGroupRequest, buildRequest, cleanGroupReply, groupStops, handoffIn, isGroup,
+  addNote, addReply, addUserMessage, answeredSince, chapterRequest, buildGroupRequest, buildRequest, cleanGroupReply, groupStops, handoffIn, isGroup,
   membersOf, namedIn, newChat, newGroupChat, nextSpeaker, parseChat, pickerRequest, quietest, readPick, setGroup, setMember, withCast,
   type BuildOptions, type Chat,
 } from '../chat/index.js';
@@ -220,5 +220,17 @@ describe('the layouts', () => {
     expect(text).not.toContain('Sam: Qiulong:');
     expect(text).toContain('Also here, with Echydna');
     expect(built!.stop).toContain('\nErrata:');
+  });
+});
+
+describe('a group’s chapters', () => {
+  it('write each reply up under its own writer, and the chapter about everyone in it', () => {
+    const chat = group();
+    const chapter = { id: 'ch1', fromId: chat.messages[0]!.id, toId: chat.messages[4]!.id, text: '', keys: [], pinned: false, state: 'pending' as const, tries: 0, seal: '', at: 0, folded: false, facts: [] };
+    const names = Object.fromEntries(membersOf(chat, world).map((member) => [member.id, member.name]));
+    const request = chapterRequest({ ...chat, chapters: [chapter] }, chapter, 'usual', names)!;
+    expect(request[0]!.content).toContain('a story between Qiulong, Errata and Echydna and Sam');
+    expect(request[1]!.content).toContain("Errata: *doesn't look up");
+    expect(request[1]!.content).not.toContain("Qiulong: *doesn't look up");
   });
 });
