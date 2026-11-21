@@ -510,10 +510,10 @@ export function ChatView({ chat, world, connection, settings, portraits, sent = 
       <div className="column">
         <header className={`chat-head${tucked && !panel ? ' tucked' : ''}`}>
           <button type="button" className="icon-btn plain" onClick={onBack} aria-label="Back to your chats"><BackIcon /></button>
-          <a className="icon-btn plain" href="/overview/" aria-label="Inkwyrm, the front page" onClick={async (event) => {
+          <a className="icon-btn plain" href="/" aria-label="Inkwyrm, the front page" onClick={async (event) => {
             if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             event.preventDefault(); leaving.current = true; abort.current?.abort();
-            try { await inFlight.current; await onOverview?.(); window.location.assign('/overview/'); }
+            try { await inFlight.current; await onOverview?.(); window.location.assign('/'); }
             catch { leaving.current = false; /* the app reports the save failure */ }
           }}><InkMark size={28} /></a>
           <button type="button" className="who" onClick={() => { setPanel(null); setSheet(sheet ? null : 'now'); }} aria-expanded={sheet !== null} aria-label={`About ${charName}`}>

@@ -15,7 +15,8 @@ import { ChatView } from './ChatView';
 import { Home, type Status } from './Home';
 import { House, type HouseAt } from './House';
 import { postingFor } from './posting';
-import { SettingsView } from './SettingsView';
+import { ChatExtras } from './SettingsView';
+import { SettingsPage, isSettingsTab, type SettingsTab } from '../../kit/src/settings/SettingsPage';
 import { You, defaultPersona, personasOf, type PersonaRef } from './You';
 import { readSettings, writeSettings, type Settings } from './settings';
 import {
@@ -32,14 +33,15 @@ const SEEDED_KEY = 'inkwyrm.chat.seeded';
 // `with` is a character to start a chat with, from the Studio's *Chat with* or the Overview:
 // `#/with/<world>/<record>`. It opens the new-chat sheet and creates nothing by itself.
 // A chat remembers the place it was opened from, so Back returns there (Home, most of all).
-type Place = { name: 'home'; with?: { worldId: string; recordId: string } } | { name: 'conversations' } | { name: 'character'; worldId: string; recordId: string } | { name: 'house'; at?: HouseAt } | { name: 'you' } | { name: 'settings' };
+type Place = { name: 'home'; with?: { worldId: string; recordId: string } } | { name: 'conversations' } | { name: 'character'; worldId: string; recordId: string } | { name: 'house'; at?: HouseAt } | { name: 'you' } | { name: 'settings'; tab?: SettingsTab };
 type View = Place | { name: 'chat'; id: string; back?: Place };
 export function viewFromHash(hashText = window.location.hash): View {
   const hash = hashText.replace(/^#\/?/, '');
   if (hash === 'conversations') return { name: 'conversations' };
   const character = /^character\/([^/]+)\/([^/?]+)$/.exec(hash);
   if (character) { try { return { name: 'character', worldId: decodeURIComponent(character[1]!), recordId: decodeURIComponent(character[2]!) }; } catch { return { name: 'home' }; } }
-  if (hash === 'settings') return { name: 'settings' };
+  const settingsAt = /^settings(?:\/([a-z]+))?$/.exec(hash);
+  if (settingsAt) return { name: 'settings', ...(isSettingsTab(settingsAt[1]) ? { tab: settingsAt[1] } : {}) };
   if (hash === 'you') return { name: 'you' };
   const asked = /^with\/([^/]+)\/([^/?]+)$/.exec(hash);
   if (asked) {
@@ -56,7 +58,7 @@ const hashFor = (view: View) => {
   if (view.name === 'character') return `#/character/${encodeURIComponent(view.worldId)}/${encodeURIComponent(view.recordId)}`;
   if (view.name === 'conversations') return '#/conversations';
   if (view.name === 'chat') return `#/chat/${encodeURIComponent(view.id)}`;
-  if (view.name === 'settings') return '#/settings';
+  if (view.name === 'settings') return view.tab && view.tab !== 'chat' ? `#/settings/${view.tab}` : '#/settings';
   if (view.name === 'you') return '#/you';
   if (view.name === 'house') return view.at ? `#/home/${encodeURIComponent(view.at.worldId)}/${encodeURIComponent(view.at.scenarioId)}${view.at.tab === 'posts' ? '/posts' : ''}` : '#/home';
   return '#/';
@@ -98,6 +100,10 @@ export function App() {
 
   const fail = (error: unknown) => setStatus({ text: error instanceof Error ? error.message : 'Something went wrong.', bad: true });
   const go = useCallback((next: View) => { window.location.hash = hashFor(next); setView(next); setStatus(null); }, []);
+  // Settings' Done goes back to where the gear was pressed.
+  const beforeSettings = useRef<View>({ name: 'home' });
+  if (view.name !== 'settings') beforeSettings.current = view;
+  const leaveSettings = () => go(beforeSettings.current);
 
   useEffect(() => {
     // The address says where; what a chat was opened from, or who Home was looking at, is kept.
@@ -439,14 +445,15 @@ export function App() {
 
   return (
     <>
-      <SiteHeader onOverview={beforeOverview} side="chat" homeLabel="Inkwyrm Chat, your chats" onHome={() => go({ name: 'home' })} onSettings={() => go(view.name === 'settings' ? { name: 'home' } : { name: 'settings' })} />
-      <nav className="local-nav" aria-label="Chat">
-        <button type="button" aria-current={view.name === 'home' || view.name === 'character' || undefined} onClick={() => go({ name: 'home' })}>Collection</button>
-        <button type="button" aria-current={view.name === 'conversations' || undefined} onClick={() => go({ name: 'conversations' })}>Conversations</button>
-        <button type="button" aria-current={view.name === 'house' || undefined} onClick={() => go({ name: 'house' })}>Homes</button>
-        <button type="button" aria-current={view.name === 'you' || undefined} onClick={() => go({ name: 'you' })}>You</button>
-        {view.name === 'settings' && <button type="button" aria-current="true" onClick={() => go({ name: 'home' })}>Settings · Done</button>}
-      </nav>
+      <SiteHeader onOverview={beforeOverview} side="chat" homeLabel="Inkwyrm Chat, your chats" onHome={() => go({ name: 'home' })} settingsOpen={view.name === 'settings'} onSettings={() => (view.name === 'settings' ? leaveSettings() : go({ name: 'settings' }))} />
+      {view.name !== 'settings' && (
+        <nav className="local-nav" aria-label="Chat">
+          <button type="button" aria-current={view.name === 'home' || view.name === 'character' || undefined} onClick={() => go({ name: 'home' })}>Collection</button>
+          <button type="button" aria-current={view.name === 'conversations' || undefined} onClick={() => go({ name: 'conversations' })}>Conversations</button>
+          <button type="button" aria-current={view.name === 'house' || undefined} onClick={() => go({ name: 'house' })}>Homes</button>
+          <button type="button" aria-current={view.name === 'you' || undefined} onClick={() => go({ name: 'you' })}>You</button>
+        </nav>
+      )}
       {view.name === 'house' ? (
         <House
           worlds={worlds ?? []} chats={chats ?? []} portraits={portraits} lives={lives} userName={settings.userName}
@@ -461,15 +468,22 @@ export function App() {
           onPicture={(owner, slot, file) => void setPortrait(owner, slot, file)} onImport={(file) => void importCharacter(file)}
         />
       ) : view.name === 'settings' ? (
-        <SettingsView
-          connection={connection} onConnection={setConnection} settings={settings} onSettings={setSettings} theme={theme} onTheme={setTheme} look={look} onLook={setLook}
-          worlds={worlds ?? []} portraits={portraits} onPortrait={(owner, slot, file) => void setPortrait(owner, slot, file)}
-          onBackup={() => void backup()} onRestore={(file) => void restore(file)} onImportChat={(file) => void importChat(file)} status={status}
-        />
+        <main>
+          <SettingsPage
+            side="chat" tab={view.tab ?? 'chat'} onTab={(tab) => go({ name: 'settings', tab })} onDone={leaveSettings}
+            theme={theme} onTheme={setTheme} look={look} onLook={setLook} connection={connection} onConnection={setConnection}
+            status={status && <p className={`status${status.bad ? ' bad' : ''}`} role="status">{status.text}</p>}
+            chat={{
+              settings, onSettings: setSettings,
+              extra: <ChatExtras connection={connection} settings={settings} worlds={worlds ?? []} portraits={portraits} onPortrait={(owner, slot, file) => void setPortrait(owner, slot, file)}
+                onBackup={() => void backup()} onRestore={(file) => void restore(file)} onImportChat={(file) => void importChat(file)} />,
+            }}
+          />
+        </main>
       ) : (
         <>
           {!connection.connected && worlds !== null && (
-            <p className="status" style={{ margin: '12px clamp(12px, 3vw, 28px) 0' }}>No model connected yet. <button type="button" className="link" onClick={() => go({ name: 'settings' })}>Connect one under Settings</button> with your own key.</p>
+            <p className="status" style={{ margin: '12px clamp(12px, 3vw, 28px) 0' }}>No model connected yet. <button type="button" className="link" onClick={() => go({ name: 'settings', tab: 'model' })}>Connect one under Settings</button> with your own key.</p>
           )}
           <Home
             key={view.name === 'character' ? characterKey(view.worldId, view.recordId) : 'collection'}

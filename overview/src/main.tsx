@@ -8,6 +8,9 @@ import { listSaves } from '../../adventure/src/ui/storage';
 import { authoringCounts } from '../../studio/src/author/store';
 import { listWorlds } from '../../kit/src/worlds';
 import { App, type Readers } from './App';
+import { SettingsAddress } from './Settings';
+import { ADDRESS } from '../../kit/src/addresses';
+import { readStart, startRedirect } from '../../kit/src/settings/start';
 import '../../kit/src/wet-ink.css';
 import './overview.css';
 
@@ -32,12 +35,18 @@ class Crash extends Component<{ children: ReactNode }, { error: Error | null }> 
       <main className="overview">
         <h1>The front page stopped</h1>
         <p className="status bad">{error.message}</p>
-        <p className="hint">Everything you've made is still in this browser. <a href="/chat/">Chat</a>, <a href="/studio/">the Studio</a> and <a href="/">the Adventure</a> each open on their own.</p>
+        <p className="hint">Everything you've made is still in this browser. <a href="/chat/">Chat</a>, <a href="/studio/">the Studio</a> and <a href="/adventure/">the Adventure</a> each open on their own.</p>
       </main>
     );
   }
 }
 
-const root = document.getElementById('root');
-if (!root) throw new Error('Missing #root element.');
-createRoot(root).render(<StrictMode><Crash><AgeGate><App readers={readers} /></AgeGate></Crash></StrictMode>);
+// Start here (Settings › General): an arrival from outside can be sent straight to one side.
+const elsewhere = startRedirect(readStart(), window.location, document.referrer);
+if (elsewhere) window.location.replace(elsewhere);
+else {
+  const root = document.getElementById('root');
+  if (!root) throw new Error('Missing #root element.');
+  const settings = window.location.pathname.replace(/\/+$/, '') === ADDRESS.settings;
+  createRoot(root).render(<StrictMode><Crash><AgeGate>{settings ? <SettingsAddress /> : <App readers={readers} />}</AgeGate></Crash></StrictMode>);
+}

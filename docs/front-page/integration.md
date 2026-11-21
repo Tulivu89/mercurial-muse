@@ -88,6 +88,18 @@ Each step is one pull request (F3 may be two: panels, then the preview). Each ru
 4. **Errata helps you build it** beside *Make a world*. *Suggest:* yes, one line, no second mascot panel.
 5. **The writing room built in the Studio with Errata's help.** *Answer (Nov 13):* no. Examples get a dedicated session on a strong model; the site's helper is for authors.
 
+## F4, the root (Nov 21, Overview 0.4.0, adventure 0.29.0)
+
+@AmbiProp
+
+Built at the owner's word, with the header and Settings tidied in the same pass.
+
+- **`/` is the Overview.** The adventure moved to `/adventure/`. The server forwards `/?save=` and `/?launch=` to the adventure and `/overview/` to the root, so old bookmarks and Continue links keep working. Storage is per site, not per path, so nothing a player kept moves. Every cross-side link comes from `kit/src/addresses.ts`.
+- **Start here** is on the Settings page's General tab: the front page, Chat, the adventure or the Studio. Only an arrival from outside to the bare root is sent on; the header's own link always reaches the front page.
+- **The header** shows the Inkwyrm name at every width, the site's own mark always (a side's mark appears once, on its first page, through `PageHead`), the four parts (Overview, Chat, Adventure, Studio) and the gear on every side, the front page included.
+- **One Settings page** (`kit/src/settings/SettingsPage.tsx`), opened in place by every side on its own tab, and at `/settings` from the front page.
+- CI's production run checks `/`, `/settings`, `/adventure/` and the forwards.
+
 ## Homes on the Overview (Nov 16, Overview 0.3.0)
 
 @AmbiProp

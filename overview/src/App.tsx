@@ -116,7 +116,7 @@ export function App({ readers }: { readers: Readers }) {
             </div>
           </Panel>
 
-          <Panel mark="dragon" title="Adventure" more={{ label: 'All adventures', href: '/' }} loading={saves.state === 'loading'}>
+          <Panel mark="dragon" title="Adventure" more={{ label: 'All adventures', href: '/adventure/' }} loading={saves.state === 'loading'}>
             {view.adventure?.kind === 'save' && (
               <div className="adventure">
                 <p className="eyebrow">{view.adventure.tag}</p>
@@ -142,7 +142,7 @@ export function App({ readers }: { readers: Readers }) {
                 </div>
               </div>
             )}
-            {!view.adventure && <p className="hint">Saved games couldn&rsquo;t be read just now. <a href="/">Open the Adventure</a> to see them.</p>}
+            {!view.adventure && <p className="hint">Saved games couldn&rsquo;t be read just now. <a href="/adventure/">Open the Adventure</a> to see them.</p>}
           </Panel>
         </div>
 

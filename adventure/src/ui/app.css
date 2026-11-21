@@ -249,9 +249,7 @@ button.lr:hover:not(:disabled), a.lr:hover { background: var(--hover); }
 /* ---------- Title screen ---------- */
 
 .home { max-width: 560px; margin: 0 auto; padding: 32px 16px 48px; display: flex; flex-direction: column; gap: 16px; }
-.home-head { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
 .wordmark { font: 600 clamp(30px, 6vw, 40px)/1.05 var(--display); letter-spacing: -0.02em; }
-.tagline { color: var(--text-2); font: 16px/1.5 var(--read); margin-top: 6px; }
 .home h2 { font: 600 22px/1.2 var(--display); margin-bottom: 12px; }
 .save-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
 .save-row + .save-row { border-top: 1px solid var(--line); }

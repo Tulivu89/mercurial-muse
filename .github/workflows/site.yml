@@ -26,7 +26,7 @@ jobs:
       - run: npm test
       - run: npm run lint
       - run: npm run build
-      - name: Serve the production build and check the adventure, the Studio, Chat and the Overview answer
+      - name: Serve the production build and check the Overview, the adventure, the Studio and Chat answer
         working-directory: adventure
         run: |
           NODE_ENV=production PORT=8791 node dist-server/adventure/server/index.js &
@@ -35,6 +35,12 @@ jobs:
           script=$(grep -o 'src="/assets/[^"]*\.js"' /tmp/index.html | head -1 | cut -d'"' -f2)
           test -n "$script"
           curl -fsS -o /dev/null -w '%{content_type}\n' "http://127.0.0.1:8791$script" | grep -q javascript
+          curl -fsS http://127.0.0.1:8791/settings | grep -q "$script"
+          curl -fsS http://127.0.0.1:8791/adventure/ | tee /tmp/adventure.html | grep -q 'id="root"'
+          adventure=$(grep -o 'src="/adventure/assets/[^"]*\.js"' /tmp/adventure.html | head -1 | cut -d'"' -f2)
+          test -n "$adventure"
+          curl -fsS -o /dev/null -w '%{content_type}\n' "http://127.0.0.1:8791$adventure" | grep -q javascript
+          test "$(curl -s -o /dev/null -w '%{redirect_url}' 'http://127.0.0.1:8791/?save=s1')" = "http://127.0.0.1:8791/adventure/?save=s1"
           curl -fsS http://127.0.0.1:8791/studio/ | tee /tmp/studio.html | grep -q 'id="root"'
           studio=$(grep -o 'src="/studio/assets/[^"]*\.js"' /tmp/studio.html | head -1 | cut -d'"' -f2)
           test -n "$studio"
@@ -43,7 +49,4 @@ jobs:
           chat=$(grep -o 'src="/chat/assets/[^"]*\.js"' /tmp/chat.html | head -1 | cut -d'"' -f2)
           test -n "$chat"
           curl -fsS -o /dev/null -w '%{content_type}\n' "http://127.0.0.1:8791$chat" | grep -q javascript
-          curl -fsS http://127.0.0.1:8791/overview/ | tee /tmp/overview.html | grep -q 'id="root"'
-          overview=$(grep -o 'src="/overview/assets/[^"]*\.js"' /tmp/overview.html | head -1 | cut -d'"' -f2)
-          test -n "$overview"
-          curl -fsS -o /dev/null -w '%{content_type}\n' "http://127.0.0.1:8791$overview" | grep -q javascript
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8791/overview/)" = "301"

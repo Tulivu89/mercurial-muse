@@ -1,62 +1,15 @@
-// Settings: narration, the journal, reading, this save, and the tools for testing.
-import { useEffect, useState } from 'react';
+// Settings in play: the site's one Settings page (kit/src/settings/SettingsPage.tsx), in the menu
+// under the prompt, open on the Adventure tab. That tab carries this game's own settings first
+// (the narrator's window, the journal, checks), then this save and the tools for testing.
 import { exportSave, planAsText, sentAs, setOptions, type Options } from '../engine';
 import type { PlayApi } from './Play';
-import { ConnectForm, helperModelOf, providerOf } from './Connect';
-import { ChevronRight, DownloadIcon, ListIcon, PulseIcon, BookIcon } from './icons';
 import { SourceTag, describeEntry } from './shared';
-import { saveFormat, saveMode, saveModel, type FormatChoice, type NarrationMode } from './narration';
-import { FORMAT_IDS, FORMAT_NAMES, guessFormat } from '../../../core/narration/formats';
 import { downloadJson, fileSafe } from './files';
-import { THEME_NAMES, type Theme } from '../../../kit/src/theme';
-import { LOOK_NAMES, type LookChoice } from '../../../kit/src/look';
-
-function Seg<T extends string | number>({ label, value, options, onPick }: { label: string; value: T; options: [T, string][]; onPick: (value: T) => void }) {
-  return (
-    <div className="seg" role="group" aria-label={label}>
-      {options.map(([option, text]) => (
-        <button key={String(option)} type="button" aria-pressed={value === option} onClick={() => onPick(option)}>{text}</button>
-      ))}
-    </div>
-  );
-}
-
-function Switch({ id, label, hint, on, onToggle }: { id: string; label: string; hint?: string; on: boolean; onToggle: () => void }) {
-  return (
-    <div className="lr" style={{ minHeight: 60 }}>
-      <span className="grow">
-        <span id={id} className="name" style={{ display: 'block' }}>{label}</span>
-        {hint && <span className="meta" style={{ display: 'block', marginTop: 2, lineHeight: 1.4 }}>{hint}</span>}
-      </span>
-      <button type="button" className="switch" role="switch" aria-checked={on} aria-labelledby={id} onClick={onToggle} />
-    </div>
-  );
-}
+import { SettingsPage } from '../../../kit/src/settings/SettingsPage';
+import { Choice, Group, Toggle } from '../../../kit/src/settings/parts';
+import { ADDRESS } from '../../../kit/src/addresses';
 
 const thousands = (value: number) => value.toLocaleString('en-US');
-
-// A short list is a menu; a long one (OpenRouter lists hundreds) or none is a field to type in,
-// with the list as suggestions.
-function ModelPicker({ id, value, models, onPick }: { id: string; value: string; models: string[]; onPick: (model: string) => void }) {
-  const [text, setText] = useState(value);
-  useEffect(() => setText(value), [value]);
-  if (models.length && models.length <= 60) {
-    return (
-      <select id={id} className="select mono" style={{ width: 'auto', maxWidth: '60vw', minHeight: 44, fontSize: 14 }} value={models.includes(value) ? value : ''} onChange={(event) => onPick(event.target.value)}>
-        {!models.includes(value) && <option value="">Choose a model</option>}
-        {models.map((model) => <option key={model} value={model}>{model}</option>)}
-      </select>
-    );
-  }
-  return (
-    <>
-      <input id={id} className="field mono" style={{ fontSize: 14 }} list={`${id}-list`} autoComplete="off" spellCheck={false} value={text} placeholder="The model’s name"
-        onChange={(event) => { setText(event.target.value); if (models.includes(event.target.value)) onPick(event.target.value); }}
-        onBlur={() => { if (text.trim() && text.trim() !== value) onPick(text.trim()); }} />
-      <datalist id={`${id}-list`}>{models.map((model) => <option key={model} value={model} />)}</datalist>
-    </>
-  );
-}
 
 async function copyText(text: string): Promise<boolean> {
   try {
@@ -78,190 +31,114 @@ function saveText(text: string, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function SettingsSection({ api }: { api: PlayApi }) {
-  const { save, connection, prefs, lastPlan } = api;
+// This game's own settings: they live in the save, so they go with it.
+function ThisGame({ api }: { api: PlayApi }) {
+  const { save, connection, lastPlan } = api;
   const options = save.options;
   const change = (changes: Partial<Options>) => {
     const result = setOptions(save, changes);
     if (result.ok) api.commit(result.save); else api.notify(result.reason);
   };
-  const models = connection.models;
-  const provider = providerOf(connection);
   const modelWindow = connection.contexts[connection.model];
-
   return (
     <>
-      <p className="meta"><a href="/overview/">Inkwyrm overview</a> · <a href="/chat/">Chat collection</a> · <a href="/studio/">Studio</a></p>
-      <div className="sub"><p className="label">Narration</p></div>
-      <div className="card">
-        <ConnectForm connection={connection} onChange={api.setConnection} />
-        {connection.connected && (
-          <>
-            <div className="lr stack">
-              <label htmlFor="model" className="name">Model</label>
-              <ModelPicker id="model" value={connection.model} models={models} onPick={(model) => { saveModel(connection.provider, model); api.setConnection({ ...connection, model }); }} />
-              {connection.unlisted && <span className="meta">{provider.name} lists no models here, so type the name as the provider gives it.</span>}
-            </div>
-            <div className="lr stack">
-              <span className="name">Send requests as</span>
-              {provider.completions
-                ? <Seg<NarrationMode> label="Send requests as" value={connection.mode} options={[['prompt', 'One prompt'], ['chat', 'Chat messages']]} onPick={(mode) => { saveMode(connection.provider, mode); api.setConnection({ ...connection, mode }); }} />
-                : <span className="meta">Chat messages: {provider.name} takes no single prompts.</span>}
-              <span className="meta" style={{ lineHeight: 1.45 }}>
-                One prompt, in the model’s own format, lets the adventure write the start of each reply for the model to continue, which keeps it closest to the rules.
-                {provider.chatPrefill === 'assistant' ? ' Chat messages carry that start too, with this provider.' : ' Chat messages can only ask for it.'}
-              </span>
-            </div>
-            {connection.mode === 'prompt' && provider.completions && (
-              <div className="lr stack">
-                <label htmlFor="format" className="name">Prompt format</label>
-                <select id="format" className="select" value={connection.format} onChange={(event) => { const format = event.target.value as FormatChoice; saveFormat(connection.provider, format); api.setConnection({ ...connection, format }); }}>
-                  <option value="auto">Guess from the name: {FORMAT_NAMES[guessFormat(connection.model)]}</option>
-                  {FORMAT_IDS.map((format) => <option key={format} value={format}>{FORMAT_NAMES[format]}</option>)}
-                </select>
-                <span className="meta" style={{ lineHeight: 1.45 }}>Finetunes use their base model’s format. If replies come back with stray tags or never stop, this is the setting to change.</span>
-              </div>
-            )}
-          </>
-        )}
-        <div className="lr stack">
-          <span className="name">Longest reply</span>
-          <Seg<number> label="Longest reply" value={options.replyTokens} options={[[600, '600 tokens'], [1000, '1,000'], [1600, '1,600']]} onPick={(replyTokens) => change({ replyTokens })} />
-        </div>
-        <div className="lr stack">
-          <span className="name">The model’s window</span>
-          <Seg<number> label="The model’s window" value={options.contextTokens} options={[[16000, '16k'], [28000, '28k'], [32000, '32k'], [64000, '64k'], [128000, '128k']]} onPick={(contextTokens) => change({ contextTokens })} />
-          {connection.connected && modelWindow ? <span className="meta">{connection.model} reads up to {thousands(modelWindow)} tokens.{modelWindow < options.contextTokens ? ' That is less than this window, so choose a smaller one.' : ''} A bigger window costs more on providers that charge by the token.</span> : null}
-          <span className="meta" style={{ lineHeight: 1.45 }}>
+      <Group title="This game" note={`${api.module.name}. These are kept in the save, so they go with it.`}>
+        <Choice<number> label="Longest reply" value={options.replyTokens} options={[[600, '600 tokens'], [1000, '1,000'], [1600, '1,600']]} onPick={(replyTokens) => change({ replyTokens })} />
+        <Choice<number> label="The model’s window" value={options.contextTokens} options={[[16000, '16k'], [28000, '28k'], [32000, '32k'], [64000, '64k'], [128000, '128k']]} onPick={(contextTokens) => change({ contextTokens })}
+          hint={<>
+            {connection.connected && modelWindow ? `${connection.model} reads up to ${thousands(modelWindow)} tokens.${modelWindow < options.contextTokens ? ' That is less than this window, so choose a smaller one.' : ''} A bigger window costs more on providers that charge by the token. ` : ''}
             {lastPlan
               ? `Last turn sent about ${thousands(lastPlan.estimate.total)} tokens: rules and world ${thousands(lastPlan.estimate.system)}, journal ${thousands(lastPlan.estimate.journal)}, story ${thousands(lastPlan.estimate.transcript)}, this scene's lore, your words and the reply's opening ${thousands(lastPlan.estimate.moment)}. The story gets up to ${thousands(lastPlan.budget.transcriptHigh)}.`
               : 'The story gets what the window has left after the rules, the world, the journal and the moment.'}
-          </span>
+          </>} />
+        <Choice<string> label="When you make a check" value={options.alwaysSucceed ? 'succeed' : 'roll'} options={[['roll', 'Roll the dice'], ['succeed', 'Succeed, no roll']]} onPick={(pick) => change({ alwaysSucceed: pick === 'succeed' })}
+          hint={<>Either choice is always one tap away on the check itself. The ledger records who decided. <button type="button" className="ks-btn small quiet" onClick={() => api.open('guide')}>How checks work</button></>} />
+      </Group>
+      <Group title="Journal">
+        <Toggle label="Suggest entries as story leaves the window" hint="You keep, edit or discard each one. Nothing joins the journal on its own." on={options.autoJournal} onToggle={(autoJournal) => change({ autoJournal })} />
+        <Choice<number> label="Story leaves the window in pieces of" value={options.pieceTokens} options={[[4000, '4,000 tokens'], [6000, '6,000'], [9000, '9,000']]} onPick={(pieceTokens) => change({ pieceTokens })} hint="Each piece becomes one suggested entry. Bigger pieces mean fewer, broader entries and fewer changes to what the narrator is sent." />
+        <Choice<number> label="Journal budget" value={options.journalTokens} options={[[2000, '2,000 tokens'], [3000, '3,000'], [5000, '5,000']]} onPick={(journalTokens) => change({ journalTokens })} />
+        <Toggle label="Suggest compressing older entries" hint="When the journal passes its budget. The originals are archived, not deleted." on={options.autoCompress} onToggle={(autoCompress) => change({ autoCompress })} />
+      </Group>
+      <Group title="This save">
+        <div className="ks-row">
+          <button type="button" className="ks-btn" onClick={() => downloadJson(`${fileSafe(api.name)}.save.json`, exportSave(api.module, save, api.name))}>Export this save</button>
+          <button type="button" className="ks-btn quiet" onClick={api.leave}>Your adventures</button>
+          <a className="ks-btn quiet" href={ADDRESS.chat}>Chat</a>
+          <a className="ks-btn quiet" href={ADDRESS.studio}>Studio</a>
         </div>
-      </div>
-
-      <div className="sub"><p className="label">Journal</p></div>
-      <div className="card">
-        <Switch id="auto-journal" label="Suggest entries as story leaves the window" hint="You keep, edit or discard each one. Nothing joins the journal on its own." on={options.autoJournal} onToggle={() => change({ autoJournal: !options.autoJournal })} />
-        <div className="lr stack">
-          <span className="name">Story leaves the window in pieces of</span>
-          <Seg<number> label="Piece size" value={options.pieceTokens} options={[[4000, '4,000 tokens'], [6000, '6,000'], [9000, '9,000']]} onPick={(pieceTokens) => change({ pieceTokens })} />
-          <span className="meta" style={{ lineHeight: 1.45 }}>Each piece becomes one suggested entry. Bigger pieces mean fewer, broader entries and fewer changes to what the narrator is sent.</span>
-        </div>
-        <div className="lr stack">
-          <span className="name">Journal budget</span>
-          <Seg<number> label="Journal budget" value={options.journalTokens} options={[[2000, '2,000 tokens'], [3000, '3,000'], [5000, '5,000']]} onPick={(journalTokens) => change({ journalTokens })} />
-        </div>
-        <Switch id="auto-compress" label="Suggest compressing older entries" hint="When the journal passes its budget. The originals are archived, not deleted." on={options.autoCompress} onToggle={() => change({ autoCompress: !options.autoCompress })} />
-        {connection.connected && (
-          <div className="lr" style={{ minHeight: 60 }}>
-            <label htmlFor="helper-model" className="name grow">Suggestions written by</label>
-            <ModelPicker id="helper-model" value={helperModelOf(connection, prefs.helperModel)} models={models} onPick={(helperModel) => api.setPrefs({ helperModel })} />
-          </div>
-        )}
-      </div>
-
-      <div className="sub"><p className="label">Checks</p><button type="button" className="link" onClick={() => api.open('guide')}>How checks work</button></div>
-      <div className="card">
-        <div className="lr stack">
-          <span className="name">When you make a check</span>
-          <Seg<string> label="When you make a check" value={options.alwaysSucceed ? 'succeed' : 'roll'} options={[['roll', 'Roll the dice'], ['succeed', 'Succeed, no roll']]} onPick={(pick) => change({ alwaysSucceed: pick === 'succeed' })} />
-          <span className="meta" style={{ lineHeight: 1.45 }}>Either choice is always one tap away on the check itself. The ledger records who decided.</span>
-        </div>
-        <Switch id="evaluator" label="Propose a check from what you write" hint="When your turn tries something uncertain, the suggestions model names a check from what's here. You roll it, change it or set it aside; it never rolls by itself." on={prefs.evaluator} onToggle={() => api.setPrefs({ evaluator: !prefs.evaluator })} />
-      </div>
-
-      <div className="sub"><p className="label">Reading</p></div>
-      <div className="card">
-        <div className="lr stack">
-          <span className="name">Look</span>
-          <Seg<Theme> label="Look" value={api.theme} options={[['paper', THEME_NAMES.paper], ['night', THEME_NAMES.night], ['auto', THEME_NAMES.auto]]} onPick={api.setTheme} />
-          <span className="meta" style={{ lineHeight: 1.45 }}>Paper by day, ink by night. The same choice holds in Chat and the Studio.</span>
-        </div>
-        <label className="lr stack">
-          <span className="name">Style</span>
-          <select className="select" value={api.look} onChange={(event) => api.setLook(event.target.value as LookChoice)}>{(Object.keys(LOOK_NAMES) as LookChoice[]).map((option) => <option key={option} value={option}>{LOOK_NAMES[option]}</option>)}</select>
-          <span className="meta" style={{ lineHeight: 1.45 }}>A skin over paper and ink. Worlds can choose one in Chat and the Studio.</span>
-        </label>
-        <div className="lr stack">
-          <span className="name">Text size</span>
-          <Seg label="Text size" value={prefs.textSize} options={[['small', 'Smaller'], ['standard', 'Standard'], ['large', 'Larger']]} onPick={(textSize) => api.setPrefs({ textSize })} />
-        </div>
-        <div className="lr stack">
-          <span className="name">Story typeface</span>
-          <Seg label="Story typeface" value={prefs.storyFace} options={[['serif', 'Book serif'], ['sans', 'Plain sans']]} onPick={(storyFace) => api.setPrefs({ storyFace })} />
-        </div>
-      </div>
-
-      <div className="sub"><p className="label">This save</p><span className="meta">{api.module.name}</span></div>
-      <div className="card clip">
-        <button type="button" className="lr" onClick={() => downloadJson(`${fileSafe(api.name)}.save.json`, exportSave(api.module, save, api.name))}>
-          <DownloadIcon /><span className="name grow">Export this save</span><span className="meta">to a file</span>
-        </button>
-        <details style={{ borderTop: '1px solid var(--line)' }}>
-          <summary className="lr" style={{ borderTop: 0 }}><ListIcon /><span className="name grow">Ledger</span><span className="meta">{save.ledger.length} changes</span><ChevronRight /></summary>
+        <p className="ks-note">Your game is saved as you go.</p>
+        <details>
+          <summary className="ks-label">Ledger · {save.ledger.length} changes</summary>
           {save.ledger.length ? (
             <ol className="ledger">
               {save.ledger.slice(-60).reverse().map((entry, index) => (
                 <li key={save.ledger.length - index}><span className="what">{describeEntry(api.world, entry)}</span><SourceTag source={entry.source} /></li>
               ))}
             </ol>
-          ) : <p className="meta" style={{ padding: '0 14px 14px' }}>Nothing has changed yet.</p>}
+          ) : <p className="ks-note">Nothing has changed yet.</p>}
         </details>
-      </div>
+      </Group>
+    </>
+  );
+}
 
-      <div className="sub"><p className="label">Testing</p><span className="meta">hidden in release</span></div>
-      <div className="card clip">
-        <Switch id="show-drafts" label="Show draft markers" hint="On records the module marks unfinished" on={prefs.showDrafts} onToggle={() => api.setPrefs({ showDrafts: !prefs.showDrafts })} />
-        <Switch id="show-numbers" label="Show numbers beside bands" on={prefs.showNumbers} onToggle={() => api.setPrefs({ showNumbers: !prefs.showNumbers })} />
-        <details style={{ borderTop: '1px solid var(--line)' }}>
-          <summary className="lr" style={{ borderTop: 0 }}><BookIcon /><span className="name grow">What the narrator was sent</span><ChevronRight /></summary>
-          <div style={{ padding: '0 14px 14px' }}>
-            {lastPlan ? (
-              <>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '0 0 12px' }}>
-                <button type="button" className="btn" onClick={() => { void copyText(planAsText(lastPlan, api.tries)).then((ok) => api.notify(ok ? 'Copied: everything sent, with the replies so far.' : 'Copying is blocked here. Use Save as a file.')); }}>Copy all</button>
-                <button type="button" className="btn" onClick={() => saveText(planAsText(lastPlan, api.tries), `adventure-context-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.txt`)}>Save as a file</button>
-                <button type="button" className="btn" disabled={api.busy || !connection.connected} onClick={() => api.sampleTurn(5)}>Try this turn 5 more times</button>
-                <span className="meta" style={{ alignSelf: 'center' }}>{api.tries.length ? `Includes ${api.tries.length} ${api.tries.length === 1 ? 'reply' : 'replies'} to this turn.` : 'No reply yet.'}</span>
-              </div>
-              <ol className="sent">
-                {lastPlan.messages.map((message, index) => <li key={index}><span className="label">{sentAs(message.role, index)}</span><pre>{message.content}</pre></li>)}
-                {lastPlan.prefill && <li><span className="label">The reply's opening · prefill</span><pre>{lastPlan.prefill}</pre></li>}
-                {api.tries.map((reply, index) => <li key={`try-${index}`}><span className="label">Reply {index + 1} of {api.tries.length}</span><pre>{reply}</pre></li>)}
-              </ol>
-              </>
-            ) : <p className="meta">Nothing yet this session.</p>}
-          </div>
-        </details>
-        <details style={{ borderTop: '1px solid var(--line)' }}>
-          <summary className="lr" style={{ borderTop: 0 }}><PulseIcon /><span className="name grow">Diagnostics</span><span className="meta">last 10 calls</span><ChevronRight /></summary>
-          <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {api.calls.length ? (
-              <ol className="sent">
-                {api.calls.map((call, index) => (
-                  <li key={index}>
-                    <span className={call.ok ? 'meta' : 'bad'} style={{ fontSize: 13 }}>{call.at} · {call.purpose} · {call.ok ? `ok, ${call.ms} ms` : 'failed'} · {call.message}</span>
-                    {call.diagnostics && <pre>{JSON.stringify(call.diagnostics, null, 2)}</pre>}
-                  </li>
-                ))}
-              </ol>
-            ) : <p className="meta">No calls yet this session.</p>}
-            <button type="button" className="btn" disabled={!api.calls.length} onClick={() => void navigator.clipboard?.writeText(JSON.stringify(api.calls, null, 2))}>Copy diagnostics</button>
-            <p className="meta">Estimate: about {(1 / options.tokensPerChar).toFixed(1)} characters per token, corrected from the provider’s own counts.</p>
-          </div>
-        </details>
-        <button type="button" className="lr" style={{ borderTop: '1px solid var(--line)' }} onClick={() => api.open('test')}>
-          <PulseIcon /><span className="name grow">Generation test</span><span className="meta">prompt reuse</span><ChevronRight />
-        </button>
+// What was sent, the last calls, and the generation test: for testing a model on this game.
+function Testing({ api }: { api: PlayApi }) {
+  const { connection, lastPlan, save } = api;
+  return (
+    <Group title="What the narrator was sent">
+      <details>
+        <summary className="ks-label">The last turn</summary>
+        {lastPlan ? (
+          <>
+            <div className="ks-row" style={{ margin: '10px 0' }}>
+              <button type="button" className="ks-btn small" onClick={() => { void copyText(planAsText(lastPlan, api.tries)).then((ok) => api.notify(ok ? 'Copied: everything sent, with the replies so far.' : 'Copying is blocked here. Use Save as a file.')); }}>Copy all</button>
+              <button type="button" className="ks-btn small" onClick={() => saveText(planAsText(lastPlan, api.tries), `adventure-context-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.txt`)}>Save as a file</button>
+              <button type="button" className="ks-btn small" disabled={api.busy || !connection.connected} onClick={() => api.sampleTurn(5)}>Try this turn 5 more times</button>
+              <span className="ks-note">{api.tries.length ? `Includes ${api.tries.length} ${api.tries.length === 1 ? 'reply' : 'replies'} to this turn.` : 'No reply yet.'}</span>
+            </div>
+            <ol className="sent">
+              {lastPlan.messages.map((message, index) => <li key={index}><span className="label">{sentAs(message.role, index)}</span><pre>{message.content}</pre></li>)}
+              {lastPlan.prefill && <li><span className="label">The reply's opening · prefill</span><pre>{lastPlan.prefill}</pre></li>}
+              {api.tries.map((reply, index) => <li key={`try-${index}`}><span className="label">Reply {index + 1} of {api.tries.length}</span><pre>{reply}</pre></li>)}
+            </ol>
+          </>
+        ) : <p className="ks-note">Nothing yet this session.</p>}
+      </details>
+      <details>
+        <summary className="ks-label">Diagnostics · the last 10 calls</summary>
+        {api.calls.length ? (
+          <ol className="sent">
+            {api.calls.map((call, index) => (
+              <li key={index}>
+                <span className={call.ok ? 'meta' : 'bad'} style={{ fontSize: 13 }}>{call.at} · {call.purpose} · {call.ok ? `ok, ${call.ms} ms` : 'failed'} · {call.message}</span>
+                {call.diagnostics && <pre>{JSON.stringify(call.diagnostics, null, 2)}</pre>}
+              </li>
+            ))}
+          </ol>
+        ) : <p className="ks-note">No calls yet this session.</p>}
+        <div className="ks-row" style={{ marginTop: 10 }}>
+          <button type="button" className="ks-btn small" disabled={!api.calls.length} onClick={() => void navigator.clipboard?.writeText(JSON.stringify(api.calls, null, 2))}>Copy diagnostics</button>
+          <span className="ks-note">Estimate: about {(1 / save.options.tokensPerChar).toFixed(1)} characters per token, corrected from the provider’s own counts.</span>
+        </div>
+      </details>
+      <div className="ks-row">
+        <button type="button" className="ks-btn quiet" onClick={() => api.open('test')}>Generation test: prompt reuse</button>
       </div>
+    </Group>
+  );
+}
 
-      <div className="sub"><p className="label">Leave</p><span className="meta">your game is saved as you go</span></div>
-      <div className="card clip">
-        <button type="button" className="lr" onClick={api.leave}><span className="name grow">Your adventures</span><span className="meta">the title screen</span><ChevronRight /></button>
-        <a className="lr" href="/chat/"><span className="name grow">Chat</span><span className="meta">talk with a character</span><ChevronRight /></a>
-        <a className="lr" href="/studio/"><span className="name grow">Studio</span><span className="meta">make worlds and characters</span><ChevronRight /></a>
-      </div>
+export function SettingsSection({ api }: { api: PlayApi }) {
+  return (
+    <>
+      <SettingsPage
+        embedded side="adventure"
+        theme={api.theme} onTheme={api.setTheme} look={api.look} onLook={api.setLook}
+        connection={api.connection} onConnection={api.setConnection}
+        adventure={{ prefs: api.prefs, onPrefs: api.setPrefs, extra: <><ThisGame api={api} /><Testing api={api} /></> }}
+      />
       <p className="version">Inkwyrm adventure {__PRAXIS_VERSION__} · {api.module.name} {api.module.version}</p>
     </>
   );

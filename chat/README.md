@@ -150,6 +150,13 @@ Open `http://localhost:5178/chat/`. The first command installs, the second start
 
 ## Changelog
 
+### 0.10.0 - One Settings page - 2026-11-21
+
+- **Settings is the site's one page** (`kit/src/settings/SettingsPage.tsx`), opened by the gear at `#/settings`, on the Chat tab. The other tabs are there too: General, Model, Adventure and Studio. Portraits and Chat's files sit at the foot of the Chat tab. `#/settings/model` opens the Model tab, which *Connect one under Settings* now does.
+- Chat's settings are stored where they were (`inkwyrm.chat.settings`); the code that reads them moved to the kit so any side can show them.
+- The site's header shows the Inkwyrm name at every width, and Collection, Conversations, Homes and You open with the same page head as the other sides.
+- AetherRoom parity is retired: the Xialong profile is the site's own code now.
+
 ### 0.9.1 - Facts from chapters, and chapters for Xialong - 2026-11-18
 
 Memory review C4, the last phase:

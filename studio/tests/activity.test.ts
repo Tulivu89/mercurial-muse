@@ -36,7 +36,7 @@ describe('the activity record', () => {
 
   it('builds the addresses each side reads', () => {
     expect(hrefFor({ kind: 'chat', chatId: 'a b' })).toBe('/chat/#/chat/a%20b');
-    expect(hrefFor({ kind: 'adventure', saveId: 's1' })).toBe('/?save=s1');
+    expect(hrefFor({ kind: 'adventure', saveId: 's1' })).toBe('/adventure/?save=s1');
     const studio = hrefFor({ kind: 'studio', worldId: 'low water', recordId: 'dee', door: 'errata' });
     expect(studio).toBe('/studio/#/w/low%20water?rec=dee&door=errata');
     expect(parseRoute(studio.slice('/studio/'.length))).toMatchObject({ worldId: 'low water', rec: 'dee', door: 'errata' });

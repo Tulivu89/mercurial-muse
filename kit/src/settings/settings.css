@@ -1,0 +1,74 @@
+/* The site's one Settings page (SettingsPage.tsx). Every name starts with ks- and every rule sits
+   under .ks, so the page looks the same in the adventure (whose stylesheet has its own .field,
+   .row and .btn) as it does in Chat, the Studio and on the front page. On the tokens of ink.css. */
+.ks { --ks-gap: 14px; max-width: 780px; margin: 0 auto; padding: clamp(16px, 4vw, 36px) clamp(12px, 3vw, 24px) 64px; display: flex; flex-direction: column; gap: 18px; color: var(--text); font: 16px/1.5 var(--ui); }
+.ks.embedded { padding: 0; gap: 14px; }
+.ks * { box-sizing: border-box; }
+.ks h1, .ks h2, .ks h3, .ks p { margin: 0; }
+.ks-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ks-head .ks-btn { flex: none; }
+.ks-title { font: 600 clamp(30px, 5vw, 42px)/1.05 var(--display); letter-spacing: -0.02em; }
+.ks-lede { font: 16px/1.5 var(--read); color: var(--text-2); max-width: 56ch; }
+
+/* The tabs: one row, the open one underlined in seal; on a phone the row scrolls. */
+.ks-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--rule); overflow-x: auto; scrollbar-width: none; }
+.ks-tabs::-webkit-scrollbar { display: none; }
+.ks-tab { flex: none; min-height: 44px; padding: 0 14px; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; color: var(--text-2); font: 700 15px/1 var(--ui); cursor: pointer; white-space: nowrap; }
+.ks-tab:hover { color: var(--text); }
+.ks-tab[aria-selected='true'] { color: var(--text); border-bottom-color: var(--seal); }
+.ks-tab .ks-here { margin-left: 6px; font-weight: 400; font-size: 12px; color: var(--text-2); }
+@media (max-width: 560px) {
+  .ks-tab { flex: 1 1 auto; padding: 0 6px; font-size: 14px; }
+}
+.ks-panel { display: flex; flex-direction: column; gap: 16px; }
+.ks-where { font-size: 14px; color: var(--text-2); }
+
+/* A group of settings: a card with a heading. */
+.ks-group { display: flex; flex-direction: column; gap: var(--ks-gap); padding: 16px; border: 1px solid var(--rule); border-radius: var(--r-card); background: var(--surface); }
+.ks-group-title { font: 600 20px/1.2 var(--display); }
+.ks-note, .ks-hint { font-size: 13px; line-height: 1.45; color: var(--text-2); }
+.ks-hint { display: block; }
+.ks-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.ks-row > .ks-field { flex: 1 1 180px; }
+
+/* A labelled control. */
+.ks-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ks-label { font-size: 14px; font-weight: 700; color: var(--text); }
+.ks .ks-field input:not([type='checkbox']), .ks .ks-field select, .ks .ks-field textarea, .ks .ks-input {
+  width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--rule); border-radius: var(--r-ctrl); background: var(--raised); color: var(--text); font: 15px/1.4 var(--ui);
+}
+.ks .ks-field textarea, .ks textarea.ks-input { font-family: var(--read); line-height: 1.55; resize: vertical; }
+.ks .ks-field input:focus-visible, .ks .ks-field select:focus-visible, .ks .ks-field textarea:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+.ks .mono { font-family: var(--mono, ui-monospace, monospace); }
+
+/* A choice of a few: a segmented row. */
+.ks-seg { display: flex; flex-wrap: wrap; gap: 3px; padding: 3px; border: 1px solid var(--rule); border-radius: var(--r-ctrl); background: var(--ground); }
+.ks-seg button { flex: 1 1 auto; min-height: 38px; padding: 0 12px; border: 0; border-radius: var(--r-chip); background: none; color: var(--text-2); font: 700 14px/1 var(--ui); cursor: pointer; }
+.ks-seg button[aria-pressed='true'] { background: var(--text); color: var(--ground); }
+
+/* An on-off setting: its words, then a switch. */
+.ks-toggle { display: flex; align-items: flex-start; gap: 14px; }
+.ks-toggle-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ks-switch { flex: none; position: relative; width: 46px; height: 28px; margin-top: 2px; padding: 0; border: 1px solid var(--rule); border-radius: 999px; background: var(--ground); cursor: pointer; }
+.ks-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--text-2); transition: transform 140ms ease; }
+.ks-switch[aria-checked='true'] { background: var(--seal); border-color: var(--seal); }
+.ks-switch[aria-checked='true']::after { transform: translateX(18px); background: var(--on-seal); }
+@media (prefers-reduced-motion: reduce) { .ks-switch::after { transition: none; } }
+
+/* Buttons. */
+.ks-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 16px; border: 1px solid var(--text); border-radius: var(--r-ctrl); background: transparent; color: var(--text); font: 700 15px/1 var(--ui); text-decoration: none; cursor: pointer; }
+.ks-btn.primary { background: var(--seal); border-color: var(--seal); color: var(--on-seal); }
+.ks-btn.quiet { border-color: var(--rule); font-weight: 400; }
+.ks-btn.small { min-height: 36px; padding: 0 10px; font-size: 14px; }
+.ks-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ks-file { position: relative; overflow: hidden; }
+.ks-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.ks-status { padding: 10px 14px; border: 1px solid var(--rule); border-radius: var(--r-ctrl); background: var(--surface); font-size: 15px; }
+.ks-status.bad { border-color: var(--seal); }
+.ks-connected { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.ks-dot { display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; background: var(--good, #3f7a4f); }
+.ks-check { display: flex; align-items: center; gap: 8px; min-height: 36px; font-size: 15px; }
+.ks-check input { width: 18px; height: 18px; accent-color: var(--seal); }
+.ks a { color: var(--blue); }
+.ks-prompt-part { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px dashed var(--rule); }
+.ks :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }

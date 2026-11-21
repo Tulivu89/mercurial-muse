@@ -95,7 +95,7 @@ describe('choosing what to show', () => {
     expect(view.first).toBe(false);
     expect(view.continueWith).toEqual({ label: 'Continue', title: 'Dee Harlow', detail: 'Character in Low Water · 2 drafts waiting · 3 settled', href: '/studio/#/w/low?rec=dee&door=errata', action: 'Continue writing' });
     expect(view.worlds[0]).toMatchObject({ name: 'Low Water', tag: 'Last worked on', action: 'Continue writing', detail: 'Dee Harlow · 2 drafts waiting · 3 settled' });
-    expect(view.adventure).toMatchObject({ kind: 'save', tag: 'Your last adventure', href: '/?save=save-1' });
+    expect(view.adventure).toMatchObject({ kind: 'save', tag: 'Your last adventure', href: '/adventure/?save=save-1' });
   });
 
   it('sends a world with drafts waiting back to Errata\'s door on that record', () => {
@@ -162,7 +162,7 @@ describe('the page', () => {
     const before = JSON.stringify({ ...window.localStorage });
     render(<App readers={readers({ saves: async () => [save] })} />);
     const strip = within(await screen.findByRole('region', { name: 'Continue' }));
-    expect(strip.getByRole('link', { name: 'Continue adventure' })).toHaveAttribute('href', '/?save=save-1');
+    expect(strip.getByRole('link', { name: 'Continue adventure' })).toHaveAttribute('href', '/adventure/?save=save-1');
     expect(screen.getByRole('heading', { level: 1, name: 'Pick up the thread.' })).toBeInTheDocument();
     expect(JSON.stringify({ ...window.localStorage })).toBe(before);
   });

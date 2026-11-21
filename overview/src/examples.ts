@@ -31,6 +31,6 @@ export const EXAMPLE_ADVENTURES: ExampleAdventure[] = [
   {
     name: 'Abernys: Bogwater', title: 'In the net at the long fence',
     opening: 'The net comes up out of the black water all at once, and you come up with it.',
-    href: '/', note: 'Pick it under New game. Playing needs your own model; looking around doesn\'t.',
+    href: '/adventure/', note: 'Pick it under New game. Playing needs your own model; looking around doesn\'t.',
   },
 ];
