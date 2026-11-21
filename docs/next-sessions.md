@@ -54,7 +54,7 @@ Sessions 1 and 3 can run side by side: one writes, the other codes, and they tou
 > - clean-up after each reply;
 > - the journal and chapters in the shared part.
 >
-> A one-to-one chat must build byte for byte as before, and the AetherRoom parity test must stay green. Stop after G1's plan for the owner's review.
+> A one-to-one chat must build byte for byte as before. (AetherRoom parity was retired on Nov 21.) Stop after G1's plan for the owner's review.
 
 **Session 4, first messages and images.**
 > Read `CLAUDE.md`, `docs/reviews/features/decision.md` (F3, F4), `core/chat/home.ts`, `core/chat/time.ts` and `core/chat/posts.ts`. First F3:

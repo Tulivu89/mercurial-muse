@@ -62,7 +62,7 @@ Everything is kept in this browser (IndexedDB `inkwyrm-chat`; worlds in the Stud
 
 The kernel is in `core/chat/`. It takes the same chat either way and builds a different layout for the model.
 
-- **AetherRoom,** for `xialong-v1`: CharacterRoom's kernel, ported in `core/chat/aetherroom.ts`. `core/tests/aetherroom-parity.test.ts` holds it byte for byte to outputs recorded from CharacterRoom's own kernel (engine 1.0.20) on its 21 parity fixtures, 52 steps. Records are read as CharacterRoom cards by `core/chat/sheet.ts`:
+- **AetherRoom,** for `xialong-v1`: CharacterRoom's kernel, ported in `core/chat/aetherroom.ts`. It was held byte for byte to CharacterRoom's kernel until Nov 21, when the owner retired parity: it is the site's own Xialong profile now. Records are read as CharacterRoom cards by `core/chat/sheet.ts`:
   - a Personality and an Appearance section fill the sheet's own fields;
   - other Here sections and the outfit in use become always-on brains;
   - Named sections become keyed brains;

@@ -1,8 +1,7 @@
 // The AetherRoom context: the layout xialong-v1 was trained on, as CharacterRoom's kernel builds
-// it (Tulivu89/CharacterRoom, SECTION K, engine 1.0.20). This is a port, not a redesign. Every
-// string and ordering here is held byte for byte by core/tests/aetherroom-parity.test.ts against
-// outputs recorded from CharacterRoom's own kernel, which is itself tested against AnotherRoom
-// 1.1.5. Change nothing here without re-recording those fixtures from a newer kernel.
+// it (Tulivu89/CharacterRoom, SECTION K, engine 1.0.20). It started as a port. Parity with
+// CharacterRoom, a userscript, is no longer a goal (Nov 21): this is the site's own Xialong
+// profile now, free to change like any other code, with the chat tests to keep it honest.
 //
 // Pure: time, randomness, token counts and the model's limits come in as arguments.
 import { replaceMacros } from './macros.js';
